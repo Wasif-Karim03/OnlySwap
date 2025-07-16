@@ -1,44 +1,14 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider } from './contexts/AuthContext';
 import SignIn from './components/SignIn';
 import SignUp from './components/SignUp';
-import ForgotPassword from './components/ForgotPassword';
 import Dashboard from './components/Dashboard';
 import AdminDashboard from './components/AdminDashboard';
+import ForgotPassword from './components/ForgotPassword';
 import ProtectedRoute from './components/ProtectedRoute';
-
-const AnimatedBlob = () => (
-  <motion.div
-    className="blob-bg"
-    initial={{ scale: 1, x: '-20vw', y: '-10vh', rotate: 0 }}
-    animate={{
-      scale: [1, 1.15, 1],
-      x: ['-20vw', '60vw', '-10vw'],
-      y: ['-10vh', '40vh', '10vh'],
-      rotate: [0, 30, -15, 0],
-    }}
-    transition={{
-      duration: 18,
-      repeat: Infinity,
-      repeatType: 'mirror',
-      ease: 'easeInOut',
-    }}
-    style={{
-      width: '60vw',
-      height: '60vw',
-      minWidth: 320,
-      minHeight: 320,
-      maxWidth: 700,
-      maxHeight: 700,
-      background: 'radial-gradient(circle at 30% 30%, #60a5fa 60%, #818cf8 100%)',
-      borderRadius: '50%',
-      top: '-10vh',
-      left: '-20vw',
-    }}
-  />
-);
+import AnimatedBlob from './components/AnimatedBlob';
 
 const App: React.FC = () => {
   return (

@@ -6,15 +6,25 @@ interface User {
   name: string;
   email: string;
   role: string;
+  isEmailVerified: boolean;
+  twoFactorEnabled: boolean;
+  avatar?: string;
+  phone?: string;
+  lastLogin?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   signUp: (name: string, email: string, password: string, adminCode?: string) => Promise<void>;
   signOut: () => void;
+  verifyEmail: (email: string, code: string) => Promise<void>;
+  resendVerification: (email: string) => Promise<void>;
+  verify2FA: (email: string, token: string) => Promise<void>;
+  updateProfile: (updates: Partial<User>) => Promise<void>;
+  deleteAccount: (password: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -63,9 +73,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkAuth();
   }, [token]);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string, rememberMe: boolean = false) => {
     try {
-      const response = await axios.post('/api/auth/signin', { email, password });
+      const response = await axios.post('/api/auth/signin', { email, password, rememberMe });
       const { token: newToken, user: userData } = response.data;
       
       localStorage.setItem('token', newToken);
@@ -79,13 +89,57 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signUp = async (name: string, email: string, password: string, adminCode?: string) => {
     try {
       const response = await axios.post('/api/auth/signup', { name, email, password, adminCode });
+      // Don't automatically sign in after signup - user needs to verify email first
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Sign up failed');
+    }
+  };
+
+  const verifyEmail = async (email: string, code: string) => {
+    try {
+      const response = await axios.post('/api/auth/verify-email', { email, code });
       const { token: newToken, user: userData } = response.data;
       
       localStorage.setItem('token', newToken);
       setToken(newToken);
       setUser(userData);
     } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Sign up failed');
+      throw new Error(error.response?.data?.message || 'Email verification failed');
+    }
+  };
+
+  const resendVerification = async (email: string) => {
+    try {
+      await axios.post('/api/auth/resend-verification', { email });
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to resend verification');
+    }
+  };
+
+  const verify2FA = async (email: string, token: string) => {
+    try {
+      await axios.post('/api/auth/verify-2fa-login', { email, token });
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || '2FA verification failed');
+    }
+  };
+
+  const updateProfile = async (updates: Partial<User>) => {
+    try {
+      const response = await axios.put('/api/auth/profile', updates);
+      setUser(response.data.user);
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Profile update failed');
+    }
+  };
+
+  const deleteAccount = async (password: string) => {
+    try {
+      await axios.delete('/api/auth/account', { data: { password } });
+      signOut();
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Account deletion failed');
     }
   };
 
@@ -102,6 +156,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     signIn,
     signUp,
     signOut,
+    verifyEmail,
+    resendVerification,
+    verify2FA,
+    updateProfile,
+    deleteAccount
   };
 
   return (
