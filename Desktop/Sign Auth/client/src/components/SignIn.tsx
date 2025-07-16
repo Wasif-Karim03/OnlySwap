@@ -137,22 +137,30 @@ const SignIn: React.FC = () => {
             </motion.button>
           </form>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="mt-6 text-center"
-          >
-            <p className="text-gray-600">
-              Don't have an account?{' '}
-              <Link
-                to="/signup"
-                className="text-primary-600 hover:text-primary-700 font-medium transition-colors"
-              >
-                Sign up here
-              </Link>
-            </p>
-          </motion.div>
+                      <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+              className="mt-6 text-center space-y-3"
+            >
+              <p className="text-gray-600">
+                <Link
+                  to="/forgot-password"
+                  className="text-primary-600 hover:text-primary-700 font-medium transition-colors"
+                >
+                  Forgot your password?
+                </Link>
+              </p>
+              <p className="text-gray-600">
+                Don't have an account?{' '}
+                <Link
+                  to="/signup"
+                  className="text-primary-600 hover:text-primary-700 font-medium transition-colors"
+                >
+                  Sign up here
+                </Link>
+              </p>
+            </motion.div>
         </div>
       </motion.div>
     </div>

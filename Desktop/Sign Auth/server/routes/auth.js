@@ -2,6 +2,8 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 
 const router = express.Router();
 
@@ -158,6 +160,65 @@ router.get('/users', requireAdmin, async (req, res) => {
     const count = await User.countDocuments();
     res.json({ count, users });
   } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Forgot Password
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: 'Email is required' });
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ message: 'No user with that email' });
+
+    // Generate code
+    const code = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
+    user.resetPasswordCode = code;
+    user.resetPasswordExpires = Date.now() + 1000 * 60 * 10; // 10 minutes
+    await user.save();
+
+    // Send email
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+    await transporter.sendMail({
+      from: `Sign Auth <${process.env.EMAIL_USER}>`,
+      to: user.email,
+      subject: 'Your Password Reset Code',
+      text: `Your password reset code is: ${code}. It expires in 10 minutes.`
+    });
+
+    res.json({ message: 'Verification code sent to email' });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Reset Password
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { email, code, newPassword } = req.body;
+    if (!email || !code || !newPassword) return res.status(400).json({ message: 'All fields required' });
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ message: 'No user with that email' });
+    if (!user.resetPasswordCode || !user.resetPasswordExpires) return res.status(400).json({ message: 'No reset request found' });
+    if (user.resetPasswordCode !== code) return res.status(400).json({ message: 'Invalid code' });
+    if (user.resetPasswordExpires < Date.now()) return res.status(400).json({ message: 'Code expired' });
+
+    user.password = newPassword;
+    user.resetPasswordCode = null;
+    user.resetPasswordExpires = null;
+    await user.save();
+
+    res.json({ message: 'Password reset successful' });
+  } catch (error) {
+    console.error('Reset password error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

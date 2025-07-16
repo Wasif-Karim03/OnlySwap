@@ -4,21 +4,23 @@
 
 @layer base {
   body {
-    @apply bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen font-sans;
+    @apply bg-gradient-to-br from-slate-100 to-blue-100 min-h-screen font-sans relative overflow-x-hidden;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-6 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+    box-shadow: 0 4px 24px 0 rgba(0, 80, 255, 0.10), 0 1.5px 4px 0 rgba(0,0,0,0.08);
   }
   
   .btn-secondary {
-    @apply bg-white hover:bg-gray-50 text-primary-600 font-medium py-3 px-6 rounded-lg border border-primary-200 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+    @apply bg-white hover:bg-gray-50 text-primary-600 font-medium py-3 px-6 rounded-xl border border-primary-200 shadow transition-all duration-200 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
   }
   
   .input-field {
-    @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200;
+    @apply w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all duration-200 bg-white shadow-inner;
+    box-shadow: 0 1.5px 6px 0 rgba(0,0,0,0.04) inset;
     /* Disable browser autofill icons */
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -26,7 +28,36 @@
   }
   
   .card {
-    @apply bg-white rounded-2xl shadow-xl p-8 border border-gray-100;
+    @apply bg-white/80 rounded-3xl shadow-2xl p-8 border border-gray-100 backdrop-blur-md relative;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15), 0 1.5px 4px 0 rgba(0,0,0,0.08);
+    transition: box-shadow 0.3s, transform 0.3s;
+  }
+  .card:hover {
+    box-shadow: 0 16px 48px 0 rgba(31, 38, 135, 0.18), 0 4px 12px 0 rgba(0,0,0,0.10);
+    transform: translateY(-4px) scale(1.01);
+  }
+  .glass {
+    @apply bg-white/60 backdrop-blur-lg rounded-3xl shadow-lg;
+  }
+  .blob-bg {
+    position: absolute;
+    z-index: 0;
+    filter: blur(32px);
+    opacity: 0.5;
+    pointer-events: none;
+    animation: blobMove 18s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes blobMove {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-40px) scale(1.08);
+  }
+  100% {
+    transform: translateY(20px) scale(0.98);
   }
 }
 
