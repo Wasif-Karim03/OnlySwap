@@ -13,89 +13,93 @@ const FacebookStrategy = require('passport-facebook').Strategy;
 
 const router = express.Router();
 
-// Configure Passport strategies
-passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: "/api/auth/google/callback"
-}, async (accessToken, refreshToken, profile, done) => {
-  try {
-    let user = await User.findOne({ 'socialLogins.provider': 'google', 'socialLogins.socialId': profile.id });
-    
-    if (!user) {
-      // Check if email already exists
-      const existingUser = await User.findOne({ email: profile.emails[0].value });
-      if (existingUser) {
-        // Link social account to existing user
-        existingUser.socialLogins.push({
-          provider: 'google',
-          socialId: profile.id,
-          socialEmail: profile.emails[0].value
+// Configure Passport strategies only if credentials are provided
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: "/api/auth/google/callback"
+  }, async (accessToken, refreshToken, profile, done) => {
+    try {
+      let user = await User.findOne({ 'socialLogins.provider': 'google', 'socialLogins.socialId': profile.id });
+      
+      if (!user) {
+        // Check if email already exists
+        const existingUser = await User.findOne({ email: profile.emails[0].value });
+        if (existingUser) {
+          // Link social account to existing user
+          existingUser.socialLogins.push({
+            provider: 'google',
+            socialId: profile.id,
+            socialEmail: profile.emails[0].value
+          });
+          await existingUser.save();
+          return done(null, existingUser);
+        }
+        
+        // Create new user
+        user = new User({
+          name: profile.displayName,
+          email: profile.emails[0].value,
+          password: crypto.randomBytes(32).toString('hex'), // Random password for social login
+          isEmailVerified: true,
+          socialLogins: [{
+            provider: 'google',
+            socialId: profile.id,
+            socialEmail: profile.emails[0].value
+          }]
         });
-        await existingUser.save();
-        return done(null, existingUser);
+        await user.save();
       }
       
-      // Create new user
-      user = new User({
-        name: profile.displayName,
-        email: profile.emails[0].value,
-        password: crypto.randomBytes(32).toString('hex'), // Random password for social login
-        isEmailVerified: true,
-        socialLogins: [{
-          provider: 'google',
-          socialId: profile.id,
-          socialEmail: profile.emails[0].value
-        }]
-      });
-      await user.save();
+      return done(null, user);
+    } catch (error) {
+      return done(error, null);
     }
-    
-    return done(null, user);
-  } catch (error) {
-    return done(error, null);
-  }
-}));
+  }));
+}
 
-passport.use(new GitHubStrategy({
-  clientID: process.env.GITHUB_CLIENT_ID,
-  clientSecret: process.env.GITHUB_CLIENT_SECRET,
-  callbackURL: "/api/auth/github/callback"
-}, async (accessToken, refreshToken, profile, done) => {
-  try {
-    let user = await User.findOne({ 'socialLogins.provider': 'github', 'socialLogins.socialId': profile.id });
-    
-    if (!user) {
-      const existingUser = await User.findOne({ email: profile.emails[0].value });
-      if (existingUser) {
-        existingUser.socialLogins.push({
-          provider: 'github',
-          socialId: profile.id,
-          socialEmail: profile.emails[0].value
+if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+  passport.use(new GitHubStrategy({
+    clientID: process.env.GITHUB_CLIENT_ID,
+    clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    callbackURL: "/api/auth/github/callback"
+  }, async (accessToken, refreshToken, profile, done) => {
+    try {
+      let user = await User.findOne({ 'socialLogins.provider': 'github', 'socialLogins.socialId': profile.id });
+      
+      if (!user) {
+        const existingUser = await User.findOne({ email: profile.emails[0].value });
+        if (existingUser) {
+          existingUser.socialLogins.push({
+            provider: 'github',
+            socialId: profile.id,
+            socialEmail: profile.emails[0].value
+          });
+          await existingUser.save();
+          return done(null, existingUser);
+        }
+        
+        user = new User({
+          name: profile.displayName || profile.username,
+          email: profile.emails[0].value,
+          password: crypto.randomBytes(32).toString('hex'),
+          isEmailVerified: true,
+          socialLogins: [{
+            provider: 'github',
+            socialId: profile.id,
+            socialEmail: profile.emails[0].value
+          }]
         });
-        await existingUser.save();
-        return done(null, existingUser);
+        await user.save();
       }
       
-      user = new User({
-        name: profile.displayName || profile.username,
-        email: profile.emails[0].value,
-        password: crypto.randomBytes(32).toString('hex'),
-        isEmailVerified: true,
-        socialLogins: [{
-          provider: 'github',
-          socialId: profile.id,
-          socialEmail: profile.emails[0].value
-        }]
-      });
-      await user.save();
+      return done(null, user);
+    } catch (error) {
+      return done(error, null);
     }
-    
-    return done(null, user);
-  } catch (error) {
-    return done(error, null);
-  }
-}));
+  }));
+}
 
 passport.serializeUser((user, done) => {
   done(null, user.id);
@@ -632,18 +636,22 @@ router.post('/verify-2fa-login', async (req, res) => {
   }
 });
 
-// Social login routes
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-router.get('/google/callback', passport.authenticate('google', { session: false }), (req, res) => {
-  const token = generateToken(req.user._id);
-  res.redirect(`/auth-success?token=${token}`);
-});
+// Social login routes (only available if credentials are configured)
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+  router.get('/google/callback', passport.authenticate('google', { session: false }), (req, res) => {
+    const token = generateToken(req.user._id);
+    res.redirect(`/auth-success?token=${token}`);
+  });
+}
 
-router.get('/github', passport.authenticate('github', { scope: ['user:email'] }));
-router.get('/github/callback', passport.authenticate('github', { session: false }), (req, res) => {
-  const token = generateToken(req.user._id);
-  res.redirect(`/auth-success?token=${token}`);
-});
+if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+  router.get('/github', passport.authenticate('github', { scope: ['user:email'] }));
+  router.get('/github/callback', passport.authenticate('github', { session: false }), (req, res) => {
+    const token = generateToken(req.user._id);
+    res.redirect(`/auth-success?token=${token}`);
+  });
+}
 
 // Forgot Password
 router.post('/forgot-password', async (req, res) => {
