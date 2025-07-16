@@ -187,7 +187,7 @@ router.post('/forgot-password', async (req, res) => {
       }
     });
     await transporter.sendMail({
-      from: `Sign Auth <${process.env.EMAIL_USER}>`,
+      from: `"Sign Auth Support" <${process.env.EMAIL_USER}>`,
       to: user.email,
       subject: 'Your Password Reset Code',
       text: `Your password reset code is: ${code}. It expires in 10 minutes.`
