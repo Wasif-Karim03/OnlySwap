@@ -1,0 +1,80 @@
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { AuthProvider } from './contexts/AuthContext';
+import SignIn from './components/SignIn';
+import SignUp from './components/SignUp';
+import Dashboard from './components/Dashboard';
+import AdminDashboard from './components/AdminDashboard';
+import ProtectedRoute from './components/ProtectedRoute';
+
+const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <AnimatePresence mode="wait">
+          <Routes>
+            <Route 
+              path="/" 
+              element={
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <SignIn />
+                </motion.div>
+              } 
+            />
+            <Route 
+              path="/signup" 
+              element={
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <SignUp />
+                </motion.div>
+              } 
+            />
+            <Route 
+              path="/dashboard" 
+              element={
+                <ProtectedRoute>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <Dashboard />
+                  </motion.div>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin" 
+              element={
+                <ProtectedRoute>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <AdminDashboard />
+                  </motion.div>
+                </ProtectedRoute>
+              } 
+            />
+          </Routes>
+        </AnimatePresence>
+      </div>
+    </AuthProvider>
+  );
+};
+
+export default App; 
