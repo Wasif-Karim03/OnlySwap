@@ -10,6 +10,7 @@ import ForgotPassword from './components/ForgotPassword';
 import ProtectedRoute from './components/ProtectedRoute';
 import AnimatedBlob from './components/AnimatedBlob';
 import AdminUserProfile from './components/AdminUserProfile';
+import ReviewerDashboard from './components/ReviewerDashboard';
 
 const App: React.FC = () => {
   return (
@@ -41,6 +42,19 @@ const App: React.FC = () => {
                   transition={{ duration: 0.5 }}
                 >
                   <SignUp />
+                </motion.div>
+              } 
+            />
+            <Route 
+              path="/signin" 
+              element={
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <SignIn />
                 </motion.div>
               } 
             />
@@ -83,6 +97,21 @@ const App: React.FC = () => {
                     transition={{ duration: 0.5 }}
                   >
                     <AdminDashboard />
+                  </motion.div>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/reviewer" 
+              element={
+                <ProtectedRoute>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <ReviewerDashboard />
                   </motion.div>
                 </ProtectedRoute>
               } 

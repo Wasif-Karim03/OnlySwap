@@ -10,10 +10,18 @@
     "build": "cd client && npm run build",
     "install-all": "npm install && cd server && npm install && cd ../client && npm install"
   },
-  "keywords": ["authentication", "react", "nodejs", "mongodb"],
+  "keywords": [
+    "authentication",
+    "react",
+    "nodejs",
+    "mongodb"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "concurrently": "^8.2.2",
+    "typescript": "^5.8.3"
   }
-} 
+}

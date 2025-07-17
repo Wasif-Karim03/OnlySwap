@@ -11,6 +11,7 @@ interface User {
   avatar?: string;
   phone?: string;
   lastLogin?: string;
+  reviewerApprovalStatus?: string | null;
 }
 
 interface AuthContextType {
@@ -18,7 +19,7 @@ interface AuthContextType {
   token: string | null;
   loading: boolean;
   signIn: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
-  signUp: (name: string, email: string, password: string, adminCode?: string) => Promise<void>;
+  signUp: (name: string, email: string, password: string, adminCode?: string, role?: string) => Promise<void>;
   signOut: () => void;
   verifyEmail: (email: string, code: string) => Promise<void>;
   resendVerification: (email: string) => Promise<void>;
@@ -86,9 +87,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const signUp = async (name: string, email: string, password: string, adminCode?: string) => {
+  const signUp = async (name: string, email: string, password: string, adminCode?: string, role?: string) => {
     try {
-      const response = await axios.post('/api/auth/signup', { name, email, password, adminCode });
+      const response = await axios.post('/api/auth/signup', { name, email, password, adminCode, role });
       // Don't automatically sign in after signup - user needs to verify email first
       return response.data;
     } catch (error: any) {

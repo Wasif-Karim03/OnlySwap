@@ -67,6 +67,8 @@ const AdminUserProfile: React.FC = () => {
   const [blockingUser, setBlockingUser] = useState(false);
   const [blockReason, setBlockReason] = useState('');
   const [showBlockModal, setShowBlockModal] = useState(false);
+  const [deletingUser, setDeletingUser] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     fetchActivities();
@@ -161,6 +163,20 @@ const AdminUserProfile: React.FC = () => {
       alert(err.response?.data?.message || 'Failed to unblock user');
     } finally {
       setBlockingUser(false);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!id) return;
+    try {
+      setDeletingUser(true);
+      await axios.delete(`/api/auth/users/${id}`);
+      setShowDeleteModal(false);
+      setDeletingUser(false);
+      navigate('/admin');
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to delete user');
+      setDeletingUser(false);
     }
   };
 
@@ -260,6 +276,14 @@ const AdminUserProfile: React.FC = () => {
                     Block User
                   </button>
                 )
+              )}
+              {user?.role !== 'admin' && (
+                <button
+                  onClick={() => setShowDeleteModal(true)}
+                  className="bg-red-700 text-white px-4 py-2 rounded-lg hover:bg-red-800 transition-colors"
+                >
+                  Delete User
+                </button>
               )}
             </div>
           </div>
@@ -431,6 +455,31 @@ const AdminUserProfile: React.FC = () => {
                 className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
               >
                 {blockingUser ? 'Blocking...' : 'Block User'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete User Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-96">
+            <h3 className="text-lg font-semibold mb-4">Delete User</h3>
+            <p className="text-gray-600 mb-4">Are you sure you want to <span className='text-red-600 font-bold'>permanently delete</span> this user? This action cannot be undone.</p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteUser}
+                disabled={deletingUser}
+                className="px-4 py-2 bg-red-700 text-white rounded hover:bg-red-800 disabled:opacity-50"
+              >
+                {deletingUser ? 'Deleting...' : 'Delete User'}
               </button>
             </div>
           </div>

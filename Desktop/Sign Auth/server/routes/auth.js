@@ -187,7 +187,7 @@ router.post('/signup', validateSignUp, async (req, res) => {
       });
     }
 
-    const { name, email, password, adminCode } = req.body;
+    const { name, email, password, adminCode, role } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -195,8 +195,24 @@ router.post('/signup', validateSignUp, async (req, res) => {
       return res.status(400).json({ message: 'User with this email already exists' });
     }
 
-    // Determine user role based on admin code
-    const role = adminCode === '705' ? 'admin' : 'user';
+    let finalRole = 'user';
+    let reviewerApprovalStatus = null;
+    let reviewerApprovedBy = null;
+    let reviewerApprovedAt = null;
+    let reviewerRejectionReason = null;
+
+    if (role === 'admin') {
+      if (adminCode !== '705') {
+        return res.status(400).json({ message: 'Invalid admin code' });
+      }
+      finalRole = 'admin';
+    } else if (role === 'reviewer') {
+      finalRole = 'reviewer';
+      reviewerApprovalStatus = 'pending';
+      // Optionally: send email to admins here
+    } else {
+      finalRole = 'user';
+    }
 
     // Generate email verification code
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -206,7 +222,11 @@ router.post('/signup', validateSignUp, async (req, res) => {
       name, 
       email, 
       password, 
-      role,
+      role: finalRole,
+      reviewerApprovalStatus,
+      reviewerApprovedBy,
+      reviewerApprovedAt,
+      reviewerRejectionReason,
       emailVerificationCode: verificationCode,
       emailVerificationExpires: Date.now() + 1000 * 60 * 30 // 30 minutes
     });
@@ -230,6 +250,10 @@ router.post('/signup', validateSignUp, async (req, res) => {
     );
 
     await logActivity(user, 'signup', null, req);
+    if (role === 'reviewer') {
+      await logActivity(user, 'reviewer_request', null, req);
+      // Optionally: send notification to admins here
+    }
 
     res.status(201).json({
       message: 'Account created successfully. Please check your email to verify your account.',
@@ -238,7 +262,8 @@ router.post('/signup', validateSignUp, async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        isEmailVerified: user.isEmailVerified
+        isEmailVerified: user.isEmailVerified,
+        reviewerApprovalStatus: user.reviewerApprovalStatus
       }
     });
   } catch (error) {
@@ -436,7 +461,8 @@ router.get('/profile', verifyToken, async (req, res) => {
         isEmailVerified: req.user.isEmailVerified,
         avatar: req.user.avatar,
         phone: req.user.phone,
-        lastLogin: req.user.lastLogin
+        lastLogin: req.user.lastLogin,
+        reviewerApprovalStatus: req.user.reviewerApprovalStatus || null
       }
     });
   } catch (error) {
@@ -706,6 +732,125 @@ router.post('/users/:id/unblock', requireAdmin, async (req, res) => {
     });
   } catch (error) {
     console.error('Unblock user error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Delete user (admin only)
+router.delete('/users/:id', requireAdmin, async (req, res) => {
+  try {
+    const userToDelete = await User.findById(req.params.id);
+    if (!userToDelete) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    // Prevent admin from deleting themselves or other admins
+    if (userToDelete.role === 'admin') {
+      return res.status(403).json({ message: 'Cannot delete an admin account' });
+    }
+    await User.findByIdAndDelete(req.params.id);
+    await logActivity(req.user, 'account_deleted', `Deleted user: ${userToDelete.email} (${userToDelete.role})`, req);
+    res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error('Delete user error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get all pending reviewer requests (admin only)
+router.get('/reviewers/pending', requireAdmin, async (req, res) => {
+  try {
+    const pendingReviewers = await User.find({ role: 'reviewer', reviewerApprovalStatus: 'pending' }).select('-password');
+    res.json({ reviewers: pendingReviewers });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Approve reviewer (admin only)
+router.post('/reviewers/:id/approve', requireAdmin, async (req, res) => {
+  try {
+    const reviewer = await User.findById(req.params.id);
+    if (!reviewer || reviewer.role !== 'reviewer') {
+      return res.status(404).json({ message: 'Reviewer not found' });
+    }
+    if (reviewer.reviewerApprovalStatus === 'approved') {
+      return res.status(400).json({ message: 'Reviewer already approved' });
+    }
+    reviewer.reviewerApprovalStatus = 'approved';
+    reviewer.reviewerApprovedBy = req.user._id;
+    reviewer.reviewerApprovedAt = new Date();
+    reviewer.reviewerRejectionReason = null;
+    await reviewer.save();
+    await logActivity(reviewer, 'reviewer_approved', `Approved by admin: ${req.user.name}`, req);
+
+    // Send approval email
+    const emailHtml = `
+      <h2>Reviewer Account Approved</h2>
+      <p>Hi ${reviewer.name},</p>
+      <p>Your reviewer account has been <b>approved</b> by the admin. You can now log in and access the reviewer dashboard.</p>
+      <p>Thank you for joining!</p>
+    `;
+    await sendEmail(
+      reviewer.email,
+      'Your Reviewer Account Has Been Approved',
+      'Your reviewer account has been approved. You can now log in.',
+      emailHtml
+    );
+
+    res.json({ message: 'Reviewer approved', reviewer });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Reject reviewer (admin only)
+router.post('/reviewers/:id/reject', requireAdmin, async (req, res) => {
+  try {
+    const { reason } = req.body;
+    const reviewer = await User.findById(req.params.id);
+    if (!reviewer || reviewer.role !== 'reviewer') {
+      return res.status(404).json({ message: 'Reviewer not found' });
+    }
+    if (reviewer.reviewerApprovalStatus === 'rejected') {
+      return res.status(400).json({ message: 'Reviewer already rejected' });
+    }
+    reviewer.reviewerApprovalStatus = 'rejected';
+    reviewer.reviewerApprovedBy = req.user._id;
+    reviewer.reviewerApprovedAt = new Date();
+    reviewer.reviewerRejectionReason = reason || null;
+    await reviewer.save();
+    await logActivity(reviewer, 'reviewer_rejected', `Rejected by admin: ${req.user.name}${reason ? ` - Reason: ${reason}` : ''}`, req);
+
+    // Send rejection email
+    const emailHtml = `
+      <h2>Reviewer Account Rejected</h2>
+      <p>Hi ${reviewer.name},</p>
+      <p>Your reviewer account request was <b>rejected</b> by the admin.</p>
+      ${reason ? `<p><b>Reason:</b> ${reason}</p>` : ''}
+      <p>If you have questions, please contact support.</p>
+    `;
+    await sendEmail(
+      reviewer.email,
+      'Your Reviewer Account Was Rejected',
+      `Your reviewer account was rejected.${reason ? ' Reason: ' + reason : ''}`,
+      emailHtml
+    );
+
+    res.json({ message: 'Reviewer rejected', reviewer });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get all students (reviewer and admin)
+router.get('/students', verifyToken, async (req, res) => {
+  try {
+    if (!['reviewer', 'admin'].includes(req.user.role)) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+    const students = await User.find({ role: 'user' }).select('-password');
+    res.json({ students });
+  } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
 });

@@ -71,6 +71,23 @@ const Dashboard: React.FC = () => {
     return null;
   }
 
+  if (user?.role === 'reviewer') {
+    if (user.reviewerApprovalStatus === 'approved') {
+      navigate('/reviewer');
+      return null;
+    } else {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 to-blue-100">
+          <div className="bg-white rounded-lg shadow-lg p-8 max-w-md mx-auto text-center">
+            <h2 className="text-2xl font-bold mb-4">Waiting for Admin Approval</h2>
+            <p className="text-gray-700 mb-4">Your reviewer account is pending admin approval. You will receive an email once approved.</p>
+            <button onClick={handleSignOut} className="btn-secondary mt-4">Sign Out</button>
+          </div>
+        </div>
+      );
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 to-blue-100">
       <div className="container mx-auto px-4 py-8">

@@ -27,8 +27,27 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'admin'],
+    enum: ['user', 'reviewer', 'admin'],
     default: 'user'
+  },
+  // Reviewer approval status
+  reviewerApprovalStatus: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: null
+  },
+  reviewerApprovedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
+  reviewerApprovedAt: {
+    type: Date,
+    default: null
+  },
+  reviewerRejectionReason: {
+    type: String,
+    default: null
   },
   // Email verification
   isEmailVerified: {
@@ -110,7 +129,7 @@ const userSchema = new mongoose.Schema({
   activities: [{
     action: {
       type: String,
-      enum: ['login', 'logout', 'signup', 'email_verified', 'password_reset', 'profile_updated', 'account_deleted', 'user_blocked', 'user_unblocked'],
+      enum: ['login', 'logout', 'signup', 'email_verified', 'password_reset', 'profile_updated', 'account_deleted', 'user_blocked', 'user_unblocked', 'reviewer_request', 'reviewer_approved', 'reviewer_rejected'],
       required: true
     },
     timestamp: {
