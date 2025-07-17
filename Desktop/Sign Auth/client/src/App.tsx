@@ -9,6 +9,7 @@ import AdminDashboard from './components/AdminDashboard';
 import ForgotPassword from './components/ForgotPassword';
 import ProtectedRoute from './components/ProtectedRoute';
 import AnimatedBlob from './components/AnimatedBlob';
+import AdminUserProfile from './components/AdminUserProfile';
 
 const App: React.FC = () => {
   return (
@@ -86,6 +87,7 @@ const App: React.FC = () => {
                 </ProtectedRoute>
               } 
             />
+            <Route path="/admin/user/:id" element={<AdminUserProfile />} />
           </Routes>
         </AnimatePresence>
       </div>

@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
-import TwoFactorSetup from './TwoFactorSetup';
+
 
 const Dashboard: React.FC = () => {
   const { user, signOut, updateProfile, deleteAccount } = useAuth();
   const navigate = useNavigate();
-  const [showTwoFactorSetup, setShowTwoFactorSetup] = useState(false);
+
   const [showProfileEdit, setShowProfileEdit] = useState(false);
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -64,10 +64,7 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleTwoFactorSuccess = () => {
-    setSuccess('Two-factor authentication enabled successfully!');
-    setTimeout(() => setSuccess(''), 3000);
-  };
+
 
   if (user?.role === 'admin') {
     navigate('/admin');
@@ -179,26 +176,7 @@ const Dashboard: React.FC = () => {
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Security Settings</h2>
               
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                  <div>
-                    <h3 className="font-medium text-gray-900">Two-Factor Authentication</h3>
-                    <p className="text-sm text-gray-600">
-                      {user?.twoFactorEnabled ? 'Enabled' : 'Add an extra layer of security'}
-                    </p>
-                  </div>
-                  <div className="flex items-center">
-                    {user?.twoFactorEnabled ? (
-                      <span className="text-green-600 text-sm font-medium">Active</span>
-                    ) : (
-                      <button
-                        onClick={() => setShowTwoFactorSetup(true)}
-                        className="btn-secondary text-sm"
-                      >
-                        Enable
-                      </button>
-                    )}
-                  </div>
-                </div>
+
 
                 <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                   <div>
@@ -335,13 +313,7 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {/* 2FA Setup Modal */}
-      {showTwoFactorSetup && (
-        <TwoFactorSetup
-          onClose={() => setShowTwoFactorSetup(false)}
-          onSuccess={handleTwoFactorSuccess}
-        />
-      )}
+
     </div>
   );
 };

@@ -52,18 +52,7 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
-  // Two-factor authentication
-  twoFactorEnabled: {
-    type: Boolean,
-    default: false
-  },
-  twoFactorSecret: {
-    type: String,
-    default: null
-  },
-  twoFactorBackupCodes: [{
-    type: String
-  }],
+
   // Social login
   socialLogins: [{
     provider: {
@@ -77,6 +66,24 @@ const userSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+  // Admin blocking functionality
+  isBlocked: {
+    type: Boolean,
+    default: false
+  },
+  blockedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
+  blockedAt: {
+    type: Date,
+    default: null
+  },
+  blockedReason: {
+    type: String,
+    default: null
   },
   lastLogin: {
     type: Date,
@@ -98,7 +105,31 @@ const userSchema = new mongoose.Schema({
   phone: {
     type: String,
     default: null
-  }
+  },
+  // User activity tracking
+  activities: [{
+    action: {
+      type: String,
+      enum: ['login', 'logout', 'signup', 'email_verified', 'password_reset', 'profile_updated', 'account_deleted', 'user_blocked', 'user_unblocked'],
+      required: true
+    },
+    timestamp: {
+      type: Date,
+      default: Date.now
+    },
+    details: {
+      type: String,
+      default: null
+    },
+    ipAddress: {
+      type: String,
+      default: null
+    },
+    userAgent: {
+      type: String,
+      default: null
+    }
+  }]
 });
 
 // Hash password before saving

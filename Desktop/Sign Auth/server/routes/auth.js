@@ -1,15 +1,19 @@
+// =============================
+// NOTE: DO NOT use a personal Gmail account for OAuth in production.
+// Set up Google OAuth credentials in the Google Cloud Console and use those client ID/secret.
+// See project README or ask the developer for setup instructions.
+// =============================
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
-const speakeasy = require('speakeasy');
-const qrcode = require('qrcode');
+
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const GitHubStrategy = require('passport-github2').Strategy;
-const FacebookStrategy = require('passport-facebook').Strategy;
+// Removed: const GitHubStrategy = require('passport-github2').Strategy;
+// Removed: const FacebookStrategy = require('passport-facebook').Strategy;
 
 const router = express.Router();
 
@@ -45,48 +49,6 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
           isEmailVerified: true,
           socialLogins: [{
             provider: 'google',
-            socialId: profile.id,
-            socialEmail: profile.emails[0].value
-          }]
-        });
-        await user.save();
-      }
-      
-      return done(null, user);
-    } catch (error) {
-      return done(error, null);
-    }
-  }));
-}
-
-if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
-  passport.use(new GitHubStrategy({
-    clientID: process.env.GITHUB_CLIENT_ID,
-    clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    callbackURL: "/api/auth/github/callback"
-  }, async (accessToken, refreshToken, profile, done) => {
-    try {
-      let user = await User.findOne({ 'socialLogins.provider': 'github', 'socialLogins.socialId': profile.id });
-      
-      if (!user) {
-        const existingUser = await User.findOne({ email: profile.emails[0].value });
-        if (existingUser) {
-          existingUser.socialLogins.push({
-            provider: 'github',
-            socialId: profile.id,
-            socialEmail: profile.emails[0].value
-          });
-          await existingUser.save();
-          return done(null, existingUser);
-        }
-        
-        user = new User({
-          name: profile.displayName || profile.username,
-          email: profile.emails[0].value,
-          password: crypto.randomBytes(32).toString('hex'),
-          isEmailVerified: true,
-          socialLogins: [{
-            provider: 'github',
             socialId: profile.id,
             socialEmail: profile.emails[0].value
           }]
@@ -201,6 +163,19 @@ const verifyToken = async (req, res, next) => {
   }
 };
 
+// Helper to log user activity
+async function logActivity(user, action, details = null, req = null) {
+  user.activities = user.activities || [];
+  user.activities.push({
+    action,
+    details,
+    ipAddress: req?.ip || null,
+    userAgent: req?.headers['user-agent'] || null,
+    timestamp: new Date()
+  });
+  await user.save();
+}
+
 // Sign up route
 router.post('/signup', validateSignUp, async (req, res) => {
   try {
@@ -254,6 +229,8 @@ router.post('/signup', validateSignUp, async (req, res) => {
       emailHtml
     );
 
+    await logActivity(user, 'signup', null, req);
+
     res.status(201).json({
       message: 'Account created successfully. Please check your email to verify your account.',
       user: {
@@ -304,6 +281,8 @@ router.post('/verify-email', async (req, res) => {
     user.emailVerificationCode = null;
     user.emailVerificationExpires = null;
     await user.save();
+
+    await logActivity(user, 'email_verified', null, req);
 
     // Generate token
     const token = generateToken(user._id);
@@ -398,6 +377,13 @@ router.post('/signin', validateSignIn, async (req, res) => {
       });
     }
 
+    // Check if user is blocked by admin
+    if (user.isBlocked) {
+      return res.status(403).json({ 
+        message: 'Your profile is currently suspended by the admin, to continue contact mwkarim@owu.edu'
+      });
+    }
+
     // Check password
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
@@ -419,6 +405,8 @@ router.post('/signin', validateSignIn, async (req, res) => {
     // Generate token
     const token = generateToken(user._id, rememberMe);
 
+    await logActivity(user, 'login', null, req);
+
     res.json({
       message: 'Signed in successfully',
       token,
@@ -427,8 +415,7 @@ router.post('/signin', validateSignIn, async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        isEmailVerified: user.isEmailVerified,
-        twoFactorEnabled: user.twoFactorEnabled
+        isEmailVerified: user.isEmailVerified
       }
     });
   } catch (error) {
@@ -447,7 +434,6 @@ router.get('/profile', verifyToken, async (req, res) => {
         email: req.user.email,
         role: req.user.role,
         isEmailVerified: req.user.isEmailVerified,
-        twoFactorEnabled: req.user.twoFactorEnabled,
         avatar: req.user.avatar,
         phone: req.user.phone,
         lastLogin: req.user.lastLogin
@@ -475,6 +461,8 @@ router.put('/profile', verifyToken, async (req, res) => {
       { new: true, runValidators: true }
     ).select('-password');
 
+    await logActivity(user, 'profile_updated', null, req);
+
     res.json({
       message: 'Profile updated successfully',
       user: {
@@ -483,7 +471,6 @@ router.put('/profile', verifyToken, async (req, res) => {
         email: user.email,
         role: user.role,
         isEmailVerified: user.isEmailVerified,
-        twoFactorEnabled: user.twoFactorEnabled,
         avatar: user.avatar,
         phone: user.phone,
         lastLogin: user.lastLogin
@@ -495,159 +482,10 @@ router.put('/profile', verifyToken, async (req, res) => {
   }
 });
 
-// Setup 2FA
-router.post('/setup-2fa', verifyToken, async (req, res) => {
-  try {
-    if (req.user.twoFactorEnabled) {
-      return res.status(400).json({ message: '2FA is already enabled' });
-    }
-
-    // Generate secret
-    const secret = speakeasy.generateSecret({
-      name: `Sign Auth (${req.user.email})`,
-      issuer: 'Sign Auth'
-    });
-
-    // Generate QR code
-    const qrCodeUrl = await qrcode.toDataURL(secret.otpauth_url);
-
-    // Generate backup codes
-    const backupCodes = Array.from({ length: 10 }, () => 
-      crypto.randomBytes(4).toString('hex').toUpperCase()
-    );
-
-    // Save secret and backup codes temporarily
-    req.user.twoFactorSecret = secret.base32;
-    req.user.twoFactorBackupCodes = backupCodes;
-    await req.user.save();
-
-    res.json({
-      message: '2FA setup initiated',
-      qrCode: qrCodeUrl,
-      secret: secret.base32,
-      backupCodes
-    });
-  } catch (error) {
-    console.error('2FA setup error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Verify and enable 2FA
-router.post('/verify-2fa', verifyToken, async (req, res) => {
-  try {
-    const { token } = req.body;
-    
-    if (!token) {
-      return res.status(400).json({ message: '2FA token is required' });
-    }
-
-    if (!req.user.twoFactorSecret) {
-      return res.status(400).json({ message: '2FA setup not initiated' });
-    }
-
-    const verified = speakeasy.totp.verify({
-      secret: req.user.twoFactorSecret,
-      encoding: 'base32',
-      token: token
-    });
-
-    if (!verified) {
-      return res.status(400).json({ message: 'Invalid 2FA token' });
-    }
-
-    req.user.twoFactorEnabled = true;
-    await req.user.save();
-
-    res.json({ message: '2FA enabled successfully' });
-  } catch (error) {
-    console.error('2FA verification error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Disable 2FA
-router.post('/disable-2fa', verifyToken, async (req, res) => {
-  try {
-    const { token } = req.body;
-    
-    if (!req.user.twoFactorEnabled) {
-      return res.status(400).json({ message: '2FA is not enabled' });
-    }
-
-    const verified = speakeasy.totp.verify({
-      secret: req.user.twoFactorSecret,
-      encoding: 'base32',
-      token: token
-    });
-
-    if (!verified) {
-      return res.status(400).json({ message: 'Invalid 2FA token' });
-    }
-
-    req.user.twoFactorEnabled = false;
-    req.user.twoFactorSecret = null;
-    req.user.twoFactorBackupCodes = [];
-    await req.user.save();
-
-    res.json({ message: '2FA disabled successfully' });
-  } catch (error) {
-    console.error('2FA disable error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Verify 2FA token (for login)
-router.post('/verify-2fa-login', async (req, res) => {
-  try {
-    const { email, token } = req.body;
-    
-    if (!email || !token) {
-      return res.status(400).json({ message: 'Email and 2FA token are required' });
-    }
-
-    const user = await User.findOne({ email });
-    if (!user || !user.twoFactorEnabled) {
-      return res.status(400).json({ message: 'Invalid request' });
-    }
-
-    const verified = speakeasy.totp.verify({
-      secret: user.twoFactorSecret,
-      encoding: 'base32',
-      token: token
-    });
-
-    if (!verified) {
-      // Check if it's a backup code
-      const backupCodeIndex = user.twoFactorBackupCodes.indexOf(token);
-      if (backupCodeIndex === -1) {
-        return res.status(400).json({ message: 'Invalid 2FA token' });
-      }
-      
-      // Remove used backup code
-      user.twoFactorBackupCodes.splice(backupCodeIndex, 1);
-      await user.save();
-    }
-
-    res.json({ message: '2FA verification successful' });
-  } catch (error) {
-    console.error('2FA login verification error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
 // Social login routes (only available if credentials are configured)
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
   router.get('/google/callback', passport.authenticate('google', { session: false }), (req, res) => {
-    const token = generateToken(req.user._id);
-    res.redirect(`/auth-success?token=${token}`);
-  });
-}
-
-if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
-  router.get('/github', passport.authenticate('github', { scope: ['user:email'] }));
-  router.get('/github/callback', passport.authenticate('github', { session: false }), (req, res) => {
     const token = generateToken(req.user._id);
     res.redirect(`/auth-success?token=${token}`);
   });
@@ -707,6 +545,8 @@ router.post('/reset-password', async (req, res) => {
     user.resetPasswordExpires = null;
     await user.save();
 
+    await logActivity(user, 'password_reset', null, req);
+
     res.json({ message: 'Password reset successful' });
   } catch (error) {
     console.error('Reset password error:', error);
@@ -730,6 +570,8 @@ router.delete('/account', verifyToken, async (req, res) => {
 
     await User.findByIdAndDelete(req.user._id);
 
+    await logActivity(req.user, 'account_deleted', null, req);
+
     res.json({ message: 'Account deleted successfully' });
   } catch (error) {
     console.error('Account deletion error:', error);
@@ -740,7 +582,7 @@ router.delete('/account', verifyToken, async (req, res) => {
 // Get all users (admin only)
 router.get('/users', requireAdmin, async (req, res) => {
   try {
-    const users = await User.find({}).select('-password -twoFactorSecret -twoFactorBackupCodes');
+    const users = await User.find({}).select('-password');
     const count = await User.countDocuments({});
     
     res.json({
@@ -749,6 +591,121 @@ router.get('/users', requireAdmin, async (req, res) => {
     });
   } catch (error) {
     console.error('Get users error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Add user search endpoint (admin only)
+router.get('/users/search', requireAdmin, async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) return res.status(400).json({ message: 'Email query required' });
+    const users = await User.find({ email: { $regex: email, $options: 'i' } }).select('-password');
+    res.json({ users });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+// Add user activity endpoint (admin only)
+router.get('/users/:id/activities', requireAdmin, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('activities name email role createdAt isBlocked blockedAt blockedReason blockedBy');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json({ 
+      activities: user.activities, 
+      name: user.name, 
+      email: user.email, 
+      role: user.role, 
+      createdAt: user.createdAt,
+      isBlocked: user.isBlocked,
+      blockedAt: user.blockedAt,
+      blockedReason: user.blockedReason,
+      blockedBy: user.blockedBy
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Block user (admin only)
+router.post('/users/:id/block', requireAdmin, async (req, res) => {
+  try {
+    const { reason } = req.body;
+    const userToBlock = await User.findById(req.params.id);
+    
+    if (!userToBlock) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    if (userToBlock.role === 'admin') {
+      return res.status(403).json({ message: 'Cannot block another admin' });
+    }
+    
+    if (userToBlock.isBlocked) {
+      return res.status(400).json({ message: 'User is already blocked' });
+    }
+    
+    userToBlock.isBlocked = true;
+    userToBlock.blockedBy = req.user._id;
+    userToBlock.blockedAt = new Date();
+    userToBlock.blockedReason = reason || null;
+    
+    await userToBlock.save();
+    
+    // Log the blocking activity
+    await logActivity(userToBlock, 'user_blocked', `Blocked by admin: ${req.user.name}${reason ? ` - Reason: ${reason}` : ''}`, req);
+    
+    res.json({ 
+      message: 'User blocked successfully',
+      user: {
+        id: userToBlock._id,
+        name: userToBlock.name,
+        email: userToBlock.email,
+        isBlocked: userToBlock.isBlocked,
+        blockedAt: userToBlock.blockedAt,
+        blockedReason: userToBlock.blockedReason
+      }
+    });
+  } catch (error) {
+    console.error('Block user error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Unblock user (admin only)
+router.post('/users/:id/unblock', requireAdmin, async (req, res) => {
+  try {
+    const userToUnblock = await User.findById(req.params.id);
+    
+    if (!userToUnblock) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    if (!userToUnblock.isBlocked) {
+      return res.status(400).json({ message: 'User is not blocked' });
+    }
+    
+    userToUnblock.isBlocked = false;
+    userToUnblock.blockedBy = null;
+    userToUnblock.blockedAt = null;
+    userToUnblock.blockedReason = null;
+    
+    await userToUnblock.save();
+    
+    // Log the unblocking activity
+    await logActivity(userToUnblock, 'user_unblocked', `Unblocked by admin: ${req.user.name}`, req);
+    
+    res.json({ 
+      message: 'User unblocked successfully',
+      user: {
+        id: userToUnblock._id,
+        name: userToUnblock.name,
+        email: userToUnblock.email,
+        isBlocked: userToUnblock.isBlocked
+      }
+    });
+  } catch (error) {
+    console.error('Unblock user error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

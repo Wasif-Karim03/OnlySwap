@@ -7,7 +7,7 @@ interface User {
   email: string;
   role: string;
   isEmailVerified: boolean;
-  twoFactorEnabled: boolean;
+
   avatar?: string;
   phone?: string;
   lastLogin?: string;
@@ -22,7 +22,7 @@ interface AuthContextType {
   signOut: () => void;
   verifyEmail: (email: string, code: string) => Promise<void>;
   resendVerification: (email: string) => Promise<void>;
-  verify2FA: (email: string, token: string) => Promise<void>;
+
   updateProfile: (updates: Partial<User>) => Promise<void>;
   deleteAccount: (password: string) => Promise<void>;
 }
@@ -117,13 +117,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const verify2FA = async (email: string, token: string) => {
-    try {
-      await axios.post('/api/auth/verify-2fa-login', { email, token });
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || '2FA verification failed');
-    }
-  };
+
 
   const updateProfile = async (updates: Partial<User>) => {
     try {
@@ -158,7 +152,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     signOut,
     verifyEmail,
     resendVerification,
-    verify2FA,
+
     updateProfile,
     deleteAccount
   };
