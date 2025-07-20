@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
+import ChatNotification from './ChatNotification';
 
 interface Conversation {
   userId: string;
@@ -40,14 +41,35 @@ const StudentChatInterface: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [lastMessageCount, setLastMessageCount] = useState(0);
+  const [lastConversationUpdate, setLastConversationUpdate] = useState(0);
+  const [notification, setNotification] = useState({ message: '', isVisible: false });
 
   useEffect(() => {
     fetchConversations();
+    
+    // Set up polling for conversations (every 5 seconds)
+    const conversationInterval = setInterval(() => {
+      fetchConversations();
+    }, 5000);
+
+    return () => {
+      clearInterval(conversationInterval);
+    };
   }, []);
 
   useEffect(() => {
     if (selectedConversation) {
       fetchMessages(selectedConversation.userId);
+      
+      // Set up polling for messages (every 3 seconds)
+      const messageInterval = setInterval(() => {
+        fetchMessages(selectedConversation.userId);
+      }, 3000);
+
+      return () => {
+        clearInterval(messageInterval);
+      };
     }
   }, [selectedConversation]);
 
@@ -63,6 +85,7 @@ const StudentChatInterface: React.FC = () => {
     try {
       const response = await axios.get('/api/chat/conversations');
       setConversations(response.data.conversations);
+      setLastConversationUpdate(Date.now());
     } catch (error) {
       console.error('Failed to fetch conversations:', error);
     } finally {
@@ -73,7 +96,27 @@ const StudentChatInterface: React.FC = () => {
   const fetchMessages = async (userId: string) => {
     try {
       const response = await axios.get(`/api/chat/messages/${userId}`);
-      setMessages(response.data.messages);
+      const newMessages = response.data.messages;
+      
+      // Check if we have new messages
+      if (newMessages.length !== lastMessageCount) {
+        setMessages(newMessages);
+        setLastMessageCount(newMessages.length);
+        
+        // If this is a new message from someone else, scroll to bottom and show notification
+        if (newMessages.length > lastMessageCount) {
+          setTimeout(() => scrollToBottom(), 100);
+          
+          // Show notification for new message
+          const newMessage = newMessages[newMessages.length - 1];
+          if (newMessage.sender._id !== user?.id) {
+            setNotification({
+              message: `New message from ${newMessage.sender.name}`,
+              isVisible: true
+            });
+          }
+        }
+      }
     } catch (error) {
       console.error('Failed to fetch messages:', error);
     }
@@ -90,8 +133,10 @@ const StudentChatInterface: React.FC = () => {
         content: newMessage.trim()
       });
 
+      // Add the new message to the current messages
       setMessages(prev => [...prev, response.data.message]);
       setNewMessage('');
+      setLastMessageCount(prev => prev + 1);
       
       // Update unread count in conversations
       setConversations(prev => 
@@ -101,6 +146,9 @@ const StudentChatInterface: React.FC = () => {
             : conv
         )
       );
+      
+      // Scroll to bottom after sending
+      setTimeout(() => scrollToBottom(), 100);
     } catch (error) {
       console.error('Failed to send message:', error);
     } finally {
@@ -134,6 +182,11 @@ const StudentChatInterface: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4">
+      <ChatNotification
+        message={notification.message}
+        isVisible={notification.isVisible}
+        onClose={() => setNotification({ message: '', isVisible: false })}
+      />
       <div className="max-w-6xl mx-auto">
         <div className="card">
           <div className="flex justify-between items-center mb-8">
@@ -144,6 +197,10 @@ const StudentChatInterface: React.FC = () => {
               <p className="text-gray-600">
                 Get help from our support team
               </p>
+            </div>
+            <div className="flex items-center space-x-2 text-sm text-gray-500">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span>Live updates enabled</span>
             </div>
           </div>
 
@@ -185,7 +242,7 @@ const StudentChatInterface: React.FC = () => {
                               {conversation.name}
                             </h4>
                             {conversation.unreadCount > 0 && (
-                              <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
+                              <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center animate-pulse">
                                 {conversation.unreadCount}
                               </span>
                             )}
