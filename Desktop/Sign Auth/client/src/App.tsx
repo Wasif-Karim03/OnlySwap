@@ -10,7 +10,47 @@ import ForgotPassword from './components/ForgotPassword';
 import ProtectedRoute from './components/ProtectedRoute';
 import AnimatedBlob from './components/AnimatedBlob';
 import AdminUserProfile from './components/AdminUserProfile';
-import ReviewerDashboard from './components/ReviewerDashboard';
+import AdminReviewerManagement from './components/AdminReviewerManagement';
+import AdminChatInterface from './components/AdminChatInterface';
+import ReviewerWelcome from './components/ReviewerWelcome';
+import StudentProfile from './components/StudentProfile';
+import StudentHome from './components/StudentHome';
+import StudentOnboarding from './components/StudentOnboarding';
+import StudentChatInterface from './components/StudentChatInterface';
+import { useAuth } from './contexts/AuthContext';
+import axios from 'axios';
+
+const StudentGate: React.FC = () => {
+  const { user, updateProfile } = useAuth();
+  const [showOnboarding, setShowOnboarding] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    if (!user) return;
+    // Check if onboarding is completed
+    if (!user.isOnboardingCompleted) {
+      setShowOnboarding(true);
+    } else {
+      setShowOnboarding(false);
+    }
+    setLoading(false);
+  }, [user]);
+
+  const handleOnboardingComplete = async (data: any) => {
+    setLoading(true);
+    try {
+      await updateProfile(data);
+      setShowOnboarding(false);
+    } catch (err) {
+      // Optionally handle error
+    }
+    setLoading(false);
+  };
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (showOnboarding) return <StudentOnboarding onNext={handleOnboardingComplete} />;
+  return <StudentHome />;
+};
 
 const App: React.FC = () => {
   return (
@@ -102,6 +142,21 @@ const App: React.FC = () => {
               } 
             />
             <Route 
+              path="/admin/reviewers" 
+              element={
+                <ProtectedRoute>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <AdminReviewerManagement />
+                  </motion.div>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
               path="/reviewer" 
               element={
                 <ProtectedRoute>
@@ -111,7 +166,97 @@ const App: React.FC = () => {
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.5 }}
                   >
-                    <ReviewerDashboard />
+                    <ReviewerWelcome />
+                  </motion.div>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/reviewer/student/:studentId" 
+              element={
+                <ProtectedRoute>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <StudentProfile />
+                  </motion.div>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/student" 
+              element={
+                <ProtectedRoute>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <StudentGate />
+                  </motion.div>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/student/welcome" 
+              element={
+                <ProtectedRoute>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <StudentHome />
+                  </motion.div>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/student/profile" 
+              element={
+                <ProtectedRoute>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <StudentProfile />
+                  </motion.div>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/chat" 
+              element={
+                <ProtectedRoute>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <AdminChatInterface />
+                  </motion.div>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/chat" 
+              element={
+                <ProtectedRoute>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <StudentChatInterface />
                   </motion.div>
                 </ProtectedRoute>
               } 

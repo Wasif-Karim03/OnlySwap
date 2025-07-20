@@ -1,6 +1,6 @@
 # 🔐 Sign Auth - Full-Stack Authentication System
 
-A comprehensive authentication system built with React frontend and Node.js backend, featuring advanced security mechanisms, admin panel, and user management capabilities.
+A comprehensive authentication system built with React frontend and Node.js backend, featuring advanced security mechanisms, admin panel, user management capabilities, and a real-time chat support system.
 
 ## 🌟 Features
 
@@ -28,6 +28,32 @@ A comprehensive authentication system built with React frontend and Node.js back
 - **User Blocking/Unblocking System**
 - **Detailed User Profiles**
 - **Activity Timeline with Device Info**
+- **Reviewer Management System**
+- **University Logo Upload & Management**
+- **Bio Management for Reviewers**
+- **Real-time Chat Support Interface**
+
+### 💬 Chat Support System
+- **Real-time Messaging** between students and admins
+- **Support Request Integration** - automatic chat creation
+- **Unread Message Counts** with visual indicators
+- **Conversation Management** with user avatars
+- **Message History** with timestamps
+- **Role-based Chat Access** (students see admins, admins see all students)
+
+### 👨‍🎓 Student Features
+- **Student Dashboard** with onboarding flow
+- **Reviewer Discovery** with university logos and bios
+- **Chat Support Access** for instant help
+- **Profile Management** with detailed information
+- **University Affiliation** display
+
+### 👨‍🏫 Reviewer System
+- **Reviewer Registration** with approval workflow
+- **University Logo Upload** via admin panel
+- **Bio Management** by admins
+- **Profile Customization** with university details
+- **Student Connection** system
 
 ### 📊 User Activity Tracking
 - **Login/Logout Tracking**
@@ -36,6 +62,7 @@ A comprehensive authentication system built with React frontend and Node.js back
 - **Device Information** (IP, User Agent)
 - **Timestamp Tracking**
 - **Activity History**
+- **Chat Message Logging**
 
 ## 🏗️ Architecture
 
@@ -44,26 +71,34 @@ A comprehensive authentication system built with React frontend and Node.js back
 client/
 ├── src/
 │   ├── components/
-│   │   ├── SignIn.tsx          # Login component
-│   │   ├── SignUp.tsx          # Registration component
-│   │   ├── Dashboard.tsx       # User dashboard
-│   │   ├── AdminDashboard.tsx  # Admin panel
-│   │   ├── AdminUserProfile.tsx # User profile view
+│   │   ├── SignIn.tsx              # Login component
+│   │   ├── SignUp.tsx              # Registration component
+│   │   ├── Dashboard.tsx           # User dashboard
+│   │   ├── AdminDashboard.tsx      # Admin panel
+│   │   ├── AdminUserProfile.tsx    # User profile view
+│   │   ├── AdminChatInterface.tsx  # Admin chat interface
+│   │   ├── StudentChatInterface.tsx # Student chat interface
+│   │   ├── AdminReviewerManagement.tsx # Reviewer management
+│   │   ├── StudentHome.tsx         # Student dashboard
+│   │   ├── StudentOnboarding.tsx   # Student onboarding flow
+│   │   ├── ReviewerWelcome.tsx     # Reviewer dashboard
 │   │   └── ...
 │   ├── contexts/
-│   │   └── AuthContext.tsx     # Authentication context
-│   └── App.tsx                 # Main app component
+│   │   └── AuthContext.tsx         # Authentication context
+│   └── App.tsx                     # Main app component
 ```
 
 ### Backend (Node.js + Express)
 ```
 server/
 ├── models/
-│   └── User.js                 # User model with activity tracking
+│   ├── User.js                     # User model with activity tracking
+│   └── Message.js                  # Chat message model
 ├── routes/
-│   └── auth.js                 # Authentication routes
-├── config.env                  # Environment variables
-└── index.js                    # Server entry point
+│   ├── auth.js                     # Authentication routes
+│   └── chat.js                     # Chat system routes
+├── config.env                      # Environment variables
+└── index.js                        # Server entry point
 ```
 
 ## 🚀 Quick Start
@@ -90,7 +125,9 @@ npm install
 # Install frontend dependencies
 cd ../client
 npm install
-```3*Environment Setup**
+```
+
+3. **Environment Setup**
 ```bash
 # Copy and configure environment variables
 cd ../server
@@ -99,8 +136,10 @@ cp config.env.example config.env
 
 Edit `server/config.env`:
 ```env
-PORT=5001ONGODB_URI=mongodb://localhost:27017/sign-auth
+PORT=5001
+MONGODB_URI=mongodb://localhost:27017/sign-auth
 JWT_SECRET=your-super-secret-jwt-key
+JWT_REMEMBER_ME_SECRET=your-remember-me-secret
 EMAIL_USER=your-email@gmail.com
 EMAIL_PASS=your-app-password
 GOOGLE_CLIENT_ID=your-google-client-id
@@ -109,11 +148,16 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret
 
 4. **Start the application**
 ```bash
-# From the root directory
-npm run dev
+# Start backend server
+cd server
+npm start
+
+# Start frontend (in new terminal)
+cd client
+npm start
 ```
 
-This will start both backend (port 51) and frontend (port 3000).
+This will start backend (port 5001) and frontend (port 3000).
 
 ## 🔧 Configuration
 
@@ -123,11 +167,14 @@ The system uses Gmail SMTP for sending verification and reset emails:
 - Use Gmail App Passwords for security
 
 ### Google OAuth
-1ate a Google Cloud Project2Enable Google+ API
-3. Create OAuth 2credentials4uthorized redirect URIs5 Update `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`
+1. Create a Google Cloud Project
+2. Enable Google+ API
+3. Create OAuth 2.0 credentials
+4. Add authorized redirect URIs
+5. Update `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`
 
 ### Database Configuration
-- **Local MongoDB**: `mongodb://localhost:27017gn-auth`
+- **Local MongoDB**: `mongodb://localhost:27017/sign-auth`
 - **MongoDB Atlas**: `mongodb+srv://username:password@cluster.mongodb.net/sign-auth`
 
 ## 📋 API Endpoints
@@ -151,6 +198,24 @@ GET  /api/auth/admin/users/:id # Get specific user (admin only)
 POST /api/auth/admin/users/:id/block    # Block user (admin only)
 POST /api/auth/admin/users/:id/unblock  # Unblock user (admin only)
 GET  /api/auth/admin/users/:id/activities # Get user activities (admin only)
+PUT  /api/auth/admin/users/:id # Update user (admin only)
+```
+
+### Reviewer Management Routes
+```
+GET  /api/auth/reviewers/pending    # Get pending reviewers
+GET  /api/auth/reviewers/approved   # Get approved reviewers
+POST /api/auth/reviewers/:id/approve # Approve reviewer
+POST /api/auth/reviewers/:id/reject  # Reject reviewer
+```
+
+### Chat System Routes
+```
+GET  /api/chat/conversations        # Get user conversations
+GET  /api/chat/messages/:userId     # Get messages with user
+POST /api/chat/messages             # Send message
+POST /api/chat/support-request      # Send support request
+GET  /api/chat/unread-count         # Get unread message count
 ```
 
 ## 🔍 Core Mechanisms
@@ -169,14 +234,15 @@ GET  /api/auth/admin/users/:id/activities # Get user activities (admin only)
 - Email templates with verification links
 - Automatic token cleanup
 
-###3rd Reset Mechanism
+### 3. Password Reset Mechanism
 - Secure token generation
 - Email-based reset links
-- Token expiration (1 Password strength validation
+- Token expiration (1 hour)
+- Password strength validation
 
 ### 4. JWT Authentication
 - Access tokens (15 minutes)
-- Refresh tokens (7ays)
+- Refresh tokens (7 days)
 - Remember me tokens (30 days)
 - Secure token storage
 
@@ -194,7 +260,21 @@ GET  /api/auth/admin/users/:id/activities # Get user activities (admin only)
 - Activity timeline visualization
 - Admin-only access protection
 
-### 7. Security Measures
+### 7. Chat Support System
+- Real-time messaging between users
+- Support request integration
+- Unread message tracking
+- Conversation management
+- Role-based access control
+
+### 8. Reviewer Management
+- Reviewer approval workflow
+- University logo upload system
+- Bio management by admins
+- Profile customization
+- Student connection system
+
+### 9. Security Measures
 - Password hashing with salt rounds
 - JWT token validation
 - Rate limiting on auth endpoints
@@ -217,6 +297,23 @@ GET  /api/auth/admin/users/:id/activities # Get user activities (admin only)
 - Modal dialogs for actions
 - Activity timeline with icons
 - Color-coded activity types
+- Chat support interface
+- Reviewer management panel
+
+### Student Dashboard
+- Onboarding flow
+- Reviewer discovery cards
+- University logo display
+- Chat support access
+- Profile management
+
+### Chat Interface
+- Real-time messaging
+- User avatars and initials
+- Message timestamps
+- Unread indicators
+- Conversation switching
+- Support request integration
 
 ### User Experience
 - Form validation
@@ -229,6 +326,7 @@ GET  /api/auth/admin/users/:id/activities # Get user activities (admin only)
 
 ### User Model
 ```javascript
+{
   email: String (unique, required),
   password: String (hashed, required),
   name: String (required),
@@ -236,11 +334,17 @@ GET  /api/auth/admin/users/:id/activities # Get user activities (admin only)
   verificationToken: String,
   resetToken: String,
   resetTokenExpiry: Date,
-  role: String (default: user'),
+  role: String (default: 'user'),
   isBlocked: Boolean (default: false),
   blockReason: String,
   blockedBy: ObjectId,
   blockedAt: Date,
+  avatar: String,
+  phone: String,
+  university: String,
+  universityLogo: String,
+  bio: String,
+  reviewerApprovalStatus: String,
   activities: [
     {
       type: String,
@@ -252,6 +356,19 @@ GET  /api/auth/admin/users/:id/activities # Get user activities (admin only)
   ],
   createdAt: Date,
   updatedAt: Date
+}
+```
+
+### Message Model
+```javascript
+{
+  sender: ObjectId (ref: 'User'),
+  receiver: ObjectId (ref: 'User'),
+  content: String (required),
+  messageType: String (enum: ['text', 'support_request']),
+  isRead: Boolean (default: false),
+  readAt: Date,
+  createdAt: Date
 }
 ```
 
@@ -272,12 +389,19 @@ GET  /api/auth/admin/users/:id/activities # Get user activities (admin only)
 - Email verification
 - Activity logging
 - User blocking system
+- File upload validation
 
 ## 🚀 Deployment
 
 ### Local Development
 ```bash
-npm run dev
+# Backend
+cd server
+npm start
+
+# Frontend
+cd client
+npm start
 ```
 
 ### Production Build
@@ -306,9 +430,10 @@ npm start
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `PORT` | Server port | No (default: 51) |
+| `PORT` | Server port | No (default: 5001) |
 | `MONGODB_URI` | MongoDB connection string | Yes |
 | `JWT_SECRET` | JWT signing secret | Yes |
+| `JWT_REMEMBER_ME_SECRET` | Remember me token secret | Yes |
 | `EMAIL_USER` | Gmail address | Yes |
 | `EMAIL_PASS` | Gmail app password | Yes |
 | `GOOGLE_CLIENT_ID` | Google OAuth client ID | No |
@@ -333,16 +458,41 @@ For support and questions:
 - Create an issue in the repository
 - Check the documentation
 - Review the code comments
+- Use the built-in chat support system
 
-## 🔄 Recent Updates
+## 🔄 Recent Updates (Latest)
 
-- ✅ Removed2 functionality for simplicity
-- ✅ Enhanced admin panel with user blocking
-- ✅ Added comprehensive activity logging
-- ✅ Improved UI/UX with better search
-- ✅ Added detailed user profiles
-- ✅ Implemented debounced search
-- ✅ Removed animations for better performance
+### Chat Support System
+- ✅ **Real-time Chat Interface** - Complete messaging system between students and admins
+- ✅ **Support Request Integration** - Automatic chat creation for support requests
+- ✅ **Unread Message Counts** - Visual indicators for new messages
+- ✅ **Conversation Management** - Easy switching between different users
+- ✅ **Role-based Access** - Students see admins, admins see all students
+
+### Reviewer Management
+- ✅ **University Logo Upload** - Admins can upload logos for reviewers
+- ✅ **Bio Management** - Admins can set and manage reviewer bios
+- ✅ **Profile Customization** - Enhanced reviewer profiles with university details
+- ✅ **Student Connection** - Improved reviewer discovery system
+
+### Admin Enhancements
+- ✅ **Chat Support Button** - Direct access to chat interface from admin dashboard
+- ✅ **Reviewer Management Panel** - Dedicated interface for managing reviewers
+- ✅ **File Upload System** - Secure logo upload with validation
+- ✅ **Enhanced User Profiles** - More detailed user information display
+
+### Student Experience
+- ✅ **Chat Support Access** - Students can get instant help through chat
+- ✅ **Improved Reviewer Cards** - Better display of university logos and bios
+- ✅ **Support Request Modal** - Redirects to chat system instead of email
+- ✅ **Enhanced Onboarding** - Better user experience for new students
+
+### Technical Improvements
+- ✅ **Message Model** - New database schema for chat messages
+- ✅ **Chat Routes** - Complete API for messaging system
+- ✅ **File Upload Handling** - Multer integration for logo uploads
+- ✅ **Real-time Features** - Live message updates and notifications
+- ✅ **Security Enhancements** - Improved authentication and validation
 
 ---
 

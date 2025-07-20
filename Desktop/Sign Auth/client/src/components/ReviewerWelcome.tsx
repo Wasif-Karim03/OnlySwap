@@ -1,18 +1,29 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+
+interface ProfileEditData {
+  name: string;
+  university: string;
+  internshipCompany: string;
+  graduationYear: string;
+  major: string;
+  avatar?: string;
+}
 
 interface User {
   _id: string;
   name: string;
   email: string;
   role: string;
-  createdAt: string;
   avatar?: string;
+  university?: string;
+  internshipCompany?: string;
+  graduationYear?: string;
+  major?: string;
   isBlocked?: boolean;
-  blockedAt?: string;
-  blockedReason?: string;
+  createdAt?: string;
   studentId?: string;
   isOnboardingCompleted?: boolean;
   onboardingCompletedAt?: string;
@@ -41,67 +52,52 @@ interface User {
   }>;
 }
 
-interface UsersResponse {
-  count: number;
-  users: User[];
-}
-
-const AdminDashboard: React.FC = () => {
-  const { user, signOut } = useAuth();
-  const [users, setUsers] = useState<User[]>([]);
-  const [count, setCount] = useState(0);
+const ReviewerWelcome: React.FC = () => {
+  const { user, signOut, updateProfile } = useAuth();
+  const [students, setStudents] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
-  const [blockingUser, setBlockingUser] = useState<string | null>(null);
-  const [blockReason, setBlockReason] = useState('');
-  const [showBlockModal, setShowBlockModal] = useState(false);
-  const [deletingUser, setDeletingUser] = useState<string | null>(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [pendingReviewers, setPendingReviewers] = useState<User[]>([]);
-  const [showApproveModal, setShowApproveModal] = useState(false);
-  const [approvingReviewer, setApprovingReviewer] = useState<string | null>(null);
-  const [students, setStudents] = useState<User[]>([]);
+  const [showProfileEdit, setShowProfileEdit] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [editName, setEditName] = useState(user?.name || '');
+  const [editUniversity, setEditUniversity] = useState(user?.university || '');
+  const [editInternshipCompany, setEditInternshipCompany] = useState(user?.internshipCompany || '');
+  const [editGraduationYear, setEditGraduationYear] = useState(user?.graduationYear || '');
+  const [editMajor, setEditMajor] = useState(user?.major || '');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(user?.avatar || null);
   const [selectedStudent, setSelectedStudent] = useState<User | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchUsers();
-    fetchPendingReviewers();
     fetchStudents();
   }, []);
 
-  const fetchUsers = async () => {
-    try {
-      const response = await axios.get<UsersResponse>('/api/auth/users');
-      setUsers(response.data.users);
-      setCount(response.data.count);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to fetch users');
-    } finally {
-      setLoading(false);
+  // Update form fields when modal opens or user data changes
+  useEffect(() => {
+    if (showProfileEdit && user) {
+      setEditName(user.name || '');
+      setEditUniversity(user.university || '');
+      setEditInternshipCompany(user.internshipCompany || '');
+      setEditGraduationYear(user.graduationYear || '');
+      setEditMajor(user.major || '');
+      setPreviewUrl(user.avatar || null);
     }
-  };
-
-  const fetchPendingReviewers = async () => {
-    try {
-      const response = await axios.get('/api/auth/reviewers/pending');
-      setPendingReviewers(response.data.reviewers);
-    } catch (err: any) {
-      // Optionally handle error
-    }
-  };
+  }, [showProfileEdit, user]);
 
   const fetchStudents = async () => {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.get('/api/auth/users');
-      // Only show students
-      setStudents(response.data.users.filter((u: User) => u.role === 'user'));
+      const response = await axios.get('/api/auth/students');
+      setStudents(response.data.students);
     } catch (err: any) {
-      setError('Failed to fetch students');
+      console.error('Fetch error:', err);
+      setError(err.response?.data?.message || 'Failed to fetch students');
     } finally {
       setLoading(false);
     }
@@ -109,15 +105,17 @@ const AdminDashboard: React.FC = () => {
 
   const performSearch = useCallback(async (searchTerm: string) => {
     if (searchTerm.trim() === '') {
-      fetchUsers();
+      fetchStudents();
       return;
     }
     setLoading(true);
+    setError('');
     try {
-      const response = await axios.get<{ users: User[] }>(`/api/auth/users/search?email=${encodeURIComponent(searchTerm)}`);
-      setUsers(response.data.users);
+      const response = await axios.get(`/api/auth/students/search?query=${encodeURIComponent(searchTerm)}`);
+      setStudents(response.data.students);
     } catch (err: any) {
-      setError('Failed to search users');
+      console.error('Search error:', err);
+      setError(err.response?.data?.message || 'Failed to search students');
     } finally {
       setLoading(false);
     }
@@ -140,76 +138,66 @@ const AdminDashboard: React.FC = () => {
     setSearchTimeout(timeout);
   };
 
-  const handleRowClick = (id: string) => {
-    navigate(`/admin/user/${id}`);
-  };
-
-  const handleBlockUser = async () => {
-    if (!blockingUser) return;
-    
-    try {
-      await axios.post(`/api/auth/users/${blockingUser}/block`, { reason: blockReason });
-      setShowBlockModal(false);
-      setBlockReason('');
-      setBlockingUser(null);
-      fetchUsers(); // Refresh the user list
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to block user');
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
     }
   };
 
-  const handleUnblockUser = async (userId: string) => {
+  const handleProfileUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setProfileLoading(true);
+    setProfileError('');
+    setSuccess('');
+
     try {
-      await axios.post(`/api/auth/users/${userId}/unblock`);
-      fetchUsers(); // Refresh the user list
+      const formData = new FormData();
+      formData.append('name', editName);
+      formData.append('university', editUniversity);
+      formData.append('internshipCompany', editInternshipCompany);
+      formData.append('graduationYear', editGraduationYear);
+      formData.append('major', editMajor);
+      
+      if (selectedFile) {
+        formData.append('avatar', selectedFile);
+      }
+
+      const response = await axios.put('/api/auth/profile', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      // Update the user in context
+      await updateProfile({
+        name: editName,
+        university: editUniversity,
+        internshipCompany: editInternshipCompany,
+        graduationYear: editGraduationYear,
+        major: editMajor,
+        avatar: response.data.user.avatar
+      });
+      setSuccess('Profile updated successfully!');
+      setShowProfileEdit(false);
+      setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to unblock user');
+      console.error('Profile update error:', err);
+      setProfileError(err.response?.data?.message || err.message);
+    } finally {
+      setProfileLoading(false);
     }
-  };
-
-  const handleDeleteUser = async () => {
-    if (!deletingUser) return;
-    try {
-      await axios.delete(`/api/auth/users/${deletingUser}`);
-      setShowDeleteModal(false);
-      setDeletingUser(null);
-      fetchUsers();
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to delete user');
-    }
-  };
-
-
-
-  const handleApproveReviewer = async () => {
-    if (!approvingReviewer) return;
-    try {
-      await axios.post(`/api/auth/reviewers/${approvingReviewer}/approve`);
-      setShowApproveModal(false);
-      setApprovingReviewer(null);
-      fetchPendingReviewers();
-      fetchUsers();
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to approve reviewer');
-    }
-  };
-
-  const openBlockModal = (userId: string) => {
-    setBlockingUser(userId);
-    setShowBlockModal(true);
   };
 
   const handleSignOut = () => {
     signOut();
+    navigate('/');
   };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString();
-  };
-
-  const formatLanguages = (languages: any[]) => {
-    if (!languages || languages.length === 0) return 'None';
-    return languages.map(lang => `${lang.language} (${lang.proficiency})`).join(', ');
   };
 
   const getInitials = (name: string) => {
@@ -219,6 +207,10 @@ const AdminDashboard: React.FC = () => {
       .join('')
       .toUpperCase()
       .slice(0, 2);
+  };
+
+  const isProfileComplete = () => {
+    return user?.university && user?.internshipCompany && user?.graduationYear && user?.major;
   };
 
   if (loading) {
@@ -233,7 +225,7 @@ const AdminDashboard: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="card text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Error</h1>
           <p className="text-gray-600 mb-6">{error}</p>
           <button onClick={handleSignOut} className="btn-secondary">
             Sign Out
@@ -245,29 +237,23 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         <div className="card">
           <div className="flex justify-between items-center mb-8">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Admin Dashboard 👑
+                Reviewer Dashboard 🕵️‍♂️
               </h1>
               <p className="text-gray-600">
-                Welcome back, {user?.name}! You have admin privileges.
+                Welcome, {user?.name}! Here are all student users.
               </p>
             </div>
             <div className="flex space-x-3">
               <button 
-                onClick={() => navigate('/admin/reviewers')}
+                onClick={() => setShowProfileEdit(true)}
                 className="btn-primary"
               >
-                Manage Reviewers
-              </button>
-              <button 
-                onClick={() => navigate('/admin/chat')}
-                className="btn-primary"
-              >
-                Chat Support
+                Edit Profile
               </button>
               <button onClick={handleSignOut} className="btn-secondary">
                 Sign Out
@@ -275,48 +261,69 @@ const AdminDashboard: React.FC = () => {
             </div>
           </div>
 
+          {/* Success/Error Messages */}
+          {success && (
+            <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-lg mb-6">
+              {success}
+            </div>
+          )}
+
+          {profileError && (
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6">
+              {profileError}
+            </div>
+          )}
+
+          {/* Profile Completion Warning */}
+          {!isProfileComplete() && (
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6">
+              <div className="flex items-center">
+                <span className="text-red-500 mr-2">⚠️</span>
+                <span className="font-medium">Please complete your profile information to continue.</span>
+              </div>
+              <p className="text-red-500 text-sm mt-1">
+                Missing: {!user?.university && 'University, '}{!user?.internshipCompany && 'Recent Internship Company, '}{!user?.graduationYear && 'Graduation Year, '}{!user?.major && 'Major'}
+              </p>
+            </div>
+          )}
+
           <div className="bg-gradient-to-r from-primary-50 to-blue-50 rounded-xl p-6 mb-8">
             <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-              User Statistics
+              Student Statistics
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-white rounded-lg p-4 text-center">
-                <div className="text-3xl font-bold text-primary-600">{count}</div>
-                <div className="text-gray-600">Total Users</div>
+                <div className="text-3xl font-bold text-primary-600">{students.length}</div>
+                <div className="text-gray-600">Total Students</div>
               </div>
               <div className="bg-white rounded-lg p-4 text-center">
                 <div className="text-3xl font-bold text-green-600">
-                  {users.filter(u => u.role === 'admin').length}
+                  {students.filter(s => !s.isBlocked).length}
                 </div>
-                <div className="text-gray-600">Admin Users</div>
-              </div>
-              <div className="bg-white rounded-lg p-4 text-center">
-                <div className="text-3xl font-bold text-blue-600">
-                  {users.filter(u => u.role === 'user').length}
-                </div>
-                <div className="text-gray-600">Regular Users</div>
-              </div>
-              <div className="bg-white rounded-lg p-4 text-center">
-                <div className="text-3xl font-bold text-purple-600">
-                  {users.filter(u => u.role === 'reviewer').length}
-                </div>
-                <div className="text-gray-600">Reviewer Users</div>
+                <div className="text-gray-600">Active Students</div>
               </div>
               <div className="bg-white rounded-lg p-4 text-center">
                 <div className="text-3xl font-bold text-red-600">
-                  {users.filter(u => u.isBlocked).length}
+                  {students.filter(s => s.isBlocked).length}
                 </div>
-                <div className="text-gray-600">Blocked Users</div>
+                <div className="text-gray-600">Blocked Students</div>
               </div>
             </div>
           </div>
 
-          {/* Student Onboarding Data Section */}
-          <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 mb-8">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-semibold text-gray-800">
-                Student Onboarding Data ({students.length} students)
-              </h2>
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+              Student Users
+            </h2>
+            <div className="mb-4 flex items-center">
+              <input
+                type="text"
+                value={search}
+                onChange={handleSearch}
+                placeholder="Search by name or email..."
+                className="input-field w-64 mr-2"
+              />
+              <span className="text-gray-500 text-sm">Search students</span>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full bg-white rounded-lg shadow-sm">
@@ -326,6 +333,7 @@ const AdminDashboard: React.FC = () => {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Onboarding Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account Status</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -377,79 +385,8 @@ const AdminDashboard: React.FC = () => {
                           </span>
                         )}
                       </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* All Users Section */}
-          <div className="bg-gradient-to-r from-primary-50 to-blue-50 rounded-xl p-6 mb-8">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-              All Users
-            </h2>
-            <div className="mb-4 flex items-center">
-              <input
-                type="text"
-                value={search}
-                onChange={handleSearch}
-                placeholder="Gmail Search"
-                className="input-field w-64 mr-2"
-              />
-              <span className="text-gray-500 text-sm">Search by Gmail address</span>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full bg-white rounded-lg shadow-sm">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {users.map((user) => (
-                    <tr
-                      key={user._id}
-                      className={`hover:bg-gray-50 cursor-pointer ${user.isBlocked ? 'bg-red-50' : ''}`}
-                      onClick={() => handleRowClick(user._id)}
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center space-x-3">
-                          {user.avatar ? (
-                            <img
-                              src={user.avatar}
-                              alt={user.name}
-                              className="w-8 h-8 rounded-full object-cover border-2 border-gray-200"
-                            />
-                          ) : (
-                            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-semibold">
-                              {getInitials(user.name)}
-                            </div>
-                          )}
-                          <div className="text-sm font-medium text-gray-900">
-                            {user.name}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{user.email}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          user.role === 'admin' 
-                            ? 'bg-purple-100 text-purple-800' 
-                            : 'bg-green-100 text-green-800'
-                        }`}>
-                          {user.role}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {user.isBlocked ? (
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        {student.isBlocked ? (
                           <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
                             🔒 Blocked
                           </span>
@@ -459,186 +396,20 @@ const AdminDashboard: React.FC = () => {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(user.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
-                          {user.role !== 'admin' && (
-                            user.isBlocked ? (
-                              <button
-                                onClick={() => handleUnblockUser(user._id)}
-                                className="text-green-600 hover:text-green-900 bg-green-100 hover:bg-green-200 px-2 py-1 rounded text-xs"
-                              >
-                                Unblock
-                              </button>
-                            ) : (
-                              <button
-                                onClick={() => openBlockModal(user._id)}
-                                className="text-red-600 hover:text-red-900 bg-red-100 hover:bg-red-200 px-2 py-1 rounded text-xs"
-                              >
-                                Block
-                              </button>
-                            )
-                          )}
-                          {user.role !== 'admin' && (
-                            <button
-                              onClick={() => { setDeletingUser(user._id); setShowDeleteModal(true); }}
-                              className="text-white bg-red-600 hover:bg-red-700 px-2 py-1 rounded text-xs"
-                            >
-                              Delete
-                            </button>
-                          )}
-                        </div>
-                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+            
+            {students.length === 0 && !loading && (
+              <div className="text-center py-8">
+                <p className="text-gray-500">No students found.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
-
-      {/* Block User Modal */}
-      {showBlockModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96">
-            <h3 className="text-lg font-semibold mb-4">Block User</h3>
-            <p className="text-gray-600 mb-4">Are you sure you want to block this user? They will not be able to sign in.</p>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Reason (optional)
-              </label>
-              <textarea
-                value={blockReason}
-                onChange={(e) => setBlockReason(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md"
-                placeholder="Enter reason for blocking..."
-                rows={3}
-              />
-            </div>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => {
-                  setShowBlockModal(false);
-                  setBlockReason('');
-                  setBlockingUser(null);
-                }}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleBlockUser}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-              >
-                Block User
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete User Modal */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96">
-            <h3 className="text-lg font-semibold mb-4">Delete User</h3>
-            <p className="text-gray-600 mb-4">Are you sure you want to <span className='text-red-600 font-bold'>permanently delete</span> this user? This action cannot be undone.</p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => { setShowDeleteModal(false); setDeletingUser(null); }}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteUser}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-              >
-                Delete User
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Pending Reviewer Approvals */}
-      {pendingReviewers.length > 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mb-8">
-          <h2 className="text-xl font-semibold text-yellow-800 mb-4 flex items-center">
-            <span className="mr-2">🕒</span> Pending Reviewer Approvals
-          </h2>
-          <table className="w-full bg-white rounded-lg shadow-sm mb-2">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Requested</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {pendingReviewers.map((reviewer) => (
-                <tr key={reviewer._id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center space-x-3">
-                      {reviewer.avatar ? (
-                        <img
-                          src={reviewer.avatar}
-                          alt={reviewer.name}
-                          className="w-8 h-8 rounded-full object-cover border-2 border-gray-200"
-                        />
-                      ) : (
-                        <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-semibold">
-                          {getInitials(reviewer.name)}
-                        </div>
-                      )}
-                      <div className="text-sm font-medium text-gray-900">
-                        {reviewer.name}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{reviewer.email}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{new Date(reviewer.createdAt).toLocaleDateString()}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <button
-                      onClick={() => { setApprovingReviewer(reviewer._id); setShowApproveModal(true); }}
-                      className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 mr-2"
-                    >
-                      Approve
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-      {/* Approve Reviewer Modal */}
-      {showApproveModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96">
-            <h3 className="text-lg font-semibold mb-4">Approve Reviewer</h3>
-            <p className="text-gray-600 mb-4">Are you sure you want to approve this reviewer? They will be notified by email and gain access to the reviewer portal.</p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => { setShowApproveModal(false); setApprovingReviewer(null); }}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleApproveReviewer}
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-              >
-                Approve
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Student Detail Modal */}
       {selectedStudent && (
@@ -765,7 +536,7 @@ const AdminDashboard: React.FC = () => {
                           </span>
                         ) : (
                           <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                            ⏳ Pending
+                            ⏳ Processing
                           </span>
                         )}
                       </span>
@@ -869,8 +640,150 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Profile Edit Modal */}
+      {showProfileEdit && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-96 max-w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold mb-4">Edit Profile</h3>
+            <form onSubmit={handleProfileUpdate} className="space-y-4">
+              {/* Profile Picture Upload */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Profile Picture
+                </label>
+                <div className="flex items-center space-x-4">
+                  <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
+                    {previewUrl ? (
+                      <img
+                        src={previewUrl}
+                        alt="Profile preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-lg font-bold">
+                        {user?.name?.charAt(0).toUpperCase() || 'U'}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      JPG, PNG, GIF up to 5MB
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="input-field"
+                  placeholder="Enter your full name"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  University
+                </label>
+                <input
+                  type="text"
+                  value={editUniversity}
+                  onChange={(e) => setEditUniversity(e.target.value)}
+                  className="input-field"
+                  placeholder="Enter your university name"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Recent Internship Company
+                </label>
+                <input
+                  type="text"
+                  value={editInternshipCompany}
+                  onChange={(e) => setEditInternshipCompany(e.target.value)}
+                  className="input-field"
+                  placeholder="Enter your recent internship company name"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Graduation Year
+                </label>
+                <input
+                  type="number"
+                  value={editGraduationYear}
+                  onChange={(e) => setEditGraduationYear(e.target.value)}
+                  className="input-field"
+                  placeholder="e.g., 2024"
+                  min="1900"
+                  max="2100"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Major
+                </label>
+                <input
+                  type="text"
+                  value={editMajor}
+                  onChange={(e) => setEditMajor(e.target.value)}
+                  className="input-field"
+                  placeholder="Enter your major/field of study"
+                  required
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowProfileEdit(false);
+                    setEditName(user?.name || '');
+                    setEditUniversity(user?.university || '');
+                    setEditInternshipCompany(user?.internshipCompany || '');
+                    setEditGraduationYear(user?.graduationYear || '');
+                    setEditMajor(user?.major || '');
+                    setSelectedFile(null);
+                    setPreviewUrl(user?.avatar || null);
+                    setProfileError('');
+                  }}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={profileLoading}
+                  className="btn-primary"
+                >
+                  {profileLoading ? 'Updating...' : 'Update Profile'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default AdminDashboard; 
+export default ReviewerWelcome; 

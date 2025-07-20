@@ -14,6 +14,14 @@
     box-shadow: 0 4px 24px 0 rgba(0, 80, 255, 0.10), 0 1.5px 4px 0 rgba(0,0,0,0.08);
   }
   
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* Internet Explorer 10+ */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Safari and Chrome */
+  }
+  
   .btn-secondary {
     @apply bg-white hover:bg-gray-50 text-primary-600 font-medium py-3 px-6 rounded-xl border border-primary-200 shadow transition-all duration-200 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
   }

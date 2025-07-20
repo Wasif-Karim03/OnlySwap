@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
@@ -10,8 +10,9 @@ const SignIn: React.FC = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { signIn } = useAuth();
+  const { signIn, user } = useAuth();
   const navigate = useNavigate();
+  const [justSignedIn, setJustSignedIn] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,13 +21,28 @@ const SignIn: React.FC = () => {
 
     try {
       await signIn(email, password, rememberMe);
-      navigate('/dashboard');
+      setJustSignedIn(true);
     } catch (err: any) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (justSignedIn && user) {
+      if (user.role === 'student' || user.role === 'user') {
+        // Students should always go to /student which will show onboarding if needed
+        navigate('/student');
+      } else if (user.role === 'admin') {
+        navigate('/admin');
+      } else if (user.role === 'reviewer') {
+        navigate('/reviewer');
+      } else {
+        navigate('/dashboard');
+      }
+    }
+  }, [justSignedIn, user, navigate]);
 
   const handleSocialLogin = (provider: string) => {
     window.location.href = `http://localhost:5001/api/auth/${provider}`;

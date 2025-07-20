@@ -88,6 +88,82 @@ const Dashboard: React.FC = () => {
     }
   }
 
+  // For students who haven't completed onboarding, show a welcome message with continue button
+  if ((user?.role === 'student' || user?.role === 'user') && !user?.isOnboardingCompleted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-100 to-blue-100">
+        <div className="container mx-auto px-4 py-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="max-w-4xl mx-auto"
+          >
+            {/* Header */}
+            <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">Welcome, {user?.name}!</h1>
+                  <p className="text-gray-600 mt-1">Your account has been created successfully</p>
+                </div>
+                <button
+                  onClick={handleSignOut}
+                  className="btn-secondary"
+                >
+                  Sign Out
+                </button>
+              </div>
+            </div>
+
+            {/* Welcome Card */}
+            <div className="bg-white rounded-lg shadow-lg p-8 text-center">
+              <div className="mb-6">
+                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Account Created Successfully!</h2>
+                <p className="text-gray-600 mb-6">
+                  Your student account has been created and your email has been verified. 
+                  Now it's time to complete your profile with additional information.
+                </p>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+                <h3 className="text-lg font-semibold text-blue-900 mb-2">Next Steps</h3>
+                <p className="text-blue-700 mb-4">
+                  Please provide the following information to complete your student profile:
+                </p>
+                <ul className="text-left text-blue-700 space-y-2 max-w-md mx-auto">
+                  <li className="flex items-center">
+                    <span className="w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs mr-3">1</span>
+                    Personal information (name, contact details, etc.)
+                  </li>
+                  <li className="flex items-center">
+                    <span className="w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs mr-3">2</span>
+                    Language proficiency assessment
+                  </li>
+                  <li className="flex items-center">
+                    <span className="w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs mr-3">3</span>
+                    Educational background and achievements
+                  </li>
+                </ul>
+              </div>
+
+              <button
+                onClick={() => navigate('/student')}
+                className="btn-primary text-lg px-8 py-3"
+              >
+                Continue to Profile Setup →
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 to-blue-100">
       <div className="container mx-auto px-4 py-8">

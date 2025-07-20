@@ -30,6 +30,21 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'reviewer', 'admin'],
     default: 'user'
   },
+  // Student-specific fields
+  studentId: {
+    type: String,
+    unique: true,
+    sparse: true,
+    default: null
+  },
+  isOnboardingCompleted: {
+    type: Boolean,
+    default: false
+  },
+  onboardingCompletedAt: {
+    type: Date,
+    default: null
+  },
   // Reviewer approval status
   reviewerApprovalStatus: {
     type: String,
@@ -125,11 +140,105 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  university: {
+    type: String,
+    default: null
+  },
+  universityLogo: {
+    type: String,
+    default: null
+  },
+  bio: {
+    type: String,
+    default: null
+  },
+  internshipCompany: {
+    type: String,
+    default: null
+  },
+  graduationYear: {
+    type: String,
+    default: null
+  },
+  major: {
+    type: String,
+    default: null
+  },
+  // Student Profile Information
+  firstName: {
+    type: String,
+    trim: true,
+    default: null
+  },
+  lastName: {
+    type: String,
+    trim: true,
+    default: null
+  },
+  dob: {
+    type: Date,
+    default: null
+  },
+  country: {
+    type: String,
+    trim: true,
+    default: null
+  },
+  stateCity: {
+    type: String,
+    trim: true,
+    default: null
+  },
+  gender: {
+    type: String,
+    enum: ['male', 'female', 'other'],
+    default: null
+  },
+  // Education Information
+  highSchool: {
+    type: String,
+    default: null
+  },
+  gradYear: {
+    type: String,
+    default: null
+  },
+  classSize: {
+    type: String,
+    default: null
+  },
+  classRankReport: {
+    type: String,
+    default: null
+  },
+  gpaScale: {
+    type: String,
+    default: null
+  },
+  cumulativeGpa: {
+    type: String,
+    default: null
+  },
+  gpaWeighted: {
+    type: String,
+    default: null
+  },
+  // Language proficiency
+  languages: [
+    {
+      language: { type: String, required: true },
+      proficiency: { type: String, required: true },
+      speak: { type: Boolean, default: false },
+      read: { type: Boolean, default: false },
+      write: { type: Boolean, default: false },
+      spokenAtHome: { type: Boolean, default: false }
+    }
+  ],
   // User activity tracking
   activities: [{
     action: {
       type: String,
-      enum: ['login', 'logout', 'signup', 'email_verified', 'password_reset', 'profile_updated', 'account_deleted', 'user_blocked', 'user_unblocked', 'reviewer_request', 'reviewer_approved', 'reviewer_rejected'],
+      enum: ['login', 'logout', 'signup', 'email_verified', 'password_reset', 'profile_updated', 'account_deleted', 'user_blocked', 'user_unblocked', 'user_updated', 'reviewer_request', 'reviewer_approved', 'reviewer_rejected', 'onboarding_completed', 'onboarding_reset', 'support_request'],
       required: true
     },
     timestamp: {
@@ -151,6 +260,15 @@ const userSchema = new mongoose.Schema({
   }]
 });
 
+// Create indexes for better querying
+userSchema.index({ role: 1, isOnboardingCompleted: 1 });
+userSchema.index({ studentId: 1 });
+userSchema.index({ email: 1 });
+userSchema.index({ firstName: 1, lastName: 1 });
+userSchema.index({ country: 1 });
+userSchema.index({ gradYear: 1 });
+userSchema.index({ createdAt: 1 });
+
 // Hash password before saving
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
@@ -162,6 +280,21 @@ userSchema.pre('save', async function(next) {
   } catch (error) {
     next(error);
   }
+});
+
+// Generate unique student ID before saving
+userSchema.pre('save', async function(next) {
+  if (this.role === 'user' && !this.studentId) {
+    try {
+      // Generate a unique student ID: STU + year + 6-digit sequence
+      const year = new Date().getFullYear();
+      const count = await mongoose.model('User').countDocuments({ role: 'user' });
+      this.studentId = `STU${year}${String(count + 1).padStart(6, '0')}`;
+    } catch (error) {
+      next(error);
+    }
+  }
+  next();
 });
 
 // Method to compare password
@@ -200,6 +333,18 @@ userSchema.methods.resetLoginAttempts = function() {
     $unset: { loginAttempts: 1, lockUntil: 1 },
     $set: { lastLogin: Date.now() }
   });
+};
+
+// Method to mark onboarding as completed
+userSchema.methods.completeOnboarding = function() {
+  this.isOnboardingCompleted = true;
+  this.onboardingCompletedAt = new Date();
+  this.activities.push({
+    action: 'onboarding_completed',
+    timestamp: new Date(),
+    details: 'Student onboarding completed successfully'
+  });
+  return this.save();
 };
 
 module.exports = mongoose.model('User', userSchema); 

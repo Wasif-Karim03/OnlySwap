@@ -9,6 +9,9 @@ const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
@@ -16,6 +19,72 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 // Removed: const FacebookStrategy = require('passport-facebook').Strategy;
 
 const router = express.Router();
+
+// Configure multer for avatar uploads
+const avatarStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(__dirname, '../uploads/avatars');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const uploadAvatar = multer({
+  storage: avatarStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: function (req, file, cb) {
+    const allowedTypes = /jpeg|jpg|png|gif/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed!'));
+    }
+  }
+});
+
+// Configure multer for university logo uploads
+const logoStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(__dirname, '../uploads/logos');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'university-logo-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const uploadLogo = multer({
+  storage: logoStorage,
+  limits: {
+    fileSize: 2 * 1024 * 1024 // 2MB limit for logos
+  },
+  fileFilter: function (req, file, cb) {
+    const allowedTypes = /jpeg|jpg|png|gif|svg/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Only image files (JPEG, PNG, GIF, SVG) are allowed!'));
+    }
+  }
+});
 
 // Configure Passport strategies only if credentials are provided
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
@@ -320,7 +389,10 @@ router.post('/verify-email', async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        isEmailVerified: user.isEmailVerified
+        isEmailVerified: user.isEmailVerified,
+        studentId: user.studentId,
+        isOnboardingCompleted: user.isOnboardingCompleted,
+        onboardingCompletedAt: user.onboardingCompletedAt
       }
     });
   } catch (error) {
@@ -440,7 +512,10 @@ router.post('/signin', validateSignIn, async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        isEmailVerified: user.isEmailVerified
+        isEmailVerified: user.isEmailVerified,
+        studentId: user.studentId,
+        isOnboardingCompleted: user.isOnboardingCompleted,
+        onboardingCompletedAt: user.onboardingCompletedAt
       }
     });
   } catch (error) {
@@ -459,10 +534,35 @@ router.get('/profile', verifyToken, async (req, res) => {
         email: req.user.email,
         role: req.user.role,
         isEmailVerified: req.user.isEmailVerified,
+        studentId: req.user.studentId,
+        isOnboardingCompleted: req.user.isOnboardingCompleted,
+        onboardingCompletedAt: req.user.onboardingCompletedAt,
+        createdAt: req.user.createdAt,
         avatar: req.user.avatar,
         phone: req.user.phone,
+        university: req.user.university,
+        universityLogo: req.user.universityLogo,
+        internshipCompany: req.user.internshipCompany,
+        graduationYear: req.user.graduationYear,
+        major: req.user.major,
         lastLogin: req.user.lastLogin,
-        reviewerApprovalStatus: req.user.reviewerApprovalStatus || null
+        reviewerApprovalStatus: req.user.reviewerApprovalStatus || null,
+        firstName: req.user.firstName,
+        lastName: req.user.lastName,
+        dob: req.user.dob,
+        country: req.user.country,
+        stateCity: req.user.stateCity,
+        gender: req.user.gender,
+        // Education
+        highSchool: req.user.highSchool,
+        gradYear: req.user.gradYear,
+        classSize: req.user.classSize,
+        classRankReport: req.user.classRankReport,
+        gpaScale: req.user.gpaScale,
+        cumulativeGpa: req.user.cumulativeGpa,
+        gpaWeighted: req.user.gpaWeighted,
+        // Languages
+        languages: req.user.languages || []
       }
     });
   } catch (error) {
@@ -472,14 +572,69 @@ router.get('/profile', verifyToken, async (req, res) => {
 });
 
 // Update profile
-router.put('/profile', verifyToken, async (req, res) => {
+router.put('/profile', verifyToken, uploadAvatar.single('avatar'), async (req, res) => {
   try {
-    const { name, phone, avatar } = req.body;
+
+    const {
+      name: profileName,
+      phone: profilePhone,
+      university: profileUniversity,
+      universityLogo: profileUniversityLogo,
+      bio: profileBio,
+      internshipCompany: profileInternshipCompany,
+      graduationYear: profileGraduationYear,
+      major: profileMajor,
+      firstName: profileFirstName,
+      lastName: profileLastName,
+      dob: profileDob,
+      country: profileCountry,
+      stateCity: profileStateCity,
+      gender: profileGender,
+      // Education
+      highSchool: profileHighSchool,
+      gradYear: profileGradYear,
+      classSize: profileClassSize,
+      classRankReport: profileClassRankReport,
+      gpaScale: profileGpaScale,
+      cumulativeGpa: profileCumulativeGpa,
+      gpaWeighted: profileGpaWeighted,
+      // Languages
+      languages: profileLanguages
+    } = req.body;
     
     const updates = {};
-    if (name) updates.name = name;
-    if (phone !== undefined) updates.phone = phone;
-    if (avatar !== undefined) updates.avatar = avatar;
+    if (profileName) updates.name = profileName;
+    if (profilePhone !== undefined) updates.phone = profilePhone;
+    if (profileUniversity !== undefined && profileUniversity !== '') updates.university = profileUniversity;
+    if (profileUniversityLogo !== undefined && profileUniversityLogo !== '') updates.universityLogo = profileUniversityLogo;
+    if (profileBio !== undefined) updates.bio = profileBio;
+    if (profileInternshipCompany !== undefined && profileInternshipCompany !== '') updates.internshipCompany = profileInternshipCompany;
+    if (profileGraduationYear !== undefined && profileGraduationYear !== '') updates.graduationYear = profileGraduationYear;
+    if (profileMajor !== undefined && profileMajor !== '') updates.major = profileMajor;
+
+
+    if (profileFirstName !== undefined) updates.firstName = profileFirstName;
+    if (profileLastName !== undefined) updates.lastName = profileLastName;
+    if (profileDob !== undefined) updates.dob = profileDob;
+    if (profileCountry !== undefined) updates.country = profileCountry;
+    if (profileStateCity !== undefined) updates.stateCity = profileStateCity;
+    if (profileGender !== undefined) updates.gender = profileGender;
+    // Education
+    if (profileHighSchool !== undefined) updates.highSchool = profileHighSchool;
+    if (profileGradYear !== undefined) updates.gradYear = profileGradYear;
+    if (profileClassSize !== undefined) updates.classSize = profileClassSize;
+    if (profileClassRankReport !== undefined) updates.classRankReport = profileClassRankReport;
+    if (profileGpaScale !== undefined) updates.gpaScale = profileGpaScale;
+    if (profileCumulativeGpa !== undefined) updates.cumulativeGpa = profileCumulativeGpa;
+    if (profileGpaWeighted !== undefined) updates.gpaWeighted = profileGpaWeighted;
+    // Languages
+    if (profileLanguages !== undefined) updates.languages = profileLanguages;
+    
+    // Handle file upload
+    if (req.file) {
+      const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+      updates.avatar = avatarUrl;
+    }
 
     const user = await User.findByIdAndUpdate(
       req.user._id,
@@ -497,9 +652,35 @@ router.put('/profile', verifyToken, async (req, res) => {
         email: user.email,
         role: user.role,
         isEmailVerified: user.isEmailVerified,
+        studentId: user.studentId,
+        isOnboardingCompleted: user.isOnboardingCompleted,
+        onboardingCompletedAt: user.onboardingCompletedAt,
+        createdAt: user.createdAt,
         avatar: user.avatar,
         phone: user.phone,
-        lastLogin: user.lastLogin
+        university: user.university,
+        universityLogo: user.universityLogo,
+        bio: user.bio,
+        internshipCompany: user.internshipCompany,
+        graduationYear: user.graduationYear,
+        major: user.major,
+        lastLogin: user.lastLogin,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        dob: user.dob,
+        country: user.country,
+        stateCity: user.stateCity,
+        gender: user.gender,
+        // Education
+        highSchool: user.highSchool,
+        gradYear: user.gradYear,
+        classSize: user.classSize,
+        classRankReport: user.classRankReport,
+        gpaScale: user.gpaScale,
+        cumulativeGpa: user.cumulativeGpa,
+        gpaWeighted: user.gpaWeighted,
+        // Languages
+        languages: user.languages || []
       }
     });
   } catch (error) {
@@ -580,6 +761,67 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 
+
+
+// Complete onboarding
+router.post('/complete-onboarding', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.role !== 'user') {
+      return res.status(400).json({ message: 'Only students can complete onboarding' });
+    }
+
+    // Check if all required fields are filled
+    const requiredFields = ['firstName', 'lastName', 'dob', 'country', 'stateCity', 'gender', 'phone'];
+    const missingFields = requiredFields.filter(field => !user[field]);
+    
+    if (missingFields.length > 0) {
+      return res.status(400).json({ 
+        message: 'Please complete all required fields before finishing onboarding',
+        missingFields 
+      });
+    }
+
+    // Mark onboarding as completed
+    await user.completeOnboarding();
+
+    res.json({
+      message: 'Onboarding completed successfully',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        studentId: user.studentId,
+        isOnboardingCompleted: user.isOnboardingCompleted,
+        onboardingCompletedAt: user.onboardingCompletedAt,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        dob: user.dob,
+        country: user.country,
+        stateCity: user.stateCity,
+        gender: user.gender,
+        phone: user.phone,
+        highSchool: user.highSchool,
+        gradYear: user.gradYear,
+        classSize: user.classSize,
+        classRankReport: user.classRankReport,
+        gpaScale: user.gpaScale,
+        cumulativeGpa: user.cumulativeGpa,
+        gpaWeighted: user.gpaWeighted,
+        languages: user.languages || []
+      }
+    });
+  } catch (error) {
+    console.error('Complete onboarding error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Delete account
 router.delete('/account', verifyToken, async (req, res) => {
   try {
@@ -601,6 +843,79 @@ router.delete('/account', verifyToken, async (req, res) => {
     res.json({ message: 'Account deleted successfully' });
   } catch (error) {
     console.error('Account deletion error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get all students (reviewer and admin)
+router.get('/students', verifyToken, async (req, res) => {
+  try {
+    if (!['reviewer', 'admin'].includes(req.user.role)) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+    const students = await User.find({ role: { $in: ['user', 'student'] } }).select('-password');
+    res.json({ students });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Search students (reviewer and admin)
+router.get('/students/search', verifyToken, async (req, res) => {
+  try {
+    if (!['reviewer', 'admin'].includes(req.user.role)) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+    const { query } = req.query;
+    if (!query) return res.status(400).json({ message: 'Search query required' });
+    
+    const students = await User.find({
+      role: { $in: ['user', 'student'] },
+      $or: [
+        { name: { $regex: query, $options: 'i' } },
+        { email: { $regex: query, $options: 'i' } }
+      ]
+    }).select('-password');
+    
+    res.json({ students });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get single student profile (reviewer and admin)
+router.get('/students/:id', verifyToken, async (req, res) => {
+  try {
+    if (!['reviewer', 'admin'].includes(req.user.role)) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+    
+    const student = await User.findOne({
+      _id: req.params.id,
+      role: { $in: ['user', 'student'] }
+    }).select('-password');
+    
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+    
+    res.json({ student });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get single user by ID (admin only)
+router.get('/users/:id', requireAdmin, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    res.json({ user });
+  } catch (error) {
+    console.error('Get user error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -632,6 +947,67 @@ router.get('/users/search', requireAdmin, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+// Reset onboarding for a student (admin only)
+router.put('/users/:userId/reset-onboarding', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.role !== 'user') {
+      return res.status(400).json({ message: 'Can only reset onboarding for students' });
+    }
+
+    // Reset all onboarding fields
+    const resetFields = {
+      isOnboardingCompleted: false,
+      onboardingCompletedAt: null,
+      firstName: null,
+      lastName: null,
+      dob: null,
+      country: null,
+      stateCity: null,
+      gender: null,
+      phone: null,
+      highSchool: null,
+      gradYear: null,
+      classSize: null,
+      classRankReport: null,
+      gpaScale: null,
+      cumulativeGpa: null,
+      gpaWeighted: null,
+      languages: []
+    };
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      resetFields,
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    await logActivity(updatedUser, 'onboarding_reset', 'Onboarding reset by admin', req);
+
+    res.json({
+      message: 'Onboarding reset successfully',
+      user: {
+        id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        studentId: updatedUser.studentId,
+        isOnboardingCompleted: updatedUser.isOnboardingCompleted,
+        onboardingCompletedAt: updatedUser.onboardingCompletedAt
+      }
+    });
+  } catch (error) {
+    console.error('Reset onboarding error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Add user activity endpoint (admin only)
 router.get('/users/:id/activities', requireAdmin, async (req, res) => {
   try {
@@ -736,6 +1112,61 @@ router.post('/users/:id/unblock', requireAdmin, async (req, res) => {
   }
 });
 
+// Update user (admin only)
+router.put('/admin/users/:id', requireAdmin, uploadLogo.single('universityLogo'), async (req, res) => {
+  try {
+    console.log('Admin update request:', req.params.id, req.body);
+    
+    const userToUpdate = await User.findById(req.params.id);
+    if (!userToUpdate) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const {
+      university,
+      bio,
+      graduationYear,
+      major,
+      internshipCompany
+    } = req.body;
+
+    const updates = {};
+    if (university !== undefined) updates.university = university;
+    if (bio !== undefined) updates.bio = bio;
+    if (graduationYear !== undefined) updates.graduationYear = graduationYear;
+    if (major !== undefined) updates.major = major;
+    if (internshipCompany !== undefined) updates.internshipCompany = internshipCompany;
+
+    // Handle logo file upload
+    if (req.file) {
+      const logoUrl = `/uploads/logos/${req.file.filename}`;
+      updates.universityLogo = logoUrl;
+    }
+
+    console.log('Updates to apply:', updates);
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      updates,
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'Failed to update user' });
+    }
+
+    await logActivity(req.user, 'user_updated', `Updated user: ${userToUpdate.email} (${userToUpdate.role})`, req);
+
+    res.json({
+      message: 'User updated successfully',
+      user: updatedUser
+    });
+  } catch (error) {
+    console.error('Update user error:', error);
+    res.status(500).json({ message: error.message || 'Server error' });
+  }
+});
+
 // Delete user (admin only)
 router.delete('/users/:id', requireAdmin, async (req, res) => {
   try {
@@ -765,6 +1196,22 @@ router.get('/reviewers/pending', requireAdmin, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+// Get all approved reviewers (for students)
+router.get('/reviewers/approved', async (req, res) => {
+  try {
+    const approvedReviewers = await User.find({ 
+      role: 'reviewer', 
+      reviewerApprovalStatus: 'approved',
+      isBlocked: false 
+    }).select('name email university universityLogo bio graduationYear avatar phone createdAt');
+    res.json({ reviewers: approvedReviewers });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
 
 // Approve reviewer (admin only)
 router.post('/reviewers/:id/approve', requireAdmin, async (req, res) => {
@@ -837,19 +1284,6 @@ router.post('/reviewers/:id/reject', requireAdmin, async (req, res) => {
     );
 
     res.json({ message: 'Reviewer rejected', reviewer });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Get all students (reviewer and admin)
-router.get('/students', verifyToken, async (req, res) => {
-  try {
-    if (!['reviewer', 'admin'].includes(req.user.role)) {
-      return res.status(403).json({ message: 'Access denied' });
-    }
-    const students = await User.find({ role: 'user' }).select('-password');
-    res.json({ students });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }

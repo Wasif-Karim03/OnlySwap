@@ -19,6 +19,11 @@ interface User {
   blockedAt?: string;
   blockedReason?: string;
   blockedBy?: string;
+  avatar?: string;
+  phone?: string;
+  university?: string;
+  graduationYear?: string;
+  lastLogin?: string;
 }
 
 const actionLabels: Record<string, string> = {
@@ -77,20 +82,31 @@ const AdminUserProfile: React.FC = () => {
   const fetchActivities = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`/api/auth/users/${id}/activities`);
-      setActivities(res.data.activities || []);
+      // Fetch user activities
+      const activitiesRes = await axios.get(`/api/auth/users/${id}/activities`);
+      setActivities(activitiesRes.data.activities || []);
+      
+      // Fetch complete user profile
+      const userRes = await axios.get(`/api/auth/users/${id}`);
+      const userData = userRes.data.user;
+      
       setUser({ 
-        name: res.data.name, 
-        email: res.data.email,
-        role: res.data.role,
-        createdAt: res.data.createdAt,
-        isBlocked: res.data.isBlocked,
-        blockedAt: res.data.blockedAt,
-        blockedReason: res.data.blockedReason,
-        blockedBy: res.data.blockedBy
+        name: userData.name, 
+        email: userData.email,
+        role: userData.role,
+        createdAt: userData.createdAt,
+        isBlocked: userData.isBlocked,
+        blockedAt: userData.blockedAt,
+        blockedReason: userData.blockedReason,
+        blockedBy: userData.blockedBy,
+        avatar: userData.avatar,
+        phone: userData.phone,
+        university: userData.university,
+        graduationYear: userData.graduationYear,
+        lastLogin: userData.lastLogin
       });
     } catch (err: any) {
-      setError('Failed to fetch user activity');
+      setError('Failed to fetch user profile');
     } finally {
       setLoading(false);
     }
@@ -134,6 +150,15 @@ const AdminUserProfile: React.FC = () => {
     if (userAgent.includes('Mobile')) return 'Mobile Device';
     
     return 'Desktop Browser';
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   const handleBlockUser = async () => {
@@ -225,14 +250,24 @@ const AdminUserProfile: React.FC = () => {
 
         {/* User Info Card */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-          <div className="flex items-center mb-6">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-3xl font-bold mr-6">
-              {user?.name?.charAt(0)}
+          <div className="flex items-start mb-6">
+            <div className="w-20 h-20 rounded-full overflow-hidden mr-6">
+              {user?.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold">
+                  {getInitials(user?.name || '')}
+                </div>
+              )}
             </div>
             <div className="flex-1">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">{user?.name}</h1>
               <p className="text-gray-600 text-lg mb-2">{user?.email}</p>
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-4 mb-4">
                 {user?.role && (
                   <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${
                     user.role === 'admin' 
@@ -255,6 +290,34 @@ const AdminUserProfile: React.FC = () => {
                   <span className="text-gray-500 text-sm">
                     Member since {formatDate(user.createdAt).date}
                   </span>
+                )}
+              </div>
+              
+              {/* Additional Profile Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {user?.phone && (
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <p className="text-gray-900">{user.phone}</p>
+                  </div>
+                )}
+                {user?.university && (
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">University</label>
+                    <p className="text-gray-900">{user.university}</p>
+                  </div>
+                )}
+                {user?.graduationYear && (
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Graduation Year</label>
+                    <p className="text-gray-900">{user.graduationYear}</p>
+                  </div>
+                )}
+                {user?.lastLogin && (
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Last Login</label>
+                    <p className="text-gray-900">{formatDate(user.lastLogin).date} at {formatDate(user.lastLogin).time}</p>
+                  </div>
                 )}
               </div>
             </div>

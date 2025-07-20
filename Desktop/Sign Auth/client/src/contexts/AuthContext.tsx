@@ -7,11 +7,46 @@ interface User {
   email: string;
   role: string;
   isEmailVerified: boolean;
+  studentId?: string;
+  isOnboardingCompleted?: boolean;
+  onboardingCompletedAt?: string;
+  createdAt?: string;
 
   avatar?: string;
   phone?: string;
+  university?: string;
+  universityLogo?: string;
+  bio?: string;
+  internshipCompany?: string;
+  graduationYear?: string;
+  major?: string;
   lastLogin?: string;
   reviewerApprovalStatus?: string | null;
+  firstName?: string;
+  lastName?: string;
+  dob?: string;
+  country?: string;
+  stateCity?: string;
+  gender?: string;
+  
+  // Education fields
+  highSchool?: string;
+  gradYear?: string;
+  classSize?: string;
+  classRankReport?: string;
+  gpaScale?: string;
+  cumulativeGpa?: string;
+  gpaWeighted?: string;
+  
+  // Languages
+  languages?: Array<{
+    language: string;
+    proficiency: string;
+    speak: boolean;
+    read: boolean;
+    write: boolean;
+    spokenAtHome: boolean;
+  }>;
 }
 
 interface AuthContextType {
@@ -31,7 +66,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
+  const context = useContext(AuthContext) as AuthContextType & { reloadProfile: () => Promise<void> };
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
@@ -144,7 +179,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
   };
 
-  const value: AuthContextType = {
+  const reloadProfile = async () => {
+    try {
+      const response = await axios.get('/api/auth/profile');
+      setUser(response.data.user);
+    } catch (error) {
+      // Optionally handle error
+    }
+  };
+
+  const value: AuthContextType & { reloadProfile: () => Promise<void> } = {
     user,
     token,
     loading,
@@ -153,9 +197,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     signOut,
     verifyEmail,
     resendVerification,
-
     updateProfile,
-    deleteAccount
+    deleteAccount,
+    reloadProfile
   };
 
   return (
