@@ -264,7 +264,7 @@ const AdminDashboard: React.FC = () => {
                 Manage Reviewers
               </button>
               <button 
-                onClick={() => navigate('/admin/chat')}
+                onClick={() => navigate('/admin/chat', { state: { from: '/admin' } })}
                 className="btn-primary"
               >
                 Chat Support

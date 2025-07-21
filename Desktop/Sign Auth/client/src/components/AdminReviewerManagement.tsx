@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface Reviewer {
   _id: string;
@@ -19,6 +20,7 @@ interface Reviewer {
 
 const AdminReviewerManagement: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [reviewers, setReviewers] = useState<Reviewer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -149,13 +151,26 @@ const AdminReviewerManagement: React.FC = () => {
       <div className="max-w-6xl mx-auto">
         <div className="card">
           <div className="flex justify-between items-center mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Reviewer Management
-              </h1>
-              <p className="text-gray-600">
-                Manage reviewer profiles and university logos
-              </p>
+            <div className="flex items-center space-x-4">
+              {/* Back Button */}
+              <button
+                onClick={() => navigate('/admin')}
+                className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                title="Back to Admin Dashboard"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  Reviewer Management
+                </h1>
+                <p className="text-gray-600">
+                  Manage reviewer profiles and university logos
+                </p>
+              </div>
             </div>
           </div>
 

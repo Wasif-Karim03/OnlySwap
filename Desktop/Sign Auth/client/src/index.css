@@ -69,6 +69,14 @@
   }
 }
 
+@keyframes fade-in-pop {
+  0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.animate-fade-in-pop {
+  animation: fade-in-pop 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+
 /* Disable browser autofill icons and suggestions */
 input[type="email"],
 input[type="password"],

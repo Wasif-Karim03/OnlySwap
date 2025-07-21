@@ -13,6 +13,7 @@ import AdminUserProfile from './components/AdminUserProfile';
 import AdminReviewerManagement from './components/AdminReviewerManagement';
 import AdminChatInterface from './components/AdminChatInterface';
 import ReviewerWelcome from './components/ReviewerWelcome';
+import ReviewerChatInterface from './components/ReviewerChatInterface';
 import StudentProfile from './components/StudentProfile';
 import StudentHome from './components/StudentHome';
 import StudentOnboarding from './components/StudentOnboarding';
@@ -167,6 +168,21 @@ const App: React.FC = () => {
                     transition={{ duration: 0.5 }}
                   >
                     <ReviewerWelcome />
+                  </motion.div>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/reviewer/chat" 
+              element={
+                <ProtectedRoute>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <ReviewerChatInterface />
                   </motion.div>
                 </ProtectedRoute>
               } 

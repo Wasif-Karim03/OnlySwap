@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import ChatNotification from './ChatNotification';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface Conversation {
   userId: string;
@@ -34,6 +35,12 @@ interface Message {
 
 const AdminChatInterface: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get the previous page from location state, or default to admin dashboard
+  const previousPage = location.state?.from || '/admin';
+  
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -44,6 +51,18 @@ const AdminChatInterface: React.FC = () => {
   const [lastMessageCount, setLastMessageCount] = useState(0);
   const [lastConversationUpdate, setLastConversationUpdate] = useState(0);
   const [notification, setNotification] = useState({ message: '', isVisible: false });
+  const [isTyping, setIsTyping] = useState(false);
+  const [activeStatus, setActiveStatus] = useState('');
+  const typingTimeout = useRef<NodeJS.Timeout | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [messageSearchQuery, setMessageSearchQuery] = useState('');
+  const [searchingMessages, setSearchingMessages] = useState(false);
+
+  // Filter conversations based on search
+  const filteredConversations = conversations.filter(conversation =>
+    conversation.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    conversation.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   useEffect(() => {
     fetchConversations();
@@ -73,6 +92,50 @@ const AdminChatInterface: React.FC = () => {
     }
   }, [selectedConversation]);
 
+  // Poll typing and active status
+  useEffect(() => {
+    let typingInterval: NodeJS.Timeout;
+    let activeInterval: NodeJS.Timeout;
+    if (selectedConversation) {
+      const fetchTyping = async () => {
+        try {
+          const res = await axios.get(`/api/chat/typing/${selectedConversation.userId}`);
+          setIsTyping(res.data.isTyping);
+        } catch {}
+      };
+      const fetchActive = async () => {
+        try {
+          const res = await axios.get(`/api/auth/active-status/${selectedConversation.userId}`);
+          const last = new Date(res.data.lastActive);
+          const now = new Date();
+          const diff = Math.floor((now.getTime() - last.getTime()) / 60000);
+          if (diff < 1) setActiveStatus('Active now');
+          else setActiveStatus(`Last seen ${diff} min ago`);
+        } catch {}
+      };
+      fetchTyping();
+      fetchActive();
+      typingInterval = setInterval(fetchTyping, 2000);
+      activeInterval = setInterval(fetchActive, 10000);
+      return () => {
+        clearInterval(typingInterval);
+        clearInterval(activeInterval);
+      };
+    }
+  }, [selectedConversation]);
+
+  // Send typing status
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMessage(e.target.value);
+    if (selectedConversation) {
+      axios.post('/api/chat/typing', { receiverId: selectedConversation.userId, isTyping: true });
+      if (typingTimeout.current) clearTimeout(typingTimeout.current);
+      typingTimeout.current = setTimeout(() => {
+        axios.post('/api/chat/typing', { receiverId: selectedConversation.userId, isTyping: false });
+      }, 2000);
+    }
+  };
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -98,25 +161,27 @@ const AdminChatInterface: React.FC = () => {
       const response = await axios.get(`/api/chat/messages/${userId}`);
       const newMessages = response.data.messages;
       
-      // Check if we have new messages
-      if (newMessages.length !== lastMessageCount) {
-        setMessages(newMessages);
-        setLastMessageCount(newMessages.length);
-        
+      // Always update messages to ensure we have the latest data
+      // This prevents messages from disappearing when new ones arrive
+      setMessages(newMessages);
+      
+      // Check if we have new messages for notifications
+      if (newMessages.length > lastMessageCount) {
         // If this is a new message from someone else, scroll to bottom and show notification
-        if (newMessages.length > lastMessageCount) {
-          setTimeout(() => scrollToBottom(), 100);
-          
-          // Show notification for new message
-          const newMessage = newMessages[newMessages.length - 1];
-          if (newMessage.sender._id !== user?.id) {
-            setNotification({
-              message: `New message from ${newMessage.sender.name}`,
-              isVisible: true
-            });
-          }
+        setTimeout(() => scrollToBottom(), 100);
+        
+        // Show notification for new message
+        const newMessage = newMessages[newMessages.length - 1];
+        if (newMessage.sender._id !== user?.id) {
+          setNotification({
+            message: `New message from ${newMessage.sender.name}`,
+            isVisible: true
+          });
         }
       }
+      
+      // Update the last message count
+      setLastMessageCount(newMessages.length);
     } catch (error) {
       console.error('Failed to fetch messages:', error);
     }
@@ -156,6 +221,25 @@ const AdminChatInterface: React.FC = () => {
     }
   };
 
+  // Search messages function
+  const searchMessages = async () => {
+    if (!messageSearchQuery.trim() || !selectedConversation) return;
+    
+    setSearchingMessages(true);
+    try {
+      const response = await axios.get(`/api/chat/messages/${selectedConversation.userId}/search?query=${encodeURIComponent(messageSearchQuery)}`);
+      // For now, just show a notification with results count
+      setNotification({
+        message: `Found ${response.data.messages.length} messages matching "${messageSearchQuery}"`,
+        isVisible: true
+      });
+    } catch (error) {
+      console.error('Failed to search messages:', error);
+    } finally {
+      setSearchingMessages(false);
+    }
+  };
+
   const formatTime = (dateString: string) => {
     return new Date(dateString).toLocaleTimeString([], { 
       hour: '2-digit', 
@@ -170,6 +254,11 @@ const AdminChatInterface: React.FC = () => {
       .join('')
       .toUpperCase()
       .slice(0, 2);
+  };
+
+  // Smart back navigation function
+  const handleBackNavigation = () => {
+    navigate(previousPage);
   };
 
   if (loading) {
@@ -190,13 +279,26 @@ const AdminChatInterface: React.FC = () => {
       <div className="max-w-6xl mx-auto">
         <div className="card">
           <div className="flex justify-between items-center mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Chat Support
-              </h1>
-              <p className="text-gray-600">
-                Communicate with students and provide support
-              </p>
+            <div className="flex items-center space-x-4">
+              {/* Back Button */}
+              <button
+                onClick={handleBackNavigation}
+                className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                title={`Back to ${previousPage === '/admin' ? 'Admin Dashboard' : 'Previous Page'}`}
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  Admin Chat
+                </h1>
+                <p className="text-gray-600">
+                  Communicate with students
+                </p>
+              </div>
             </div>
             <div className="flex items-center space-x-2 text-sm text-gray-500">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
@@ -208,15 +310,27 @@ const AdminChatInterface: React.FC = () => {
             {/* Conversations List */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
               <div className="p-4 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900">Students</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Students</h3>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search students..."
+                    className="w-full px-3 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  />
+                  <svg className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
               </div>
               <div className="overflow-y-auto h-full">
-                {conversations.length === 0 ? (
+                {filteredConversations.length === 0 ? (
                   <div className="p-4 text-center text-gray-500">
-                    No students found
+                    {searchQuery ? 'No students found matching your search' : 'No students found'}
                   </div>
                 ) : (
-                  conversations.map((conversation) => (
+                  filteredConversations.map((conversation) => (
                     <div
                       key={conversation.userId}
                       onClick={() => setSelectedConversation(conversation)}
@@ -259,12 +373,24 @@ const AdminChatInterface: React.FC = () => {
             </div>
 
             {/* Chat Area */}
-            <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col">
+            <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-[600px]">
               {selectedConversation ? (
                 <>
                   {/* Chat Header */}
-                  <div className="p-4 border-b border-gray-200">
-                    <div className="flex items-center space-x-3">
+                  <div className="p-4 border-b border-gray-200 shrink-0">
+                    <div className="flex items-center space-x-3 mb-3">
+                      {/* Back Button */}
+                      <button
+                        onClick={() => setSelectedConversation(null)}
+                        className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                        title="Back to conversations"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      
+                      {/* Existing avatar and user info */}
                       {selectedConversation.avatar ? (
                         <img
                           src={selectedConversation.avatar}
@@ -272,23 +398,47 @@ const AdminChatInterface: React.FC = () => {
                           className="w-10 h-10 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                          {getInitials(selectedConversation.name)}
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                          {selectedConversation.name.charAt(0).toUpperCase()}
                         </div>
                       )}
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">
-                          {selectedConversation.name}
-                        </h3>
-                        <p className="text-sm text-gray-500">
-                          {selectedConversation.email}
-                        </p>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900">{selectedConversation.name}</h3>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-gray-500">{selectedConversation.email}</span>
+                          <div className={`w-2 h-2 rounded-full ${activeStatus === 'online' ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                          <span className="text-xs text-gray-400">
+                            {activeStatus === 'online' ? 'Online' : 'Offline'}
+                          </span>
+                        </div>
                       </div>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={messageSearchQuery}
+                        onChange={(e) => setMessageSearchQuery(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && searchMessages()}
+                        placeholder="Search messages in this conversation..."
+                        className="w-full px-3 py-2 pl-10 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      />
+                      <svg className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                      {messageSearchQuery && (
+                        <button
+                          onClick={searchMessages}
+                          disabled={searchingMessages}
+                          className="absolute right-2 top-1.5 px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 disabled:opacity-50"
+                        >
+                          {searchingMessages ? '...' : 'Search'}
+                        </button>
+                      )}
                     </div>
                   </div>
 
                   {/* Messages */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ minHeight: 0 }}>
                     {messages.length === 0 ? (
                       <div className="text-center text-gray-500 py-8">
                         No messages yet. Start the conversation!
@@ -299,23 +449,17 @@ const AdminChatInterface: React.FC = () => {
                         return (
                           <div
                             key={message._id}
-                            className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
+                            className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} w-full`}
                           >
                             <div
-                              className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                                isOwnMessage
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-gray-100 text-gray-900'
-                              }`}
+                              className={`max-w-xs md:max-w-md px-5 py-3 mb-2 rounded-2xl shadow-md animate-fade-in-pop text-sm break-words transition-all duration-200
+                                ${isOwnMessage
+                                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white self-end'
+                                  : 'bg-blue-50 text-gray-800 self-start border border-blue-100'}
+                              `}
                             >
-                              <div className="text-sm">{message.content}</div>
-                              <div
-                                className={`text-xs mt-1 ${
-                                  isOwnMessage ? 'text-blue-100' : 'text-gray-500'
-                                }`}
-                              >
-                                {formatTime(message.createdAt)}
-                              </div>
+                              {message.content}
+                              <div className={`text-xs mt-1 ${isOwnMessage ? 'text-pink-100' : 'text-blue-400'} text-right opacity-70`}>{formatTime(message.createdAt)}</div>
                             </div>
                           </div>
                         );
@@ -325,12 +469,12 @@ const AdminChatInterface: React.FC = () => {
                   </div>
 
                   {/* Message Input */}
-                  <div className="p-4 border-t border-gray-200">
+                  <div className="p-4 border-t border-gray-200 shrink-0">
                     <form onSubmit={sendMessage} className="flex space-x-2">
                       <input
                         type="text"
                         value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
+                        onChange={handleInputChange}
                         placeholder="Type your message..."
                         className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         disabled={sending}

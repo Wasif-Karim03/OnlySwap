@@ -267,12 +267,20 @@ const StudentProfile: React.FC = () => {
             </div>
             <div className="flex space-x-3">
               {!isEditing ? (
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
-                >
-                  Edit Profile
-                </button>
+                <>
+                  <button
+                    onClick={() => navigate('/chat', { state: { from: '/student/profile' } })}
+                    className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+                  >
+                    Chat Support
+                  </button>
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+                  >
+                    Edit Profile
+                  </button>
+                </>
               ) : (
                 <>
                   <button

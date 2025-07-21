@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 
@@ -33,6 +33,7 @@ interface Reviewer {
 const StudentHome: React.FC = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
   const [overallProgress, setOverallProgress] = useState(0);
   const [reviewers, setReviewers] = useState<Reviewer[]>([]);
@@ -398,61 +399,6 @@ const StudentHome: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-12"
-        >
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Quick Actions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <button className="flex items-center space-x-4 p-6 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-all duration-200">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                  </svg>
-                </div>
-                <div className="text-left">
-                  <div className="font-semibold text-gray-900">View Resources</div>
-                  <div className="text-sm text-gray-500">Access guides and tips</div>
-                </div>
-              </button>
-
-              <button 
-                onClick={() => navigate('/student/profile')}
-                className="flex items-center space-x-4 p-6 border border-gray-200 rounded-lg hover:bg-emerald-50 hover:border-emerald-300 transition-all duration-200"
-              >
-                <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-                <div className="text-left">
-                  <div className="font-semibold text-gray-900">Update Profile</div>
-                  <div className="text-sm text-gray-500">Edit your information</div>
-                </div>
-              </button>
-
-              <button 
-                onClick={() => setShowSupportModal(true)}
-                className="flex items-center space-x-4 p-6 border border-gray-200 rounded-lg hover:bg-purple-50 hover:border-purple-300 transition-all duration-200"
-              >
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div className="text-left">
-                  <div className="font-semibold text-gray-900">Get Support</div>
-                  <div className="text-sm text-gray-500">Contact assistance</div>
-                </div>
-              </button>
-            </div>
-          </div>
-        </motion.div>
-
         {/* Available Reviewers Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -665,7 +611,7 @@ const StudentHome: React.FC = () => {
                 <button
                   onClick={() => {
                     setShowSupportModal(false);
-                    navigate('/chat');
+                    navigate('/chat', { state: { from: '/student' } });
                   }}
                   className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-2 rounded-lg font-semibold transition-all duration-300"
                 >
@@ -676,6 +622,17 @@ const StudentHome: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Floating Chat Button */}
+      <button
+        onClick={() => navigate('/chat', { state: { from: location.pathname } })}
+        className="fixed bottom-8 right-8 z-50 bg-white hover:bg-blue-50 text-blue-600 rounded-full shadow-2xl p-4 flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-blue-200 border border-blue-100"
+        title="Open Chat Support"
+      >
+        <svg className="w-7 h-7" fill="none" stroke="#2563eb" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a8.96 8.96 0 01-4.255-.949L3 20l1.395-3.72C2.512 15.042 2 13.574 2 12c0-4.418 3.582-8 8-8s8 3.582 8 8z" />
+        </svg>
+      </button>
     </div>
   );
 };

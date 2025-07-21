@@ -250,6 +250,12 @@ const ReviewerWelcome: React.FC = () => {
             </div>
             <div className="flex space-x-3">
               <button 
+                onClick={() => navigate('/reviewer/chat', { state: { from: '/reviewer' } })}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
+              >
+                Chat Support
+              </button>
+              <button 
                 onClick={() => setShowProfileEdit(true)}
                 className="btn-primary"
               >

@@ -1289,4 +1289,15 @@ router.post('/reviewers/:id/reject', requireAdmin, async (req, res) => {
   }
 });
 
+// Get active status for a user
+router.get('/active-status/:userId', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId).select('lastActive name');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json({ lastActive: user.lastActive, name: user.name });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to get active status' });
+  }
+});
+
 module.exports = router; 

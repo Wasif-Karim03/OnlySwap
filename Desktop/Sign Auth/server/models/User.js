@@ -123,6 +123,16 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  lastActive: {
+    type: Date,
+    default: Date.now
+  },
+  typingStatus: {
+    // Map of userId to boolean (true if typing to that user)
+    type: Map,
+    of: Boolean,
+    default: {}
+  },
   loginAttempts: {
     type: Number,
     default: 0

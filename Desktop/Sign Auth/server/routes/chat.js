@@ -36,24 +36,86 @@ const requireAdmin = async (req, res, next) => {
   next();
 };
 
+// Update lastActive middleware
+const updateLastActive = async (req, res, next) => {
+  if (req.user) {
+    req.user.lastActive = new Date();
+    await req.user.save();
+  }
+  next();
+};
+
+// Apply updateLastActive to all chat routes
+router.use(verifyToken, updateLastActive);
+
+// Typing status endpoint
+router.post('/typing', verifyToken, async (req, res) => {
+  try {
+    const { receiverId, isTyping } = req.body;
+    if (!receiverId) return res.status(400).json({ message: 'receiverId required' });
+    req.user.typingStatus.set(receiverId, !!isTyping);
+    await req.user.save();
+    res.json({ message: 'Typing status updated' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to update typing status' });
+  }
+});
+
+// Get typing status for a conversation
+router.get('/typing/:otherUserId', verifyToken, async (req, res) => {
+  try {
+    const { otherUserId } = req.params;
+    const otherUser = await User.findById(otherUserId);
+    if (!otherUser) return res.status(404).json({ message: 'User not found' });
+    const isTyping = otherUser.typingStatus.get(String(req.user._id)) || false;
+    res.json({ isTyping });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to get typing status' });
+  }
+});
+
 // Get all conversations for a user (students see admin conversations, admins see all student conversations)
 router.get('/conversations', verifyToken, async (req, res) => {
   try {
     let conversations = [];
     
     if (req.user.role === 'admin') {
-      // Admins see conversations with all students
+      // Admins see conversations with all students and reviewers
       const students = await User.find({ role: 'user' }).select('name email avatar');
-      conversations = students.map(student => ({
-        userId: student._id,
-        name: student.name,
-        email: student.email,
-        avatar: student.avatar,
-        role: 'user',
+      const reviewers = await User.find({ role: 'reviewer' }).select('name email avatar');
+      
+      const allUsers = [...students, ...reviewers];
+      conversations = allUsers.map(user => ({
+        userId: user._id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+        role: user.role,
         unreadCount: 0 // Will be calculated below
       }));
       
-      // Get unread message counts for each student
+      // Get unread message counts for each user
+      for (let conv of conversations) {
+        const unreadCount = await Message.countDocuments({
+          sender: conv.userId,
+          receiver: req.user._id,
+          isRead: false
+        });
+        conv.unreadCount = unreadCount;
+      }
+    } else if (req.user.role === 'reviewer') {
+      // Reviewers see conversations with all admins
+      const admins = await User.find({ role: 'admin' }).select('name email avatar');
+      conversations = admins.map(admin => ({
+        userId: admin._id,
+        name: admin.name,
+        email: admin.email,
+        avatar: admin.avatar,
+        role: 'admin',
+        unreadCount: 0
+      }));
+      
+      // Get unread message counts for each admin
       for (let conv of conversations) {
         const unreadCount = await Message.countDocuments({
           sender: conv.userId,
@@ -130,6 +192,42 @@ router.get('/messages/:otherUserId', verifyToken, async (req, res) => {
     res.json({ messages });
   } catch (error) {
     console.error('Get messages error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Search messages in a conversation
+router.get('/messages/:otherUserId/search', verifyToken, async (req, res) => {
+  try {
+    const { otherUserId } = req.params;
+    const { query } = req.query;
+    
+    if (!query) {
+      return res.status(400).json({ message: 'Search query is required' });
+    }
+    
+    // Verify the other user exists
+    const otherUser = await User.findById(otherUserId);
+    if (!otherUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Search messages between the two users
+    const messages = await Message.find({
+      $or: [
+        { sender: req.user._id, receiver: otherUserId },
+        { sender: otherUserId, receiver: req.user._id }
+      ],
+      content: { $regex: query, $options: 'i' }
+    })
+    .sort({ createdAt: -1 })
+    .limit(50)
+    .populate('sender', 'name email avatar')
+    .populate('receiver', 'name email avatar');
+    
+    res.json({ messages });
+  } catch (error) {
+    console.error('Search messages error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

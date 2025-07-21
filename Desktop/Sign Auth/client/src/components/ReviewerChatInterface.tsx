@@ -33,13 +33,13 @@ interface Message {
   createdAt: string;
 }
 
-const StudentChatInterface: React.FC = () => {
+const ReviewerChatInterface: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Get the previous page from location state, or default to student home
-  const previousPage = location.state?.from || '/student';
+  // Get the previous page from location state, or default to reviewer dashboard
+  const previousPage = location.state?.from || '/reviewer';
   
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
@@ -105,18 +105,14 @@ const StudentChatInterface: React.FC = () => {
       };
       const fetchActive = async () => {
         try {
-          const res = await axios.get(`/api/auth/active-status/${selectedConversation.userId}`);
-          const last = new Date(res.data.lastActive);
-          const now = new Date();
-          const diff = Math.floor((now.getTime() - last.getTime()) / 60000);
-          if (diff < 1) setActiveStatus('Active now');
-          else setActiveStatus(`Last seen ${diff} min ago`);
+          const res = await axios.get(`/api/auth/user/${selectedConversation.userId}/active`);
+          setActiveStatus(res.data.activeStatus);
         } catch {}
       };
-      fetchTyping();
-      fetchActive();
+      
       typingInterval = setInterval(fetchTyping, 2000);
-      activeInterval = setInterval(fetchActive, 10000);
+      activeInterval = setInterval(fetchActive, 5000);
+      
       return () => {
         clearInterval(typingInterval);
         clearInterval(activeInterval);
@@ -124,21 +120,23 @@ const StudentChatInterface: React.FC = () => {
     }
   }, [selectedConversation]);
 
-  // Send typing status
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewMessage(e.target.value);
-    if (selectedConversation) {
-      axios.post('/api/chat/typing', { receiverId: selectedConversation.userId, isTyping: true });
-      if (typingTimeout.current) clearTimeout(typingTimeout.current);
-      typingTimeout.current = setTimeout(() => {
-        axios.post('/api/chat/typing', { receiverId: selectedConversation.userId, isTyping: false });
-      }, 2000);
-    }
-  };
-
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMessage(e.target.value);
+    
+    // Send typing status
+    if (selectedConversation) {
+      clearTimeout(typingTimeout.current!);
+      axios.post(`/api/chat/typing/${selectedConversation.userId}`, { isTyping: true });
+      
+      typingTimeout.current = setTimeout(() => {
+        axios.post(`/api/chat/typing/${selectedConversation.userId}`, { isTyping: false });
+      }, 2000);
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -147,11 +145,20 @@ const StudentChatInterface: React.FC = () => {
   const fetchConversations = async () => {
     try {
       const response = await axios.get('/api/chat/conversations');
-      setConversations(response.data.conversations);
-      setLastConversationUpdate(Date.now());
+      const newConversations = response.data.conversations;
+      
+      // Only update if there are actual changes
+      if (JSON.stringify(newConversations) !== JSON.stringify(conversations)) {
+        setConversations(newConversations);
+        setLastConversationUpdate(Date.now());
+      }
+      
+      // Set loading to false after first successful fetch
+      if (loading) {
+        setLoading(false);
+      }
     } catch (error) {
       console.error('Failed to fetch conversations:', error);
-    } finally {
       setLoading(false);
     }
   };
@@ -189,33 +196,29 @@ const StudentChatInterface: React.FC = () => {
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedConversation || !newMessage.trim() || sending) return;
+    if (!newMessage.trim() || !selectedConversation || sending) return;
 
     setSending(true);
     try {
-      const response = await axios.post('/api/chat/messages', {
+      await axios.post('/api/chat/messages', {
         receiverId: selectedConversation.userId,
         content: newMessage.trim()
       });
-
-      // Add the new message to the current messages
-      setMessages(prev => [...prev, response.data.message]);
+      
       setNewMessage('');
-      setLastMessageCount(prev => prev + 1);
+      // Refresh messages immediately
+      await fetchMessages(selectedConversation.userId);
       
-      // Update unread count in conversations
-      setConversations(prev => 
-        prev.map(conv => 
-          conv.userId === selectedConversation.userId 
-            ? { ...conv, unreadCount: 0 }
-            : conv
-        )
-      );
-      
-      // Scroll to bottom after sending
-      setTimeout(() => scrollToBottom(), 100);
+      setNotification({
+        message: 'Message sent successfully!',
+        isVisible: true
+      });
     } catch (error) {
       console.error('Failed to send message:', error);
+      setNotification({
+        message: 'Failed to send message. Please try again.',
+        isVisible: true
+      });
     } finally {
       setSending(false);
     }
@@ -284,7 +287,7 @@ const StudentChatInterface: React.FC = () => {
               <button
                 onClick={handleBackNavigation}
                 className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-                title={`Back to ${previousPage === '/student' ? 'Student Home' : 'Previous Page'}`}
+                title={`Back to ${previousPage === '/reviewer' ? 'Reviewer Dashboard' : 'Previous Page'}`}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -293,10 +296,10 @@ const StudentChatInterface: React.FC = () => {
               
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                  Support Chat
+                  Admin Chat
                 </h1>
                 <p className="text-gray-600">
-                  Get help from our support team
+                  Contact administrators for support
                 </p>
               </div>
             </div>
@@ -310,13 +313,13 @@ const StudentChatInterface: React.FC = () => {
             {/* Conversations List */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
               <div className="p-4 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Support Team</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Administrators</h3>
                 <div className="relative">
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search support team..."
+                    placeholder="Search administrators..."
                     className="w-full px-3 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   />
                   <svg className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -327,7 +330,7 @@ const StudentChatInterface: React.FC = () => {
               <div className="overflow-y-auto h-full">
                 {filteredConversations.length === 0 ? (
                   <div className="p-4 text-center text-gray-500">
-                    {searchQuery ? 'No support team members found matching your search' : 'No support team members found'}
+                    {searchQuery ? 'No administrators found matching your search' : 'No administrators found'}
                   </div>
                 ) : (
                   filteredConversations.map((conversation) => (
@@ -346,7 +349,7 @@ const StudentChatInterface: React.FC = () => {
                             className="w-10 h-10 rounded-full object-cover"
                           />
                         ) : (
-                          <div className="w-10 h-10 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                          <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
                             {getInitials(conversation.name)}
                           </div>
                         )}
@@ -438,33 +441,27 @@ const StudentChatInterface: React.FC = () => {
                   </div>
 
                   {/* Messages */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ minHeight: 0 }}>
-                    {messages.length === 0 ? (
-                      <div className="text-center text-gray-500 py-8">
-                        No messages yet. Start the conversation!
-                      </div>
-                    ) : (
-                      messages.map((message) => {
-                        const isOwnMessage = message.sender._id === user?.id;
-                        return (
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                    {messages.map((message) => {
+                      const isOwnMessage = message.sender._id === user?.id;
+                      return (
+                        <div
+                          key={message._id}
+                          className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
+                        >
                           <div
-                            key={message._id}
-                            className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} w-full`}
+                            className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl shadow-sm animate-pop-in ${
+                              isOwnMessage
+                                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+                                : 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800'
+                            }`}
                           >
-                            <div
-                              className={`max-w-xs md:max-w-md px-5 py-3 mb-2 rounded-2xl shadow-md animate-fade-in-pop text-sm break-words transition-all duration-200
-                                ${isOwnMessage
-                                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white self-end'
-                                  : 'bg-blue-50 text-gray-800 self-start border border-blue-100'}
-                              `}
-                            >
-                              {message.content}
-                              <div className={`text-xs mt-1 ${isOwnMessage ? 'text-pink-100' : 'text-blue-400'} text-right opacity-70`}>{formatTime(message.createdAt)}</div>
-                            </div>
+                            <div className="text-sm">{message.content}</div>
+                            <div className={`text-xs mt-1 ${isOwnMessage ? 'text-pink-100' : 'text-blue-400'} text-right opacity-70`}>{formatTime(message.createdAt)}</div>
                           </div>
-                        );
-                      })
-                    )}
+                        </div>
+                      );
+                    })}
                     <div ref={messagesEndRef} />
                   </div>
 
@@ -495,8 +492,8 @@ const StudentChatInterface: React.FC = () => {
                     <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                     </svg>
-                    <h3 className="text-lg font-medium mb-2">Select a support team member to start chatting</h3>
-                    <p className="text-sm">Choose a team member from the list to begin a conversation</p>
+                    <h3 className="text-lg font-medium mb-2">Select an administrator to start chatting</h3>
+                    <p className="text-sm">Choose an admin from the list to begin a conversation</p>
                   </div>
                 </div>
               )}
@@ -508,4 +505,4 @@ const StudentChatInterface: React.FC = () => {
   );
 };
 
-export default StudentChatInterface; 
+export default ReviewerChatInterface; 
