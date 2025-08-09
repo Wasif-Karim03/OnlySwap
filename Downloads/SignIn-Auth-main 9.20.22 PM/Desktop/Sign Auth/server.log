@@ -1,0 +1,3044 @@
+
+> clean-auth-project@1.0.0 dev
+> concurrently "npm run server" "npm run client"
+
+[1] 
+[1] > clean-auth-project@1.0.0 client
+[1] > cd client && npm start
+[1] 
+[0] 
+[0] > clean-auth-project@1.0.0 server
+[0] > cd server && npm run dev
+[0] 
+[0] 
+[0] > clean-auth-server@1.0.0 dev
+[0] > nodemon index.js
+[0] 
+[1] 
+[1] > clean-auth-client@0.1.0 start
+[1] > react-scripts start
+[1] 
+[0] [33m[nodemon] 3.1.10[39m
+[0] [33m[nodemon] to restart at any time, enter `rs`[39m
+[0] [33m[nodemon] watching path(s): *.*[39m
+[0] [33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[0] [32m[nodemon] starting `node index.js`[39m
+[0] Server running on port 5001
+[0] Connected to MongoDB
+[1] (node:9327) [DEP_WEBPACK_DEV_SERVER_ON_AFTER_SETUP_MIDDLEWARE] DeprecationWarning: 'onAfterSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+[1] (Use `node --trace-deprecation ...` to show where the warning was created)
+[1] (node:9327) [DEP_WEBPACK_DEV_SERVER_ON_BEFORE_SETUP_MIDDLEWARE] DeprecationWarning: 'onBeforeSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+[1] Starting the development server...
+[1] 
+[1] Compiled successfully!
+[1] 
+[1] You can now view clean-auth-client in the browser.
+[1] 
+[1]   Local:            http://localhost:3000
+[1]   On Your Network:  http://192.168.23.44:3000
+[1] 
+[1] Note that the development build is not optimized.
+[1] To create a production build, use npm run build.
+[1] 
+[1] webpack compiled successfully
+[1] Files successfully emitted, waiting for typecheck results...
+[1] Issues checking in progress...
+[1] No issues found.
+[1] (node:9327) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+[1] Compiling...
+[1] Compiled successfully!
+[1] webpack compiled successfully
+[1] ERROR in src/components/LandingPage.tsx
+[1] TS1208: 'LandingPage.tsx' cannot be compiled under '--isolatedModules' because it is considered a global script file. Add an import, export, or an empty 'export {}' statement to make it a module.
+[1] 
+[1] Compiling...
+[1] Compiled successfully!
+[1] webpack compiled successfully
+[1] Files successfully emitted, waiting for typecheck results...
+[1] Issues checking in progress...
+[1] No issues found.
+[1] Compiling...
+[1] Compiled successfully!
+[1] webpack compiled successfully
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used       @typescript-eslint/no-unused-vars
+[1]   Line 5:8:   'LandingPage' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used       @typescript-eslint/no-unused-vars
+[1]   Line 5:8:   'LandingPage' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Failed to compile.
+[1] 
+[1] [eslint] 
+[1] src/components/SignIn.tsx
+[1] Syntax error: JSX element 'motion.div' has no corresponding closing tag (33:7)
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] ERROR in ./src/components/SignIn.tsx
+[1] Module build failed (from ./node_modules/babel-loader/lib/index.js):
+[1] SyntaxError: /Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/src/components/SignIn.tsx: Expected corresponding JSX closing tag for <motion.div>. (179:8)
+[1] 
+[1]   177 |             </p>
+[1]   178 |           </div>
+[1] > 179 |         </div>
+[1]       |         ^
+[1]   180 |       </motion.div>
+[1]   181 |     </div>
+[1]   182 |   );
+[1]     at constructor (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:367:19)
+[1]     at TypeScriptParserMixin.raise (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:6627:19)
+[1]     at TypeScriptParserMixin.jsxParseElementAt (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:4757:16)
+[1]     at TypeScriptParserMixin.jsxParseElementAt (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:4728:32)
+[1]     at TypeScriptParserMixin.jsxParseElement (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:4779:17)
+[1]     at TypeScriptParserMixin.parseExprAtom (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:4789:19)
+[1]     at TypeScriptParserMixin.parseExprSubscripts (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:11076:23)
+[1]     at TypeScriptParserMixin.parseUpdate (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:11061:21)
+[1]     at TypeScriptParserMixin.parseMaybeUnary (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:11041:23)
+[1]     at TypeScriptParserMixin.parseMaybeUnary (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:9852:18)
+[1]     at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:10894:61)
+[1]     at TypeScriptParserMixin.parseExprOps (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:10899:23)
+[1]     at TypeScriptParserMixin.parseMaybeConditional (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:10876:23)
+[1]     at TypeScriptParserMixin.parseMaybeAssign (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:10826:21)
+[1]     at /Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:9790:39
+[1]     at TypeScriptParserMixin.tryParse (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:6935:20)
+[1]     at TypeScriptParserMixin.parseMaybeAssign (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:9790:18)
+[1]     at /Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:10795:39
+[1]     at TypeScriptParserMixin.allowInAnd (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:12427:12)
+[1]     at TypeScriptParserMixin.parseMaybeAssignAllowIn (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:10795:17)
+[1]     at TypeScriptParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:12494:17)
+[1]     at TypeScriptParserMixin.parseParenAndDistinguishExpression (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:11674:28)
+[1]     at TypeScriptParserMixin.parseExprAtom (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:11326:23)
+[1]     at TypeScriptParserMixin.parseExprAtom (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:4794:20)
+[1]     at TypeScriptParserMixin.parseExprSubscripts (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:11076:23)
+[1]     at TypeScriptParserMixin.parseUpdate (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:11061:21)
+[1]     at TypeScriptParserMixin.parseMaybeUnary (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:11041:23)
+[1]     at TypeScriptParserMixin.parseMaybeUnary (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:9852:18)
+[1]     at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:10894:61)
+[1]     at TypeScriptParserMixin.parseExprOps (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:10899:23)
+[1]     at TypeScriptParserMixin.parseMaybeConditional (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:10876:23)
+[1]     at TypeScriptParserMixin.parseMaybeAssign (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:10826:21)
+[1]     at TypeScriptParserMixin.parseMaybeAssign (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:9801:20)
+[1]     at TypeScriptParserMixin.parseExpressionBase (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:10779:23)
+[1]     at /Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:10775:39
+[1]     at TypeScriptParserMixin.allowInAnd (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:12422:16)
+[1]     at TypeScriptParserMixin.parseExpression (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:10775:17)
+[1]     at TypeScriptParserMixin.parseReturnStatement (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:13142:28)
+[1]     at TypeScriptParserMixin.parseStatementContent (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:12798:21)
+[1]     at TypeScriptParserMixin.parseStatementContent (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:9527:18)
+[1]     at TypeScriptParserMixin.parseStatementLike (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:12767:17)
+[1]     at TypeScriptParserMixin.parseStatementListItem (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:12747:17)
+[1]     at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:13316:61)
+[1]     at TypeScriptParserMixin.parseBlockBody (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:13309:10)
+[1]     at TypeScriptParserMixin.parseBlock (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:13297:10)
+[1]     at TypeScriptParserMixin.parseFunctionBody (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:12101:24)
+[1]     at TypeScriptParserMixin.parseArrowExpression (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:12076:10)
+[1]     at TypeScriptParserMixin.parseParenAndDistinguishExpression (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:11686:12)
+[1]     at TypeScriptParserMixin.parseExprAtom (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:11326:23)
+[1]     at TypeScriptParserMixin.parseExprAtom (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:4794:20)
+[1] 
+[1] ERROR in [eslint] 
+[1] src/components/SignIn.tsx
+[1]   Line 33:7:  Parsing error: JSX element 'motion.div' has no corresponding closing tag
+[1] 
+[1] webpack compiled with 2 errors and 1 warning
+[1] Files successfully emitted, waiting for typecheck results...
+[1] Issues checking in progress...
+[1] ERROR in src/components/SignIn.tsx:33:8
+[1] TS17008: JSX element 'motion.div' has no corresponding closing tag.
+[1]     31 |   return (
+[1]     32 |     <div className="min-h-screen flex items-center justify-center px-4 py-8" style={{ backgroundColor: '#FAFAF8' }}>
+[1]   > 33 |       <motion.div
+[1]        |        ^^^^^^^^^^
+[1]     34 |         initial={{ opacity: 0, y: 20 }}
+[1]     35 |         animate={{ opacity: 1, y: 0 }}
+[1]     36 |         transition={{ duration: 0.6 }}
+[1] 
+[1] ERROR in src/components/SignIn.tsx:180:7
+[1] TS1005: ')' expected.
+[1]     178 |           </div>
+[1]     179 |         </div>
+[1]   > 180 |       </motion.div>
+[1]         |       ^^
+[1]     181 |     </div>
+[1]     182 |   );
+[1]     183 | };
+[1] 
+[1] ERROR in src/components/SignIn.tsx:181:5
+[1] TS1109: Expression expected.
+[1]     179 |         </div>
+[1]     180 |       </motion.div>
+[1]   > 181 |     </div>
+[1]         |     ^^
+[1]     182 |   );
+[1]     183 | };
+[1]     184 |
+[1] 
+[1] ERROR in src/components/SignIn.tsx:181:7
+[1] TS2304: Cannot find name 'div'.
+[1]     179 |         </div>
+[1]     180 |       </motion.div>
+[1]   > 181 |     </div>
+[1]         |       ^^^
+[1]     182 |   );
+[1]     183 | };
+[1]     184 |
+[1] 
+[1] ERROR in src/components/SignIn.tsx:182:3
+[1] TS1109: Expression expected.
+[1]     180 |       </motion.div>
+[1]     181 |     </div>
+[1]   > 182 |   );
+[1]         |   ^
+[1]     183 | };
+[1]     184 |
+[1]     185 | export default SignIn; 
+[1] 
+[1] ERROR in src/components/SignIn.tsx:183:1
+[1] TS1128: Declaration or statement expected.
+[1]     181 |     </div>
+[1]     182 |   );
+[1]   > 183 | };
+[1]         | ^
+[1]     184 |
+[1]     185 | export default SignIn; 
+[1] 
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Failed to compile.
+[1] 
+[1] [eslint] 
+[1] src/components/SignUp.tsx
+[1] Syntax error: JSX element 'motion.div' has no corresponding closing tag (118:7)
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] ERROR in ./src/components/SignUp.tsx
+[1] Module build failed (from ./node_modules/babel-loader/lib/index.js):
+[1] SyntaxError: /Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/src/components/SignUp.tsx: Expected corresponding JSX closing tag for <motion.div>. (327:8)
+[1] 
+[1]   325 |             </p>
+[1]   326 |           </div>
+[1] > 327 |         </div>
+[1]       |         ^
+[1]   328 |       </motion.div>
+[1]   329 |     </div>
+[1]   330 |   );
+[1]     at constructor (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:367:19)
+[1]     at TypeScriptParserMixin.raise (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:6627:19)
+[1]     at TypeScriptParserMixin.jsxParseElementAt (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:4757:16)
+[1]     at TypeScriptParserMixin.jsxParseElementAt (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:4728:32)
+[1]     at TypeScriptParserMixin.jsxParseElement (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:4779:17)
+[1]     at TypeScriptParserMixin.parseExprAtom (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:4789:19)
+[1]     at TypeScriptParserMixin.parseExprSubscripts (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:11076:23)
+[1]     at TypeScriptParserMixin.parseUpdate (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:11061:21)
+[1]     at TypeScriptParserMixin.parseMaybeUnary (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:11041:23)
+[1]     at TypeScriptParserMixin.parseMaybeUnary (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:9852:18)
+[1]     at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:10894:61)
+[1]     at TypeScriptParserMixin.parseExprOps (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:10899:23)
+[1]     at TypeScriptParserMixin.parseMaybeConditional (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:10876:23)
+[1]     at TypeScriptParserMixin.parseMaybeAssign (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:10826:21)
+[1]     at /Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:9790:39
+[1]     at TypeScriptParserMixin.tryParse (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:6935:20)
+[1]     at TypeScriptParserMixin.parseMaybeAssign (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:9790:18)
+[1]     at /Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:10795:39
+[1]     at TypeScriptParserMixin.allowInAnd (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:12427:12)
+[1]     at TypeScriptParserMixin.parseMaybeAssignAllowIn (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:10795:17)
+[1]     at TypeScriptParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:12494:17)
+[1]     at TypeScriptParserMixin.parseParenAndDistinguishExpression (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:11674:28)
+[1]     at TypeScriptParserMixin.parseExprAtom (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:11326:23)
+[1]     at TypeScriptParserMixin.parseExprAtom (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:4794:20)
+[1]     at TypeScriptParserMixin.parseExprSubscripts (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:11076:23)
+[1]     at TypeScriptParserMixin.parseUpdate (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:11061:21)
+[1]     at TypeScriptParserMixin.parseMaybeUnary (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:11041:23)
+[1]     at TypeScriptParserMixin.parseMaybeUnary (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:9852:18)
+[1]     at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:10894:61)
+[1]     at TypeScriptParserMixin.parseExprOps (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:10899:23)
+[1]     at TypeScriptParserMixin.parseMaybeConditional (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:10876:23)
+[1]     at TypeScriptParserMixin.parseMaybeAssign (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:10826:21)
+[1]     at TypeScriptParserMixin.parseMaybeAssign (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:9801:20)
+[1]     at TypeScriptParserMixin.parseExpressionBase (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:10779:23)
+[1]     at /Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:10775:39
+[1]     at TypeScriptParserMixin.allowInAnd (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:12422:16)
+[1]     at TypeScriptParserMixin.parseExpression (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:10775:17)
+[1]     at TypeScriptParserMixin.parseReturnStatement (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:13142:28)
+[1]     at TypeScriptParserMixin.parseStatementContent (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:12798:21)
+[1]     at TypeScriptParserMixin.parseStatementContent (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:9527:18)
+[1]     at TypeScriptParserMixin.parseStatementLike (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:12767:17)
+[1]     at TypeScriptParserMixin.parseStatementListItem (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:12747:17)
+[1]     at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:13316:61)
+[1]     at TypeScriptParserMixin.parseBlockBody (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:13309:10)
+[1]     at TypeScriptParserMixin.parseBlock (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:13297:10)
+[1]     at TypeScriptParserMixin.parseFunctionBody (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:12101:24)
+[1]     at TypeScriptParserMixin.parseArrowExpression (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:12076:10)
+[1]     at TypeScriptParserMixin.parseParenAndDistinguishExpression (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:11686:12)
+[1]     at TypeScriptParserMixin.parseExprAtom (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:11326:23)
+[1]     at TypeScriptParserMixin.parseExprAtom (/Users/wasifkarim/Downloads/SignIn-Auth-main/Desktop/Sign Auth/client/node_modules/@babel/parser/lib/index.js:4794:20)
+[1] 
+[1] ERROR in [eslint] 
+[1] src/components/SignUp.tsx
+[1]   Line 118:7:  Parsing error: JSX element 'motion.div' has no corresponding closing tag
+[1] 
+[1] webpack compiled with 2 errors and 1 warning
+[1] Files successfully emitted, waiting for typecheck results...
+[1] Issues checking in progress...
+[1] ERROR in src/components/SignUp.tsx:118:8
+[1] TS17008: JSX element 'motion.div' has no corresponding closing tag.
+[1]     116 |   return (
+[1]     117 |     <div className="min-h-screen flex items-center justify-center px-4 py-8" style={{ backgroundColor: '#FAFAF8' }}>
+[1]   > 118 |       <motion.div
+[1]         |        ^^^^^^^^^^
+[1]     119 |         initial={{ opacity: 0, y: 20 }}
+[1]     120 |         animate={{ opacity: 1, y: 0 }}
+[1]     121 |         transition={{ duration: 0.6 }}
+[1] 
+[1] ERROR in src/components/SignUp.tsx:328:7
+[1] TS1005: ')' expected.
+[1]     326 |           </div>
+[1]     327 |         </div>
+[1]   > 328 |       </motion.div>
+[1]         |       ^^
+[1]     329 |     </div>
+[1]     330 |   );
+[1]     331 | };
+[1] 
+[1] ERROR in src/components/SignUp.tsx:329:5
+[1] TS1109: Expression expected.
+[1]     327 |         </div>
+[1]     328 |       </motion.div>
+[1]   > 329 |     </div>
+[1]         |     ^^
+[1]     330 |   );
+[1]     331 | };
+[1]     332 |
+[1] 
+[1] ERROR in src/components/SignUp.tsx:329:7
+[1] TS2304: Cannot find name 'div'.
+[1]     327 |         </div>
+[1]     328 |       </motion.div>
+[1]   > 329 |     </div>
+[1]         |       ^^^
+[1]     330 |   );
+[1]     331 | };
+[1]     332 |
+[1] 
+[1] ERROR in src/components/SignUp.tsx:330:3
+[1] TS1109: Expression expected.
+[1]     328 |       </motion.div>
+[1]     329 |     </div>
+[1]   > 330 |   );
+[1]         |   ^
+[1]     331 | };
+[1]     332 |
+[1]     333 | export default SignUp; 
+[1] 
+[1] ERROR in src/components/SignUp.tsx:331:1
+[1] TS1128: Declaration or statement expected.
+[1]     329 |     </div>
+[1]     330 |   );
+[1]   > 331 | };
+[1]         | ^
+[1]     332 |
+[1]     333 | export default SignUp; 
+[1] 
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 18:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 18:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 19:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 19:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 64:9:   'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 71:9:   'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 18:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 18:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 19:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 19:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 64:9:   'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 71:9:   'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] Files successfully emitted, waiting for typecheck results...
+[1] Issues checking in progress...
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 8:7:    'US_UNIVERSITIES' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 77:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 77:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 78:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 78:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 123:9:  'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 130:9:  'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 8:7:    'US_UNIVERSITIES' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 77:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 77:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 78:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 78:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 123:9:  'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 130:9:  'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 8:7:    'US_UNIVERSITIES' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 75:10:  'university' is assigned a value but never used                 @typescript-eslint/no-unused-vars
+[1]   Line 75:22:  'setUniversity' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 78:10:  'showPassword' is assigned a value but never used               @typescript-eslint/no-unused-vars
+[1]   Line 78:24:  'setShowPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 79:10:  'showConfirmPassword' is assigned a value but never used        @typescript-eslint/no-unused-vars
+[1]   Line 79:31:  'setShowConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 83:10:  'showUniversityDropdown' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 83:34:  'setShowUniversityDropdown' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 84:10:  'universitySearch' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 84:28:  'setUniversitySearch' is assigned a value but never used        @typescript-eslint/no-unused-vars
+[1]   Line 126:9:  'getPasswordStrengthColor' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1]   Line 133:9:  'getPasswordStrengthText' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 8:7:    'US_UNIVERSITIES' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 75:10:  'university' is assigned a value but never used                 @typescript-eslint/no-unused-vars
+[1]   Line 75:22:  'setUniversity' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 78:10:  'showPassword' is assigned a value but never used               @typescript-eslint/no-unused-vars
+[1]   Line 78:24:  'setShowPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 79:10:  'showConfirmPassword' is assigned a value but never used        @typescript-eslint/no-unused-vars
+[1]   Line 79:31:  'setShowConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 83:10:  'showUniversityDropdown' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 83:34:  'setShowUniversityDropdown' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 84:10:  'universitySearch' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 84:28:  'setUniversitySearch' is assigned a value but never used        @typescript-eslint/no-unused-vars
+[1]   Line 126:9:  'getPasswordStrengthColor' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1]   Line 133:9:  'getPasswordStrengthText' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 78:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 78:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 79:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 79:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 83:10:  'showUniversityDropdown' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 126:9:  'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 133:9:  'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1]   Line 143:9:  'filteredUniversities' is assigned a value but never used      @typescript-eslint/no-unused-vars
+[1]   Line 147:9:  'handleUniversitySelect' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 78:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 78:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 79:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 79:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 83:10:  'showUniversityDropdown' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 126:9:  'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 133:9:  'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1]   Line 143:9:  'filteredUniversities' is assigned a value but never used      @typescript-eslint/no-unused-vars
+[1]   Line 147:9:  'handleUniversitySelect' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 78:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 78:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 79:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 79:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 126:9:  'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 133:9:  'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 78:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 78:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 79:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 79:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 126:9:  'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 133:9:  'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 1:27:   'useEffect' is defined but never used                          @typescript-eslint/no-unused-vars
+[1]   Line 1:38:   'useRef' is defined but never used                             @typescript-eslint/no-unused-vars
+[1]   Line 78:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 78:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 79:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 79:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 126:9:  'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 133:9:  'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 1:27:   'useEffect' is defined but never used                          @typescript-eslint/no-unused-vars
+[1]   Line 1:38:   'useRef' is defined but never used                             @typescript-eslint/no-unused-vars
+[1]   Line 78:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 78:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 79:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 79:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 126:9:  'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 133:9:  'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 78:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 78:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 79:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 79:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 141:9:  'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 148:9:  'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 78:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 78:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 79:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 79:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 141:9:  'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 148:9:  'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 78:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 78:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 79:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 79:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 141:9:  'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 148:9:  'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 78:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 78:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 79:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 79:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 141:9:  'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 148:9:  'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 78:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 78:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 79:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 79:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 141:9:  'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 148:9:  'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 78:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 78:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 79:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 79:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 141:9:  'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 148:9:  'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 78:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 78:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 79:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 79:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 141:9:  'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 148:9:  'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 78:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 78:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 79:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 79:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 141:9:  'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 148:9:  'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 78:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 78:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 79:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 79:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 141:9:  'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 148:9:  'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 78:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 78:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 79:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 79:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 141:9:  'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 148:9:  'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[0] [32m[nodemon] restarting due to changes...[39m
+[0] [32m[nodemon] starting `node index.js`[39m
+[0] Server running on port 5001
+[0] Connected to MongoDB
+[0] [32m[nodemon] restarting due to changes...[39m
+[0] [32m[nodemon] starting `node index.js`[39m
+[0] Server running on port 5001
+[0] Connected to MongoDB
+[0] [32m[nodemon] restarting due to changes...[39m
+[0] [32m[nodemon] starting `node index.js`[39m
+[0] Server running on port 5001
+[0] Connected to MongoDB
+[0] [32m[nodemon] restarting due to changes...[39m
+[0] [32m[nodemon] starting `node index.js`[39m
+[0] Server running on port 5001
+[0] Connected to MongoDB
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 380:9:   'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 387:9:   'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 380:9:   'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 387:9:   'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 380:9:   'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 387:9:   'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 380:9:   'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 387:9:   'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[0] [32m[nodemon] restarting due to changes...[39m
+[0] [32m[nodemon] starting `node index.js`[39m
+[0] Server running on port 5001
+[0] Connected to MongoDB
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 380:9:   'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 387:9:   'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 380:9:   'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 387:9:   'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 380:9:   'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 387:9:   'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 380:9:   'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 387:9:   'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 387:9:   'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 394:9:   'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used              @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used           @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used       @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 387:9:   'getPasswordStrengthColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 394:9:   'getPasswordStrengthText' is assigned a value but never used   @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used                @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used             @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used      @typescript-eslint/no-unused-vars
+[1]   Line 387:9:   'getPasswordStrengthColor' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 394:9:   'getPasswordStrengthText' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 401:9:   'getPasswordStrengthBgColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used                @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used             @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used      @typescript-eslint/no-unused-vars
+[1]   Line 387:9:   'getPasswordStrengthColor' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1]   Line 394:9:   'getPasswordStrengthText' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 401:9:   'getPasswordStrengthBgColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[0] [32m[nodemon] restarting due to changes...[39m
+[0] [32m[nodemon] starting `node index.js`[39m
+[0] Server running on port 5001
+[0] Connected to MongoDB
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[1] Compiling...
+[1] Compiled with warnings.
+[1] 
+[1] [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/EmailVerification.tsx
+[1]   Line 14:10:  'success' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] Search for the keywords to learn more about each warning.
+[1] To ignore, add // eslint-disable-next-line to the line before.
+[1] 
+[1] WARNING in [eslint] 
+[1] src/App.tsx
+[1]   Line 2:27:  'Router' is defined but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/EmailVerification.tsx
+[1]   Line 14:10:  'success' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignIn.tsx
+[1]   Line 9:10:   'showPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 9:24:   'setShowPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1]   Line 10:22:  'setRememberMe' is assigned a value but never used    @typescript-eslint/no-unused-vars
+[1] 
+[1] src/components/SignUp.tsx
+[1]   Line 317:10:  'showPassword' is assigned a value but never used            @typescript-eslint/no-unused-vars
+[1]   Line 317:24:  'setShowPassword' is assigned a value but never used         @typescript-eslint/no-unused-vars
+[1]   Line 318:10:  'showConfirmPassword' is assigned a value but never used     @typescript-eslint/no-unused-vars
+[1]   Line 318:31:  'setShowConfirmPassword' is assigned a value but never used  @typescript-eslint/no-unused-vars
+[1] 
+[1] webpack compiled with 1 warning
+[1] No issues found.
+[0] [32m[nodemon] restarting child process[39m
+[0] [32m[nodemon] starting `node index.js`[39m
+[1] npm run client exited with code SIGHUP
+[0] Server running on port 5001
+[0] Connected to MongoDB
+[0] [32m[nodemon] restarting due to changes...[39m
+[0] [32m[nodemon] starting `node index.js`[39m
+[0] Server running on port 5001
+[0] Connected to MongoDB
+[0] npm run server exited with code SIGHUP
