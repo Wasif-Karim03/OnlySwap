@@ -10,6 +10,7 @@ import ForgotPassword from './pages/ForgotPassword'
 import Marketplace from './pages/Marketplace'
 import Saved from './pages/Saved'
 import Chat from './pages/Chat'
+import AdminDashboard from './pages/AdminDashboard'
 import './App.css'
 
 function App() {
@@ -48,6 +49,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route path="/admin" element={<AdminDashboard />} />
             </Routes>
           </div>
         </Router>

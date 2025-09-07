@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Menu, X, LogOut, User, Bookmark } from 'lucide-react'
+import { Menu, X, LogOut, User, Bookmark, Shield } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 
 const Navbar = () => {
@@ -87,6 +87,12 @@ const Navbar = () => {
                 Saved
                 {savedCount > 0 && <span className="saved-count">{savedCount}</span>}
               </Link>
+              {user?.isAdmin && (
+                <Link to="/admin" className="nav-link admin-link" onClick={() => setIsMenuOpen(false)}>
+                  <Shield size={16} />
+                  Admin
+                </Link>
+              )}
             </>
           )}
           {!isAuthenticated ? (

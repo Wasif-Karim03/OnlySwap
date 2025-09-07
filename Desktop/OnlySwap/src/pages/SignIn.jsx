@@ -23,6 +23,23 @@ const SignIn = () => {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000))
       
+      // Check for admin credentials first
+      if (formData.email === 'Admin@admin.edu' && formData.password === 'ThisWebsiteSucks#') {
+        const adminData = {
+          id: 'admin-001',
+          email: 'Admin@admin.edu',
+          name: 'Admin User',
+          university: 'Admin University',
+          joinedAt: new Date().toISOString(),
+          isAdmin: true
+        }
+        
+        // Store admin in localStorage
+        localStorage.setItem('currentUser', JSON.stringify(adminData))
+        navigate('/admin')
+        return
+      }
+      
       // Check if user exists using data manager
       const user = dataManager.getUserByEmail(formData.email)
       if (!user) {
