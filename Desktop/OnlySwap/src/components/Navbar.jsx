@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Menu, X, LogOut, User, Bookmark, Shield } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
+import dataManager from '../utils/dataManager'
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -10,7 +11,7 @@ const Navbar = () => {
 
   useEffect(() => {
     if (user) {
-      const saved = JSON.parse(localStorage.getItem(`savedProducts_${user.id}`) || '[]')
+      const saved = dataManager.getSavedProducts(user.id)
       setSavedCount(saved.length)
     }
   }, [user])

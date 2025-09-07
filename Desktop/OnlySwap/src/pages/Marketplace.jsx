@@ -4,6 +4,7 @@ import { Search, Filter, MessageCircle, Heart, Share2, MapPin, Clock, Plus, Uplo
 import { useAuth } from '../hooks/useAuth'
 import { useChat } from '../hooks/useChat'
 import { getAllProducts, searchProducts, createProduct, getProductsBySeller, deleteProductBySeller, toggleProductLike, incrementProductViews } from '../utils/productManager'
+import dataManager from '../utils/dataManager'
 
 const Marketplace = () => {
   const { user } = useAuth()
@@ -35,6 +36,7 @@ const Marketplace = () => {
   const [showProductModal, setShowProductModal] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [savedProducts, setSavedProducts] = useState([])
+  const [saveFeedback, setSaveFeedback] = useState(null)
 
   const categories = ['All', 'Electronics', 'Books', 'Transportation', 'Furniture', 'Appliances', 'Clothing', 'Sports']
   
@@ -174,26 +176,37 @@ const Marketplace = () => {
   }
 
   const loadSavedProducts = () => {
-    // TODO: Implement saved products functionality
-    setSavedProducts([])
+    if (user) {
+      const saved = dataManager.getSavedProducts(user.id)
+      setSavedProducts(saved)
+    }
   }
 
   const saveProduct = (productId) => {
-    // TODO: Implement save product functionality
-    console.log('Save product:', productId)
+    if (user) {
+      dataManager.saveProduct(user.id, productId)
+      loadSavedProducts() // Refresh saved products list
+      setSaveFeedback('Product saved!')
+      setTimeout(() => setSaveFeedback(null), 2000)
+    }
   }
 
   const unsaveProduct = (productId) => {
-    // TODO: Implement unsave product functionality
-    console.log('Unsave product:', productId)
+    if (user) {
+      dataManager.removeSavedProduct(user.id, productId)
+      loadSavedProducts() // Refresh saved products list
+      setSaveFeedback('Product removed from saved!')
+      setTimeout(() => setSaveFeedback(null), 2000)
+    }
   }
 
   const isProductSaved = (productId) => {
-    return false // TODO: Implement saved products check
+    if (!user) return false
+    return savedProducts.some(product => product.id === productId)
   }
 
   const getSavedProducts = () => {
-    return [] // TODO: Implement get saved products
+    return savedProducts
   }
 
   const handleImageUpload = async (event) => {
@@ -286,6 +299,13 @@ const Marketplace = () => {
 
   return (
     <div className="marketplace-container">
+      {/* Save Feedback */}
+      {saveFeedback && (
+        <div className="save-feedback">
+          {saveFeedback}
+        </div>
+      )}
+      
       {/* Header */}
       <div className="marketplace-header">
         {/* Floating decorative elements */}
@@ -403,11 +423,6 @@ const Marketplace = () => {
                         <Camera size={32} />
                       </div>
                     )}
-                    {product.originalPrice > product.price && (
-                      <div className="discount-badge">
-                        {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
-                      </div>
-                    )}
                     
                     {/* Action buttons overlay */}
                     <div className="product-actions-overlay">
@@ -445,14 +460,8 @@ const Marketplace = () => {
                     
                     <div className="price-section">
                       <span className="current-price">${product.price}</span>
-                      {product.originalPrice > product.price && (
-                        <span className="original-price">${product.originalPrice}</span>
-                      )}
                     </div>
 
-                    <div className="seller-info">
-                      <span className="seller-name">Posted by {product.sellerName}</span>
-                    </div>
 
                     <div className="product-actions">
                       <button 

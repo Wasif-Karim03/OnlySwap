@@ -28,7 +28,7 @@ const Saved = () => {
 
   const loadSavedProducts = () => {
     if (user) {
-      const saved = dataManager.getSavedProducts(user.id).map(p => p.id)
+      const saved = dataManager.getSavedProducts(user.id)
       setSavedProducts(saved)
     }
   }
@@ -36,8 +36,8 @@ const Saved = () => {
   const getSavedProducts = () => {
     if (!user) return []
     return dataManager.getSavedProducts(user.id).filter(product => 
-      product.seller.university === user.university &&
-      product.seller.id !== user.id
+      product.sellerUniversity === user.university &&
+      product.sellerId !== user.id
     )
   }
 
@@ -74,7 +74,7 @@ const Saved = () => {
     const chat = startChatContext(
       productId,
       sellerName,
-      product.seller.id,
+      product.sellerId,
       product.title,
       product.images[0]
     )
@@ -184,7 +184,7 @@ const Saved = () => {
                   </div>
 
                     <div className="seller-info">
-                      <span className="seller-name">Posted by {product.seller.name}</span>
+                      <span className="seller-name">Posted by {product.sellerName}</span>
                     </div>
 
                     <div className="product-actions">
@@ -201,7 +201,7 @@ const Saved = () => {
                         className="chat-btn"
                         onClick={(e) => {
                           e.stopPropagation()
-                          startChat(product.id, product.seller.name)
+                          startChat(product.id, product.sellerName)
                         }}
                       >
                         <MessageCircle size={18} />
