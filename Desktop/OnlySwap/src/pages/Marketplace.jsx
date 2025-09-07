@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Search, Filter, MessageCircle, Heart, Share2, MapPin, Clock, Plus, Upload, X, Camera, Bookmark } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useChat } from '../hooks/useChat'
-import dataManager from '../utils/dataManager'
+import { getAllProducts, searchProducts, createProduct, getProductsBySeller, deleteProductBySeller, toggleProductLike, incrementProductViews } from '../utils/productManager'
 
 const Marketplace = () => {
   const { user } = useAuth()
@@ -48,7 +48,7 @@ const Marketplace = () => {
   }, [user])
 
   const loadProducts = () => {
-    const allProducts = dataManager.getAllProducts()
+    const allProducts = getAllProducts()
     console.log('Loaded products:', allProducts)
     allProducts.forEach(product => {
       console.log(`Product ${product.id} images:`, product.images)
@@ -58,22 +58,21 @@ const Marketplace = () => {
 
   const loadSellerData = () => {
     if (user) {
-      const userProducts = dataManager.getProductsBySeller(user.id)
-      const dashboard = dataManager.getUserDashboard(user.id)
+      const userProducts = getProductsBySeller(user.id)
       setSellerProducts(userProducts)
       setSellerStats({
-        totalProducts: dashboard.stats.totalProductsListed,
-        totalViews: dashboard.stats.totalViews,
-        totalLikes: dashboard.stats.totalProductsLiked,
-        averageRating: dashboard.stats.rating
+        totalProducts: userProducts.length,
+        totalViews: userProducts.reduce((sum, product) => sum + (product.views || 0), 0),
+        totalLikes: userProducts.reduce((sum, product) => sum + (product.likes || 0), 0),
+        averageRating: userProducts.length > 0 ? userProducts.reduce((sum, product) => sum + product.rating, 0) / userProducts.length : 0
       })
     }
   }
 
   // Get unique universities from products
-  const universities = ['All', ...Array.from(new Set(products.map(product => product.seller.university)))]
+  const universities = ['All', ...Array.from(new Set(products.map(product => product.sellerUniversity)))]
 
-  const filteredProducts = dataManager.searchProducts(searchTerm, {
+  const filteredProducts = searchProducts(searchTerm, {
     category: selectedCategory,
     university: selectedUniversity,
     sortBy: sortBy
@@ -84,15 +83,15 @@ const Marketplace = () => {
     ? filteredProducts // In seller mode, show all products (including own)
     : filteredProducts.filter(product => {
         // In buyer mode, show products from same university but not own products
-        const isSameUniversity = product.seller.university === user?.university
-        const isNotOwnProduct = product.seller.id !== user?.id
+        const isSameUniversity = product.sellerUniversity === user?.university
+        const isNotOwnProduct = product.sellerId !== user?.id
         
         // Debug logging
         console.log('Product filtering debug:', {
           productTitle: product.title,
-          productUniversity: product.seller.university,
+          productUniversity: product.sellerUniversity,
           userUniversity: user?.university,
-          productSellerId: product.seller.id,
+          productSellerId: product.sellerId,
           userId: user?.id,
           isSameUniversity,
           isNotOwnProduct,
@@ -103,7 +102,7 @@ const Marketplace = () => {
       })
 
   const toggleLike = (productId) => {
-    dataManager.recordInteraction('like', user.id, productId)
+    toggleProductLike(productId)
     loadProducts() // Refresh products to update UI
   }
 
@@ -116,7 +115,7 @@ const Marketplace = () => {
     const chat = startChatContext(
       productId,
       sellerName,
-      product.seller.id,
+      product.sellerId,
       product.title,
       product.images[0]
     )
@@ -143,7 +142,7 @@ const Marketplace = () => {
     if (!productToDelete || !user) return
     
     try {
-      const success = dataManager.deleteProduct(productToDelete.id, user.id)
+      const success = deleteProductBySeller(productToDelete.id, user.id)
       if (success) {
         // Refresh data
         loadProducts()
@@ -175,37 +174,26 @@ const Marketplace = () => {
   }
 
   const loadSavedProducts = () => {
-    if (user) {
-      const saved = dataManager.getSavedProducts(user.id)
-      setSavedProducts(saved.map(p => p.id))
-    }
+    // TODO: Implement saved products functionality
+    setSavedProducts([])
   }
 
   const saveProduct = (productId) => {
-    if (!user) return
-    
-    const success = dataManager.saveProduct(user.id, productId)
-    if (success) {
-      loadSavedProducts()
-    }
+    // TODO: Implement save product functionality
+    console.log('Save product:', productId)
   }
 
   const unsaveProduct = (productId) => {
-    if (!user) return
-    
-    const success = dataManager.removeSavedProduct(user.id, productId)
-    if (success) {
-      loadSavedProducts()
-    }
+    // TODO: Implement unsave product functionality
+    console.log('Unsave product:', productId)
   }
 
   const isProductSaved = (productId) => {
-    return savedProducts.includes(productId)
+    return false // TODO: Implement saved products check
   }
 
   const getSavedProducts = () => {
-    if (!user) return []
-    return dataManager.getSavedProducts(user.id)
+    return [] // TODO: Implement get saved products
   }
 
   const handleImageUpload = async (event) => {
@@ -255,7 +243,7 @@ const Marketplace = () => {
     }
 
     try {
-      const newProduct = dataManager.createProduct({
+      const newProduct = createProduct({
         title: productForm.title,
         description: productForm.description,
         price: productForm.price,
@@ -463,7 +451,7 @@ const Marketplace = () => {
                     </div>
 
                     <div className="seller-info">
-                      <span className="seller-name">Posted by {product.seller.name}</span>
+                      <span className="seller-name">Posted by {product.sellerName}</span>
                     </div>
 
                     <div className="product-actions">
@@ -480,7 +468,7 @@ const Marketplace = () => {
                         className="chat-btn"
                         onClick={(e) => {
                           e.stopPropagation()
-                          startChat(product.id, product.seller.name)
+                          startChat(product.id, product.sellerName)
                         }}
                       >
                         <MessageCircle size={18} />
@@ -855,15 +843,15 @@ const Marketplace = () => {
                   <div className="seller-details">
                     <div className="seller-profile">
                       <div className="seller-avatar">
-                        {selectedProduct.seller.name.charAt(0).toUpperCase()}
+                        {selectedProduct.sellerName.charAt(0).toUpperCase()}
                       </div>
                       <div className="seller-info-text">
-                        <h4>{selectedProduct.seller.name}</h4>
-                        <p>🏫 {selectedProduct.seller.university}</p>
+                        <h4>{selectedProduct.sellerName}</h4>
+                        <p>🏫 {selectedProduct.sellerUniversity}</p>
                         <div className="seller-rating">
-                          <span>⭐ {selectedProduct.engagement.views}</span>
-                          <span>• {selectedProduct.engagement.views} views</span>
-                          <span>• {selectedProduct.engagement.likes} likes</span>
+                          <span>⭐ {selectedProduct.rating}</span>
+                          <span>• {selectedProduct.views || 0} views</span>
+                          <span>• {selectedProduct.likes || 0} likes</span>
                         </div>
                       </div>
                     </div>
@@ -874,7 +862,7 @@ const Marketplace = () => {
                   <button 
                     className="chat-btn primary"
                     onClick={() => {
-                      startChat(selectedProduct.id, selectedProduct.seller.name)
+                      startChat(selectedProduct.id, selectedProduct.sellerName)
                       closeProductModal()
                     }}
                   >
