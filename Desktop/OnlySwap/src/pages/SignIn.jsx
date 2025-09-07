@@ -47,6 +47,12 @@ const SignIn = () => {
         return
       }
       
+      // Check if user is blocked
+      if (user.isBlocked) {
+        setError(`Your account has been blocked. Reason: ${user.blockReason || 'No reason provided'}. Please contact the administrator for assistance.`)
+        return
+      }
+      
       // Check password (in real app, this would be hashed)
       if (user.password !== formData.password) {
         setError('Invalid password. Please try again or use forgot password.')

@@ -11,6 +11,7 @@ import Marketplace from './pages/Marketplace'
 import Saved from './pages/Saved'
 import Chat from './pages/Chat'
 import AdminDashboard from './pages/AdminDashboard'
+import UserProfile from './pages/UserProfile'
 import './App.css'
 
 function App() {
@@ -50,6 +51,7 @@ function App() {
                 }
               />
               <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/user/:userId" element={<UserProfile />} />
             </Routes>
           </div>
         </Router>

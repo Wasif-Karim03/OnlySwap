@@ -38,58 +38,7 @@ export const createProduct = ({ title, description, price, originalPrice, catego
   return newProduct;
 };
 
-// Initialize sample products if none exist
-const initializeSampleProducts = () => {
-  const existingProducts = getProducts();
-  if (existingProducts.length === 0) {
-    const sampleProducts = [
-      {
-        id: 1,
-        title: "MacBook Pro 2021 - Excellent Condition",
-        description: "M1 Pro chip, 16GB RAM, 512GB SSD. Perfect for students!",
-        price: 1200,
-        originalPrice: 1800,
-        images: [], // Empty for now - will be populated by user uploads
-        category: "Electronics",
-        condition: "Excellent",
-        location: "Ohio Wesleyan University",
-        timePosted: "2023-10-26T10:00:00Z",
-        sellerId: "sample-seller-1",
-        sellerName: "John D.",
-        sellerUniversity: "Ohio Wesleyan University",
-        rating: 4.8,
-        isLiked: false,
-        views: 150,
-        likes: 25,
-        status: 'active'
-      },
-      {
-        id: 2,
-        title: "Calculus Textbook - Stewart 8th Edition",
-        description: "Used but in great condition. No writing inside.",
-        price: 45,
-        originalPrice: 120,
-        images: [],
-        category: "Books",
-        condition: "Good",
-        location: "Ohio Wesleyan University",
-        timePosted: "2023-10-25T14:30:00Z",
-        sellerId: "sample-seller-2",
-        sellerName: "Sarah M.",
-        sellerUniversity: "Ohio Wesleyan University",
-        rating: 4.9,
-        isLiked: true,
-        views: 120,
-        likes: 30,
-        status: 'active'
-      }
-    ];
-    saveProducts(sampleProducts);
-  }
-};
-
-// Call initialization when the module is loaded
-initializeSampleProducts();
+// Sample products initialization removed - only real user products will be shown
 
 export const getAllProducts = () => {
   return getProducts().filter(product => product.status === 'active');

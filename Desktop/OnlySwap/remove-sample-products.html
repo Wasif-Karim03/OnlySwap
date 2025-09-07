@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remove Sample Products</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            margin: 0;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 3rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        h1 {
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+        .button {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
+        }
+        .success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        .success:hover {
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗑️ Remove Sample Products</h1>
+        <p>This will remove only the showcase/sample products from your marketplace, keeping all real user data.</p>
+        
+        <button class="button" onclick="removeSampleProducts()">Remove Sample Products</button>
+        <button class="button success" onclick="goToApp()">Go to OnlySwap</button>
+
+        <div id="result" style="margin-top: 1rem;"></div>
+    </div>
+
+    <script>
+        function removeSampleProducts() {
+            try {
+                // Get current products
+                const products = JSON.parse(localStorage.getItem('onlyswap_products') || '[]');
+                
+                // Filter out sample products (those with sample-seller IDs or fake data)
+                const realProducts = products.filter(product => {
+                    // Remove products with sample seller IDs
+                    if (product.sellerId && product.sellerId.startsWith('sample-seller')) {
+                        return false;
+                    }
+                    
+                    // Remove products with fake seller names like "John D." or "Sarah M."
+                    if (product.sellerName && (product.sellerName === 'John D.' || product.sellerName === 'Sarah M.')) {
+                        return false;
+                    }
+                    
+                    // Keep all other products
+                    return true;
+                });
+                
+                // Save the filtered products
+                localStorage.setItem('onlyswap_products', JSON.stringify(realProducts));
+                
+                const removedCount = products.length - realProducts.length;
+                
+                document.getElementById('result').innerHTML = 
+                    `<div style="color: #10b981; font-weight: 600;">✅ Removed ${removedCount} sample products!<br>Remaining: ${realProducts.length} real products</div>`;
+                
+                console.log(`Removed ${removedCount} sample products. Remaining: ${realProducts.length} real products`);
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    '<div style="color: #ef4444; font-weight: 600;">❌ Error removing sample products: ' + error.message + '</div>';
+                console.error('Error removing sample products:', error);
+            }
+        }
+
+        function goToApp() {
+            window.location.href = 'http://localhost:5173/';
+        }
+
+        // Show current status on load
+        window.onload = function() {
+            const products = JSON.parse(localStorage.getItem('onlyswap_products') || '[]');
+            const sampleProducts = products.filter(p => 
+                (p.sellerId && p.sellerId.startsWith('sample-seller')) ||
+                (p.sellerName && (p.sellerName === 'John D.' || p.sellerName === 'Sarah M.'))
+            );
+            
+            const status = `
+                <div style="margin-top: 1rem; padding: 1rem; background: #f9fafb; border-radius: 8px; text-align: left;">
+                    <h3 style="margin: 0 0 0.5rem 0; color: #374151;">Current Status:</h3>
+                    <p style="margin: 0.25rem 0; color: #6b7280;">Total Products: ${products.length}</p>
+                    <p style="margin: 0.25rem 0; color: #ef4444;">Sample Products: ${sampleProducts.length}</p>
+                    <p style="margin: 0.25rem 0; color: #10b981;">Real Products: ${products.length - sampleProducts.length}</p>
+                </div>
+            `;
+            document.getElementById('result').innerHTML = status;
+        };
+    </script>
+</body>
+</html>

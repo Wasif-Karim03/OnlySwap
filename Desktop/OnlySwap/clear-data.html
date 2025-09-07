@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clear User Data - OnlySwap</title>
+    <title>Clear OnlySwap Data</title>
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #4CAF50, #388E3C);
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
             margin: 0;
-            padding: 0;
+            padding: 2rem;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -17,11 +17,12 @@
         }
         .container {
             background: white;
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            padding: 3rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             text-align: center;
-            max-width: 400px;
+            max-width: 500px;
+            width: 100%;
         }
         h1 {
             color: #1f2937;
@@ -31,53 +32,139 @@
             color: #6b7280;
             margin-bottom: 2rem;
         }
-        button {
-            background: linear-gradient(135deg, #4CAF50, #388E3C);
+        .button {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
             color: white;
             border: none;
             padding: 1rem 2rem;
-            border-radius: 0.75rem;
+            border-radius: 8px;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            margin: 0.5rem;
         }
-        button:hover {
+        .button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
         }
         .success {
-            color: #059669;
-            font-weight: 600;
-            margin-top: 1rem;
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        .success:hover {
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+        }
+        .info {
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            text-align: left;
+        }
+        .info h3 {
+            color: #374151;
+            margin: 0 0 0.5rem 0;
+        }
+        .info ul {
+            color: #6b7280;
+            margin: 0;
+            padding-left: 1.5rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Clear User Data</h1>
-        <p>This will remove all stored users and reset the application to a fresh state.</p>
-        <button onclick="clearData()">Clear All Data</button>
-        <div id="result"></div>
+        <h1>🗑️ Clear OnlySwap Data</h1>
+        <p>This will remove all users, products, chats, and other data from your OnlySwap application.</p>
+        
+        <div class="info">
+            <h3>⚠️ Warning: This will delete:</h3>
+            <ul>
+                <li>All registered users</li>
+                <li>All products and listings</li>
+                <li>All chat messages</li>
+                <li>All saved products</li>
+                <li>All user interactions</li>
+            </ul>
+        </div>
+
+        <button class="button" onclick="clearAllData()">Clear All Data</button>
+        <button class="button" onclick="clearSampleProducts()" style="background: linear-gradient(135deg, #f59e0b, #d97706);">Remove Sample Products Only</button>
+        <button class="button success" onclick="goToApp()">Go to OnlySwap</button>
+
+        <div id="result" style="margin-top: 1rem;"></div>
     </div>
 
     <script>
-        function clearData() {
+        function clearAllData() {
             try {
-                // Clear all localStorage data
-                localStorage.clear();
+                // Clear all OnlySwap related data
+                localStorage.removeItem('onlyswap_users');
+                localStorage.removeItem('onlyswap_products');
+                localStorage.removeItem('onlyswap_chats');
+                localStorage.removeItem('onlyswap_interactions');
+                localStorage.removeItem('onlyswap_currentUser');
                 
-                // Show success message
+                // Clear any saved products for all users
+                const keys = Object.keys(localStorage);
+                keys.forEach(key => {
+                    if (key.startsWith('savedProducts_')) {
+                        localStorage.removeItem(key);
+                    }
+                });
+
                 document.getElementById('result').innerHTML = 
-                    '<div class="success">✅ All user data cleared successfully!<br>You can now close this tab and return to the app.</div>';
+                    '<div style="color: #10b981; font-weight: 600;">✅ All data cleared successfully!</div>';
                 
-                console.log('All user data cleared from localStorage');
+                console.log('OnlySwap data cleared successfully');
             } catch (error) {
-                console.error('Error clearing data:', error);
                 document.getElementById('result').innerHTML = 
-                    '<div style="color: #dc2626;">❌ Error clearing data. Please try again.</div>';
+                    '<div style="color: #ef4444; font-weight: 600;">❌ Error clearing data: ' + error.message + '</div>';
+                console.error('Error clearing data:', error);
             }
         }
+
+        function clearSampleProducts() {
+            try {
+                const products = JSON.parse(localStorage.getItem('onlyswap_products') || '[]');
+                const realProducts = products.filter(p => !p.sellerId || !p.sellerId.startsWith('sample-seller'));
+                localStorage.setItem('onlyswap_products', JSON.stringify(realProducts));
+                
+                document.getElementById('result').innerHTML = 
+                    '<div style="color: #10b981; font-weight: 600;">✅ Sample products removed! Remaining: ' + realProducts.length + ' products</div>';
+                
+                console.log('Sample products removed. Remaining:', realProducts.length);
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    '<div style="color: #ef4444; font-weight: 600;">❌ Error removing sample products: ' + error.message + '</div>';
+                console.error('Error removing sample products:', error);
+            }
+        }
+
+        function goToApp() {
+            window.location.href = 'http://localhost:5174/';
+        }
+
+        // Show current data status
+        window.onload = function() {
+            const users = JSON.parse(localStorage.getItem('onlyswap_users') || '[]');
+            const products = JSON.parse(localStorage.getItem('onlyswap_products') || '[]');
+            const chats = JSON.parse(localStorage.getItem('onlyswap_chats') || '[]');
+            const sampleProducts = products.filter(p => p.sellerId && p.sellerId.startsWith('sample-seller'));
+            
+            const status = `
+                <div style="margin-top: 1rem; padding: 1rem; background: #f9fafb; border-radius: 8px; text-align: left;">
+                    <h3 style="margin: 0 0 0.5rem 0; color: #374151;">Current Data Status:</h3>
+                    <p style="margin: 0.25rem 0; color: #6b7280;">Users: ${users.length}</p>
+                    <p style="margin: 0.25rem 0; color: #6b7280;">Total Products: ${products.length}</p>
+                    <p style="margin: 0.25rem 0; color: #ef4444;">Sample Products: ${sampleProducts.length}</p>
+                    <p style="margin: 0.25rem 0; color: #10b981;">Real Products: ${products.length - sampleProducts.length}</p>
+                    <p style="margin: 0.25rem 0; color: #6b7280;">Chats: ${chats.length}</p>
+                </div>
+            `;
+            document.getElementById('result').innerHTML = status;
+        };
     </script>
 </body>
 </html>
