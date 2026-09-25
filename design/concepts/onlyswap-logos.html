@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OnlySwap · logo concepts</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif;background:#ECECE8;color:#111;-webkit-font-smoothing:antialiased;--acc:#C8E27D;--onacc:#111}
+body[data-c=butter]{--acc:#FFD95A}body[data-c=tangerine]{--acc:#FF9A4D}body[data-c=coral]{--acc:#FF7B67}body[data-c=bubblegum]{--acc:#FFA3D1}body[data-c=sky]{--acc:#7CC0FF}body[data-c=cobalt]{--acc:#2B45E8;--onacc:#fff}body[data-c=lime]{--acc:#D8FF3E}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:16px;padding:14px 32px;background:rgba(236,236,232,.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(0,0,0,.08)}
+.top b{font-size:16px;letter-spacing:-.02em}.top span{opacity:.5;font-size:13px}
+.seg{display:flex;background:rgba(0,0,0,.07);border-radius:10px;padding:3px;margin-left:auto}
+.seg button{border:0;background:none;padding:7px 11px;border-radius:8px;font:600 13px -apple-system,system-ui,sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px}
+.seg button i{width:10px;height:10px;border-radius:5px;display:inline-block}
+.seg button.on{background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.14)}
+.wrap{padding:36px 40px 80px;max-width:1500px;margin:0 auto}
+h1{font-size:40px;font-weight:800;letter-spacing:-.04em}
+.lead{font-size:16px;opacity:.6;margin-top:8px;max-width:760px;line-height:1.5}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(440px,1fr));gap:22px;margin-top:32px}
+.card{background:#fff;border-radius:26px;padding:26px;box-shadow:0 0 0 1px rgba(0,0,0,.05)}
+.hd{display:flex;align-items:baseline;gap:10px}.hd b{font-size:12.5px;opacity:.4;font-weight:700}.hd h2{font-size:22px;font-weight:800;letter-spacing:-.03em}
+.idea{font-size:14.5px;line-height:1.5;color:#55554f;margin-top:6px;min-height:44px}
+.row{display:flex;align-items:flex-end;gap:18px;margin-top:22px}
+.ico{border-radius:23%;display:flex;align-items:center;justify-content:center;flex:none}
+.ico svg{width:62%;height:62%}
+.a{background:var(--acc);color:var(--onacc);--cut:var(--acc)}
+.k{background:#111;color:var(--acc);--cut:#111}
+.w{background:#fff;color:#111;--cut:#fff;box-shadow:inset 0 0 0 1px #e5e5e0}
+.sizes{display:flex;align-items:flex-end;gap:12px;margin-left:auto}
+.sizes>div{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:#9a9a93;font-weight:600}
+.lock{display:flex;gap:10px;margin-top:20px}
+.lk{flex:1;height:84px;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:9px}
+.lk .m svg{width:34px;height:34px;display:block}
+.wm{font-size:28px;font-weight:800;letter-spacing:-.055em}
+.lk.l1{background:#F4F4F1;color:#111;--cut:#F4F4F1}
+.lk.l1 .m{color:#111}
+.lk.l2{background:#111;color:#fff;--cut:#111}.lk.l2 .m{color:var(--acc)}
+.lk.l3{background:var(--acc);color:var(--onacc);--cut:var(--acc)}
+.pick{margin-top:18px;font-size:13px;line-height:1.5;color:#55554f;border-top:1px solid #eee;padding-top:14px}
+.pick b{color:#111}
+/* home screen */
+.hs{margin-top:44px;display:flex;gap:40px;align-items:flex-start;flex-wrap:wrap}
+.phone{width:375px;height:560px;border-radius:48px;overflow:hidden;position:relative;background:linear-gradient(160deg,#8aa3b8,#c9b7a3 55%,#e8d3b8);box-shadow:0 30px 60px -25px rgba(0,0,0,.35);padding:70px 26px 0}
+.apps{display:grid;grid-template-columns:repeat(4,1fr);gap:24px 18px}
+.app{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11.5px;color:#fff;font-weight:500;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+.app .ico{width:62px;height:62px;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.ph{background:rgba(255,255,255,.35);backdrop-filter:blur(6px)}
+.side{max-width:520px;font-size:15px;line-height:1.6;color:#55554f}.side h3{color:#111;font-size:20px;letter-spacing:-.02em;margin-bottom:8px}
+</style></head>
+<body>
+<div class="top"><b>OnlySwap</b><span>Logo concepts · round 1</span>
+<div class="seg" id="c"></div></div>
+<div class="wrap">
+<h1>Six logo directions</h1>
+<p class="lead">Each one is a different idea, not six versions of the same arrow. Every card shows the app icon, how it holds up at tiny sizes (the 16px one is what a browser tab shows), and the full lockup with the wordmark. Use the colors at the top to see each one in any accent.</p>
+<div class="grid" id="grid"></div>
+<div class="hs"><div class="phone"><div class="apps" id="apps"></div></div>
+<div class="side"><h3>On a real home screen</h3>All six sitting where students will actually see them, between other apps. The ones that still read clearly here, at 62px on a busy wallpaper, are the ones worth keeping. Detail that looks nice at 200px disappears at this size.</div></div>
+</div>
+<script>
+const M={
+handoff:`<svg viewBox="0 0 100 100"><path d="M45 14a32 32 0 0 0 0 64z" fill="currentColor"/><path d="M55 22a32 32 0 0 1 0 64z" fill="currentColor"/></svg>`,
+pair:`<svg viewBox="0 0 100 100"><circle cx="36" cy="50" r="22" fill="currentColor"/><circle cx="64" cy="50" r="18.5" fill="none" stroke="currentColor" stroke-width="8"/></svg>`,
+stack:`<svg viewBox="0 0 100 100"><rect x="36" y="14" width="40" height="56" rx="11" transform="rotate(14 56 42)" fill="none" stroke="currentColor" stroke-width="8"/><rect x="22" y="28" width="40" height="56" rx="11" transform="rotate(-7 42 56)" fill="currentColor"/></svg>`,
+splits:`<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"><path d="M72 26H45a13 13 0 0 0 0 26"/><path d="M28 74h27a13 13 0 0 0 0-26"/></svg>`,
+tag:`<svg viewBox="0 0 100 100"><path d="M12 50 35.5 25.6A6 6 0 0 1 39.8 24H82a6 6 0 0 1 6 6v40a6 6 0 0 1-6 6H39.8a6 6 0 0 1-4.3-1.6z" fill="currentColor"/><circle cx="35" cy="50" r="6.5" fill="var(--cut)"/><path d="M52 42h22M67 35l7 7-7 7M74 58H52M59 51l-7 7 7 7" fill="none" stroke="var(--cut)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+gate:`<svg viewBox="0 0 100 100"><path d="M20 86V48a30 30 0 0 1 60 0v38" fill="none" stroke="currentColor" stroke-width="10"/><path d="M37 86V60a13 13 0 0 1 26 0v26z" fill="currentColor"/></svg>`
+};
+const C=[
+['handoff','Handoff','Two halves of one circle, one slightly ahead of the other, like something being passed between two hands. Simple enough to draw with a finger.','Strongest at tiny sizes. Ownable because it\'s just two shapes, and it animates well: the halves can slide past each other on the launch screen.'],
+['pair','Pair','Two people, one deal. A solid circle and an outline overlapping: the buyer and the seller, one of them already "in".','Friendly and very readable. The two circles also echo the double o in "only" and "swap", so it can tie into the wordmark.'],
+['stack','Stack','A card being flicked off the top of a deck. It\'s the swipe feed, the thing that makes this app different from Marketplace.','Says "swipe" instantly. The risk is that card stacks are common across swipe apps, so it\'s less unique.'],
+['splits','Split S','An S built from two separate hooks that fit together. Two pieces, one swap, and it\'s the first letter of the thing people say: "just swap it".','Most "brand name" of the six. Works great as a monogram on stickers and merch. Slightly less obvious what the app does.'],
+['tag','Swap tag','A price tag with the exchange built into it. The hole of the tag and two little arrows cut out of the shape.','The clearest about being a marketplace. Has the most detail, so it gets busy at 16px.'],
+['gate','Gate','A campus archway with a doorway inside it. The idea is "only people from here get in", which is the whole .edu-only promise.','The most distinctive and the only one that says "campus". Doesn\'t say "buying and selling" on its own, so the name has to do that work.']
+];
+const pick={handoff:'<b>My pick.</b> ',splits:''};
+document.getElementById('grid').innerHTML=C.map(([k,n,idea,note],i)=>`<div class="card">
+<div class="hd"><b>0${i+1}</b><h2>${n}</h2></div><p class="idea">${idea}</p>
+<div class="row"><div class="ico a" style="width:112px;height:112px">${M[k]}</div><div class="ico k" style="width:112px;height:112px">${M[k]}</div>
+<div class="sizes">${[48,32,20,16].map(s=>`<div><div class="ico a" style="width:${s}px;height:${s}px">${M[k]}</div>${s}</div>`).join('')}</div></div>
+<div class="lock"><div class="lk l1"><span class="m">${M[k]}</span><span class="wm">onlyswap</span></div><div class="lk l2"><span class="m">${M[k]}</span><span class="wm">onlyswap</span></div></div>
+<div class="lock" style="margin-top:10px"><div class="lk l3"><span class="m">${M[k]}</span><span class="wm">onlyswap</span></div></div>
+<p class="pick">${pick[k]||''}${note}</p></div>`).join('');
+const grey=['#5D9CEC','#F2F2F2','#34C759','#FF3B30','#1C1C1E','#FF9500','#AF52DE','#0A84FF'];
+const slots=[1,4,7,9,12,14];let apps=[];for(let i=0;i<16;i++){const j=slots.indexOf(i);apps.push({h:j>=0?`<div class="app"><div class="ico a">${M[C[j][0]]}</div>${C[j][1]}</div>`:`<div class="app"><div class="ico ph"></div>&nbsp;</div>`})}
+document.getElementById('apps').innerHTML=apps.map(a=>a.h).join('');
+const cols=[['pistachio','Pistachio','#C8E27D'],['butter','Butter','#FFD95A'],['tangerine','Tangerine','#FF9A4D'],['coral','Coral','#FF7B67'],['bubblegum','Bubblegum','#FFA3D1'],['sky','Sky','#7CC0FF'],['cobalt','Cobalt','#2B45E8']];
+const cb=document.getElementById('c');cb.innerHTML=cols.map(([k,n,h],i)=>`<button data-k="${k}" class="${i?'':'on'}"><i style="background:${h}"></i>${n}</button>`).join('');
+cb.querySelectorAll('button').forEach(b=>b.onclick=()=>{document.body.dataset.c=b.dataset.k;cb.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b))});
+</script>
+</body></html>

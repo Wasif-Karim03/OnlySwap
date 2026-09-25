@@ -1,0 +1,59 @@
+<script>
+/* ================= F · PROFILE & SETTINGS ================= */
+add('F','Profile','Your numbers, your stuff, and one quiet nudge to list something.',
+`<div class="scr">${sb()}<div class="nv"><span></span><div style="display:flex;gap:2px"><div class="ib">${ic('bell',22)}</div><div class="ib">${ic('gear',22)}</div></div></div>
+<div class="ct"><div style="display:flex;gap:16px;align-items:center">${av('W',AVC.W,72)}<div><div class="hm">Wasif K.</div><div class="s">Sophomore · Ohio State</div><div class="vf" style="margin-top:4px">${ic('shield',14,'b')} Student email verified</div></div></div>
+<div class="stats"><div><b>12</b><span>swaps</span></div><div><b>12/12</b><span>thumbs up</span></div><div><b>3</b><span>listed</span></div></div>
+<div class="promo"><div style="flex:1"><div class="t">Got stuff you don't use?</div><div class="s">Listing takes about a minute.</div></div><div class="btn" style="width:auto;height:40px;padding:0 18px;font-size:14.5px;border-radius:12px">Sell</div></div>
+<div class="grp" style="margin-top:14px">${[['tag','My listings','3 active'],['bookmark','Saved','6'],['search','Wanted posts','1'],['clock','Offer history',''],['shield','Safety',''],['help','Help','']].map(([i,t,v],n,a)=>`<div class="li" ${n==a.length-1?'style="border:0"':''}>${ic(i,21)}<span class="t" style="flex:1;font-size:15px">${t}</span><span class="s">${v}</span>${ic('chev',17,'mu')}</div>`).join('')}</div></div>${tb('Profile')}</div>`);
+
+function myl(k,t,p,st,tag){return `<div class="li">${thumb(k,60)}<div style="flex:1;min-width:0"><div class="t el">${t}</div><div style="font-weight:800">${p}</div><div class="s" style="font-size:12.5px">${st}</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">${tag}${ic('more',20,'mu')}</div></div>`}
+add('F','My listings','Weekly totals up top. A stale listing gets a specific fix with a number, not a vague "boost your listing" banner.',
+`<div class="scr">${sb()}${nav('back','My listings',`<div class="ib">${ic('plus',22)}</div>`)}<div class="ct">
+<div class="card" style="padding:12px 4px 4px"><div class="mi" style="text-align:center">Last 7 days</div><div class="stats" style="margin:4px 0 0;background:none"><div><b>214</b><span>seen</span></div><div><b>19</b><span>saves</span></div><div><b>6</b><span>offers</span></div></div></div>
+<div class="sg" style="margin-top:14px"><div class="on">Active · 3</div><div>Sold · 9</div><div>Drafts</div></div>
+${myl('mon','Dell 24" monitor','$60','86 seen · 7 saves · 2 offers','<span class="tag ac">2 offers</span>')}
+${myl('plant2','Snake plant with pot','$10','41 seen · 2 saves','')}
+${myl('rug','5x7 rug','$20','23 seen · 0 saves · up 16 days','')}
+<div class="nudge">${ic('clock',18)}<div style="flex:1"><div class="t" style="font-size:14.5px">No offers on your rug in 16 days</div><div class="s">Rugs like it went for about $15 here.</div><div style="display:flex;gap:8px;margin-top:10px"><div class="btn k sm3" style="flex:none;width:auto;padding:0 14px">Drop to $15</div><div class="btn s sm3" style="flex:none;width:auto;padding:0 14px">Bump it</div></div></div></div></div></div>`);
+
+add('F','Listing stats','Only numbers you can act on. Swipe-left counts are left out on purpose, they discourage sellers and mostly mean "wrong category".',
+`<div class="scr">${sb()}${nav('back','Listing stats',`<div class="ib">${ic('more',22)}</div>`)}<div class="ct">
+<div style="display:flex;gap:12px;align-items:center;margin-top:2px">${thumb('mon',56)}<div><div class="t">Dell 24" monitor, 1080p</div><div class="s">$60 · live for 3 days</div></div></div>
+<div class="sgrid">${[['eye','186','seen'],['bookmark','11','saved'],['tag','3','offers'],['chat','1','chat']].map(([i,n,l])=>`<div>${ic(i,18,'mu')}<b>${n}</b><span>${l}</span></div>`).join('')}</div>
+<div class="card" style="margin-top:10px"><div class="rw" style="margin:0 0 12px"><span class="t" style="font-size:14.5px">Seen per day</span><span class="mi">This week</span></div>
+<div class="bars">${[18,42,31,55,26,9,5].map((v,i)=>`<div><i style="height:${v*1.4}px" class="${i==3?'on':''}"></i><span>${'MTWTFSS'[i]}</span></div>`).join('')}</div></div>
+<div class="hint" style="margin-top:12px">${ic('trend',17)}<span>Monitors like yours sold for $50 to $60 here. You're at the top of that range.</span></div>
+<div class="grp" style="margin-top:12px">${[['refresh','Bump to the top','Free once a day'],['clock','Mark as reserved','Hides it while you meet up'],['check','Mark as sold','']].map(([i,t,s])=>`<div class="li">${ic(i,20)}<div style="flex:1"><div class="t" style="font-size:15px">${t}</div>${s?`<div class="s" style="font-size:12.5px">${s}</div>`:''}</div>${ic('chev',17,'mu')}</div>`).join('')}<div class="li" style="border:0;color:var(--red)">${ic('trash',20)}<span class="t" style="font-size:15px;flex:1">Delete listing</span></div></div></div></div>`);
+
+function nrow(i,c,h,t,k){return `<div class="li"><span class="fic ${c}">${ic(i,18)}</span><div style="flex:1;font-size:14.5px;line-height:1.35">${h}<div class="mi" style="margin-top:2px">${t}</div></div>${k?thumb(k,44,10):''}</div>`}
+add('F','Notifications','Grouped by day. Each one shows the item it\'s about so you can tell them apart at a glance.',
+`<div class="scr">${sb()}${nav('back','Notifications')}<div class="ct">
+<div class="lbl" style="margin-top:6px">Today</div>
+${nrow('chat','ac','<b>Aisha</b> confirmed 4:30 PM at RPAC','2m','mon')}${nrow('tag','gy','<b>Ben O.</b> offered $40 on your Dell monitor','1h','mon')}${nrow('arrdown','gn','<b>Price drop.</b> Desk chair is now $30','3h','chair')}${nrow('search','gy','<b>3 new listings</b> for "monitor"','5h')}
+<div class="lbl" style="margin-top:18px">Earlier</div>
+${nrow('up','gy','How was your swap with <b>Devin</b>? Leave a rating.','Yesterday')}${nrow('food','ac','<b>Free food.</b> Bagels at the Ohio Union, 2nd floor','Yesterday')}${nrow('gift','gy','<b>Maya</b> is giving away a floor mirror','Tue','mir')}</div></div>`);
+
+function grpS(h,rows){return `${h?`<div class="lbl" style="margin:16px 0 8px 4px">${h}</div>`:'<div style="height:16px"></div>'}<div class="grp">${rows.map(([t,v],i)=>`<div class="li" ${i==rows.length-1?'style="border:0"':''}><span class="t" style="flex:1;font-size:15px">${t}</span>${v==='T1'?'<span class="tg on"></span>':v==='T0'?'<span class="tg"></span>':`<span class="s">${v}</span>${ic('chev',16,'mu')}`}</div>`).join('')}</div>`}
+add('F','Settings','Standard grouped iOS list. Delete account is reachable here, which both stores require.',
+`<div class="scr">${sb()}${nav('back','Settings')}<div class="ct">
+${grpS('Account',[['School email','wkarim.12@osu.edu'],['Student status','<span class="vf">Verified to Aug 2027</span>'],['Name shown as','Wasif K.']])}
+${grpS('Notifications',[['Offers and messages','T1'],['Price drops on saved items','T1'],['New matches for saved searches','T1'],['Free food nearby','T0']])}
+${grpS('Privacy and safety',[['Blocked accounts','1'],['Safety center','']])}
+<div class="grp" style="margin-top:16px"><div class="li"><span class="t" style="flex:1;font-size:15px">Log out</span></div><div class="li" style="border:0"><span class="t" style="flex:1;font-size:15px;color:var(--red)">Delete account</span></div></div></div></div>`);
+
+add('F','Delete account','Spells out exactly what goes away. Typing DELETE stops accidental taps.',
+`<div class="scr">${sb()}${nav('back')}<div class="ct"><div class="hl" style="margin-top:6px">Delete your account?</div><p class="bd" style="margin-top:8px">This can't be undone. Here's what happens:</p>
+<div class="dl">${['Your 3 active listings come down','Open offers get cancelled','Your chats are deleted on your side','Ratings you gave stay up, without your name'].map(x=>`<div>${ic('x',16,'b')}<span>${x}</span></div>`).join('')}</div>
+<p class="mi" style="margin-top:16px;line-height:1.5">We keep reports and safety records for 180 days after you leave. Details are in the Privacy Policy.</p>
+<div class="lbl" style="margin-top:22px">Type DELETE to confirm</div><div class="in f">DELETE<span class="caret" style="margin-left:-8px"></span></div></div>
+${dock(`<div class="btn dr">Delete my account</div><div class="btn t" style="margin-top:2px">Keep my account</div>`)}</div>`);
+
+add('F','Safety','Safe spots on a map, tips that match the scams that actually happen, and a 911 shortcut. Zone names are placeholders.',
+`<div class="scr">${sb()}${nav('back','Safety')}<div class="ct">
+${map(160,[[28,42],[58,64],[82,28]],'3 safe-exchange zones on campus')}
+<div class="grp" style="margin-top:14px">${[['RPAC','Cameras · lit · open 24/7','4 min'],['Ohio Union front desk','Staffed until midnight','7 min'],['Campus police lobby','Open 24/7','12 min']].map(([t,s,d],i)=>`<div class="li" ${i==2?'style="border:0"':''}><span class="fic gy" style="width:32px;height:32px">${ic('shield',16)}</span><div style="flex:1"><div class="t" style="font-size:15px">${t}</div><div class="s" style="font-size:12.5px">${s}</div></div><span class="sm">${d}</span></div>`).join('')}</div>
+<div class="lbl" style="margin-top:16px">Before you meet</div>
+<div class="tips">${['Meet in daylight or at a safe-exchange zone','Check the item works before you pay','Never read out a code sent to your phone. No real buyer needs it','Bring a friend for anything over $100'].map(x=>`<div>${ic('check',16,'b')}<span>${x}</span></div>`).join('')}</div>
+<div class="sos"><div style="flex:1"><div class="t">Feel unsafe right now?</div><div class="s">Call 911 first. Report it here after.</div></div><div class="btn dr" style="width:auto;height:42px;padding:0 16px;font-size:15px;border-radius:12px">${ic('phone',17)} 911</div></div></div></div>`);
+</script>

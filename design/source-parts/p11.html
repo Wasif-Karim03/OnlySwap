@@ -1,0 +1,90 @@
+<style>
+.soldov{position:absolute;inset:0;background:rgba(255,255,255,.55);display:flex;align-items:center;justify-content:center}
+body[data-theme=night] .soldov{background:rgba(0,0,0,.5)}
+.soldov span{background:var(--ink);color:var(--bg);font-weight:800;font-size:22px;letter-spacing:-.02em;padding:10px 22px;border-radius:14px;transform:rotate(-6deg)}
+.upl{position:absolute;left:8px;right:8px;bottom:8px;height:5px;border-radius:3px;background:rgba(255,255,255,.5);overflow:hidden}.upl i{display:block;height:100%;background:#fff}
+.ios{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:270px;background:rgba(242,242,242,.97);backdrop-filter:blur(20px);border-radius:14px;text-align:center;color:#000;z-index:32;overflow:hidden}
+.ios .b{padding:18px 16px 16px}.ios h4{font-size:17px;font-weight:600}.ios p{font-size:13px;margin-top:4px;line-height:1.35}
+.ios .bt{display:flex;border-top:.5px solid rgba(0,0,0,.2)}.ios .bt div{flex:1;padding:11px;font-size:17px;color:#007AFF}.ios .bt div+div{border-left:.5px solid rgba(0,0,0,.2)}
+.stars{display:flex;justify-content:center;gap:6px;padding:0 0 16px;color:#007AFF;font-size:26px}
+.shs{background:var(--bg2);border-radius:14px;padding:12px;display:flex;gap:12px;align-items:center}
+.shapps{display:flex;gap:14px;margin-top:18px}.shapps div{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11.5px;color:var(--ink2);width:62px}
+.shapps span{width:60px;height:60px;border-radius:16px;display:flex;align-items:center;justify-content:center;color:#fff}
+.toastx{position:absolute;left:16px;right:16px;bottom:100px;background:var(--ink);color:var(--bg);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;font-size:14.5px;font-weight:600;z-index:8;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.toastx b{margin-left:auto;color:var(--acc);display:flex;gap:4px;align-items:center}
+body[data-theme=night] .toastx b{color:#111}
+.ban li{list-style:none;display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+</style>
+<script>
+add('X','Item gone','What a buyer sees when a saved or shared listing already sold. It points straight at similar things instead of a dead end.',
+`<div class="scr"><div class="im" style="height:330px;flex:none;position:relative;${I('gtr',800)}"><div style="position:relative;color:#fff">${sb()}</div><div class="ovn"><div class="ib w">${ic('back',22)}</div></div><div class="soldov"><span>Sold</span></div></div>
+<div class="ct" style="padding-top:18px"><div class="hs" style="font-size:19px">Squier Strat</div><div class="s" style="margin-top:4px">Sold 2 days ago · your offers were closed automatically</div>
+<div class="rw" style="margin-top:22px"><span class="hs">Similar at OSU</span><span class="sm">See all</span></div>
+<div class="hrow">${hcard('gtr2','$120','Strat copy, white')}${hcard('gtr','$95','Squier Bullet')}${hcard('gtr2','$160','Fender Player')}</div></div>
+<div class="dock"><div class="btn s" style="flex:1">${ic('bell',19)} Alert me for guitars</div></div></div>`);
+
+add('X','Under review','When the filter holds a listing, the seller sees why and how long. It never just vanishes.',
+`<div class="scr">${sb()}${nav('back','My listings')}<div class="ct">
+<div class="warnb" style="margin-top:4px">${ic('clock',18)}<div><b>Your calculator listing is being reviewed.</b> The words "exam answers" were flagged. Most reviews take under 2 hours.</div></div>
+${myl('calc','Calculator + notes','$15','Not visible to buyers yet','<span class="tag am">In review</span>')}
+${myl('mon','Dell 24" monitor','$60','86 seen · 7 saves · 2 offers','<span class="tag ac">2 offers</span>')}
+${myl('plant2','Snake plant with pot','$10','41 seen · 2 saves','')}
+<div class="card" style="margin-top:16px"><div class="t" style="font-size:14.5px">If it gets removed</div><div class="s" style="margin-top:4px">You get the exact rule it broke and an appeal button. Nothing gets removed without a reason.</div></div></div></div>`);
+
+add('X','Uploading and drafts','Each photo uploads on its own with a retry. Drafts save on every change, so killing the app loses nothing.',
+`<div class="scr">${sb()}${nav('x','New listing',stepR('1 of 3'))}<div class="pgb"><i class="on"></i><i></i><i></i></div>
+<div class="ct"><div class="hl" style="margin-top:16px">Add photos</div><p class="bd" style="margin-top:6px">Draft saved · 2 seconds ago</p>
+<div class="pg"><div class="im" style="${I('mon',300)}"><span class="tag ink" style="position:absolute;left:6px;top:6px">Cover</span></div>
+<div class="im" style="${I('mon2',300)}"><div class="upl"><i style="width:64%"></i></div></div>
+<div class="im" style="${I('mon',300)};filter:grayscale(1) opacity(.5)"><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--red);font-size:12px;font-weight:700">${ic('refresh',22)}Retry</div></div>
+<div class="add">${ic('camera',24)}<span>Camera</span></div><div class="add">${ic('image',24)}<span>Library</span></div><div class="emp"></div></div>
+<div class="mi" style="margin-top:10px">Hold and drag to reorder. Tap a photo to crop.</div></div>
+${dock(`<div class="btn p">Next</div>`)}
+<div class="scrim" style="background:rgba(0,0,0,.3)"></div><div class="sh"><div class="grab"></div><div class="hs">Pick up where you left off?</div><div class="s" style="margin-top:4px">You started listing a Dell monitor yesterday.</div><div style="display:flex;gap:10px;margin-top:16px"><div class="btn s" style="flex:1;width:auto">Start over</div><div class="btn p" style="flex:1;width:auto">Continue</div></div></div></div>`);
+
+add('X','Chat details','Typing dots, sent and read ticks, a failed message you can tap to retry, and photos that show upload progress.',
+`<div class="scr">${chat(`<div class="m th">can you send a pic of the ports on the back?</div><div class="mimg im" style="${I('mon2',400)}"><div class="up"><div class="ring"></div></div></div><div class="mst">Sending…</div>
+<div class="m me">that's the HDMI and power, no dents anywhere</div><div class="mst">Read 4:12 PM</div>
+<div class="m me fail">also works with a mac</div><div class="mst r">${ic('alert',12)} Not sent · Tap to retry</div>
+<div class="typing"><i></i><i></i><i></i></div>`)}</div>`);
+
+add('X','Blocked chat','After you block someone, the thread becomes read-only. Unblocking is one tap, and they never get told either way.',
+`<div class="scr">${sb()}<div class="nv"><div class="ib" style="margin-left:-8px">${ic('back',22)}</div><div class="chd">${av('B',AVC.B,34)}<div class="t" style="font-size:15px">Ben O.</div></div><div class="ib">${ic('more',22)}</div></div>
+<div class="msgs"><div class="sys">You declined Ben's $40 offer</div><div class="m th">why</div><div class="m th">i can come get it rn</div><div class="m th">hello??</div><div class="sys" style="margin-top:12px">You blocked Ben · Report sent</div></div>
+<div class="cmp" style="flex-direction:column;gap:6px;padding-top:14px"><div class="s" style="text-align:center">You blocked Ben. He can't message you or see your listings.</div><div class="btn s" style="height:42px;font-size:15px">Unblock</div></div></div>`);
+
+add('X','Camera access','Asked the first time someone taps Camera, never at launch. Per Apple, the button says Continue, not Allow, then the real system prompt appears.',
+`<div class="scr">${sb()}${nav('x')}<div class="ct stc"><div class="emptyart" style="background:var(--acc);color:var(--onacc)">${ic('camera',40)}</div>
+<div class="hl" style="margin-top:22px">Take photos of your stuff</div><p class="bd" style="margin-top:8px;max-width:290px">OnlySwap uses the camera only when you add photos to a listing or a chat. Nothing is recorded in the background.</p></div>
+${dock(`<div class="btn p">Continue</div><div class="btn t" style="margin-top:2px">Choose from library instead</div>`)}</div>`);
+
+add('X','Access denied','If someone said no earlier, explain the fix and link straight to Settings instead of a broken button.',
+`<div class="scr">${sb()}${nav('x','New listing')}<div class="ct stc"><div class="emptyart">${ic('image',38)}</div>
+<div class="hm" style="margin-top:20px">Photos are turned off</div><p class="bd" style="margin-top:8px;max-width:290px">To add pictures, allow OnlySwap to use Photos in Settings. You can pick just the ones you want to share.</p></div>
+${dock(`<div class="btn k">Open Settings</div><div class="btn t" style="margin-top:2px">Use the camera instead</div>`)}</div>`);
+
+add('X','Undo swipe','Skipped something by accident? The last swipe can always be undone for a few seconds.',
+`<div class="scr">${sb()}${dhead('swipe')}<div class="stg">${scard('pods','$85','AirPods Pro','Good · RPAC · 1h ago','Noah B. · 6 swaps','N')}</div>${ACTS()}${tb('Discover')}
+<div class="toastx">${ic('x',18,'b')}<span>Skipped Mini fridge</span><b>${ic('undo',17,'b')} Undo</b></div></div>`);
+
+add('X','Share listing','The iOS share sheet with a clean preview card. The link opens the listing in the app, or a web page with an install button.',
+`<div class="scr">${sb()}${nav('back')}<div class="ct"></div><div class="scrim"></div><div class="sh" style="background:var(--bg2)"><div class="grab"></div>
+<div class="shs" style="background:var(--bg)">${thumb('fridge',56)}<div><div class="t">Mini fridge, 3.1 cu ft · $40</div><div class="s">onlyswap.app/l/k3f9 · Ohio State only</div></div></div>
+<div class="shapps">${[['#34C759','chat','Messages'],['#111','quad','Snapchat'],['#E1306C','camera','Instagram'],['#8E8E93','more','More']].map(([c,i,l])=>`<div><span style="background:${c}">${ic(i,26)}</span>${l}</div>`).join('')}</div>
+<div class="grp" style="margin-top:18px;background:var(--bg)"><div class="li">${ic('copy',20)}<span class="t" style="font-size:15px">Copy link</span></div><div class="li" style="border:0">${ic('qr',20)}<span class="t" style="font-size:15px">Show QR code</span></div></div></div></div>`);
+
+add('X','Rate the app','Only after something good: a sale that went well or a thumbs-up rating. iOS allows this prompt three times a year at most.',
+`<div class="scr">${sb()}${nav('x')}<div class="ct stc"><div class="okc">${ic('check',44,'b')}</div><div class="hl" style="margin-top:22px">Sold for $50</div><p class="bd" style="margin-top:8px">Nice. That's your 13th swap.</p></div>${dock(`<div class="btn k">Done</div>`)}
+<div class="scrim" style="background:rgba(0,0,0,.35)"></div><div class="ios"><div class="b">${mark(60,'var(--acc)','var(--onacc)')}<h4 style="margin-top:12px">Enjoying OnlySwap?</h4><p>Tap a star to rate it on the App Store.</p></div><div class="stars">☆☆☆☆☆</div><div class="bt"><div>Not Now</div></div></div></div>`);
+
+add('X','Banned items','The full list, in plain words, linked from the sell flow and every removal message.',
+`<div class="scr">${sb()}${nav('back','Banned items')}<div class="ct"><p class="bd" style="margin:4px 0 6px">These can't be listed on OnlySwap. Listing them gets the post removed and can pause your account.</p>
+<ul class="ban">${[['ban','Alcohol, vapes and nicotine','Including empty bottles sold as "collectibles"'],['ban','Medication and drugs','Prescription, over the counter, and supplements'],['ban','Weapons','Including pepper spray, tasers and knives'],['ban','Tickets','Game days, concerts, anything with a seat'],['ban','Meal swipes and dining dollars','Your meal plan terms don\'t allow it'],['ban','Coursework','Essays, test banks, answer keys. Textbooks are fine'],['ban','Housing and sublets','Leases and room swaps aren\'t allowed yet']].map(([i,t,s])=>`<li><span class="fic" style="background:var(--redbg);color:var(--red);width:34px;height:34px">${ic(i,17)}</span><div><div class="t" style="font-size:15px">${t}</div><div class="s" style="font-size:13px">${s}</div></div></li>`).join('')}</ul></div></div>`);
+
+add('X','Help','Answers first, a person second. Safety issues skip the queue and get a separate button.',
+`<div class="scr">${sb()}${nav('back','Help')}<div class="ct"><div class="in" style="margin-top:4px">${ic('search',20,'mu')}<span style="color:var(--ink3)">Search help</span></div>
+<div class="lbl" style="margin-top:20px">Common questions</div>
+<div class="grp">${['How do offers work?','Someone didn\'t show up','I think I got scammed','How do I delete a listing?','Why was my post removed?'].map((q,i,a)=>`<div class="li" ${i==a.length-1?'style="border:0"':''}><span class="t" style="flex:1;font-size:15px">${q}</span>${ic('chev',17,'mu')}</div>`).join('')}</div>
+<div class="sos" style="margin-top:18px"><div style="flex:1"><div class="t">Safety problem?</div><div class="s">Threats, stalking, or a meetup gone wrong</div></div><div class="btn dr" style="width:auto;height:40px;padding:0 16px;font-size:14.5px;border-radius:12px">Report</div></div>
+<div class="grp" style="margin-top:12px"><div class="li" style="border:0">${ic('mail',20)}<div style="flex:1"><div class="t" style="font-size:15px">Email us</div><div class="s">help@onlyswap.app · replies within a day</div></div>${ic('chev',17,'mu')}</div></div></div></div>`);
+</script>

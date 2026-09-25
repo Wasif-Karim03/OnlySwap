@@ -1,0 +1,69 @@
+<style>
+.lock{position:absolute;inset:0;background:linear-gradient(170deg,#6f8aa3 0%,#b5a08a 55%,#e3c9a8 100%);color:#fff}
+.lclock{text-align:center;margin-top:18px}
+.lclock .d{font-size:18px;font-weight:600;opacity:.9}
+.lclock .t2{font-size:92px;font-weight:700;letter-spacing:-.03em;line-height:1;margin-top:2px}
+.ln{margin:0 10px 8px;background:rgba(245,245,245,.72);backdrop-filter:blur(20px);border-radius:22px;padding:12px 14px;color:#111;display:flex;gap:11px}
+.ln .lm{flex:none}
+.la{margin:0 10px;background:rgba(20,20,20,.72);backdrop-filter:blur(20px);border-radius:24px;padding:16px;color:#fff}
+.dyn{position:absolute;left:10px;right:10px;top:10px;height:84px;border-radius:40px;background:#000;color:#fff;display:flex;align-items:center;gap:12px;padding:0 18px;z-index:10}
+.legal h4{font-size:18px;font-weight:750;letter-spacing:-.02em;margin-top:22px}
+.legal p{font-size:15px;line-height:1.6;color:var(--ink2);margin-top:6px}
+.blur{filter:blur(14px);transform:scale(1.1)}
+.xl .t{font-size:21px}.xl .s,.xl .mi{font-size:17px}.xl .hl{font-size:38px}.xl .lbl{font-size:17px}.xl .tag{font-size:15px}
+.xl .sg div{font-size:17px;height:42px;line-height:42px}.xl .btn.sm3{height:52px;font-size:18px}.xl .el{white-space:normal}
+.vo{position:absolute;border-radius:28px;box-shadow:0 0 0 4px #111,0 0 0 7px #fff;z-index:12}
+.vocap{position:absolute;left:16px;right:16px;bottom:120px;background:rgba(20,20,20,.9);color:#fff;border-radius:16px;padding:14px 16px;font-size:15px;line-height:1.45;z-index:13}
+</style>
+<script>
+/* ===== 15. lock screen ===== */
+function ln(t,b,tm){return `<div class="ln">${mark(38,'var(--acc)','var(--onacc)')}<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;font-size:14px"><b style="font-weight:650">${t}</b><span style="color:#555;font-size:12.5px">${tm}</span></div><div style="font-size:14px;line-height:1.35;color:#222;margin-top:1px">${b}</div></div></div>`}
+add('X','Lock screen','Notifications written to be read in two seconds: who, what, and the item. Grouped under OnlySwap, with offers and meetups set to "time sensitive" so Focus modes let them through.',
+`<div class="lock">${sb()}<div class="lclock"><div class="d">Friday, September 25</div><div class="t2">9:41</div></div>
+<div style="position:absolute;left:0;right:0;bottom:120px">${ln('Devin accepted your offer','Mini fridge for $35. Say hi and plan the pickup.','now')}${ln('Meetup in 30 minutes','Aisha at the RPAC safe-exchange zone, 4:30 PM','2m ago')}${ln('Price drop','Desk chair you saved is now $30 (was $45)','1h ago')}<div style="text-align:center;font-size:13px;font-weight:600;opacity:.9;margin-top:6px">3 more from OnlySwap</div></div>
+<div style="position:absolute;left:44px;bottom:40px;width:50px;height:50px;border-radius:25px;background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center">${ic('bell',22)}</div><div style="position:absolute;right:44px;bottom:40px;width:50px;height:50px;border-radius:25px;background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center">${ic('camera',22)}</div></div>`,{hi:'l'});
+
+/* ===== 16. Live Activity ===== */
+add('X','Live Activity','On meetup day the countdown lives on the lock screen and in the Dynamic Island, so nobody has to open the app to check where or when. "I\'m here" works right from the lock screen.',
+`<div class="lock">${sb()}<div class="dyn">${mark(40,'var(--acc)','var(--onacc)')}<div style="flex:1"><div style="font-size:13px;opacity:.7">Meetup with Aisha</div><div style="font-size:17px;font-weight:700">RPAC · 4:30 PM</div></div><div style="font-size:26px;font-weight:700;color:var(--acc);font-variant-numeric:tabular-nums">12:04</div></div>
+<div class="lclock" style="margin-top:96px"><div class="d">Friday, September 25</div><div class="t2">4:18</div></div>
+<div style="position:absolute;left:0;right:0;bottom:120px"><div class="la"><div style="display:flex;gap:12px;align-items:center">${mark(44,'var(--acc)','var(--onacc)')}<div style="flex:1"><div style="font-size:13px;opacity:.7">Selling your Dell monitor · $50</div><div style="font-size:19px;font-weight:700">Meet Aisha in 12 min</div></div></div>
+<div style="height:6px;border-radius:3px;background:rgba(255,255,255,.2);margin-top:14px;overflow:hidden"><i style="display:block;width:72%;height:100%;background:var(--acc)"></i></div>
+<div style="display:flex;justify-content:space-between;font-size:13px;opacity:.8;margin-top:8px"><span>${ic('pin',13).replace('class="ic "','class="ic " style="display:inline;vertical-align:-2px"')} RPAC safe-exchange zone</span><span>4:30 PM</span></div>
+<div style="display:flex;gap:8px;margin-top:14px"><div style="flex:1;height:40px;border-radius:12px;background:var(--acc);color:var(--onacc);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14.5px">I'm here</div><div style="flex:1;height:40px;border-radius:12px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14.5px">Running late</div></div></div></div></div>`,{hi:'l'});
+
+/* ===== 18. legal pages ===== */
+add('X','Terms','Legal pages open with a plain-English summary, then the real text. Nobody reads terms, but the ones who do are usually upset, so the short version matters.',
+`<div class="scr">${sb()}${nav('back','Terms of Service')}<div class="ct legal"><div class="mi">Last updated September 1, 2026</div>
+<div class="card" style="margin-top:14px"><div class="t" style="font-size:15px">The short version</div><div class="tips" style="margin-top:6px">${['You must be a current student at your school','Deals happen between you and the other student, in person','OnlySwap never holds or handles money','Break the community rules and your account can be paused or removed'].map(t=>`<div style="font-size:14px">${ic('check',15,'b')}<span>${t}</span></div>`).join('')}</div></div>
+<h4>1. Who can use OnlySwap</h4><p>You need a working email address from a school we support, and you need to be a current student there. We check this when you sign up and once a year after that.</p>
+<h4>2. Buying and selling</h4><p>OnlySwap introduces buyers and sellers. We aren't part of the sale, we don't inspect items, and we don't process payments.</p></div></div>`);
+
+add('X','Privacy','The privacy page is a table first: what we collect, why, and for how long. The same facts go into the App Store privacy label and the Play Store data safety form.',
+`<div class="scr">${sb()}${nav('back','Privacy')}<div class="ct legal"><div class="mi">Last updated September 1, 2026</div>
+<div class="grp" style="margin-top:14px">${[['School email','Verify you\'re a student','Until you delete your account'],['Listings and photos','Show your stuff to buyers','Until you delete them'],['Messages','Deliver chats, handle reports','Deleted with your account'],['Meetup spots','Suggest safe places','Not stored after the meetup'],['Reports','Keep people safe','180 days after closing']].map(([a,b,c],i)=>`<div class="li" ${i==4?'style="border:0"':''}><div style="flex:1"><div class="t" style="font-size:14.5px">${a}</div><div class="s" style="font-size:12.5px">${b}</div></div><span class="mi" style="text-align:right;max-width:110px">${c}</span></div>`).join('')}</div>
+<h4>We never sell your data</h4><p>No ads, no data brokers. We don't read your messages unless one is reported to us.</p></div></div>`);
+
+/* ===== 19. deep-link errors ===== */
+add('X','Link from another campus','Someone at Ohio State opens a link a friend at Michigan sent. They can\'t see the listing, so they get the closest match on their own campus instead.',
+`<div class="scr"><div class="im blur" style="height:330px;flex:none;${I('bike2',400)}"></div><div style="position:absolute;top:0;left:0;right:0;color:#fff">${sb()}</div>
+<div class="ct" style="padding-top:22px"><span class="tag gy">${ic('building',13)} University of Michigan</span><div class="hl" style="margin-top:12px">This listing is at Michigan</div>
+<p class="bd" style="margin-top:6px">Only Michigan students can see it. Here's what's close at Ohio State:</p>
+<div class="hrow" style="margin-top:16px">${hcard('bike','$120','Trek city bike')}${hcard('sco','$35','Kick scooter')}${hcard('bike2','$95','Mountain bike')}</div></div>
+<div class="dock"><div class="btn k" style="flex:1">Browse bikes at Ohio State</div></div></div>`);
+
+add('X','Link while signed out','A listing link opened by someone not logged in. The photo stays blurred and the details hidden until they verify, so shared links can\'t be used to peek at a campus from outside.',
+`<div class="scr"><div class="im blur" style="height:420px;flex:none;${I('fridge',400)}"></div><div style="position:absolute;top:0;left:0;right:0;color:#fff">${sb()}</div>
+<div class="sh" style="padding-top:18px"><div style="display:flex;gap:10px;align-items:center">${mark(40,'var(--acc)','var(--onacc)')}<span class="t">A listing at Ohio State</span></div>
+<div class="hm" style="margin-top:14px">Sign in to see it</div><p class="bd" style="margin-top:6px">Listings are only visible to verified students. Use your school email, it takes 30 seconds.</p>
+<div class="in f" style="margin-top:16px">${ic('mail',20,'mu')}<span style="color:var(--ink3)">you@osu.edu</span><span class="caret" style="margin-left:-6px"></span></div>
+<div class="btn p" style="margin-top:12px">Send code</div></div></div>`);
+
+/* ===== 20. accessibility ===== */
+add('X','Large text','The inbox at the largest text size. Nothing gets cut off: names wrap, buttons grow, and the layout stacks instead of squeezing. Every screen needs this check before launch.',
+S.find(s=>s.sec==='E'&&s.name==='Inbox · offers').html.replace('<div class="scr">','<div class="scr xl">'));
+
+add('X','VoiceOver','Swiping is impossible for screen reader users, so each card announces itself and offers the same actions as a menu. Every icon-only button has a spoken label.',
+`<div class="scr">${S.find(s=>s.sec==='B'&&s.name==='Swipe').html.replace('<div class="scr">','').replace(/<\/div>$/,'')}<div class="vo" style="left:12px;right:12px;top:108px;height:470px"></div>
+<div class="vocap"><b>Mini fridge, 3.1 cubic feet. $40.</b> Good condition, Baker Hall, posted 12 minutes ago. Seller Devin P., verified.<div style="opacity:.75;margin-top:6px;font-size:13.5px">Actions available: Make an offer, Save, Skip, More details. Swipe up or down to choose.</div></div></div>`);
+</script>

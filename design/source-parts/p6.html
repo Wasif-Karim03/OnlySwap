@@ -1,0 +1,77 @@
+<script>
+/* ================= E · OFFERS & MESSAGES ================= */
+function offerCard(k,i,t,s,tm){return `<div class="oc"><div class="fh"><div style="position:relative">${av(i,AVC[i],44)}<div class="im mthumb" style="${I(k,120)}"></div></div><div style="flex:1;min-width:0;margin-left:4px"><div class="t">${t}</div><div class="s el">${s}</div></div><span class="mi" style="align-self:flex-start">${tm}</span></div><div style="display:flex;gap:8px;margin-top:12px"><div class="btn s sm3">Decline</div><div class="btn k sm3">Review</div></div></div>`}
+function myOffer(k,t,n,tag){return `<div class="li">${thumb(k,48)}<div style="flex:1;min-width:0"><div class="t el" style="font-size:15px">${t}</div><div class="s">${n}</div></div>${tag}</div>`}
+add('E','Inbox · offers','Offers and chats live in separate tabs. Offers waiting on you sit at the top with the buttons right there.',
+`<div class="scr">${sb()}<div class="ct"><div class="hl" style="margin-top:6px">Inbox</div>
+<div class="sg" style="margin-top:14px"><div class="on">Offers<span class="dot2">2</span></div><div>Chats</div></div>
+<div class="lbl" style="margin-top:20px">Waiting on you</div>
+${offerCard('mon','A','Aisha K. offered $50','Dell 24" monitor · you asked $60','5m')}${offerCard('mon','B','Ben O. offered $40','Dell 24" monitor · you asked $60','1h')}
+<div class="lbl" style="margin-top:18px">Offers you made</div>
+${myOffer('fridge','$35 for Mini fridge','Devin P.','<span class="tag am">Pending</span>')}${myOffer('bike','$100 for Trek city bike','Leo M.','<span class="tag gn">Accepted</span>')}${myOffer('pods','$70 for AirPods Pro','Noah B.','<span class="tag gy">Declined</span>')}</div>${tb('Inbox')}</div>`);
+
+function chatRow(i,k,n,item,msg,tm,u){return `<div class="li"><div style="position:relative">${av(i,AVC[i],50)}<div class="im mthumb" style="${I(k,120)};border-color:var(--bg)"></div></div><div style="flex:1;min-width:0;margin-left:4px"><div style="display:flex;justify-content:space-between;align-items:baseline"><span class="t">${n} <span class="mi" style="font-weight:500">· ${item}</span></span><span class="mi">${tm}</span></div><div class="s el ${u?'ub':''}" style="margin-top:1px">${msg}</div></div>${u?'<span class="ud"></span>':''}</div>`}
+add('E','Inbox · chats','A chat only exists once an offer is accepted, so every thread here is a real deal in progress.',
+`<div class="scr">${sb()}<div class="ct"><div class="hl" style="margin-top:6px">Inbox</div>
+<div class="sg" style="margin-top:14px"><div>Offers<span class="dot2">2</span></div><div class="on">Chats</div></div>
+<div style="margin-top:8px">${chatRow('A','mon','Aisha K.','Monitor','see you there, I\'ll be in a grey hoodie','2m',1)}${chatRow('L','bike','Leo M.','Bike','cool, tomorrow at 6 works','1h',1)}${chatRow('M','lamp','Maya R.','Desk lamp','You: thanks! works great','Tue')}${chatRow('G','books','Grace T.','Textbooks','good luck with orgo lol','Sep 14')}</div></div>${tb('Inbox')}</div>`);
+
+const OFFER_SELLER=`${sb()}${nav('back','Offer')}<div class="ct">
+<div class="prev" style="margin-top:6px">${thumb('mon',56)}<div style="flex:1"><div class="t">Dell 24" monitor, 1080p</div><div class="s">Listed 3 days ago · asking $60</div></div></div>
+<div style="text-align:center;margin-top:26px"><div class="sm">Aisha K. offered</div><div style="font-size:66px;font-weight:800;letter-spacing:-.055em;line-height:1.05">$50</div><div class="mi">$10 under your price</div></div>
+<div class="bcard">${av('A',AVC.A,48)}<div style="flex:1"><div class="t">Aisha K. <span class="vf">${ic('shield',14,'b')} Verified</span></div><div class="s">Junior · 4 swaps · all thumbs up</div></div></div>
+<div class="quote">"Can pick up today"</div>
+<div class="inf" style="margin-top:14px">${ic('info',18)}<span>Accepting opens a chat with Aisha. Nothing gets charged, you pay each other in person.</span></div></div>
+${dock(`<div class="btn p">Accept $50</div><div style="display:flex;gap:10px;margin-top:10px"><div class="btn s" style="flex:1;width:auto">Counter</div><div class="btn s" style="flex:1;width:auto;color:var(--red)">Decline</div></div><div class="mi" style="text-align:center;margin-top:12px">Expires in 23 hours</div>`)}`;
+add('E','Incoming offer','The seller decides before any chat exists. The buyer\'s track record and their preset note are all the context needed.',
+`<div class="scr">${OFFER_SELLER}</div>`);
+
+add('E','Counter offer','A stepper and three quick amounts. No typing.',
+`<div class="scr">${OFFER_SELLER}<div class="scrim"></div><div class="sh"><div class="grab"></div>
+<div class="shh"><span style="width:40px"></span><span class="hs">Counter offer</span><div class="ib f">${ic('x',18)}</div></div>
+<div class="step"><div class="sb2">${ic('minus',22,'b')}</div><div class="v">$55</div><div class="sb2">${ic('plus',22,'b')}</div></div>
+<div class="mi" style="text-align:center">Aisha offered $50 · you asked $60</div>
+<div class="chips" style="justify-content:center;margin-top:16px"><span class="ch">$52</span><span class="ch on">$55</span><span class="ch">$58</span></div>
+<div class="btn p" style="margin-top:22px">Send $55 counter</div></div></div>`);
+
+function chat(inner){return `${sb()}<div class="nv"><div class="ib" style="margin-left:-8px">${ic('back',22)}</div><div class="chd">${av('A',AVC.A,34)}<div><div class="t" style="font-size:15px">Aisha K.</div><div class="mi" style="margin:0">Usually replies in 10 min</div></div></div><div class="ib">${ic('more',22)}</div></div>
+<div class="deal">${thumb('mon',40,10)}<div style="flex:1"><div class="t" style="font-size:14px">Dell 24" monitor</div><div class="s" style="font-size:12.5px">$50 · offer accepted</div></div><div class="btn s" style="height:34px;width:auto;padding:0 12px;font-size:13.5px;border-radius:10px">Mark sold</div></div>
+<div class="msgs">${inner}</div>
+<div class="cmp"><div class="ib f">${ic('plus',22)}</div><div class="in" style="flex:1;height:42px;border-radius:21px;font-size:16px;color:var(--ink3)">Message</div><div class="ib f">${ic('cal',20)}</div></div>`}
+const MEET=`<div class="mc"><div class="fh"><span class="fic gy">${ic('cal',18)}</span><div style="flex:1"><div class="mi" style="margin:0">Meetup</div><div class="t">Today, 4:30 PM</div></div><span class="tag gn">Both confirmed</span></div><div class="s" style="margin-top:8px;display:flex;gap:6px;align-items:center">${ic('pin',15)} RPAC safe-exchange zone</div><div style="display:flex;gap:8px;margin-top:10px"><div class="btn s sm3">Directions</div><div class="btn s sm3">Change</div></div></div>`;
+const CHAT_A=`<div class="sys">You accepted Aisha's $50 offer · 2:14 PM</div>
+<div class="sys sf">${ic('shield',15)}<span>Meet somewhere public. Never share a code texted to your phone.</span></div>
+<div class="m th">hiii is today still ok?</div><div class="m me">yeah! free after 4</div><div class="m th">rpac at 4:30?</div>${MEET}<div class="m th">see you there, I'll be in a grey hoodie</div>`;
+add('E','Chat','The deal is pinned on top with Mark sold. The meetup is a card both people confirm, not something buried in messages.',
+`<div class="scr">${chat(CHAT_A)}</div>`);
+
+add('E','Plan the pickup','Day, time and place in one sheet. Sends a meetup card into the chat for the other person to confirm.',
+`<div class="scr">${chat(CHAT_A)}<div class="scrim"></div><div class="sh"><div class="grab"></div>
+<div class="shh"><span style="width:40px"></span><span class="hs">Plan the pickup</span><div class="ib f">${ic('x',18)}</div></div>
+<div class="lbl" style="margin-top:12px">Day</div><div class="chips">${['Today','Tomorrow','Sun 27','Mon 28'].map((x,i)=>`<span class="ch ${i==0?'on':''}">${x}</span>`).join('')}</div>
+<div class="lbl" style="margin-top:18px">Time</div><div class="slots">${['3:30','4:00','4:30','5:00','5:30','6:00'].map(x=>`<span class="${x=='4:30'?'on':''}">${x}</span>`).join('')}</div>
+<div class="lbl" style="margin-top:18px">Where</div>${opt(true,'RPAC safe-exchange zone','4 min from you','<span class="tag gn">Safest</span>')}<div style="height:8px"></div>${opt(false,'Ohio Union, High St entrance','7 min from you')}
+<div class="btn p" style="margin-top:18px">Send to Aisha</div></div></div>`);
+
+add('E','Did it sell?','Shows up once the meetup time has passed. It works off the meetup card, never the content of your messages.',
+`<div class="scr">${sb()}${dhead('swipe')}<div class="stg">${scard('sw','$180','Switch + 2 games','Good · Morrill Tower · 3h ago','Sam W. · 2 swaps','S')}</div>${ACTS()}${tb('Discover')}<div class="scrim"></div>
+<div class="sh"><div class="grab"></div><div style="display:flex;gap:14px;align-items:center">${thumb('mon',64,14)}<div><div class="hs">Did your monitor sell?</div><div class="s" style="margin-top:2px">You were meeting Aisha yesterday at 4:30.</div></div></div>
+<div class="grp" style="margin-top:18px">${[['Yes, Aisha bought it',''],['Yes, to someone else',''],['No, keep it listed',''],['Take the listing down','color:var(--red)']].map(([t,c],i,a)=>`<div class="li" ${i==a.length-1?'style="border:0"':''}><span class="t" style="flex:1;${c}">${t}</span>${ic('chev',18,'mu')}</div>`).join('')}</div></div></div>`);
+
+add('E','Rate the swap','Thumbs up or down plus tags. Double-blind: neither person sees the other\'s rating until both are in, or 7 days pass.',
+`<div class="scr">${sb()}${nav('x')}<div class="ct" style="text-align:center;padding-top:6px"><div style="display:flex;justify-content:center">${av('A',AVC.A,76)}</div>
+<div class="hl" style="margin-top:16px">How was the swap with Aisha?</div><p class="bd" style="margin-top:6px">Dell 24" monitor · $50 · yesterday</p>
+<div class="thumbs"><div class="on">${ic('up',34)}<span>Good</span></div><div>${ic('up',34,'flip')}<span>Not great</span></div></div>
+<div class="lbl" style="margin-top:24px;text-align:left">What went well?</div>
+<div class="chips">${['On time','Paid as agreed','Friendly','Easy to find','Quick replies'].map((x,i)=>`<span class="ch ${i<2?'on':''}">${x}</span>`).join('')}</div>
+<div class="inf" style="text-align:left">${ic('lock',18)}<span>Aisha won't see your rating until she rates you too, or after 7 days.</span></div></div>
+${dock(`<div class="btn p">Submit</div>`)}</div>`);
+
+add('E','Report and block','Report and block in one sheet. Block is switched on by default when the reason is harassment.',
+`<div class="scr">${sb()}<div class="nv"><div class="ib" style="margin-left:-8px">${ic('back',22)}</div><div class="chd">${av('B',AVC.B,34)}<div class="t" style="font-size:15px">Ben O.</div></div><div class="ib">${ic('more',22)}</div></div>
+<div class="msgs"><div class="sys">You declined Ben's $40 offer</div><div class="m th">why</div><div class="m th">i can come get it rn</div><div class="m th">hello??</div></div>
+<div class="scrim"></div><div class="sh"><div class="grab"></div><div class="hs">Report Ben O.</div><div class="s" style="margin-top:4px">Reports are private. Ben won't know it was you.</div>
+<div class="opts" style="margin-top:14px">${[['Scam or fake payment',0],['Harassment or unwanted messages',1],["Selling something that's not allowed",0],["Didn't show up",0],['Something else',0]].map(([t,o])=>`<div class="op ${o?'on':''}" style="padding:12px 14px"><span class="rdo ${o?'on':''}"></span><span class="t" style="font-size:15px">${t}</span></div>`).join('')}</div>
+<div class="blk"><span class="fic" style="background:var(--redbg);color:var(--red)">${ic('ban',18)}</span><div style="flex:1"><div class="t" style="color:var(--red)">Also block Ben</div><div class="s" style="font-size:12.5px">He can't message you, make offers or see your listings.</div></div><span class="tg on"></span></div>
+<div class="btn k" style="margin-top:12px">Send report</div></div></div>`);
+</script>

@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>OnlySwap — prototype</title>
+<style>
+  :root{
+    --bg:#F4EFE7;        /* warm canvas */
+    --surface:#FFFFFF;
+    --ink:#2B2622;       /* near-black warm */
+    --ink-soft:#6B6157;
+    --ink-faint:#9A8F7E;
+    --line:#E7DFD2;       /* hairline */
+    --accent:#B4532A;     /* terracotta */
+    --accent-soft:#F3E2D8;
+    --good:#3C7A5A;       /* muted green */
+    --good-soft:#E4EFE7;
+    --shadow:0 10px 30px rgba(43,38,34,.10);
+    --shadow-lg:0 24px 60px rgba(43,38,34,.20);
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;}
+  body{
+    font-family:var(--sans);
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #FBF7F0 0%, #EDE5D8 60%, #E4DACB 100%);
+    display:flex; align-items:center; justify-content:center;
+    min-height:100vh; padding:28px 16px; color:var(--ink);
+  }
+  /* ---- phone frame ---- */
+  .device{
+    width:390px; height:800px; position:relative;
+    background:var(--bg); border-radius:46px;
+    box-shadow: var(--shadow-lg), inset 0 0 0 1.5px rgba(255,255,255,.6);
+    overflow:hidden;
+    border:10px solid #191512;
+    outline:1px solid rgba(0,0,0,.15);
+  }
+  .screen{position:absolute; inset:0; display:flex; flex-direction:column;}
+  /* status bar */
+  .statusbar{
+    height:44px; display:flex; align-items:center; justify-content:space-between;
+    padding:0 24px 0 28px; font-size:13px; font-weight:600; color:var(--ink);
+    flex:0 0 auto;
+  }
+  .statusbar .dots{display:flex; gap:5px; align-items:center;}
+  .statusbar .bar{width:3px;border-radius:2px;background:var(--ink);}
+  .notch{position:absolute; top:10px; left:50%; transform:translateX(-50%); width:120px; height:26px; background:#191512; border-radius:0 0 16px 16px; z-index:60;}
+
+  /* ---- app header ---- */
+  header.app{
+    padding:2px 22px 12px; flex:0 0 auto; display:flex; align-items:flex-end; justify-content:space-between;
+  }
+  .brand{display:flex; flex-direction:column; line-height:1;}
+  .eyebrow{font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); font-weight:600;}
+  .brand h1{font-family:var(--serif); font-weight:600; font-size:27px; margin:5px 0 0; letter-spacing:-.01em;}
+  .brand h1 .sw{color:var(--accent); font-style:italic;}
+  .campuspill{
+    display:inline-flex; align-items:center; gap:6px; margin-top:9px;
+    font-size:12px; color:var(--ink-soft); background:var(--surface);
+    border:1px solid var(--line); padding:5px 10px; border-radius:999px; font-weight:600;
+    box-shadow:0 1px 0 rgba(255,255,255,.6);
+  }
+  .campuspill .dot{width:6px;height:6px;border-radius:50%;background:var(--good);}
+  .avatar{
+    width:40px;height:40px;border-radius:50%;flex:0 0 auto;
+    background:linear-gradient(135deg,#D8C7AE,#C2A987); color:#4a3f30;
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;
+    border:1px solid rgba(255,255,255,.7); box-shadow:var(--shadow);
+    font-family:var(--serif);
+  }
+
+  /* ---- swipe stack ---- */
+  .stagewrap{flex:1 1 auto; position:relative; padding:6px 20px 0;}
+  .stage{position:absolute; inset:6px 20px 0; }
+  .card{
+    position:absolute; inset:0; background:var(--surface);
+    border-radius:26px; box-shadow:var(--shadow); overflow:hidden;
+    border:1px solid var(--line); will-change:transform;
+    display:flex; flex-direction:column;
+    touch-action:none;
+  }
+  .card .photo{position:relative; flex:1 1 auto; overflow:hidden;}
+  .card .photo .glyph{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;}
+  .card .photo .glyph svg{width:62%; height:62%; opacity:.92;}
+  .badge{
+    position:absolute; top:16px; left:16px; z-index:3;
+    background:rgba(255,255,255,.92); backdrop-filter:blur(4px);
+    color:var(--ink); font-size:11px; font-weight:700; letter-spacing:.04em;
+    text-transform:uppercase; padding:6px 11px; border-radius:999px;
+    border:1px solid rgba(0,0,0,.05); box-shadow:0 2px 8px rgba(0,0,0,.06);
+  }
+  .card .meta{
+    position:absolute; left:0; right:0; bottom:0; padding:20px 20px 18px;
+    background:linear-gradient(to top, rgba(255,255,255,.98) 55%, rgba(255,255,255,0));
+  }
+  .card .meta .row1{display:flex; align-items:baseline; justify-content:space-between; gap:10px;}
+  .card .name{font-family:var(--serif); font-size:24px; font-weight:600; letter-spacing:-.01em;}
+  .card .price{font-size:20px; font-weight:800; color:var(--accent); letter-spacing:-.01em; white-space:nowrap;}
+  .card .sub{margin-top:6px; display:flex; align-items:center; gap:8px; color:var(--ink-soft); font-size:13px;}
+  .card .sub .sep{width:3px;height:3px;border-radius:50%;background:var(--ink-faint);}
+  .card .cond{font-weight:600; color:var(--ink);}
+  .tap-hint{position:absolute; right:18px; bottom:110px; z-index:3; font-size:11px; color:var(--ink-faint); background:rgba(255,255,255,.85); padding:5px 9px; border-radius:999px; border:1px solid var(--line);}
+
+  /* stamps */
+  .stamp{
+    position:absolute; top:34px; z-index:5; font-family:var(--sans);
+    font-weight:900; font-size:26px; letter-spacing:.08em; padding:7px 14px;
+    border-radius:12px; border:3px solid currentColor; opacity:0; transform:rotate(-12deg);
+    text-transform:uppercase;
+  }
+  .stamp.like{left:22px; color:var(--good); border-color:var(--good); transform:rotate(-14deg);}
+  .stamp.nope{right:22px; color:var(--accent); border-color:var(--accent); transform:rotate(14deg);}
+
+  /* action bar */
+  .actions{
+    flex:0 0 auto; display:flex; align-items:center; justify-content:center; gap:18px;
+    padding:16px 0 8px;
+  }
+  .fab{
+    border:none; cursor:pointer; border-radius:50%; background:var(--surface);
+    box-shadow:var(--shadow); display:flex; align-items:center; justify-content:center;
+    transition:transform .15s cubic-bezier(.2,.8,.2,1);
+    border:1px solid var(--line);
+  }
+  .fab:active{transform:scale(.9);}
+  .fab.small{width:52px;height:52px;}
+  .fab.big{width:66px;height:66px;}
+  .fab svg{width:26px;height:26px;}
+  .fab.pass svg{stroke:var(--accent);}
+  .fab.save svg{stroke:var(--ink-soft);}
+  .fab.bid{background:var(--accent); border-color:var(--accent); width:66px;height:66px;}
+  .fab.bid svg{stroke:#fff; fill:none;}
+
+  /* bottom tab bar */
+  .tabbar{
+    flex:0 0 auto; display:flex; justify-content:space-around; align-items:center;
+    padding:10px 14px 22px; background:var(--surface); border-top:1px solid var(--line);
+  }
+  .tab{display:flex; flex-direction:column; align-items:center; gap:4px; color:var(--ink-faint); font-size:10px; font-weight:600; background:none; border:none; cursor:pointer; letter-spacing:.02em;}
+  .tab svg{width:23px;height:23px; stroke:var(--ink-faint); fill:none; stroke-width:1.7;}
+  .tab.active{color:var(--ink);}
+  .tab.active svg{stroke:var(--accent);}
+
+  /* ---- generic overlay sheets/screens ---- */
+  .sheet{
+    position:absolute; inset:0; z-index:40; display:flex; flex-direction:column;
+    transform:translateY(100%); transition:transform .38s cubic-bezier(.22,.8,.2,1);
+    background:var(--bg);
+  }
+  .sheet.open{transform:translateY(0);}
+  .sheet-scroll{flex:1 1 auto; overflow:auto; -webkit-overflow-scrolling:touch;}
+  .sheet-top{display:flex; align-items:center; justify-content:space-between; padding:14px 18px; flex:0 0 auto;}
+  .iconbtn{width:38px;height:38px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.05);}
+  .iconbtn svg{width:20px;height:20px;stroke:var(--ink);fill:none;stroke-width:2;}
+
+  /* detail */
+  .detail-hero{height:300px; position:relative; margin:0 0 0; }
+  .detail-hero .glyph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+  .detail-hero .glyph svg{width:52%;height:52%;}
+  .thumbs{position:absolute; bottom:14px; left:0; right:0; display:flex; gap:6px; justify-content:center;}
+  .thumbs i{width:7px;height:7px;border-radius:50%;background:rgba(43,38,34,.25);}
+  .thumbs i.on{background:var(--ink); width:20px; border-radius:4px;}
+  .detail-body{padding:22px 22px 140px;}
+  .detail-body .price{font-size:30px;font-weight:800;color:var(--accent);letter-spacing:-.02em;}
+  .detail-body h2{font-family:var(--serif); font-weight:600; font-size:26px; margin:2px 0 0; letter-spacing:-.01em;}
+  .chips{display:flex; gap:8px; margin:16px 0 6px; flex-wrap:wrap;}
+  .chip{font-size:12px;font-weight:600;color:var(--ink-soft);background:var(--surface);border:1px solid var(--line);padding:7px 12px;border-radius:999px;}
+  .chip b{color:var(--ink);}
+  .section-label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);font-weight:700;margin:22px 0 8px;}
+  .desc{color:var(--ink-soft); font-size:15px; line-height:1.55;}
+  .seller{display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:14px; margin-top:10px;}
+  .seller .av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#CDB79A,#B79A76);display:flex;align-items:center;justify-content:center;color:#4a3f30;font-weight:700;font-family:var(--serif);}
+  .seller .nm{font-weight:700;font-size:15px;}
+  .seller .st{font-size:12.5px;color:var(--ink-soft);margin-top:2px; display:flex; align-items:center; gap:6px;}
+  .verify{display:inline-flex;align-items:center;gap:4px;color:var(--good);font-weight:700;}
+  .meetmap{margin-top:10px; height:120px; border-radius:16px; border:1px solid var(--line); position:relative; overflow:hidden;
+    background:
+      linear-gradient(0deg, rgba(60,122,90,.06), rgba(60,122,90,.06)),
+      repeating-linear-gradient(0deg, transparent 0 22px, rgba(43,38,34,.05) 22px 23px),
+      repeating-linear-gradient(90deg, transparent 0 22px, rgba(43,38,34,.05) 22px 23px),
+      #F7F2EA;}
+  .meetmap .pin{position:absolute; left:50%; top:52%; transform:translate(-50%,-100%); }
+  .meetmap .pin svg{width:30px;height:30px;}
+  .meetmap .lbl{position:absolute; left:12px; bottom:10px; background:var(--surface); border:1px solid var(--line); padding:6px 10px; border-radius:10px; font-size:12px; font-weight:600;}
+
+  /* sticky CTA */
+  .cta-dock{position:absolute; left:0; right:0; bottom:0; padding:14px 18px calc(18px + env(safe-area-inset-bottom)); background:linear-gradient(to top, var(--bg) 72%, rgba(244,239,231,0)); display:flex; gap:12px;}
+  .btn{flex:1 1 auto; border:none; cursor:pointer; border-radius:16px; font-weight:700; font-size:16px; padding:16px; transition:transform .12s ease; font-family:var(--sans);}
+  .btn:active{transform:scale(.98);}
+  .btn.primary{background:var(--accent); color:#fff; box-shadow:0 10px 24px rgba(180,83,42,.32);}
+  .btn.ghost{flex:0 0 auto; width:58px; background:var(--surface); border:1px solid var(--line); color:var(--ink); display:flex;align-items:center;justify-content:center;}
+  .btn.ghost svg{width:22px;height:22px;stroke:var(--ink);fill:none;stroke-width:2;}
+
+  /* bid sheet (partial) */
+  .modal-scrim{position:absolute; inset:0; z-index:50; background:rgba(25,21,18,.4); opacity:0; pointer-events:none; transition:opacity .3s;}
+  .modal-scrim.open{opacity:1; pointer-events:auto;}
+  .bidsheet{position:absolute; left:0; right:0; bottom:0; z-index:51; background:var(--surface); border-radius:26px 26px 0 0; transform:translateY(110%); transition:transform .4s cubic-bezier(.22,.85,.2,1); padding:10px 22px calc(26px + env(safe-area-inset-bottom)); box-shadow:0 -20px 50px rgba(0,0,0,.18);}
+  .bidsheet.open{transform:translateY(0);}
+  .grab{width:40px;height:5px;border-radius:3px;background:var(--line);margin:6px auto 16px;}
+  .bidsheet h3{font-family:var(--serif); font-size:22px; font-weight:600; margin:0 0 2px;}
+  .bidsheet p.small{color:var(--ink-soft); font-size:13px; margin:0 0 18px;}
+  .bidline{display:flex; align-items:center; gap:12px; background:var(--bg); border:1px solid var(--line); border-radius:16px; padding:8px 14px; margin-bottom:14px;}
+  .bidline .cur{font-size:26px; font-weight:800; color:var(--ink-faint);}
+  .bidline input{border:none; background:none; font-size:30px; font-weight:800; color:var(--ink); width:100%; outline:none; font-family:var(--sans); letter-spacing:-.02em;}
+  .presets{display:flex; gap:8px; margin-bottom:8px;}
+  .preset{flex:1; border:1px solid var(--line); background:var(--bg); border-radius:12px; padding:11px 0; font-weight:700; cursor:pointer; font-size:14px; color:var(--ink); transition:.12s;}
+  .preset.active{background:var(--accent-soft); border-color:var(--accent); color:var(--accent);}
+  .askrow{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink-faint);margin:2px 2px 18px;}
+
+  /* chat */
+  .chat-head{display:flex; align-items:center; gap:12px; padding:6px 18px 12px;}
+  .chat-head .av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#CDB79A,#B79A76);display:flex;align-items:center;justify-content:center;color:#4a3f30;font-weight:700;font-family:var(--serif);}
+  .chat-head .nm{font-weight:700;font-size:16px;}
+  .chat-head .st{font-size:12px;color:var(--good);font-weight:600;}
+  .pinned{margin:0 16px 4px; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:10px; display:flex; gap:12px; align-items:center; box-shadow:0 1px 3px rgba(0,0,0,.04);}
+  .pinned .mini{width:46px;height:46px;border-radius:12px;flex:0 0 auto; display:flex;align-items:center;justify-content:center;}
+  .pinned .mini svg{width:60%;height:60%;}
+  .pinned .nm{font-weight:700;font-size:14px;}
+  .pinned .pr{font-size:13px;color:var(--ink-soft);} .pinned .pr b{color:var(--accent);}
+  .pinned .tag{margin-left:auto; font-size:11px; font-weight:700; color:var(--good); background:var(--good-soft); padding:6px 10px; border-radius:999px;}
+  .chatscroll{flex:1 1 auto; overflow:auto; padding:14px 16px 8px; display:flex; flex-direction:column; gap:10px;}
+  .sysline{align-self:center; font-size:11.5px; color:var(--ink-faint); background:var(--bg); border:1px solid var(--line); padding:6px 12px; border-radius:999px; max-width:80%; text-align:center;}
+  .bubble{max-width:76%; padding:11px 14px; border-radius:18px; font-size:14.5px; line-height:1.4;}
+  .bubble.them{align-self:flex-start; background:var(--surface); border:1px solid var(--line); border-bottom-left-radius:6px; color:var(--ink);}
+  .bubble.me{align-self:flex-end; background:var(--accent); color:#fff; border-bottom-right-radius:6px;}
+  .composer{flex:0 0 auto; display:flex; gap:10px; padding:12px 16px calc(16px + env(safe-area-inset-bottom)); border-top:1px solid var(--line); background:var(--surface);}
+  .composer input{flex:1; border:1px solid var(--line); background:var(--bg); border-radius:999px; padding:12px 16px; font-size:14.5px; outline:none; font-family:var(--sans);}
+  .composer .send{width:44px;height:44px;border-radius:50%;background:var(--accent);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .composer .send svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2;}
+
+  /* end of feed */
+  .endstate{position:absolute; inset:6px 20px 0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; opacity:0; pointer-events:none; transition:opacity .3s;}
+  .endstate.show{opacity:1;}
+  .endstate .em{width:96px;height:96px;border-radius:28px;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);margin-bottom:20px;}
+  .endstate .em svg{width:46px;height:46px;stroke:var(--accent);fill:none;stroke-width:1.6;}
+  .endstate h3{font-family:var(--serif);font-size:23px;font-weight:600;margin:0 0 8px;}
+  .endstate p{color:var(--ink-soft);font-size:14.5px;margin:0 0 22px;max-width:250px;line-height:1.5;}
+  .endstate .btn{max-width:210px;}
+
+  /* toast */
+  .toast{position:absolute; left:50%; bottom:120px; transform:translateX(-50%) translateY(20px); z-index:70; background:var(--ink); color:#fff; padding:12px 18px; border-radius:14px; font-size:13.5px; font-weight:600; opacity:0; transition:.3s; box-shadow:var(--shadow-lg); display:flex; align-items:center; gap:9px;}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  .toast svg{width:18px;height:18px;stroke:var(--good);fill:none;stroke-width:2.4;}
+
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+<div class="device" id="device">
+  <div class="notch"></div>
+
+  <!-- ===== FEED SCREEN ===== -->
+  <div class="screen" id="feedScreen">
+    <div class="statusbar">
+      <span>9:41</span>
+      <div class="dots">
+        <span class="bar" style="height:8px"></span><span class="bar" style="height:11px"></span><span class="bar" style="height:14px"></span>
+        <svg width="22" height="14" viewBox="0 0 24 14" style="margin-left:4px"><rect x="1" y="1" width="20" height="12" rx="3" fill="none" stroke="#2B2622" stroke-width="1.4"/><rect x="3" y="3" width="14" height="8" rx="1.5" fill="#2B2622"/><rect x="22" y="5" width="2" height="4" rx="1" fill="#2B2622"/></svg>
+      </div>
+    </div>
+
+    <header class="app">
+      <div class="brand">
+        <span class="eyebrow">Ohio State · Fall</span>
+        <h1>Only<span class="sw">Swap</span></h1>
+        <span class="campuspill"><span class="dot"></span> 214 students trading now</span>
+      </div>
+      <div class="avatar">W</div>
+    </header>
+
+    <div class="stagewrap">
+      <div class="stage" id="stage"></div>
+      <div class="endstate" id="endstate">
+        <div class="em">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/><circle cx="19" cy="17" r="2.4"/></svg>
+        </div>
+        <h3>You're all caught up</h3>
+        <p>You've seen everything new on campus today. We'll ping you the moment something drops.</p>
+        <button class="btn primary" onclick="resetDeck()">Review saved items</button>
+      </div>
+    </div>
+
+    <div class="actions" id="actions">
+      <button class="fab small pass" onclick="swipe('left')" aria-label="Pass">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <button class="fab small save" onclick="saveItem()" aria-label="Save">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12a1 1 0 0 1 1 1v15l-7-4-7 4V5a1 1 0 0 1 1-1z"/></svg>
+      </button>
+      <button class="fab bid" onclick="openDetailFromTop()" aria-label="Bid">
+        <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l8-8 5 5-8 8H5a2 2 0 0 1-2-2v-3z"/><path d="M13 6l5 5"/><path d="M14 20h7"/></svg>
+      </button>
+    </div>
+
+    <nav class="tabbar">
+      <button class="tab active"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M4 14l4-3 4 3 4-4 4 3"/></svg>Discover</button>
+      <button class="tab" onclick="toast('Search &amp; filters — coming in this flow')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Search</button>
+      <button class="tab" onclick="toast('Campus Now feed — activity &amp; free stuff')"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Campus</button>
+      <button class="tab" onclick="openChat()"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>Messages</button>
+      <button class="tab" onclick="toast('Your profile, listings &amp; ratings')"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>You</button>
+    </nav>
+  </div>
+
+  <!-- ===== DETAIL SHEET ===== -->
+  <div class="sheet" id="detailSheet">
+    <div class="sheet-scroll">
+      <div class="sheet-top" style="position:absolute; top:8px; left:0; right:0; z-index:5;">
+        <div class="iconbtn" onclick="closeDetail()"><svg viewBox="0 0 24 24" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></div>
+        <div class="iconbtn" onclick="toast('Saved to your wishlist')"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12a1 1 0 0 1 1 1v15l-7-4-7 4V5a1 1 0 0 1 1-1z"/></svg></div>
+      </div>
+      <div class="detail-hero" id="detailHero">
+        <div class="glyph" id="detailGlyph"></div>
+        <div class="thumbs"><i class="on"></i><i></i><i></i></div>
+      </div>
+      <div class="detail-body">
+        <div class="price" id="dPrice">$12</div>
+        <h2 id="dName">IKEA desk lamp</h2>
+        <div class="chips">
+          <span class="chip">Condition · <b id="dCond">Like new</b></span>
+          <span class="chip" id="dCat">Furniture</span>
+          <span class="chip">📍 <span id="dDist">Morrill Tower · 4 min</span></span>
+        </div>
+
+        <div class="section-label">Details</div>
+        <p class="desc" id="dDesc">Barely used, works perfectly. Warm-toned bulb included. Moving out and can't take it home on the flight. Cash on pickup.</p>
+
+        <div class="section-label">Seller</div>
+        <div class="seller">
+          <div class="av" id="dSellerAv">M</div>
+          <div>
+            <div class="nm" id="dSeller">Maya R.</div>
+            <div class="st"><span class="verify"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> .edu verified</span> <span class="sep" style="width:3px;height:3px;border-radius:50%;background:var(--ink-faint);display:inline-block"></span> 14 swaps on campus</div>
+          </div>
+        </div>
+
+        <div class="section-label">Meet safely</div>
+        <div class="meetmap">
+          <div class="pin"><svg viewBox="0 0 24 24" fill="var(--accent)" stroke="#fff" stroke-width="1.5"><path d="M12 2c-4 0-7 3-7 7 0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z"/><circle cx="12" cy="9" r="2.5" fill="#fff"/></svg></div>
+          <div class="lbl">🛡️ Buckeye Safe-Exchange Zone · lit &amp; on-camera</div>
+        </div>
+      </div>
+    </div>
+    <div class="cta-dock">
+      <button class="btn ghost" onclick="toast('Chat opens after the seller accepts your bid')"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg></button>
+      <button class="btn primary" onclick="openBid()">Place a bid</button>
+    </div>
+  </div>
+
+  <!-- ===== BID SHEET ===== -->
+  <div class="modal-scrim" id="scrim" onclick="closeBid()"></div>
+  <div class="bidsheet" id="bidSheet">
+    <div class="grab"></div>
+    <h3>Make an offer</h3>
+    <p class="small" id="bidSub">Maya still has to accept before a chat opens — no surprise DMs.</p>
+    <div class="bidline">
+      <span class="cur">$</span>
+      <input id="bidInput" type="text" inputmode="numeric" value="10">
+    </div>
+    <div class="presets" id="presets"></div>
+    <div class="askrow"><span>Asking <b id="askPrice">$12</b></span><span id="offPct">83% of asking</span></div>
+    <button class="btn primary" style="width:100%" onclick="sendBid()">Send bid to Maya</button>
+  </div>
+
+  <!-- ===== CHAT SCREEN ===== -->
+  <div class="sheet" id="chatSheet">
+    <div class="statusbar">
+      <span>9:42</span>
+      <div class="dots">
+        <span class="bar" style="height:8px"></span><span class="bar" style="height:11px"></span><span class="bar" style="height:14px"></span>
+        <svg width="22" height="14" viewBox="0 0 24 14" style="margin-left:4px"><rect x="1" y="1" width="20" height="12" rx="3" fill="none" stroke="#2B2622" stroke-width="1.4"/><rect x="3" y="3" width="14" height="8" rx="1.5" fill="#2B2622"/></svg>
+      </div>
+    </div>
+    <div class="chat-head">
+      <div class="iconbtn" onclick="closeChat()"><svg viewBox="0 0 24 24" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></div>
+      <div class="av">M</div>
+      <div>
+        <div class="nm">Maya R.</div>
+        <div class="st">● Active now</div>
+      </div>
+      <div class="iconbtn" style="margin-left:auto" onclick="toast('Block · Mute · Report')"><svg viewBox="0 0 24 24" stroke-linecap="round"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg></div>
+    </div>
+    <div class="pinned">
+      <div class="mini" id="chatMini"></div>
+      <div>
+        <div class="nm" id="chatItem">IKEA desk lamp</div>
+        <div class="pr">Your bid <b id="chatBid">$10</b> · asking $12</div>
+      </div>
+      <span class="tag">Accepted</span>
+    </div>
+    <div class="chatscroll" id="chatScroll">
+      <div class="sysline">Maya accepted your $10 bid · chat is now open</div>
+      <div class="bubble them">Hey! Yeah $10 works 🙂 when are you free?</div>
+      <div class="bubble me">Awesome! Could do today after 4?</div>
+      <div class="bubble them">Perfect. Buckeye Safe-Exchange spot by the RPAC? It's on-camera so easy to find.</div>
+    </div>
+    <div class="composer">
+      <input id="chatInput" placeholder="Message Maya…">
+      <button class="send" onclick="sendChat()"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l16-8-6 16-3-6-7-2z"/></svg></button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span id="toastMsg">Saved</span></div>
+</div>
+
+<script>
+/* ---------- item illustrations (clean line art, intentional not broken) ---------- */
+const G = {
+  lamp:`<svg viewBox="0 0 120 120" fill="none" stroke="#8A6B4F" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M42 96h36"/><path d="M60 96V60"/><path d="M60 60l-16-8"/><path d="M44 52l6-24 30 8-14 22z" fill="#EADFCF"/><path d="M50 28l4-8"/></svg>`,
+  fridge:`<svg viewBox="0 0 120 120" fill="none" stroke="#5E7C86" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><rect x="38" y="20" width="44" height="80" rx="7" fill="#E4EEF0"/><path d="M38 52h44"/><path d="M46 34v10M46 62v14"/></svg>`,
+  chair:`<svg viewBox="0 0 120 120" fill="none" stroke="#8A6B4F" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M42 30h30a4 4 0 0 1 4 4v30H42z" fill="#EADFCF"/><path d="M42 64v14M76 64v14"/><path d="M40 92h40"/><path d="M60 78v14"/></svg>`,
+  bike:`<svg viewBox="0 0 120 120" fill="none" stroke="#B4532A" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="34" cy="76" r="16"/><circle cx="86" cy="76" r="16"/><path d="M34 76l18-30h22M52 46l14 30M74 46l12 30M60 46l-8 30"/><path d="M70 44h10"/></svg>`,
+  books:`<svg viewBox="0 0 120 120" fill="none" stroke="#3C7A5A" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><rect x="36" y="40" width="48" height="13" rx="2" fill="#E4EFE7"/><rect x="32" y="53" width="52" height="13" rx="2" fill="#EADFCF"/><rect x="38" y="66" width="46" height="13" rx="2" fill="#E4EEF0"/></svg>`,
+  pods:`<svg viewBox="0 0 120 120" fill="none" stroke="#5E7C86" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><rect x="40" y="52" width="40" height="26" rx="9" fill="#F1EDE6"/><path d="M52 52v-6a8 8 0 0 1 16 0v6"/><circle cx="52" cy="65" r="2.4" fill="#5E7C86"/><circle cx="68" cy="65" r="2.4" fill="#5E7C86"/></svg>`
+};
+const tile = (a,b)=>`linear-gradient(150deg, ${a}, ${b})`;
+
+/* ---------- data ---------- */
+const LISTINGS = [
+  {name:"IKEA desk lamp", price:12, cond:"Like new", cat:"Furniture", dist:"Morrill Tower · 4 min", seller:"Maya R.", av:"M", g:"lamp", bg:tile("#F6EFE3","#E7D8C0"), desc:"Barely used, works perfectly. Warm-toned bulb included. Moving out and can't take it home on the flight. Cash on pickup."},
+  {name:"Mini fridge", price:30, cond:"Good", cat:"Dorm", dist:"Baker Hall · 6 min", seller:"Devin P.", av:"D", g:"fridge", bg:tile("#EAF1F2","#D3E2E4"), desc:"Great dorm fridge, cools fast, one small dent on the side (see photo). Perfect for a first-year setup."},
+  {name:"Study chair", price:25, cond:"Good", cat:"Furniture", dist:"Lincoln Tower · 3 min", seller:"Aisha K.", av:"A", g:"chair", bg:tile("#F6EFE3","#E7D8C0"), desc:"Comfy desk chair, height adjustable. Slight wear on the seat but super sturdy. Selling before I graduate."},
+  {name:"Commuter bike", price:70, cond:"Fair", cat:"Outdoors", dist:"Off-campus · 9 min", seller:"Leo M.", av:"L", g:"bike", bg:tile("#F7E9E1","#EBD2C4"), desc:"Gets you across campus fast. New brakes last month. Needs a tune-up on the front gear. Lock included."},
+  {name:"CHEM 1210 textbook", price:18, cond:"Like new", cat:"Books", dist:"Thompson Library · 2 min", seller:"Grace T.", av:"G", g:"books", bg:tile("#E7F0EA","#D3E4D8"), desc:"The exact edition for the fall section. No highlighting, no torn pages. Saved you ~$180 off the bookstore."},
+  {name:"AirPods (2nd gen)", price:55, cond:"Good", cat:"Tech", dist:"RPAC · 5 min", seller:"Noah B.", av:"N", g:"pods", bg:tile("#EEF1F2","#DBE1E3"), desc:"Both work great, battery still solid. Comes with the charging case and cable. Cleaned and reset for you."}
+];
+
+let idx = 0;
+let current = null;
+
+/* ---------- render deck ---------- */
+const stage = document.getElementById('stage');
+function renderDeck(){
+  stage.innerHTML='';
+  const remaining = LISTINGS.slice(idx, idx+3);
+  if(remaining.length===0){ showEnd(true); return; }
+  showEnd(false);
+  // render back-to-front so top card is last
+  remaining.slice().reverse().forEach((item, ri)=>{
+    const depth = remaining.length-1-ri; // 0 = top
+    const card = document.createElement('div');
+    card.className='card';
+    const scale = 1 - depth*0.045;
+    const ty = depth*14;
+    card.style.transform = `translateY(${ty}px) scale(${scale})`;
+    card.style.zIndex = 10-depth;
+    card.style.opacity = depth>1 ? .6 : 1;
+    card.innerHTML = `
+      <div class="stamp like">Swap</div>
+      <div class="stamp nope">Skip</div>
+      <div class="photo" style="background:${item.bg}">
+        <span class="badge">${item.cat}</span>
+        <div class="glyph">${G[item.g]}</div>
+        <span class="tap-hint">tap for details ›</span>
+      </div>
+      <div class="meta">
+        <div class="row1"><span class="name">${item.name}</span><span class="price">$${item.price}</span></div>
+        <div class="sub"><span class="cond">${item.cond}</span><span class="sep"></span><span>${item.dist.split(' · ')[0]}</span><span class="sep"></span><span>${item.seller}</span></div>
+      </div>`;
+    if(depth===0){
+      current = item;
+      attachDrag(card);
+      card.querySelector('.photo').addEventListener('click',(e)=>{ if(!card.dataset.dragging) openDetail(item); });
+    }
+    stage.appendChild(card);
+  });
+}
+function showEnd(on){
+  document.getElementById('endstate').classList.toggle('show',on);
+  document.getElementById('actions').style.visibility = on?'hidden':'visible';
+}
+
+/* ---------- drag / swipe ---------- */
+function attachDrag(card){
+  let startX=0,startY=0,dx=0,dy=0,dragging=false;
+  const like=card.querySelector('.stamp.like'), nope=card.querySelector('.stamp.nope');
+  const down=(x,y)=>{startX=x;startY=y;dragging=true;card.style.transition='none';};
+  const move=(x,y)=>{
+    if(!dragging)return;
+    dx=x-startX; dy=y-startY;
+    if(Math.abs(dx)>6) card.dataset.dragging="1";
+    const rot=dx/18;
+    card.style.transform=`translate(${dx}px,${dy}px) rotate(${rot}deg)`;
+    const p=Math.min(Math.abs(dx)/110,1);
+    if(dx>0){like.style.opacity=p;like.style.transform=`rotate(-14deg) scale(${.8+p*.2})`;nope.style.opacity=0;}
+    else{nope.style.opacity=p;nope.style.transform=`rotate(14deg) scale(${.8+p*.2})`;like.style.opacity=0;}
+  };
+  const up=()=>{
+    if(!dragging)return; dragging=false;
+    card.style.transition='transform .35s cubic-bezier(.2,.8,.2,1)';
+    if(dx>105){ fly(card,1); }
+    else if(dx<-105){ fly(card,-1); }
+    else { card.style.transform=''; like.style.opacity=0; nope.style.opacity=0; setTimeout(()=>{delete card.dataset.dragging;},60);}
+  };
+  card.addEventListener('pointerdown',e=>{card.setPointerCapture(e.pointerId);down(e.clientX,e.clientY);});
+  card.addEventListener('pointermove',e=>move(e.clientX,e.clientY));
+  card.addEventListener('pointerup',up);
+  card.addEventListener('pointercancel',up);
+}
+function fly(card,dir){
+  card.style.transform=`translate(${dir*520}px,${-40}px) rotate(${dir*22}deg)`;
+  card.style.opacity=0;
+  if(dir>0) toast(`Nice — bid on it when you're ready`, true);
+  setTimeout(()=>{ idx++; renderDeck(); },230);
+}
+function swipe(d){
+  const card = stage.querySelector('.card:last-child');
+  if(!card) return;
+  card.style.transition='transform .35s cubic-bezier(.2,.8,.2,1)';
+  fly(card, d==='left'?-1:1);
+}
+function saveItem(){ toast('Saved to your wishlist'); }
+function resetDeck(){ idx=0; renderDeck(); toast('Fresh deck loaded'); }
+
+/* ---------- detail ---------- */
+function openDetailFromTop(){ if(current) openDetail(current); }
+function openDetail(item){
+  current=item;
+  document.getElementById('detailHero').style.background=item.bg;
+  document.getElementById('detailGlyph').innerHTML=G[item.g];
+  document.getElementById('dPrice').textContent='$'+item.price;
+  document.getElementById('dName').textContent=item.name;
+  document.getElementById('dCond').textContent=item.cond;
+  document.getElementById('dCat').textContent=item.cat;
+  document.getElementById('dDist').textContent=item.dist;
+  document.getElementById('dDesc').textContent=item.desc;
+  document.getElementById('dSeller').textContent=item.seller;
+  document.getElementById('dSellerAv').textContent=item.av;
+  document.getElementById('detailSheet').classList.add('open');
+}
+function closeDetail(){ document.getElementById('detailSheet').classList.remove('open'); }
+
+/* ---------- bid ---------- */
+function openBid(){
+  const ask=current.price;
+  document.getElementById('askPrice').textContent='$'+ask;
+  document.getElementById('bidSub').textContent=`${current.seller.split(' ')[0]} still has to accept before a chat opens — no surprise DMs.`;
+  const lows=[Math.max(1,Math.round(ask*0.7)),Math.round(ask*0.85),ask];
+  const pr=document.getElementById('presets'); pr.innerHTML='';
+  lows.forEach((v,i)=>{
+    const b=document.createElement('button'); b.className='preset'+(i===1?' active':''); b.textContent='$'+v;
+    b.onclick=()=>{document.getElementById('bidInput').value=v; setActive(b); updatePct();};
+    pr.appendChild(b);
+  });
+  document.getElementById('bidInput').value=lows[1];
+  updatePct();
+  document.getElementById('scrim').classList.add('open');
+  document.getElementById('bidSheet').classList.add('open');
+}
+function setActive(b){ document.querySelectorAll('.preset').forEach(x=>x.classList.remove('active')); if(b)b.classList.add('active'); }
+function updatePct(){
+  const v=parseInt(document.getElementById('bidInput').value||'0',10);
+  const ask=current.price;
+  document.getElementById('offPct').textContent = ask? Math.round(v/ask*100)+'% of asking':'';
+}
+document.getElementById('bidInput').addEventListener('input',()=>{setActive(null);updatePct();});
+function closeBid(){ document.getElementById('scrim').classList.remove('open'); document.getElementById('bidSheet').classList.remove('open'); }
+function sendBid(){
+  const v=document.getElementById('bidInput').value;
+  closeBid();
+  toast(`Bid of $${v} sent to ${current.seller.split(' ')[0]}`);
+  // prep chat with this item
+  document.getElementById('chatItem').textContent=current.name;
+  document.getElementById('chatBid').textContent='$'+v;
+  document.getElementById('chatMini').style.background=current.bg;
+  document.getElementById('chatMini').innerHTML=G[current.g];
+  setTimeout(()=>{ closeDetail(); openChat(); }, 900);
+}
+
+/* ---------- chat ---------- */
+function openChat(){ document.getElementById('chatSheet').classList.add('open'); }
+function closeChat(){ document.getElementById('chatSheet').classList.remove('open'); }
+function sendChat(){
+  const inp=document.getElementById('chatInput'); const t=inp.value.trim(); if(!t)return;
+  const s=document.getElementById('chatScroll');
+  const b=document.createElement('div'); b.className='bubble me'; b.textContent=t; s.appendChild(b);
+  inp.value=''; s.scrollTop=s.scrollHeight;
+  setTimeout(()=>{ const r=document.createElement('div'); r.className='bubble them'; r.textContent='Sounds good — see you there! 👋'; s.appendChild(r); s.scrollTop=s.scrollHeight; },800);
+}
+document.getElementById('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat();});
+
+/* ---------- toast ---------- */
+let toastT;
+function toast(msg){
+  document.getElementById('toastMsg').textContent=msg;
+  const t=document.getElementById('toast'); t.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),1900);
+}
+
+renderDeck();
+</script>
+</body>
+</html>

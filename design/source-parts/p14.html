@@ -1,0 +1,81 @@
+<style>
+@keyframes tutdot{0%,10%{transform:translateX(0);opacity:0}18%{opacity:1}55%{transform:translateX(120px);opacity:1}65%,100%{transform:translateX(120px);opacity:0}}
+@keyframes tutcard{0%,15%{transform:rotate(0) translateX(0)}55%{transform:rotate(7deg) translateX(40px)}70%,100%{transform:rotate(0) translateX(0)}}
+.tutov{position:absolute;inset:0;background:rgba(10,10,10,.62);z-index:20;display:flex;flex-direction:column;color:#fff}
+.tuth{position:absolute;display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px}
+.tuth .pill{background:#fff;color:#111;border-radius:12px;padding:8px 12px;display:flex;align-items:center;gap:6px;box-shadow:0 6px 18px rgba(0,0,0,.3)}
+.tutdot{position:absolute;width:46px;height:46px;border-radius:23px;background:rgba(255,255,255,.9);box-shadow:0 0 0 10px rgba(255,255,255,.25);animation:tutdot 2.6s cubic-bezier(.3,.7,.3,1) infinite}
+.cd2{font-size:15px;font-weight:700;color:var(--green);display:flex;align-items:center;gap:6px}
+.cd2 i{width:9px;height:9px;border-radius:5px;background:var(--green);box-shadow:0 0 0 4px var(--greenbg)}
+.mtbig{font-size:34px;font-weight:800;letter-spacing:-.04em;line-height:1.05}
+.cbanner{margin:0 12px 10px;padding:12px 14px;border-radius:16px;background:var(--acc);color:var(--onacc);display:flex;gap:12px;align-items:center;flex:none}
+.cbanner .s{color:inherit;opacity:.75}
+.badge3{width:150px;height:150px;border-radius:75px;background:var(--acc);display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 0 0 10px var(--bg2)}
+.badge3 .rt{position:absolute;inset:-4px}
+</style>
+<script>
+function addAfter(sec,after,name,note,html,o){const i=S.findIndex(s=>s.sec===sec&&s.name===after);const it={sec,name,note,html,o:o||{}};if(i<0)S.push(it);else S.splice(i+1,0,it)}
+
+/* ---- 2. first-swipe tutorial ---- */
+addAfter('B','Swipe','First swipe','Shown once, on the very first card. Swiping right here means "make an offer", not "like", which is the opposite of what Tinder taught everyone\'s thumb. So it gets said out loud once, with a moving demo.',
+`<div class="scr">${sb()}${dhead('swipe')}<div class="stg"><div style="position:absolute;inset:0;animation:tutcard 2.6s cubic-bezier(.3,.7,.3,1) infinite">${scard('fridge','$40','Mini fridge, 3.1 cu ft','Good condition · Baker Hall · 12m ago','Devin P. · 9 swaps','D')}</div></div>${ACTS()}${tb('Discover')}
+<div class="tutov"><div style="flex:1;position:relative">
+<div class="tuth" style="top:150px;right:18px"><div class="pill">Swipe right ${ic('chev',16,'b')}</div></div>
+<div class="tuth" style="top:190px;right:18px;font-size:13.5px;font-weight:600;opacity:.9">to make an offer</div>
+<div class="tuth" style="top:250px;left:18px"><div class="pill">${ic('back',16,'b')} Swipe left</div></div>
+<div class="tuth" style="top:290px;left:18px;font-size:13.5px;font-weight:600;opacity:.9">to skip it</div>
+<div class="tutdot" style="top:360px;left:110px"></div>
+<div class="tuth" style="top:440px;left:0;right:0;justify-content:center;font-size:14px;font-weight:600;opacity:.9">Tap the card for photos and details</div></div>
+<div style="padding:0 20px 120px"><div class="btn p">Got it</div></div></div></div>`);
+
+/* ---- 3. buyer receives a counter / declined ---- */
+addAfter('E','Counter offer','Counter received','The buyer\'s side of a counter. Each side gets two counters at most, then it\'s a straight yes or no, so haggling can\'t drag on forever.',
+`<div class="scr">${sb()}${nav('back','Offer')}<div class="ct">
+<div class="prev" style="margin-top:6px">${thumb('fridge',56)}<div style="flex:1"><div class="t">Mini fridge, 3.1 cu ft</div><div class="s">Devin P. · asking $40</div></div></div>
+<div style="text-align:center;margin-top:24px"><div class="sm">Devin countered</div><div style="font-size:66px;font-weight:800;letter-spacing:-.055em;line-height:1.05">$38</div><div class="mi">You offered $35</div></div>
+<div class="quote" style="margin-top:18px">"Can do $38 if you pick up today"</div>
+<div class="tl" style="margin-top:18px;padding-bottom:2px"><div class="st d"><i></i><div><b>You offered $35</b><span>Yesterday, 8:02 PM</span></div></div><div class="st d"><i></i><div><b>Devin countered $38</b><span>Today, 10:15 AM</span></div></div><div class="st"><i></i><div><b>Your move</b><span>1 counter left for each of you</span></div></div></div></div>
+${dock(`<div class="btn p">Accept $38</div><div style="display:flex;gap:10px;margin-top:10px"><div class="btn s" style="flex:1;width:auto">Counter</div><div class="btn s" style="flex:1;width:auto">Walk away</div></div><div class="mi" style="text-align:center;margin-top:12px">Expires in 23 hours</div>`)}</div>`);
+
+addAfter('E','Counter received','Offer declined','A no is never a dead end. It suggests the obvious next move and similar things nearby.',
+`<div class="scr">${sb()}${nav('back','Offer')}<div class="ct"><div class="stc" style="padding-top:20px"><div class="emptyart">${thumb('pods',88,26)}</div>
+<div class="hm" style="margin-top:18px">Noah passed on $70</div><p class="bd" style="margin-top:6px;max-width:290px">Still want the AirPods? Offer closer to $85, or we'll ping you if the price drops.</p></div>
+<div style="display:flex;flex-direction:column;gap:10px;margin-top:22px"><div class="btn p">Offer $80</div><div class="btn s">${ic('bell',19)} Watch for a price drop</div></div>
+<div class="rw" style="margin-top:24px"><span class="hs">Similar at OSU</span><span class="sm">See all</span></div>
+<div class="hrow">${hcard('pods2','$75','AirPods Pro')}${hcard('pods','$60','AirPods 3rd gen')}${hcard('pods2','$90','AirPods Pro 2')}</div></div></div>`);
+
+/* ---- 4. meetup day ---- */
+const MEETDAY=(state)=>`${sb()}${nav('back','Meetup',`<div class="ib">${ic('more',22)}</div>`)}${map(state==='late'?150:200,[[52,55]],'RPAC safe-exchange zone')}
+<div class="ct" style="padding-top:16px">
+${state==='late'?`<div class="warnb">${ic('clock',18)}<div><b>Aisha hasn't checked in.</b> She's 10 minutes late and hasn't messaged.</div></div>`:`<div class="rw" style="margin:0"><div><div class="mtbig">4:30 PM</div><div class="s" style="margin-top:4px">Today · in 12 minutes</div></div><span class="cd2"><i></i>On her way</span></div>`}
+<div class="bcard" style="margin-top:14px">${av('A',AVC.A,44)}<div style="flex:1"><div class="t">Aisha K. <span class="vf">${ic('shield',14,'b')} Verified</span></div><div class="s">Buying your Dell monitor · $50</div></div><div class="ib f">${ic('chat',20)}</div></div>
+${state==='late'?`<div class="grp" style="margin-top:14px">${[['chat','Message Aisha',''],['clock','Wait 10 more minutes','We\'ll check in again'],['flag','Report a no-show','Two no-shows pause someone\'s offers','color:var(--red)']].map(([i,t,s,c],n)=>`<div class="li" ${n==2?'style="border:0"':''}><span style="${c||''}">${ic(i,20)}</span><div style="flex:1"><div class="t" style="font-size:15px;${c||''}">${t}</div>${s?`<div class="s" style="font-size:12.5px">${s}</div>`:''}</div>${ic('chev',17,'mu')}</div>`).join('')}</div>`
+:`<div class="hint" style="margin-top:14px">${ic('check',16)}<span>Check the monitor turns on before you hand anything over.</span></div>`}</div>
+${state==='late'?'':dock(`<div style="display:flex;gap:10px"><div class="btn p" style="flex:1;width:auto">${ic('pin',19)} I'm here</div><div class="btn s" style="flex:1;width:auto">Running late</div></div><div style="display:flex;gap:10px;margin-top:10px"><div class="btn s" style="flex:1;width:auto;height:46px;font-size:15px">${ic('share',17)} Share with a friend</div><div class="btn t" style="flex:none;width:auto;height:46px;font-size:15px;color:var(--red);padding:0 12px">Cancel</div></div>`)}`;
+addAfter('E','Plan the pickup','Meetup day','Opens from a notification 30 minutes before. "I\'m here" pings the other person, "Running late" sends a preset message. The safety tip matches what\'s being sold.',
+`<div class="scr">${MEETDAY('')}</div>`);
+
+addAfter('E','Meetup day','Share with a friend','One tap sends a trusted friend who, where and when. The link stops working two hours after the meetup, so it isn\'t tracking anyone forever.',
+`<div class="scr">${MEETDAY('')}<div class="scrim"></div><div class="sh"><div class="grab"></div><div class="hm">Share this meetup</div>
+<p class="bd" style="margin-top:6px">Your friend sees who, where and when. The link turns off at 6:30 PM.</p>
+<div class="card" style="margin-top:16px;font-size:14.5px;line-height:1.5"><b>Wasif is meeting Aisha K.</b> (verified Ohio State student) at the RPAC safe-exchange zone, today at 4:30 PM, to sell a monitor.<div class="mi" style="margin-top:6px">onlyswap.app/m/7qd2 · ends 6:30 PM</div></div>
+<div style="display:flex;gap:16px;margin-top:18px">${[['M','Mom','#F2DCC2'],['J','Jordan','#D5D6F1'],['R','Roomie','#CFE3D9'],['+','More','var(--bg2)']].map(([i,n,c])=>`<div style="display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12.5px;color:var(--ink2)">${av(i,c,54)}${n}</div>`).join('')}</div>
+<div class="btn p" style="margin-top:20px">Send with Messages</div></div></div>`);
+
+addAfter('E','Share with a friend','No-show','Ten minutes after the meetup time with no check-in. Three clear options, and reporting a no-show is one tap, not a support ticket.',
+`<div class="scr">${MEETDAY('late')}</div>`);
+
+/* ---- 5. new campus cold start ---- */
+add('C','Day one','What a brand-new campus looks like: honest about having only 11 listings, and turning that into a reason to be an early seller. Research says empty-feeling feeds kill these apps, so this is the screen that decides launch week.',
+`<div class="scr">${sb()}${dhead('swipe')}<div class="cbanner">${mark(40,'var(--markbg)','var(--markfg)')}<div style="flex:1"><div class="t" style="font-size:14.5px">Ohio State opened today</div><div class="s" style="font-size:12.5px">11 listings so far · 16 founding seller spots left</div></div><div class="btn k" style="width:auto;height:36px;padding:0 12px;font-size:13.5px;border-radius:10px;background:var(--onacc);color:var(--acc)">Sell</div></div>
+<div class="stg"><div class="sc im" style="${I('books',500)};transform:translateY(10px) scale(.94);opacity:.5"></div>${scard('lamp','$12','Desk lamp, black','Like new · Lincoln Tower · 20m ago','Maya R. · founding seller','M','<div class="pilltr">1 of 11</div>')}</div>
+${ACTS()}${tb('Discover')}</div>`);
+
+add('C','Founding sellers','The first 50 sellers on a campus get a permanent badge and their listings shown first for two weeks. It\'s status, not prizes, so no sweepstakes rules apply, and giveaways count too so anyone can join.',
+`<div class="scr">${sb()}${nav('x')}<div class="ct stc" style="padding-top:10px">
+<div class="badge3">${mark(84,'var(--markbg)','var(--markfg)')}<svg class="rt" viewBox="0 0 158 158"><defs><path id="circ" d="M79 79 m-66 0 a66 66 0 1 1 132 0 a66 66 0 1 1 -132 0"/></defs><text font-size="11" font-weight="800" letter-spacing="3" fill="var(--onacc)"><textPath href="#circ">FOUNDING SELLER · OHIO STATE · FOUNDING SELLER · OHIO STATE ·</textPath></text></svg></div>
+<div class="hl" style="margin-top:28px">Be one of Ohio State's first 50 sellers</div>
+<div class="tips" style="text-align:left;margin-top:16px;width:100%">${['A founding seller badge on your profile, for good','Your listings shown first for the first two weeks','Giving something away free counts too'].map(x=>`<div>${ic('check',16,'b')}<span>${x}</span></div>`).join('')}</div>
+<div class="card" style="width:100%;margin-top:18px;text-align:left"><div class="rw" style="margin:0"><span class="t" style="font-size:14.5px">34 of 50 spots taken</span><span class="mi">Closes Oct 9</span></div><div class="bar" style="margin-top:10px;height:8px"><i style="width:68%"></i></div></div></div>
+${dock(`<div class="btn p">List my first thing</div><div class="btn t" style="margin-top:2px">Give something away free</div>`)}</div>`);
+</script>

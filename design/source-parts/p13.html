@@ -1,0 +1,83 @@
+<style>
+.plw{width:1120px;background:var(--bg);color:var(--ink);border-radius:24px;padding:30px;box-shadow:0 0 0 1px rgba(0,0,0,.08);display:flex;gap:40px;align-items:flex-start}
+.plph{cursor:pointer;flex:none}
+.pll{position:absolute;inset:0;background:var(--bg);overflow:hidden}
+.plside{flex:1;min-width:0}
+.plno{font-size:13px;font-weight:700;color:var(--ink3)}
+.plt{font-size:30px;font-weight:800;letter-spacing:-.035em;margin-top:4px}
+.pltr{display:inline-flex;align-items:center;gap:6px;margin-top:12px;background:var(--acc);color:var(--onacc);font-weight:700;font-size:13px;padding:6px 10px;border-radius:8px}
+.plspec{font-size:15px;line-height:1.55;color:var(--ink2);margin-top:12px;min-height:70px}
+.plctl{display:flex;gap:10px;margin-top:18px}
+.plctl button{height:44px;border-radius:12px;border:0;padding:0 18px;font:700 15px -apple-system,system-ui,sans-serif;cursor:pointer;background:var(--bg2);color:var(--ink);display:flex;align-items:center;gap:6px}
+.plctl button.k{background:var(--ink);color:var(--bg)}
+.plsteps{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:22px}
+.plsteps button{text-align:left;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:8px 10px;font:600 13px/1.3 -apple-system,system-ui,sans-serif;cursor:pointer;display:flex;gap:8px;align-items:baseline}
+.plsteps button small{font-weight:500;color:var(--ink3);margin-left:auto;font-size:11.5px}
+.plsteps button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.plsteps button.on small{color:var(--bg);opacity:.6}
+.plhint{margin-top:18px;font-size:12.5px;color:var(--ink3)}
+</style>
+<script>
+(function(){
+const FLOW=[
+['A','Launch','none','App opens','The system shows a static launch screen, then the mark springs in (scale 0.55 to 1 with a small overshoot) and the wordmark rises under it.'],
+['A','Welcome','dissolve','Welcome','Dissolve, 450ms. The new screen fades in while settling from 105% to 100%, so it feels like the logo opened into the app.'],
+['A','School email','push','Push','Standard iOS push: about 350ms on a spring. The old screen slides 30% left and dims. Swiping from the left edge goes back.'],
+['A','Verify code','push','Push','Same push. The code field is focused before the animation ends, so the keyboard rises together with the screen.'],
+['A','Profile','push','Push','Push again. Onboarding keeps one consistent motion so it feels like one continuous path.'],
+['A','Community rules','push','Push','Push. The checkbox ticks with a small spring and a light haptic.'],
+['A','Notifications','push','Push','Push. The three example notifications drop in one after another, 80ms apart.'],
+['B','Swipe','dissolve','Into the app','Onboarding is done, so no push here. The app dissolves in and the tab bar rises from the bottom.'],
+['B','First swipe','none','Tutorial','Shown once. The dot demonstrates the gesture: right means make an offer, left means skip. One tap on Got it and it never comes back.'],
+['B','Swipe, mid-drag','none','Drag','The card follows your finger 1:1 and tilts with the drag. The stamp fades in with distance. Nothing is animated by a timer.'],
+['B','Make an offer','sheet','Sheet','Released past the line: the offer sheet slides up in 350ms and the screen behind dims.'],
+['B','Offer sent','dissolve','Confirm','The sheet drops and the confirmation dissolves in. The check draws itself, with a success haptic.'],
+['E','Inbox · offers','tab','Tab switch','Tabs never slide. A quick 150ms crossfade and a selection haptic.'],
+['E','Incoming offer','push','Push','Push into the offer. The amount counts up from $0 to $50 in 400ms.'],
+['E','Chat','push','Push','Accepting pushes straight into the new chat. The meetup card pops in when it arrives.'],
+['E','Plan the pickup','sheet','Sheet','Plan-the-pickup sheet. Time slots are tappable pills with a selection haptic.'],
+['E','Meetup day','push','Push','Opened from the 30-minute reminder. I\'m here pings the buyer, and sharing with a friend is one tap.'],
+['Q','Quad','tab','Tab switch','Crossfade to the Quad tab. Posts load newest-first with skeletons if the network is slow.'],
+['Q','Post','push','Push','Push into the thread. Your own emoji identity for this thread shows in the reply box.'],
+['Q','New post','sheet','Sheet','The composer opens as a full sheet, keyboard already up. The name warning slides in under the text as you type.'],
+['F','Profile','tab','Tab switch','Crossfade to Profile.'],
+['F','My listings','push','Push','Push. The weekly numbers count up once, then stay still.']
+];
+const wrap=document.getElementById('plw');if(!wrap)return;
+wrap.innerHTML=`<div class="ph plph" id="plph"></div><div class="plside"><div class="plno" id="plno"></div><div class="plt" id="plt"></div><div class="pltr" id="pltr"></div><div class="plspec" id="plspec"></div>
+<div class="plctl"><button id="plprev">${ic('back',18,'b')} Back</button><button class="k" id="plnext">Next ${ic('chev',18,'b')}</button><button id="plreplay">${ic('refresh',17,'b')} Play from start</button></div>
+<div class="plsteps" id="plsteps">${FLOW.map((f,i)=>`<button data-i="${i}"><span>${i+1}. ${f[1]}</span><small>${f[3]}</small></button>`).join('')}</div>
+<div class="plhint">Tap the phone to go forward. Arrow keys work too.</div></div>`;
+const ph=document.getElementById('plph');let idx=-1,cur=null,busy=[],timer=null;
+const E='cubic-bezier(.2,.8,.2,1)';
+function layer(i){const f=FLOW[i];const s=S.find(x=>x.sec===f[0]&&x.name===f[1]);const d=document.createElement('div');d.className='pll';d.innerHTML=(s?s.html:'<div class="scr"></div>')+`<div class="hi ${s&&s.o.hi||''}"></div>`;return d}
+function finish(){busy.forEach(a=>a.finish());busy=[];[...ph.children].forEach(c=>{if(c!==cur)c.remove()});}
+function go(i,auto){if(i<0||i>=FLOW.length)return;finish();clearTimeout(timer);const back=i<idx;const nl=layer(i);const old=cur;
+const t=back?FLOW[idx][2]:FLOW[i][2];
+if(back&&old){ph.insertBefore(nl,old)}else ph.appendChild(nl);
+cur=nl;const A=(el,kf,o)=>{const a=el.animate(kf,Object.assign({easing:E,fill:'none'},o));busy.push(a);return a};
+if(old){
+ if(t==='push'){ if(!back){A(nl,[{transform:'translateX(100%)'},{transform:'translateX(0)'}],{duration:380});A(old,[{transform:'translateX(0)',filter:'brightness(1)'},{transform:'translateX(-30%)',filter:'brightness(.82)'}],{duration:380})}
+   else{A(old,[{transform:'translateX(0)'},{transform:'translateX(100%)'}],{duration:340});A(nl,[{transform:'translateX(-30%)',filter:'brightness(.82)'},{transform:'translateX(0)',filter:'brightness(1)'}],{duration:340})}}
+ else if(t==='sheet'){ if(!back){A(nl,[{transform:'translateY(100%)'},{transform:'translateY(0)'}],{duration:420})}else{A(old,[{transform:'translateY(0)'},{transform:'translateY(100%)'}],{duration:260})}}
+ else if(t==='tab'){A(nl,[{opacity:0},{opacity:1}],{duration:170,easing:'linear'})}
+ else if(t==='dissolve'){A(nl,[{opacity:0,transform:'scale(1.05)'},{opacity:1,transform:'scale(1)'}],{duration:460})}
+ const all=busy.slice();Promise.all(all.map(a=>a.finished.catch(()=>{}))).then(()=>{if(cur===nl){[...ph.children].forEach(c=>{if(c!==cur)c.remove()});busy=[]}});
+}
+idx=i;const f=FLOW[i];
+document.getElementById('plno').textContent=`Step ${i+1} of ${FLOW.length}`;
+document.getElementById('plt').textContent=f[1];
+document.getElementById('pltr').innerHTML=`${ic('swap',15,'b')} ${f[3]}`;
+document.getElementById('plspec').textContent=f[4];
+document.querySelectorAll('#plsteps button').forEach(b=>b.classList.toggle('on',+b.dataset.i===i));
+if(i===0&&auto){timer=setTimeout(()=>{if(idx===0)go(1)},1700)}}
+ph.onclick=()=>go(idx+1<FLOW.length?idx+1:0,idx+1>=FLOW.length);
+document.getElementById('plnext').onclick=()=>go(idx+1);
+document.getElementById('plprev').onclick=()=>go(idx-1);
+document.getElementById('plreplay').onclick=()=>{idx=-1;go(0,true)};
+document.querySelectorAll('#plsteps button').forEach(b=>b.onclick=()=>go(+b.dataset.i));
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(idx+1);if(e.key==='ArrowLeft')go(idx-1)});
+go(0);
+})();
+</script>
+</body></html>

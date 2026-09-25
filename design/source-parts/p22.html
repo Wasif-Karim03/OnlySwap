@@ -1,0 +1,36 @@
+<svg width="0" height="0" style="position:absolute"><defs><symbol id="i-arrow" viewBox="0 0 24 24"><path d="M19.5 12H5M11 5.5 4.5 12l6.5 6.5"/></symbol></defs></svg>
+<style>
+.asb{height:42px;display:flex;align-items:center;justify-content:space-between;padding:4px 24px 0;font-size:14px;font-weight:600;position:relative;flex:none;z-index:5}
+.asb .r{display:flex;gap:6px;align-items:center}
+.punch{position:absolute;left:50%;top:12px;width:18px;height:18px;border-radius:9px;background:#000;transform:translateX(-50%)}
+.anv{flex:none;display:flex;justify-content:space-around;padding:12px 4px 26px;background:var(--bg2)}
+.anv>div{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--ink2);position:relative}
+.anv .pill{width:64px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.anv .on{color:var(--ink)}.anv .on .pill{background:var(--acc);color:var(--onacc)}
+.anv .bdg{position:absolute;top:0;left:38px;background:var(--red);color:#fff;font-size:10px;font-weight:700;border-radius:8px;min-width:16px;height:16px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+.ph.andr{border-radius:34px}
+.ph.andr .hi{width:108px;height:4px;bottom:9px}
+.ck{width:1380px;background:var(--bg);color:var(--ink);border-radius:24px;padding:28px;box-shadow:0 0 0 1px rgba(0,0,0,.08);display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.ck h4{font-size:13px;font-weight:700;color:var(--ink3);margin-bottom:10px}
+.cki{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line)}
+.cki .bx{width:24px;height:24px;border-radius:7px;background:var(--acc);color:var(--onacc);display:flex;align-items:center;justify-content:center;flex:none;margin-top:1px}
+.cki b{font-size:15px;font-weight:650;display:block}
+.cki span{font-size:13px;color:var(--ink2)}
+</style>
+<script>
+/* ===== 21. Android ===== */
+const ASB=`<div class="asb"><span>9:41</span><i class="punch"></i><span class="r"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2.5c2.4 0 4.6.9 6.2 2.5L8 13.5 1.8 5A8.8 8.8 0 0 1 8 2.5z"/></svg><svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M1 15h14V1z"/></svg><svg width="10" height="16" viewBox="0 0 10 16"><rect x="1" y="2" width="8" height="13" rx="1.5" fill="currentColor"/><rect x="3" y="0.5" width="4" height="2" rx=".5" fill="currentColor"/></svg></span></div>`;
+function anav(a){const t=[['cards','Discover'],['quad','Quad'],['plussq','Sell'],['chat','Inbox'],['user','Profile']];return `<div class="anv">${t.map(([i,l])=>`<div class="${l===a?'on':''}"><span class="pill">${ic(i,23)}</span>${l}${l==='Inbox'?'<span class="bdg">2</span>':''}</div>`).join('')}</div>`}
+function androidize(sec,name,tab){const s=S.find(x=>x.sec===sec&&x.name===name);let h=s.html.split(sb()).join(ASB).split('<use href="#i-back"/>').join('<use href="#i-arrow"/>');if(tab)h=h.split(tb(tab)).join(anav(tab));return h}
+add('N','Android · Discover','Same design, Android conventions: status bar with the camera punch-hole, a Material bottom bar where the active tab sits in a pill, and the system back gesture instead of on-screen back buttons where possible.',androidize('B','Swipe','Discover'),{andr:1});
+add('N','Android · listing','Back is an arrow, not a chevron, and it\'s the system back gesture that most people will use. Photos, type and spacing stay identical so the brand reads the same on both phones.',androidize('B','Listing'),{andr:1});
+add('N','Android · chat','Chat keeps the same bubbles and meetup card. The keyboard pushes the composer up the Android way, and notifications arrive as Android notification channels you can tune in Settings.',androidize('E','Chat'),{andr:1});
+add('N','Android · Quad','The Quad with the Material bar. The pencil button is a standard Android floating action button, which people there already expect for "create".',androidize('Q','Quad','Quad'),{andr:1});
+
+/* ===== checklist panel ===== */
+const CK=[['Big gaps',[['Web version','Landing page, phone landing, login, browse, listing, inbox, sell','W'],['First-swipe tutorial','Right means make an offer, shown once','B'],['Counter and declined offers','Buyer side of haggling','E'],['Meetup day','I\'m here, running late, share with a friend, no-show','E'],['New campus cold start','Day one feed and founding sellers','C'],['App Store assets','Screenshots, store page, icon sheet, code email','T']]],
+['Medium gaps',[['Edit, relist, mark sold','Including picking which buyer','F'],['Posting screens','Wanted post, free food post, give-it-away mode','C · D'],['Reviews','Reviews tab and the double-blind reveal','B · E'],['Saved searches','With per-search alerts','B'],['Quad extras','Photo view, post options, activity, day-one Quad','Q'],['Campus unlocked','The day the school hits 500','A'],['Settings sub-pages','Blocked, appearance, change school','F'],['Admin tools','Campus setup, appeals, audit log','G']]],
+['Small polish',[['Lock-screen notifications','Grouped, time sensitive','X'],['Live Activity','Meetup countdown in the Dynamic Island','X'],['App icon picker','Four icons in Appearance','F'],['Terms and Privacy','Short version first, then the full text','X'],['Deep-link errors','Other campus, signed out','X'],['Accessibility','Largest text size and VoiceOver','X'],['Android','Discover, listing, chat, Quad','N']]]];
+add('K','Gap checklist','Everything the audit found missing, all 21 now designed. The letters on the right say which section of this file each one lives in.',
+`<div class="th ck">${CK.map(([h,items])=>`<div><h4>${h} · ${items.length}/${items.length} done</h4>${items.map(([t,s,sec])=>`<div class="cki"><span class="bx">${ic('check',15,'b')}</span><div style="flex:1"><b>${t}</b><span>${s}</span></div><span class="tag gy">${sec}</span></div>`).join('')}</div>`).join('')}</div>`,{w:1});
+</script>

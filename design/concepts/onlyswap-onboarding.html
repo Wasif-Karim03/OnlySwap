@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>OnlySwap — onboarding</title>
+<style>
+  :root{
+    --bg:#F4EFE7; --surface:#FFFFFF; --ink:#2B2622; --ink-soft:#6B6157; --ink-faint:#9A8F7E;
+    --line:#E7DFD2; --accent:#B4532A; --accent-soft:#F3E2D8; --good:#3C7A5A; --good-soft:#E4EFE7;
+    --shadow:0 10px 30px rgba(43,38,34,.10); --shadow-lg:0 24px 60px rgba(43,38,34,.20);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;}
+  body{font-family:var(--sans);background:radial-gradient(1200px 600px at 50% -10%,#FBF7F0 0%,#EDE5D8 60%,#E4DACB 100%);display:flex;align-items:center;justify-content:center;min-height:100vh;padding:28px 16px;color:var(--ink);}
+  .device{width:390px;height:800px;position:relative;background:var(--bg);border-radius:46px;box-shadow:var(--shadow-lg),inset 0 0 0 1.5px rgba(255,255,255,.6);overflow:hidden;border:10px solid #191512;outline:1px solid rgba(0,0,0,.15);}
+  .notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:120px;height:26px;background:#191512;border-radius:0 0 16px 16px;z-index:60;}
+  .statusbar{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 24px 0 28px;font-size:13px;font-weight:600;flex:0 0 auto;}
+  .statusbar .dots{display:flex;gap:5px;align-items:center;}
+  .statusbar .bar{width:3px;border-radius:2px;background:var(--ink);}
+
+  /* progress */
+  .progress{display:flex;gap:6px;padding:4px 26px 0;flex:0 0 auto;}
+  .progress i{height:4px;flex:1;border-radius:3px;background:var(--line);transition:background .35s;}
+  .progress i.done{background:var(--accent);}
+
+  .steps{position:relative;flex:1 1 auto;}
+  .step{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;transform:translateX(24px);pointer-events:none;transition:opacity .35s ease,transform .35s cubic-bezier(.2,.8,.2,1);}
+  .step.active{opacity:1;transform:translateX(0);pointer-events:auto;}
+  .pad{padding:18px 26px 0;flex:1 1 auto;display:flex;flex-direction:column;overflow:auto;}
+  .backbtn{width:38px;height:38px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.05);margin-bottom:14px;}
+  .backbtn svg{width:20px;height:20px;stroke:var(--ink);fill:none;stroke-width:2;}
+  .eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint);font-weight:700;}
+  h1.big{font-family:var(--serif);font-weight:600;font-size:30px;line-height:1.12;letter-spacing:-.01em;margin:10px 0 10px;}
+  h1.big em{color:var(--accent);font-style:italic;}
+  p.lede{color:var(--ink-soft);font-size:15px;line-height:1.55;margin:0 0 4px;}
+
+  .dock{flex:0 0 auto;padding:14px 26px calc(24px + env(safe-area-inset-bottom));}
+  .btn{width:100%;border:none;cursor:pointer;border-radius:16px;font-weight:700;font-size:16px;padding:16px;font-family:var(--sans);transition:transform .12s ease,opacity .2s;}
+  .btn:active{transform:scale(.98);}
+  .btn.primary{background:var(--accent);color:#fff;box-shadow:0 10px 24px rgba(180,83,42,.30);}
+  .btn.primary:disabled{opacity:.45;box-shadow:none;cursor:default;}
+  .btn.ghost{background:none;color:var(--ink-soft);font-weight:600;box-shadow:none;font-size:14px;padding:10px;}
+  .legal{font-size:11.5px;color:var(--ink-faint);text-align:center;line-height:1.5;margin-top:12px;}
+  .legal a{color:var(--ink-soft);text-decoration:underline;}
+
+  /* welcome art */
+  .hero-art{flex:1 1 auto;display:flex;align-items:center;justify-content:center;position:relative;min-height:250px;}
+  .hero-card{position:absolute;width:150px;height:190px;border-radius:22px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;}
+  .hero-card svg{width:60%;height:60%;}
+  .hero-card .p{position:absolute;bottom:12px;left:14px;font-weight:800;color:var(--accent);font-size:15px;}
+  .hero-card .n{position:absolute;bottom:12px;right:14px;font-size:11px;color:var(--ink-faint);font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+  .hc1{transform:rotate(-9deg) translate(-58px,6px);z-index:1;background:linear-gradient(150deg,#F6EFE3,#E7D8C0);}
+  .hc2{transform:rotate(6deg) translate(60px,-4px);z-index:2;background:linear-gradient(150deg,#EAF1F2,#D3E2E4);}
+  .hc3{transform:rotate(-2deg) translateY(-2px);z-index:3;background:var(--surface);}
+  .brandmark{display:flex;flex-direction:column;align-items:center;margin-top:4px;}
+  .brandmark h1{font-family:var(--serif);font-size:34px;font-weight:600;margin:0;letter-spacing:-.01em;}
+  .brandmark h1 em{color:var(--accent);font-style:italic;}
+  .brandmark .tag{color:var(--ink-soft);font-size:15px;margin-top:8px;text-align:center;line-height:1.5;}
+
+  /* email field */
+  .field{margin-top:22px;}
+  .field label{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-faint);}
+  .inputwrap{margin-top:8px;display:flex;align-items:center;gap:10px;background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:14px 16px;transition:border-color .2s;}
+  .inputwrap:focus-within{border-color:var(--accent);}
+  .inputwrap svg{width:20px;height:20px;stroke:var(--ink-faint);fill:none;stroke-width:1.8;flex:0 0 auto;}
+  .inputwrap input{border:none;background:none;outline:none;font-size:16px;font-family:var(--sans);color:var(--ink);width:100%;}
+  .detected{margin-top:14px;display:none;align-items:center;gap:10px;background:var(--good-soft);border:1px solid #CBE3D5;border-radius:14px;padding:12px 14px;font-size:13.5px;color:#2C5E44;font-weight:600;}
+  .detected.show{display:flex;}
+  .detected .school{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:9px;background:#BB0000;color:#fff;font-family:var(--serif);font-weight:700;font-size:15px;flex:0 0 auto;}
+  .note{margin-top:16px;display:flex;gap:9px;font-size:12.5px;color:var(--ink-soft);line-height:1.5;}
+  .note svg{width:16px;height:16px;stroke:var(--good);fill:none;stroke-width:2;flex:0 0 auto;margin-top:1px;}
+
+  /* code */
+  .codeboxes{display:flex;gap:10px;margin-top:26px;}
+  .codeboxes input{flex:1;height:62px;border:1.5px solid var(--line);border-radius:14px;background:var(--surface);text-align:center;font-size:26px;font-weight:800;color:var(--ink);outline:none;font-family:var(--sans);transition:border-color .15s,background .15s;}
+  .codeboxes input:focus{border-color:var(--accent);}
+  .codeboxes input.filled{border-color:var(--accent);background:var(--accent-soft);}
+  .resend{margin-top:20px;font-size:13.5px;color:var(--ink-soft);}
+  .resend b{color:var(--accent);cursor:pointer;font-weight:700;}
+  .sentto{margin-top:6px;color:var(--ink);font-weight:700;}
+
+  /* profile */
+  .avpick{display:flex;align-items:center;gap:16px;margin-top:24px;}
+  .avbig{width:78px;height:78px;border-radius:50%;background:linear-gradient(135deg,#D8C7AE,#BFA079);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;font-size:32px;color:#4a3f30;border:2px solid rgba(255,255,255,.8);box-shadow:var(--shadow);flex:0 0 auto;position:relative;}
+  .avbig .cam{position:absolute;bottom:-2px;right:-2px;width:28px;height:28px;border-radius:50%;background:var(--accent);border:2px solid var(--bg);display:flex;align-items:center;justify-content:center;}
+  .avbig .cam svg{width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2;}
+  .avpick .hint{font-size:13px;color:var(--ink-soft);line-height:1.5;}
+  .miniinput{margin-top:22px;}
+  .miniinput label{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-faint);}
+  .miniinput .inputwrap{margin-top:8px;}
+  .yearrow{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+  .yr{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:11px 15px;font-weight:700;font-size:14px;cursor:pointer;color:var(--ink);transition:.12s;}
+  .yr.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);}
+
+  /* unlock */
+  .unlockwrap{flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+  .ring{width:150px;height:150px;position:relative;margin-bottom:8px;}
+  .ring svg{transform:rotate(-90deg);}
+  .ring .pct{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .ring .pct b{font-family:var(--serif);font-size:34px;font-weight:600;}
+  .ring .pct span{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-top:2px;}
+  .unlockwrap h1{font-family:var(--serif);font-size:26px;font-weight:600;margin:16px 0 8px;}
+  .unlockwrap p{color:var(--ink-soft);font-size:14.5px;line-height:1.55;max-width:260px;margin:0 0 4px;}
+  .youare{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 18px;font-size:13.5px;font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+  .youare b{color:var(--accent);}
+  .confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+  .confetti i{position:absolute;width:8px;height:12px;border-radius:2px;top:-20px;opacity:0;}
+
+  .done-check{width:96px;height:96px;border-radius:50%;background:var(--good-soft);border:1px solid #CBE3D5;display:flex;align-items:center;justify-content:center;margin-bottom:20px;}
+  .done-check svg{width:46px;height:46px;stroke:var(--good);fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}
+</style>
+</head>
+<body>
+<div class="device">
+  <div class="notch"></div>
+  <div class="statusbar">
+    <span>9:41</span>
+    <div class="dots"><span class="bar" style="height:8px"></span><span class="bar" style="height:11px"></span><span class="bar" style="height:14px"></span>
+      <svg width="22" height="14" viewBox="0 0 24 14" style="margin-left:4px"><rect x="1" y="1" width="20" height="12" rx="3" fill="none" stroke="#2B2622" stroke-width="1.4"/><rect x="3" y="3" width="14" height="8" rx="1.5" fill="#2B2622"/></svg>
+    </div>
+  </div>
+
+  <div class="progress" id="progress">
+    <i></i><i></i><i></i><i></i>
+  </div>
+
+  <div class="steps" id="steps">
+
+    <!-- STEP 0: welcome -->
+    <div class="step active" data-step="0">
+      <div class="pad" style="justify-content:space-between;">
+        <div class="hero-art">
+          <div class="hero-card hc1"><svg viewBox="0 0 120 120" fill="none" stroke="#8A6B4F" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M42 96h36"/><path d="M60 96V60"/><path d="M60 60l-16-8"/><path d="M44 52l6-24 30 8-14 22z" fill="#EADFCF"/></svg><span class="p">$12</span><span class="n">Lamp</span></div>
+          <div class="hero-card hc2"><svg viewBox="0 0 120 120" fill="none" stroke="#5E7C86" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><rect x="40" y="52" width="40" height="26" rx="9" fill="#F1EDE6"/><path d="M52 52v-6a8 8 0 0 1 16 0v6"/></svg><span class="p">$55</span><span class="n">Pods</span></div>
+          <div class="hero-card hc3"><svg viewBox="0 0 120 120" fill="none" stroke="#3C7A5A" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><rect x="36" y="42" width="48" height="13" rx="2" fill="#E4EFE7"/><rect x="32" y="55" width="52" height="13" rx="2" fill="#EADFCF"/><rect x="38" y="68" width="46" height="13" rx="2" fill="#E4EEF0"/></svg><span class="p">$18</span><span class="n">Books</span></div>
+        </div>
+        <div class="brandmark">
+          <div class="eyebrow" style="margin-bottom:10px;">Buy &amp; sell, on your campus only</div>
+          <h1>Only<em>Swap</em></h1>
+          <div class="tag">Swipe through what students near you<br>are selling. Meet, swap, done.</div>
+        </div>
+      </div>
+      <div class="dock">
+        <button class="btn primary" onclick="go(1)">Continue with school email</button>
+        <div class="legal">Only verified students at your school. By continuing you agree to our <a>Terms</a> &amp; <a>Privacy Policy</a>.</div>
+      </div>
+    </div>
+
+    <!-- STEP 1: email -->
+    <div class="step" data-step="1">
+      <div class="pad">
+        <div class="backbtn" onclick="go(0)"><svg viewBox="0 0 24 24" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></div>
+        <div class="eyebrow">Step 1 of 4</div>
+        <h1 class="big">What's your<br>school email?</h1>
+        <p class="lede">We use your <b>.edu</b> address to place you on your own campus — and to keep everyone here a real student.</p>
+        <div class="field">
+          <label>School email</label>
+          <div class="inputwrap">
+            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+            <input id="email" type="email" inputmode="email" placeholder="you@osu.edu" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="detected" id="detected">
+            <span class="school">O</span>
+            <div>Nice — you're at <b>The Ohio State University</b></div>
+          </div>
+          <div class="note">
+            <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg>
+            <span>We'll never show your email. Alumni &amp; staff addresses aren't eligible — this is students only.</span>
+          </div>
+        </div>
+      </div>
+      <div class="dock">
+        <button class="btn primary" id="emailBtn" onclick="go(2)" disabled>Send my code</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: verify code -->
+    <div class="step" data-step="2">
+      <div class="pad">
+        <div class="backbtn" onclick="go(1)"><svg viewBox="0 0 24 24" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></div>
+        <div class="eyebrow">Step 2 of 4</div>
+        <h1 class="big">Check your inbox</h1>
+        <p class="lede">We sent a 4-digit code to</p>
+        <p class="sentto" id="sentto">you@osu.edu</p>
+        <div class="codeboxes" id="codeboxes">
+          <input maxlength="1" inputmode="numeric" type="text">
+          <input maxlength="1" inputmode="numeric" type="text">
+          <input maxlength="1" inputmode="numeric" type="text">
+          <input maxlength="1" inputmode="numeric" type="text">
+        </div>
+        <div class="resend">Didn't get it? <b onclick="fillCode()">Resend code</b></div>
+      </div>
+      <div class="dock">
+        <button class="btn primary" id="codeBtn" onclick="go(3)" disabled>Verify</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: profile -->
+    <div class="step" data-step="3">
+      <div class="pad">
+        <div class="backbtn" onclick="go(2)"><svg viewBox="0 0 24 24" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></div>
+        <div class="eyebrow">Step 3 of 4</div>
+        <h1 class="big">Set up your<br>profile</h1>
+        <p class="lede">Buyers and sellers see this. Keep it simple — a first name and a face build trust fast.</p>
+        <div class="avpick">
+          <div class="avbig" id="avbig">W<div class="cam"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h4l2-2h4l2 2h4v11H4z"/><circle cx="12" cy="13" r="3.2"/></svg></div></div>
+          <div class="hint">Add a clear photo of you.<br>It's how people recognize you at the meetup.</div>
+        </div>
+        <div class="miniinput">
+          <label>First name</label>
+          <div class="inputwrap">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
+            <input id="fname" type="text" placeholder="Wasif" oninput="setInitial(this.value)">
+          </div>
+        </div>
+        <div class="miniinput">
+          <label>Year</label>
+          <div class="yearrow" id="yearrow">
+            <span class="yr">First-year</span><span class="yr active">Sophomore</span><span class="yr">Junior</span><span class="yr">Senior</span><span class="yr">Grad</span>
+          </div>
+        </div>
+      </div>
+      <div class="dock">
+        <button class="btn primary" onclick="go(4)">Almost there</button>
+      </div>
+    </div>
+
+    <!-- STEP 4: campus unlock -->
+    <div class="step" data-step="4">
+      <div class="confetti" id="confetti"></div>
+      <div class="pad">
+        <div class="unlockwrap">
+          <div class="ring">
+            <svg width="150" height="150" viewBox="0 0 150 150">
+              <circle cx="75" cy="75" r="66" fill="none" stroke="#E7DFD2" stroke-width="10"/>
+              <circle id="ringfg" cx="75" cy="75" r="66" fill="none" stroke="#B4532A" stroke-width="10" stroke-linecap="round" stroke-dasharray="415" stroke-dashoffset="415"/>
+            </svg>
+            <div class="pct"><b id="ringnum">0</b><span>of 500</span></div>
+          </div>
+          <h1>Ohio State is<br>almost unlocked</h1>
+          <p>OnlySwap goes live on a campus once <b>500 Buckeyes</b> join. Invite a few friends and open the doors sooner.</p>
+          <div class="youare">You're Buckeye <b>#488</b> · just 12 to go</div>
+        </div>
+      </div>
+      <div class="dock">
+        <button class="btn primary" onclick="finish()">Invite friends &amp; skip the line</button>
+        <button class="btn ghost" onclick="finish()">I'll just look around</button>
+      </div>
+    </div>
+
+    <!-- STEP 5: done -->
+    <div class="step" data-step="5">
+      <div class="pad" style="align-items:center;justify-content:center;text-align:center;">
+        <div class="done-check"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <h1 class="big" style="text-align:center;">You're in.</h1>
+        <p class="lede" style="text-align:center;max-width:250px;">Verified as a student at Ohio State. Time to see what's on campus.</p>
+      </div>
+      <div class="dock">
+        <button class="btn primary" onclick="alert('→ hands off to the swipe feed')">Start swiping</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let step=0;
+const steps=[...document.querySelectorAll('.step')];
+const bars=[...document.querySelectorAll('#progress i')];
+
+function render(){
+  steps.forEach(s=>s.classList.toggle('active', +s.dataset.step===step));
+  // progress bars map to steps 1-4
+  bars.forEach((b,i)=> b.classList.toggle('done', step>=1 && i<=Math.min(step-1,3)));
+  document.getElementById('progress').style.opacity = (step===0||step>=5)?0:1;
+  if(step===4) animateUnlock();
+  if(step===5) burst();
+}
+function go(n){ step=n; render(); }
+
+/* email validation */
+const email=document.getElementById('email');
+const detected=document.getElementById('detected');
+const emailBtn=document.getElementById('emailBtn');
+email.addEventListener('input',()=>{
+  const v=email.value.trim().toLowerCase();
+  const ok=/^[^\s@]+@[^\s@]+\.edu$/.test(v);
+  detected.classList.toggle('show', ok);
+  emailBtn.disabled=!ok;
+  if(ok) document.getElementById('sentto').textContent=v;
+});
+
+/* code boxes */
+const boxes=[...document.querySelectorAll('#codeboxes input')];
+const codeBtn=document.getElementById('codeBtn');
+boxes.forEach((b,i)=>{
+  b.addEventListener('input',()=>{
+    b.classList.toggle('filled', b.value.length===1);
+    if(b.value && i<boxes.length-1) boxes[i+1].focus();
+    codeBtn.disabled = boxes.some(x=>!x.value);
+  });
+  b.addEventListener('keydown',e=>{ if(e.key==='Backspace' && !b.value && i>0) boxes[i-1].focus(); });
+});
+function fillCode(){ boxes.forEach((b,i)=>{ b.value=[3,9,1,4][i]; b.classList.add('filled'); }); codeBtn.disabled=false; }
+
+/* profile */
+function setInitial(v){ document.getElementById('avbig').firstChild.textContent = (v.trim()[0]||'W').toUpperCase(); }
+document.getElementById('yearrow').addEventListener('click',e=>{ if(e.target.classList.contains('yr')){ document.querySelectorAll('.yr').forEach(y=>y.classList.remove('active')); e.target.classList.add('active'); }});
+
+/* unlock ring */
+function animateUnlock(){
+  const fg=document.getElementById('ringfg'); const num=document.getElementById('ringnum');
+  const target=488, total=500, circ=415;
+  let start=null;
+  function tick(t){
+    if(!start)start=t; const p=Math.min((t-start)/1200,1);
+    const val=Math.round(p*target);
+    num.textContent=val;
+    fg.style.strokeDashoffset = circ*(1 - (val/total));
+    if(p<1) requestAnimationFrame(tick);
+  }
+  fg.style.strokeDashoffset=circ; num.textContent=0;
+  requestAnimationFrame(tick);
+}
+function burst(){}
+function finish(){ step=5; render(); }
+
+/* confetti on unlock button */
+function confettiBurst(){
+  const c=document.getElementById('confetti'); c.innerHTML='';
+  const cols=['#B4532A','#3C7A5A','#D8C7AE','#5E7C86','#E0A24B'];
+  for(let i=0;i<28;i++){
+    const p=document.createElement('i');
+    p.style.left=(10+Math.random()*80)+'%';
+    p.style.background=cols[i%cols.length];
+    p.style.transform=`rotate(${Math.random()*360}deg)`;
+    c.appendChild(p);
+    const dur=900+Math.random()*700, delay=Math.random()*200;
+    p.animate([
+      {transform:`translateY(-20px) rotate(0deg)`,opacity:1},
+      {transform:`translateY(${520+Math.random()*160}px) rotate(${360+Math.random()*360}deg)`,opacity:0}
+    ],{duration:dur,delay:delay,easing:'cubic-bezier(.3,.6,.4,1)'});
+  }
+}
+// fire confetti when arriving at unlock step
+const _go=go;
+go=function(n){ _go(n); if(n===4) setTimeout(confettiBurst,250); };
+
+render();
+</script>
+</body>
+</html>

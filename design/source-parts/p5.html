@@ -1,0 +1,62 @@
+<script>
+/* ================= C · CAMPUS FEED ================= */
+add('C','Campus feed','Second tab inside Discover. It\'s built from listing activity plus free-food posts, not an open social wall, so there\'s very little to moderate.',
+`<div class="scr">${sb()}${dhead('feed')}<div class="ct" style="padding-top:2px">
+<div class="fi"><div class="fh"><span class="fic ac">${ic('food',18)}</span><div style="flex:1"><div class="t">Free food</div><div class="s" style="font-size:12.5px">Dreese Lab · 8 min ago</div></div>${ic('more',20,'mu')}</div>
+<div class="im" style="height:142px;border-radius:14px;margin-top:10px;${I('pizza',700)}"></div>
+<p style="margin-top:10px;font-size:15px;line-height:1.4">Leftover pizza from the ACM meeting, 2nd floor lounge. Probably gone by 7.</p>
+<div class="rw" style="margin:10px 0 0"><span class="sm">Still there?</span><div style="display:flex;gap:8px"><span class="ch g sm2">Yes · 9</span><span class="ch g sm2">Gone · 1</span></div></div></div>
+<div class="rw" style="margin:20px 0 10px"><span class="hs">Just listed near you</span><span class="sm">See all</span></div>
+<div class="hrow">${hcard('pods','$85','AirPods Pro')}${hcard('sw','$180','Switch + 2 games')}${hcard('plant2','$10','Snake plant')}</div>
+<div class="fi" style="margin-top:16px"><div class="fh"><span class="fic gn">${ic('arrdown',18,'b')}</span><div style="flex:1"><div class="t">Price drop</div><div class="s" style="font-size:12.5px">Jordan L. · Lincoln Tower</div></div></div></div>
+</div>${tb('Discover')}</div>`);
+
+add('C','Free stuff','Free stuff gets its own shelf. Giveaways are the cheapest way to fill a brand new campus with inventory.',
+`<div class="scr">${sb()}${nav('back','Free stuff')}<div class="ct"><p class="bd" style="margin:4px 0 16px">People giving things away. Message fast, it's usually gone the same day.</p>
+<div class="g2">${gcard('mir','Free','Floor mirror','Morrill · pick up by Sun','<span class="tag ac pt2">Free</span>')}${gcard('books2','Free','Old gen-ed textbooks, take all','Thompson · 1h','<span class="tag ac pt2">Free</span>')}${gcard('plant','Free','Pothos in a pot','Baker Hall · 3h','<span class="tag ac pt2">Free</span>')}${gcard('cof2','Free','Coffee maker, works','Someone\'s picking it up','<span class="tag ink pt2">Pending</span>')}</div></div>${tb('Discover')}</div>`);
+
+function want(i,n,t,w,b){return `<div class="wt"><div class="fh">${av(i,AVC[i],32)}<div style="flex:1"><span class="t" style="font-size:14px">${n}</span> <span class="mi">· ${t}</span></div><span class="tag gy">${b}</span></div><div style="font-size:16.5px;font-weight:650;margin:10px 0 12px;letter-spacing:-.015em">${w}</div><div class="btn s" style="height:38px;font-size:14px;width:auto;display:inline-flex;padding:0 16px;border-radius:11px">I have this</div></div>`}
+add('C','Wanted','The demand side. When the swipe deck runs out, this is still something useful to do, and it tells sellers what to list.',
+`<div class="scr">${sb()}${nav('back','Wanted')}<div class="ct"><p class="bd" style="margin:4px 0 4px">What people at OSU are looking for. Got one? Offer it.</p>
+${want('C','Chris A.','1h','TI-84 Plus for MATH 1151','Up to $40')}${want('P','Priya S.','3h','Twin XL mattress topper, clean','Up to $25')}${want('J','Jordan L.','5h','Second monitor, 1080p is fine','Up to $70')}${want('S','Sam W.','1d','U-lock for my bike','Up to $15')}</div>
+<div class="dock"><div class="btn p" style="flex:1">${ic('plus',20,'b')} Post what you need</div></div></div>`);
+
+/* ================= D · SELL ================= */
+add('D','Sell · photos','Camera and library are both one tap away. The tip up front heads off arguments about scratches later.',
+`<div class="scr">${sb()}${nav('x','New listing',stepR('1 of 3'))}<div class="pgb"><i class="on"></i><i></i><i></i></div>
+<div class="ct"><div class="hl" style="margin-top:16px">Add photos</div><p class="bd" style="margin-top:6px">Up to 8. The first one is the cover.</p>
+<div class="pg"><div class="im" style="${I('mon',300)}"><span class="tag ink" style="position:absolute;left:6px;bottom:6px">Cover</span><span class="xx">${ic('x',12,'b')}</span></div>
+<div class="im" style="${I('mon2',300)}"><span class="xx">${ic('x',12,'b')}</span></div>
+<div class="add">${ic('camera',24)}<span>Camera</span></div><div class="add">${ic('image',24)}<span>Library</span></div><div class="emp"></div><div class="emp"></div></div>
+<div class="inf">${ic('info',18)}<span>Shoot near a window on a plain surface. Show any scratches or dents, it saves a lot of back and forth.</span></div></div>
+${dock(`<div class="btn p">Next</div>`)}</div>`);
+
+add('D','Sell · details','The price hint comes from things that actually sold on your campus. Offers are on by default.',
+`<div class="scr">${sb()}${nav('back','New listing',stepR('2 of 3'))}<div class="pgb"><i class="on"></i><i class="on"></i><i></i></div>
+<div class="ct" style="padding-top:16px">
+<div class="lbl">Title</div><div class="in">Dell 24" monitor, 1080p</div>
+<div class="lbl" style="margin-top:14px">Category</div><div class="in"><span style="flex:1">Tech <span style="color:var(--ink3)">/</span> Monitors</span>${ic('chev',18,'mu')}</div>
+<div class="lbl" style="margin-top:14px">Condition</div><div class="sg"><div>New</div><div>Like new</div><div class="on">Good</div><div>Fair</div></div>
+<div class="lbl" style="margin-top:14px">Price</div><div class="in f"><b>$60</b><span class="caret" style="margin-left:-6px"></span></div>
+<div class="hint">${ic('trend',17)}<span>Monitors like this went for <b style="color:var(--ink)">$50 to $70</b> at OSU this semester.</span></div>
+<div class="rw" style="margin:14px 0 0"><span class="t">Open to offers</span><span class="tg on"></span></div>
+<div class="lbl" style="margin-top:14px">Description</div><div class="in ta">Dell SE2422H. No dead pixels, comes with the HDMI cable and stand. Upgraded to a bigger one.</div></div>
+${dock(`<div class="btn p">Next</div>`)}</div>`);
+
+add('D','Sell · meetup','The safe-exchange zone is preselected. These are placeholder spots, swap in your campus\'s real ones.',
+`<div class="scr">${sb()}${nav('back','New listing',stepR('3 of 3'))}<div class="pgb"><i class="on"></i><i class="on"></i><i class="on"></i></div>
+<div class="ct"><div class="hl" style="margin-top:16px">Where can you meet?</div><p class="bd" style="margin-top:6px">Buyers see this before they make an offer.</p>
+<div class="opts">${opt(true,'RPAC safe-exchange zone','Cameras, well lit, open 24/7','<span class="tag gn">Safest</span>')}${opt(false,'Ohio Union, High St entrance','Busy most of the day')}${opt(false,'Thompson Library, 1st floor','Lots of people around')}${opt(false,'Decide in chat','You and the buyer pick a spot')}</div>
+<div class="lbl" style="margin-top:20px">Preview</div>
+<div class="prev">${thumb('mon',60)}<div><div class="t">Dell 24" monitor, 1080p</div><div style="font-weight:800;margin-top:1px">$60</div><div class="s" style="font-size:12.5px">Good · Tech · RPAC</div></div></div>
+<div style="display:flex;gap:10px;align-items:center;margin-top:16px"><span class="cb on">${ic('check',14,'b')}</span><span class="sm" style="color:var(--ink)">This isn't on the <u>banned items list</u></span></div></div>
+${dock(`<div class="btn p">Post listing</div>`)}</div>`);
+
+add('D','Sell · posted','Confirmation with a share button, because a new seller\'s first buyers are usually their own friends.',
+`<div class="scr">${sb()}${nav('x')}<div class="ct" style="text-align:center;padding-top:4px">
+<div class="im" style="height:300px;border-radius:22px;position:relative;${I('mon',700)}"><span class="pt" style="position:absolute;left:12px;bottom:12px">$60</span></div>
+<div class="hl" style="margin-top:24px">Your monitor is up</div>
+<p class="bd" style="margin-top:8px">It's in the Ohio State feed now. We'll tell you when someone saves it or makes an offer.</p>
+<div class="inf" style="text-align:left">${ic('camera',18)}<span>Add 2 more photos. Listings with more angles tend to get offers faster.</span></div></div>
+${dock(`<div class="btn p">${ic('share',19)} Share listing</div><div class="btn t" style="margin-top:2px">Done</div>`)}</div>`);
+</script>

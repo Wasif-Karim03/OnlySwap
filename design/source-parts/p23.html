@@ -1,0 +1,95 @@
+<style>
+.ohold{position:absolute;inset:0;background:rgba(255,255,255,.45);display:flex;align-items:center;justify-content:center}
+body[data-theme=night] .ohold{background:rgba(0,0,0,.45)}
+.ohold span{background:var(--amber);color:#fff;font-weight:800;font-size:20px;padding:9px 20px;border-radius:14px}
+.mine{display:flex;gap:10px;align-items:center;background:var(--acc);color:var(--onacc);padding:10px 14px;border-radius:14px;margin:0 0 12px}
+.syscard{align-self:stretch;border:1.5px dashed var(--line2);border-radius:18px;padding:12px;margin:6px 0}
+.sugg{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.sugg b{font-weight:800}
+</style>
+<script>
+/* ===== 2. offer history ===== */
+addAfter('F','Listing stats','Offers on this listing','Every offer on one item, newest first, with where each one ended up. This is the "bid history" from the original brief.',
+`<div class="scr">${sb()}${nav('back','Offers')}<div class="ct">
+<div class="prev" style="margin-top:4px">${thumb('mon',56)}<div style="flex:1"><div class="t">Dell 24" monitor, 1080p</div><div class="s">Asking $60 · 4 offers</div></div></div>
+<div class="stats" style="margin-top:14px"><div><b>$50</b><span>highest</span></div><div><b>$46</b><span>average</span></div><div><b>1</b><span>waiting</span></div></div>
+<div class="lbl" style="margin-top:20px">All offers</div>
+${[['A','Aisha K.','$50','Accepted · met yesterday','<span class="tag gn">Accepted</span>'],['P','Priya S.','$48','You countered $55 · waiting on her','<span class="tag am">Countered</span>'],['C','Chris A.','$45','Expired after 48 hours','<span class="tag gy">Expired</span>'],['B','Ben O.','$40','You declined · Sep 23','<span class="tag gy">Declined</span>']].map(([i,n,a,s,t])=>`<div class="li">${av(i,AVC[i],42)}<div style="flex:1;min-width:0"><div class="t" style="font-size:15px">${n} <span style="font-weight:800;margin-left:4px">${a}</span></div><div class="s" style="font-size:12.5px">${s}</div></div>${t}</div>`).join('')}
+<div class="hint" style="margin-top:14px">${ic('info',16)}<span>Once you accept one, the others close automatically with a polite note.</span></div></div></div>`);
+
+/* ===== 4. edit profile ===== */
+addAfter('F','Profile','Edit profile','Everything people see about you, in one place. The school email is shown but locked, because it\'s what makes you verified.',
+`<div class="scr">${sb()}<div class="nv"><div class="ib" style="margin-left:-8px">${ic('x',24)}</div><div class="tt">Edit profile</div><div class="btn p" style="width:auto;height:34px;padding:0 16px;font-size:14.5px;border-radius:17px">Save</div></div>
+<div class="ct"><div style="display:flex;flex-direction:column;align-items:center;margin-top:6px"><div style="position:relative">${av('W',AVC.W,92)}<div class="camb">${ic('camera',15)}</div></div><div class="sm" style="margin-top:8px;font-weight:650;color:var(--ink)">Change photo</div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px"><div><div class="lbl">First name</div><div class="in">Wasif</div></div><div><div class="lbl">Shown as</div><div class="in" style="color:var(--ink3)">Wasif K.</div></div></div>
+<div class="lbl" style="margin-top:14px">Year</div><div class="chips">${['Freshman','Sophomore','Junior','Senior','Grad'].map(x=>`<span class="ch sm2 ${x==='Sophomore'?'on':''}">${x}</span>`).join('')}</div>
+<div class="lbl" style="margin-top:14px">Usually around</div><div class="chips">${['North Campus','South Campus','West Campus','Off campus'].map((x,i)=>`<span class="ch sm2 ${i==0?'on':''}">${x}</span>`).join('')}</div>
+<div class="lbl" style="margin-top:14px">About <span class="mi" style="font-weight:500">optional</span></div><div class="in ta">CS major, usually at Thompson. Happy to meet at the RPAC.<span class="mi" style="margin-left:auto;align-self:flex-end">56/80</span></div>
+<div class="grp" style="margin-top:14px"><div class="li" style="border:0">${ic('lock',18,'mu')}<div style="flex:1"><div class="t" style="font-size:14.5px">wkarim.12@osu.edu</div><div class="s" style="font-size:12.5px">Your verified school email can't be changed here</div></div></div></div></div></div>`);
+
+/* ===== 5. new member ===== */
+addAfter('B','Seller reviews','New seller','A brand-new seller with no history yet. Instead of a sad row of zeros, the profile leans on what is true: they\'re a verified student, and new.',
+`<div class="scr">${sb()}${nav('back','',`<div class="ib">${ic('more',22)}</div>`)}<div class="ct"><div style="display:flex;flex-direction:column;align-items:center;text-align:center">${av('J',AVC.J,84)}<div class="hm" style="margin-top:12px">Jess M.</div><div class="s" style="margin-top:2px">Freshman · joined 3 days ago</div><div class="vf" style="margin-top:8px;font-size:13.5px">${ic('shield',16,'b')} Ohio State email verified</div></div>
+<div class="card" style="margin-top:18px;display:flex;gap:12px;align-items:center"><span class="tag ac" style="font-size:13px;padding:6px 10px">New</span><div><div class="t" style="font-size:14.5px">No swaps yet</div><div class="s" style="font-size:12.5px">Everyone starts somewhere. Ratings show up after their first meetup.</div></div></div>
+<div class="hint" style="margin-top:12px">${ic('pin',16)}<span>First swaps go smoothest at a safe-exchange zone.</span></div>
+<div class="sg" style="margin-top:16px"><div class="on">Listings · 2</div><div>Reviews · 0</div></div>
+<div class="g2" style="margin-top:14px">${gcard('mir2','$15','Full-length mirror','2d ago')}${gcard('rug2','$25','Red area rug','3d ago')}</div></div></div>`);
+
+/* ===== 6. own listing + on hold ===== */
+function swapSel(h,repl){const a=h.indexOf('<div class="sel">');const e=h.indexOf('</p>',a)+4;return h.slice(0,a)+repl+h.slice(e)}
+addAfter('B','Listing','Your own listing','When sellers open their own listing, the offer button turns into their tools: stats, offers and edit.',
+swapSel(S.find(s=>s.sec==='B'&&s.name==='Listing').html.split(I('fridge',900)).join(I('mon',900)).replace('<div class="hl">$40</div>','<div class="hl">$60</div>').replace('Mini fridge, 3.1 cu ft','Dell 24" monitor, 1080p'),
+`<div class="mine" style="margin-top:14px">${ic('user',18)}<div style="flex:1;font-weight:650;font-size:14.5px">This is your listing</div><span style="font-size:13px;opacity:.75">Live 3 days</span></div><div class="stats" style="margin:0 0 12px"><div><b>86</b><span>seen</span></div><div><b>7</b><span>saved</span></div><div><b>2</b><span>offers</span></div></div><p class="bd" style="color:var(--ink)">Dell SE2422H. No dead pixels, comes with the HDMI cable and stand. Upgraded to a bigger one.</p>`)
+.replace('<div class="ib sq">'+ic('bookmark',22)+'</div><div class="btn p" style="flex:1">Make an offer</div>','<div class="btn s" style="flex:1;width:auto">'+ic('edit',19)+' Edit</div><div class="btn p" style="flex:1;width:auto">See 2 offers</div>').replace('#i-bookmark','#i-more'));
+
+addAfter('B','Your own listing','On hold','A reserved item stays visible but can\'t be offered on. Buyers can ask to be told if the deal falls through, which catches a lot of flaky meetups.',
+S.find(s=>s.sec==='B'&&s.name==='Listing').html.split(I('fridge',900)).join(I('lamp',900)).replace('<div class="hl">$40</div>','<div class="hl">$12</div>').replace('Mini fridge, 3.1 cu ft','Desk lamp, black')
+.replace('<div class="cnt">1 / 4</div>','<div class="ohold"><span>On hold</span></div>')
+.replace(/<div class="sel">/,`<div class="warnb" style="margin-top:14px">${ic('clock',18)}<div><b>Maya is meeting someone about this today.</b> If it falls through, it comes back on the market.</div></div><div class="sel">`)
+.replace('<div class="btn p" style="flex:1">Make an offer</div>','<div class="btn k" style="flex:1">'+ic('bell',19)+' Tell me if it\'s available</div>'));
+
+/* ===== 7. report follow-up ===== */
+addAfter('E','Report and block','Report sent','Right after reporting. Says what happens next and how long it takes, and confirms the person can\'t reach you anymore.',
+`<div class="scr">${sb()}${nav('x')}<div class="ct stc" style="padding-top:10px"><div class="okc">${ic('check',44,'b')}</div>
+<div class="hl" style="margin-top:22px">Thanks, we've got it</div><p class="bd" style="margin-top:8px;max-width:300px">A person reviews every harassment report, usually within a day. You blocked Ben, so he can't message you or see your listings.</p>
+<div class="tl" style="text-align:left"><div class="st d"><i></i><div><b>Report received</b><span>Just now · #R-2294</span></div></div><div class="st"><i></i><div><b>Being reviewed</b><span>Usually within 24 hours</span></div></div><div class="st"><i></i><div><b>You'll get an update</b><span>We'll tell you if we took action</span></div></div></div></div>
+${dock(`<div class="btn k">Done</div><div class="btn t" style="margin-top:2px">Visit the Safety center</div>`)}</div>`);
+
+addAfter('E','Report sent','Report update','The follow-up. It says action was taken without sharing details about the other person, which is how you keep both people\'s privacy.',
+`<div class="scr">${sb()}${nav('back','Report #R-2294')}<div class="ct"><div class="card" style="margin-top:6px;display:flex;gap:12px;align-items:flex-start"><span class="fic gn">${ic('shield',18)}</span><div><div class="t">We took action</div><div class="s" style="margin-top:4px">Thanks for reporting. Ben's account has been limited. We can't share more than that, but your report made a difference.</div></div></div>
+<div class="tl" style="margin-top:16px"><div class="st d"><i></i><div><b>Report received</b><span>Sep 24, 9:12 PM</span></div></div><div class="st d"><i></i><div><b>Reviewed by a person</b><span>Sep 25, 10:03 AM</span></div></div><div class="st d"><i></i><div><b>Action taken</b><span>Sep 25, 10:05 AM</span></div></div></div>
+<div class="grp" style="margin-top:16px"><div class="li">${ic('ban',20)}<span class="t" style="flex:1;font-size:15px">Ben stays blocked</span><span class="s">Unblock</span></div><div class="li" style="border:0">${ic('help',20)}<span class="t" style="flex:1;font-size:15px">Still feel unsafe?</span>${ic('chev',17,'mu')}</div></div></div></div>`);
+
+/* ===== 8. withdraw / expired / meetup changes ===== */
+addAfter('E','Offer declined','Offer expired','Offers expire after 48 hours so nobody sits waiting. The buyer gets one tap to try again.',
+`<div class="scr">${sb()}${nav('back','Offer')}<div class="ct"><div class="stc" style="padding-top:20px"><div class="emptyart">${ic('clock',38)}</div>
+<div class="hm" style="margin-top:18px">Devin didn't answer in time</div><p class="bd" style="margin-top:6px;max-width:290px">Your $35 offer on the mini fridge expired after 48 hours. It's still listed.</p></div>
+<div style="display:flex;flex-direction:column;gap:10px;margin-top:22px"><div class="btn p">Offer again</div><div class="btn s">Message isn't possible yet · Save it instead</div></div></div></div>`.replace('Message isn\'t possible yet · Save it instead','Save it for later'));
+
+addAfter('E','Offer expired','Withdraw offer','Changed your mind? Pending offers can be pulled back until the seller answers, no awkward message needed.',
+`<div class="scr">${S.find(s=>s.sec==='E'&&s.name==='Inbox · offers').html.replace('<div class="scr">','').replace(/<\/div>$/,'')}<div class="scrim"></div><div class="sh"><div class="grab"></div><div style="display:flex;gap:12px;align-items:center">${thumb('fridge',56)}<div><div class="hs">Withdraw your $35 offer?</div><div class="s">Devin hasn't answered yet</div></div></div>
+<p class="bd" style="margin-top:14px">Devin won't be notified with a reason. You can make a new offer on this item later.</p>
+<div class="btn k" style="margin-top:16px;background:var(--red);color:#fff">Withdraw offer</div><div class="btn t" style="margin-top:2px">Keep it</div></div></div>`);
+
+addAfter('E','No-show','Meetup changes','Moving or cancelling a meetup happens as cards in the chat, so there\'s always a clear record of what was agreed.',
+`<div class="scr">${chat(`<div class="sys">Meetup set for Today, 4:30 PM at RPAC</div><div class="m th">ugh my lab is running late</div>
+<div class="syscard"><div class="fh"><span class="fic gy">${ic('clock',18)}</span><div style="flex:1"><div class="mi" style="margin:0">Aisha wants to move the meetup</div><div class="t"><s style="color:var(--ink3);font-weight:500">4:30</s> → 5:30 PM today</div></div></div><div style="display:flex;gap:8px;margin-top:10px"><div class="btn p sm3">Accept</div><div class="btn s sm3">Suggest another</div></div></div>
+<div class="sys">You accepted · Meetup moved to 5:30 PM</div>
+<div class="syscard" style="border-color:var(--red)"><div class="fh"><span class="fic" style="background:var(--redbg);color:var(--red)">${ic('x',18,'b')}</span><div style="flex:1"><div class="mi" style="margin:0">Earlier this week</div><div class="t" style="font-size:14.5px">Leo cancelled the bike meetup</div><div class="s" style="font-size:12.5px">"something came up, tomorrow at 6?"</div></div></div></div>`)}</div>`);
+
+/* ===== 9. search suggestions ===== */
+addAfter('B','Search','Search suggestions','Suggestions appear from the first letter: matching searches with counts, a category jump, and your saved searches, so most people never type the full word.',
+`<div class="scr">${sb()}<div class="nv" style="gap:8px"><div class="ib" style="margin-left:-8px">${ic('back',22)}</div><div class="in f" style="flex:1;height:44px;font-size:16px">${ic('search',18,'mu')}<span>mini f</span><span class="caret" style="margin-left:-8px;height:18px"></span></div></div>
+<div class="ct">${[['search','<b>mini f</b>ridge','6 listings'],['search','<b>mini f</b>ridge under $50','4 listings'],['search','<b>mini f</b>reezer','1 listing'],['grid','Kitchen appliances','Category · 23 listings'],['bookmark','"mini fridge" · under $50','Your saved search · 3 new']].map(([i,t,s])=>`<div class="sugg"><span class="fic gy" style="width:34px;height:34px">${ic(i,17)}</span><div style="flex:1"><div style="font-size:15.5px">${t}</div><div class="mi" style="margin:0">${s}</div></div>${ic('chev',17,'mu')}</div>`).join('')}
+<div class="lbl" style="margin-top:16px">Trending at Ohio State</div><div class="chips">${['ti-84','desk chair','monitor','rug'].map(x=>`<span class="ch g sm2">${ic('trend',14,'mu')}${x}</span>`).join('')}</div></div>${kb()}</div>`);
+
+/* ===== 10. empty states ===== */
+add('X','No notifications','A quiet notifications screen explains what will show up here and offers the one setting people actually look for.',
+`<div class="scr">${sb()}${nav('back','Notifications')}<div class="ct stc"><div class="emptyart">${ic('bell',38)}</div><div class="hm" style="margin-top:20px">All quiet</div><p class="bd" style="margin-top:6px;max-width:280px">Offers, messages, price drops and meetup reminders will show up here.</p><div class="btn s" style="margin-top:22px;width:auto;padding:0 20px">Notification settings</div></div></div>`);
+add('X','No listings yet','A new seller\'s empty "My listings". It sells the first listing: how quick it is, and what tends to sell fast on campus.',
+`<div class="scr">${sb()}${nav('back','My listings')}<div class="ct stc"><div class="emptyart" style="background:var(--acc);color:var(--onacc)">${ic('tag',38)}</div><div class="hm" style="margin-top:20px">Nothing listed yet</div><p class="bd" style="margin-top:6px;max-width:290px">Listing takes about a minute. Things that sell fastest here:</p>
+<div class="chips" style="justify-content:center;margin-top:14px">${['Textbooks','Mini fridges','Desk chairs','Lamps','Free stuff'].map(x=>`<span class="ch g sm2">${x}</span>`).join('')}</div>
+<div class="btn p" style="margin-top:22px">List your first thing</div></div></div>`);
+add('X','Nothing saved','Explains the save button, since the bookmark on a swipe card is easy to miss the first time.',
+`<div class="scr">${sb()}${nav('back','Saved')}<div class="ct"><div class="sg" style="margin-top:4px"><div class="on">Items</div><div>Searches</div></div><div class="stc" style="margin-top:110px"><div class="emptyart">${ic('bookmark',38)}</div><div class="hm" style="margin-top:20px">No saved items</div><p class="bd" style="margin-top:6px;max-width:280px">Tap the bookmark on any card to save it. You'll hear about price drops and when it sells.</p><div class="btn k" style="margin-top:22px">Start swiping</div></div></div>${tb('Profile')}</div>`);
+</script>

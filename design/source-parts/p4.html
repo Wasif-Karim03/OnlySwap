@@ -1,0 +1,110 @@
+<script>
+/* ================= B · DISCOVER & BUY ================= */
+function scard(k,price,title,meta,seller,init,extra='',style=''){return `<div class="sc im" style="${I(k,800)};${style}"><div class="segs"><i class="on"></i><i></i><i></i><i></i></div><div class="scg"></div>${extra}
+<div class="scb"><div class="scp">${price}</div><div class="sct">${title}</div><div class="scm">${meta}</div><div class="scs">${av(init,AVC[init],24)}<span>${seller}</span><span class="ii">${ic('info',22)}</span></div></div></div>`}
+const ACTS=(o='')=>`<div class="acts"><div class="ab x">${ic('x',28,'b')}</div><div class="ab s">${ic('bookmark',22)}</div><div class="ab o" style="${o}">$</div></div>`;
+
+add('B','Swipe','The card is almost all photo and the price is the biggest text on screen. Swipe right or tap $ to make an offer. Left skips.',
+`<div class="scr">${sb()}${dhead('swipe')}<div class="stg">
+<div class="sc im" style="${I('lamp',500)};transform:translateY(10px) scale(.94);opacity:.5"></div>
+${scard('fridge','$40','Mini fridge, 3.1 cu ft','Good condition · Baker Hall · 12m ago','Devin P. · 9 swaps','D','<div class="pilltr">3 people saved this</div>')}</div>
+${ACTS()}${tb('Discover')}</div>`);
+
+add('B','Swipe, mid-drag','The stamp fades in as you drag. Let go past the line and the offer sheet slides up. The next card is already loaded underneath.',
+`<div class="scr">${sb()}${dhead('swipe')}<div class="stg">
+${scard('lamp','$12','Desk lamp, black','Like new · Lincoln Tower · 1h ago','Maya R. · 14 swaps','M','','transform:scale(.97)')}
+${scard('fridge','$40','Mini fridge, 3.1 cu ft','Good condition · Baker Hall · 12m ago','Devin P. · 9 swaps','D','<div class="stamp">Offer</div>','transform:translate(64px,-4px) rotate(9deg);box-shadow:0 20px 40px rgba(0,0,0,.25)')}</div>
+${ACTS('transform:scale(1.14);box-shadow:0 0 0 6px var(--bg2),0 6px 16px rgba(0,0,0,.14)')}${tb('Discover')}</div>`);
+
+add('B','End of deck','Never a dead end. It points to categories, a wanted post, and a switch to get pinged when new stuff drops.',
+`<div class="scr">${sb()}${dhead('swipe')}<div class="ct" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+<div class="fan">${['pods','chair','books'].map((k,i)=>`<div class="im" style="${I(k,300)};transform:rotate(${[-12,0,12][i]}deg) translateY(${[10,0,10][i]}px)"></div>`).join('')}</div>
+<div class="hm" style="margin-top:28px">You've seen everything at OSU</div>
+<p class="bd" style="margin-top:8px;max-width:280px">All 214 listings. New stuff usually shows up in the evening.</p>
+<div style="width:100%;margin-top:26px;display:flex;flex-direction:column;gap:10px"><div class="btn k">Browse categories</div><div class="btn s">Post what you're looking for</div></div>
+<div class="rw" style="width:100%;margin:22px 0 0"><span class="t">Ping me when new things drop</span><span class="tg on"></span></div></div>${tb('Discover')}</div>`);
+
+add('B','Listing','Everything a buyer checks before offering: condition, who\'s selling, where to pick up. One button at the bottom.',
+`<div class="scr"><div class="im" style="height:392px;flex:none;position:relative;${I('fridge',900)}">
+<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.4),rgba(0,0,0,0) 28%)"></div>
+<div style="position:relative;color:#fff">${sb()}</div>
+<div class="ovn"><div class="ib w">${ic('back',22)}</div><div style="display:flex;gap:10px"><div class="ib w">${ic('share',20)}</div><div class="ib w">${ic('bookmark',20)}</div></div></div>
+<div class="cnt">1 / 4</div></div>
+<div class="ct" style="padding-top:18px">
+<div style="display:flex;align-items:center;gap:10px"><div class="hl">$40</div><span class="tag gy">Good</span></div>
+<div class="hs" style="margin-top:4px;font-size:19px">Mini fridge, 3.1 cu ft</div>
+<div class="mi" style="margin-top:4px">Appliances · posted 12 min ago · 18 views</div>
+<div class="sel">${av('D',AVC.D,44)}<div style="flex:1"><div class="t">Devin P. <span class="vf">${ic('shield',14,'b')} Verified</span></div><div class="s">9 swaps · usually replies within an hour</div></div>${ic('chev',18,'mu')}</div>
+<p class="bd" style="color:var(--ink)">Galanz, small freezer on top. Moving into an apartment with a real kitchen so it has to go. Little dent on the left side (pic 3). It's heavy, bring a friend.</p>
+<div class="kv"><div><span>Brand</span><b>Galanz</b></div><div><span>Pickup</span><b>RPAC or Baker Hall lobby</b></div></div></div>
+<div class="dock"><div class="ib sq">${ic('bookmark',22)}</div><div class="btn p" style="flex:1">Make an offer</div></div></div>`);
+
+add('B','Photo viewer','Sellers can caption each photo. That\'s where damage and quirks get explained, so fewer questions land in chat.',
+`<div class="scr" style="background:#000;color:#fff">${sb()}
+<div class="nv"><div class="ib" style="margin-left:-8px">${ic('x',24)}</div><div class="tt" style="color:#fff">2 of 4</div><div class="ib">${ic('share',21)}</div></div>
+<div style="flex:1;display:flex;align-items:center"><div class="im" style="width:100%;height:480px;${I('fridge2',900)}"></div></div>
+<div style="padding:0 20px 14px;font-size:14.5px;opacity:.85">Freezer section works, ice tray included.</div>
+<div class="thm">${['fridge','fridge2','fridge','fridge2'].map((k,i)=>`<div class="im ${i==1?'on':''}" style="${I(k,200)}"></div>`).join('')}</div></div>`,{hi:'l'});
+
+add('B','Make an offer','Amount plus a preset note. No free text on first contact, which closes the "offer as an excuse to DM someone" route.',
+`<div class="scr"><div class="im" style="height:420px;position:relative;${I('fridge',800)}"><div style="color:#fff">${sb()}</div></div><div class="scrim"></div>
+<div class="sh"><div class="grab"></div>
+<div style="display:flex;align-items:center;gap:12px">${thumb('fridge',52)}<div style="flex:1"><div class="t">Mini fridge, 3.1 cu ft</div><div class="s">Devin is asking $40</div></div><div class="ib f">${ic('x',20)}</div></div>
+<div class="amt">$35<i class="caret big"></i></div><div class="mi" style="text-align:center">$5 under asking</div>
+<div class="chips" style="justify-content:center;margin-top:16px"><span class="ch">$30</span><span class="ch on">$35</span><span class="ch">$40 · full price</span></div>
+<div class="lbl" style="margin-top:22px">Add a quick note</div>
+<div class="chips"><span class="ch on">Can pick up today</span><span class="ch">Can meet at RPAC</span><span class="ch">I'll bring a friend to carry it</span></div>
+<div class="inf">${ic('lock',18)}<span>Devin sees your offer first. If they accept, a chat opens so you two can plan the pickup.</span></div>
+<div class="btn p" style="margin-top:16px">Send offer</div></div></div>`);
+
+add('B','Offer sent','Tells people what happens next, so they don\'t fire off three more offers out of impatience.',
+`<div class="scr">${sb()}${nav('x')}<div class="ct" style="text-align:center;display:flex;flex-direction:column;align-items:center;padding-top:28px">
+<div class="okc">${ic('check',44,'b')}</div><div class="hl" style="margin-top:24px">Offer sent</div>
+<p class="bd" style="margin-top:8px;max-width:290px">$35 for Devin's mini fridge. You'll get a notification when they reply.</p>
+<div class="tl"><div class="st d"><i></i><div><b>Offer sent</b><span>Just now</span></div></div>
+<div class="st"><i></i><div><b>Devin decides</b><span>Most people reply within 2 hours</span></div></div>
+<div class="st"><i></i><div><b>Chat opens</b><span>Pick a time and a safe spot to meet</span></div></div></div></div>
+${dock(`<div class="btn k">Keep swiping</div><div class="btn t" style="margin-top:2px">Go to Inbox</div>`)}</div>`);
+
+add('B','Search','Category tiles use real photos. Recent searches sit on top because people tend to search for the same few things.',
+`<div class="scr">${sb()}<div class="ct"><div class="hl" style="margin-top:6px">Search</div>
+<div class="in" style="margin-top:14px">${ic('search',20,'mu')}<span style="color:var(--ink3)">Search Ohio State</span></div>
+<div class="rw"><span class="lbl" style="margin:0">Recent</span><span class="sm">Clear</span></div>
+<div class="chips">${['mini fridge','ti-84','desk chair','monitor'].map(x=>`<span class="ch g">${ic('clock',15,'mu')}${x}</span>`).join('')}</div>
+<div class="rw" style="margin-top:22px"><span class="hs">Categories</span></div>
+<div class="cats">${[['chair','Dorm & furniture'],['books','Textbooks'],['mon','Tech'],['shoe','Clothes & shoes'],['mw','Kitchen'],['bike','Bikes & scooters'],['gtr','Music'],['mir','Free stuff']].map(([k,l])=>`<div class="cat im" style="${I(k,400)}"><span>${l}</span></div>`).join('')}</div></div>${tb('Discover')}</div>`);
+
+add('B','Results','Two-column grid, price first. Active filters show as chips you can drop with one tap.',
+`<div class="scr">${sb()}<div class="nv" style="gap:8px"><div class="ib" style="margin-left:-8px">${ic('back',22)}</div><div class="in" style="flex:1;height:42px;font-size:16px">${ic('search',18,'mu')}<span style="flex:1">desk</span>${ic('x',18,'mu')}</div></div>
+<div class="hsc"><span class="ch">${ic('sliders',16)} Filters <b class="cnt2">2</b></span><span class="ch on">Under $50 ${ic('x',13,'b')}</span><span class="ch on">Walkable ${ic('x',13,'b')}</span><span class="ch">Like new</span></div>
+<div class="ct"><div class="sm" style="margin:2px 0 12px">31 results · newest first</div>
+<div class="g2">${gcard('lamp','$12','Desk lamp, black','Lincoln Tower · 2h')}${gcard('chair','$30 <s>$45</s>','Desk chair, grey','Morrill Tower · 5h','<span class="tag gn pt2">Price drop</span>')}${gcard('lamp2','$18','Architect lamp','Baker Hall · 1d')}${gcard('chair2','$35','Rolling chair','Off campus · 1d')}</div></div>${tb('Discover')}</div>`);
+
+add('B','Filters','Price, condition, distance. "Hide things I skipped" stops search from repeating what you already passed on in the swipe deck.',
+`<div class="scr">${sb()}<div class="ct" style="padding-top:60px"><div class="g2">${gcard('lamp','$12','Desk lamp','')}${gcard('chair','$30','Desk chair','')}</div></div><div class="scrim"></div>
+<div class="sh" style="top:58px"><div class="grab"></div>
+<div class="shh"><span class="sm" style="font-weight:650;color:var(--ink);width:60px">Reset</span><span class="hs">Filters</span><div style="width:60px;display:flex;justify-content:flex-end"><div class="ib f">${ic('x',18)}</div></div></div>
+<div class="fs"><div class="lbl">Price</div><div class="rng"><i style="left:0;right:40%"></i><b style="left:-2px"></b><b style="left:calc(60% - 13px)"></b></div><div class="rw" style="margin:8px 0 0"><span class="sm">$0</span><span class="sm">$50</span></div></div>
+<div class="fs"><div class="lbl">Condition</div><div class="chips">${['New','Like new','Good','Fair'].map((x,i)=>`<span class="ch ${i==1||i==2?'on':''}">${x}</span>`).join('')}</div></div>
+<div class="fs"><div class="lbl">Distance</div><div class="sg"><div>On campus</div><div class="on">Walkable</div><div>Anywhere</div></div></div>
+<div class="fs" style="display:flex;align-items:center;gap:8px"><span class="t" style="flex:1">Category</span><span class="sm">Dorm & furniture</span>${ic('chev',16,'mu')}</div>
+<div class="fs" style="display:flex;align-items:center"><span class="t" style="flex:1">Free stuff only</span><span class="tg"></span></div>
+<div class="fs" style="display:flex;align-items:center;border:0"><span class="t" style="flex:1">Hide things I skipped</span><span class="tg on"></span></div>
+<div class="btn k" style="margin-top:8px">Show 31 results</div></div></div>`);
+
+function srow(k,t,p,st,dim){return `<div class="li" style="${dim?'opacity:.45':''}">${thumb(k,72)}<div style="flex:1;min-width:0"><div class="t el">${t}</div><div style="font-weight:800;margin-top:1px">${p}</div><div style="margin-top:5px">${st}</div></div>${ic('bookmark',20,'fillb')}</div>`}
+add('B','Saved','Saved items tell you what changed since you saved them: a price drop, your pending offer, or that it sold.',
+`<div class="scr">${sb()}${nav('back','Saved')}<div class="ct"><div class="sg" style="margin-top:4px"><div class="on">Items · 6</div><div>Searches · 2</div></div>
+<div style="margin-top:6px">${srow('chair','Desk chair, grey','$30',`<span class="tag gn">${ic('arrdown',13,'b')} Dropped from $45</span>`)}
+${srow('pods','AirPods Pro','$85','<span class="mi">4 other people saved this</span>')}
+${srow('bike','Trek city bike','$120','<span class="tag am">Your offer $100 · pending</span>')}
+${srow('sw','Switch + 2 games','$180','<span class="mi">Posted 2 days ago</span>')}
+${srow('gtr','Squier Strat','$140','<span class="tag gy">Sold</span>',1)}</div></div>${tb('Profile')}</div>`);
+
+add('B','Seller profile','Trust at a glance: swaps done, thumbs up, reply time, and the verified school email.',
+`<div class="scr">${sb()}${nav('back','',`<div class="ib">${ic('more',22)}</div>`)}
+<div class="ct"><div style="display:flex;flex-direction:column;align-items:center;text-align:center">${av('D',AVC.D,84)}<div class="hm" style="margin-top:12px">Devin P.</div><div class="s" style="margin-top:2px">Sophomore · North Campus · joined Aug 2026</div><div class="vf" style="margin-top:8px;font-size:13.5px">${ic('shield',16,'b')} Ohio State email verified</div></div>
+<div class="stats"><div><b>9</b><span>swaps</span></div><div><b>9/9</b><span>thumbs up</span></div><div><b>~1h</b><span>to reply</span></div></div>
+<div class="sg" style="margin-top:18px"><div class="on">Listings · 4</div><div>Reviews · 9</div></div>
+<div class="g2" style="margin-top:14px">${gcard('fridge','$40','Mini fridge','12m ago')}${gcard('mw','$25','Microwave, 700W','2d ago')}${gcard('cof','$15','Coffee maker','3d ago')}${gcard('rug','$20','5x7 rug','1w ago')}</div></div></div>`);
+</script>

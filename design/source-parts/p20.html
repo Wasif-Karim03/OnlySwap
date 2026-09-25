@@ -1,0 +1,34 @@
+<script>
+/* ===== 14. admin: campus setup, appeals, audit log ===== */
+function prow(a,b,c=''){return `<div class="lq"><span>${a}</span><span style="display:flex;gap:8px;align-items:center;color:var(--ink);font-weight:600">${b}${c}</span></div>`}
+add('G','Admin · campus setup','Everything that makes one campus work: which email domains count, where the safe spots are, the unlock threshold, and the safety dials. Adding a new school is just filling this page in.',
+desk('Campuses','campuses/osu',`<div class="mh"><div style="display:flex;align-items:center;gap:6px;color:var(--ink2);font-weight:600;margin-right:auto;font-size:15px">Campuses ${ic('chev',14)} <span style="color:var(--ink);font-size:24px;font-weight:800;letter-spacing:-.03em">Ohio State</span><span class="tag gn" style="margin-left:6px">Live</span></div><div class="btn s" style="width:auto;padding:0 16px;height:38px;font-size:14px;border-radius:10px">Pause campus</div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+<div style="display:flex;flex-direction:column;gap:14px">
+<div class="pn"><h3>School email domains <span class="sm" style="font-weight:600;color:var(--ink)">+ Add domain</span></h3>
+${prow('osu.edu','1,212 students','<span class="tag gy">Primary</span>')}${prow('buckeyemail.osu.edu','72 students')}${prow('alumni.osu.edu','Blocked','<span class="tag rd">Alumni</span>')}
+<div class="mi" style="margin-top:8px">Alumni and staff forwarding domains are blocked so they can't sign up.</div></div>
+<div class="pn"><h3>Launch</h3>${prow('Unlock at','500 students')}${prow('Unlocked','Sep 25, 2026 · 1,284 now')}${prow('Founding sellers','34 of 50 spots')}${prow('Re-verify students every','12 months')}</div>
+<div class="pn"><h3>Safety dials</h3>${prow('Quad auto-hide at','-5 score')}${prow('Offers per person per hour','10')}${prow('Banned keywords','142 · edit list')}${prow('No-shows before offers pause','2')}</div></div>
+<div class="pn"><h3>Safe-exchange spots <span class="sm" style="font-weight:600;color:var(--ink)">+ Add spot</span></h3>${map(220,[[28,42],[58,64],[82,28]],'3 spots · shown on every listing')}
+<div style="margin-top:8px">${[['RPAC safe-exchange zone','Cameras · lit · 24/7','Default'],['Ohio Union front desk','Staffed until midnight',''],['Campus police lobby','Open 24/7','']].map(([t,s,d])=>`<div class="lq" style="align-items:center"><div><div class="t" style="font-size:14.5px">${t}</div><div class="mi">${s}</div></div><span style="display:flex;gap:8px;align-items:center">${d?`<span class="tag ac">${d}</span>`:''}${ic('edit',16,'mu')}</span></div>`).join('')}</div>
+<div class="mi" style="margin-top:10px">Check each spot with campus police before listing it as a safe-exchange zone.</div></div></div>`),{w:1});
+
+add('G','Admin · appeals','Every removal can be appealed, and they land here. Showing the original, the rule, and the person\'s side next to each other makes it a thirty-second decision.',
+desk('Reports','reports/appeals',`<div class="mh"><h1>Appeals</h1><div class="sg" style="width:300px"><div class="on">Open · 4</div><div>Decided</div><div>All</div></div></div>
+<div style="display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px">
+<div class="pn" style="padding:4px 8px;overflow:hidden"><table class="tb2 wr"><tr><th>Removed</th><th>Rule</th><th>Who</th><th>Waiting</th></tr>
+${[['Quad post: "the guy who parks his scooter..."','Calls out a student','Anonymous','2h',1],['Listing: Calculator + notes','Coursework','Omar H.','5h'],['Quad reply in "best dining hall"','Harassment','Anonymous','1d'],['Listing: Parking pass','Banned item?','Rae P.','1d']].map(([w,r,u,t,on])=>`<tr class="${on?'cur':''}"><td>${w}</td><td><span class="tag am">${r}</span></td><td>${u}</td><td style="color:var(--ink3)">${t}</td></tr>`).join('')}</table></div>
+<div class="pn"><div class="mi">Removed 2 days ago · Quad post</div>
+<div class="ev" style="margin-top:10px"><div style="font-size:15px;line-height:1.45;color:var(--ink2)">the guy who parks his scooter across the whole Hagerty bike rack every day, you know who you are</div></div>
+<div class="lbl" style="margin-top:14px">Their appeal</div><div class="quote" style="display:block;margin:0">"I didn't name anyone. Could be anyone who parks there."</div>
+<div class="kv" style="margin-top:12px"><div><span>Rule</span><b style="font-weight:600">Calls out a student</b></div><div><span>Strikes</span><b style="font-weight:600">1 (this one)</b></div><div><span>Upvotes before removal</span><b style="font-weight:600">41</b></div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px"><div class="btn k sm3">Restore + clear strike</div><div class="btn s sm3">Keep it removed</div></div>
+<div class="lbl" style="margin-top:14px">Reply</div><div class="chips"><span class="ch sm2 on">Restored, thanks for explaining</span><span class="ch sm2">It points to one person</span><span class="ch sm2">Custom…</span></div></div></div>`),{w:1});
+
+add('G','Admin · audit log','Every admin action, who did it and why. Account reveals are highlighted, because those are the ones you\'ll need to justify to a school or a lawyer one day.',
+desk('Settings','settings/audit',`<div class="mh"><h1>Audit log</h1><div class="dd">All actions ${ic('down',14)}</div><div class="dd">Last 30 days ${ic('down',14)}</div><div class="btn s" style="width:auto;padding:0 14px;height:36px;font-size:13.5px;border-radius:10px">${ic('download',16)} Export CSV</div></div>
+<div class="pn" style="padding:4px 8px"><table class="tb2"><tr><th>When</th><th>Admin</th><th>Action</th><th>Target</th><th>Reason</th></tr>
+${[['Today 3:02 PM','Wasif','Suspended 7 days','Ben O.','Threat in chat, report #R-2291'],['Today 2:40 PM','Wasif','Removed Quad post','Anonymous #4f2a','Names a student'],['Today 11:15 AM','Wasif','Restored listing','Omar H.','Appeal accepted, notes only'],['Sep 22, 9:48 PM','Wasif','Revealed account','Anonymous #9c01','Campus police request, case 26-1187',1],['Sep 22, 4:10 PM','Wasif','Added safe spot','Ohio State','Campus police lobby'],['Sep 20, 1:02 PM','Wasif','Changed setting','Ohio State','Quad auto-hide -4 → -5'],['Sep 19, 6:30 PM','Wasif','Banned','Tyler V.','Fake payment screenshots, 3 reports']].map(([w,a,x,t,r,hl])=>`<tr style="${hl?'background:var(--redbg)':''}"><td style="color:var(--ink3)">${w}</td><td>${a}</td><td style="font-weight:650;${hl?'color:var(--red)':''}">${hl?ic('lock',13).replace('class="ic "','class="ic " style="display:inline;vertical-align:-2px;margin-right:4px"'):''}${x}</td><td>${t}</td><td style="color:var(--ink2)">${r}</td></tr>`).join('')}</table></div>
+<div class="mi" style="margin-top:10px">Entries can't be edited or deleted. Kept for 2 years.</div>`),{w:1});
+</script>

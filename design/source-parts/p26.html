@@ -1,0 +1,188 @@
+<style>
+.asht{border-radius:16px;overflow:hidden;background:var(--bg2);margin-top:12px}
+.asht div{display:flex;gap:12px;align-items:center;padding:15px 16px;font-size:16px;font-weight:600;border-bottom:1px solid var(--line)}
+.asht div:last-child{border:0}
+.ferr{display:flex;gap:6px;align-items:flex-start;color:var(--red);font-size:13px;margin-top:6px;line-height:1.35}
+.in.e2{box-shadow:inset 0 0 0 1.5px var(--red);background:var(--redbg)}
+.ebanner{display:flex;gap:10px;align-items:flex-start;background:var(--redbg);color:var(--ink);border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.4}
+.phm{align-self:flex-end;width:200px;height:220px;border-radius:19px 19px 6px 19px;overflow:hidden;position:relative}
+.phm.th{align-self:flex-start;border-radius:19px 19px 19px 6px}
+.phm .bl{position:absolute;inset:0;backdrop-filter:blur(22px);background:rgba(0,0,0,.25);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:13.5px;font-weight:650;text-align:center;padding:12px}
+.wdoc{display:grid;grid-template-columns:240px 1fr;gap:64px;padding:56px 120px 80px}
+.wdoc nav a{display:block;font-size:15px;color:var(--ink2);font-weight:550;padding:9px 12px;border-radius:10px}
+.wdoc nav a.on{background:var(--bg2);color:var(--ink);font-weight:700}
+.wdoc h1{font-size:44px;font-weight:800;letter-spacing:-.045em;line-height:1.05}
+.wdoc h3{font-size:20px;font-weight:750;letter-spacing:-.02em;margin-top:30px}
+.wdoc p{font-size:16px;line-height:1.65;color:var(--ink2);margin-top:8px;max-width:680px}
+.faq{border-bottom:1px solid var(--line);padding:18px 0;display:flex;align-items:center;gap:12px;font-size:17px;font-weight:650}
+.wordl{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.wordl span{background:var(--bg2);border-radius:9px;padding:6px 10px;font-size:13.5px;font-weight:600;display:inline-flex;gap:6px;align-items:center}
+.push{background:rgba(245,245,245,.9);border-radius:20px;padding:12px 14px;display:flex;gap:11px;color:#111;box-shadow:0 10px 30px -12px rgba(0,0,0,.25)}
+</style>
+<script>
+const withSheet=(h,sheet)=>h.replace(/<\/div>$/,`<div class="scrim"></div><div class="sh"><div class="grab"></div>${sheet}</div></div>`);
+const LST=()=>S.find(s=>s.sec==='B'&&s.name==='Listing').html;
+
+/* ===== 1. report a listing ===== */
+addAfter('B','On hold','Listing options','The "more" button on any listing. Reporting sits last and in red so nobody taps it by accident, but it\'s always one tap away.',
+withSheet(LST(),`<div class="asht">${[['share','Share listing'],['eye','Not interested','Hides this and similar items'],['user','See Devin\'s profile']].map(([i,t,s])=>`<div>${ic(i,20)}<span style="flex:1">${t}${s?`<span class="mi" style="display:block;margin:2px 0 0;font-weight:500">${s}</span>`:''}</span></div>`).join('')}</div>
+<div class="asht"><div style="color:var(--red)">${ic('flag',20)}<span>Report listing</span></div></div><div class="btn s" style="margin-top:12px;background:var(--bg2)">Cancel</div>`));
+
+addAfter('B','Listing options','Report listing','Reasons match the banned items list and the scams that actually happen. Seller never finds out who reported.',
+withSheet(LST(),`<div class="hs">Report this listing</div><div class="s" style="margin-top:4px">Reports are private. Devin won't know it was you.</div>
+<div class="opts" style="margin-top:14px">${[['Looks like a scam',0],["It's not allowed (vapes, alcohol, weapons…)",0],['Might be stolen',1],['Fake or counterfeit',0],['Wrong photos or misleading',0],['Something else',0]].map(([t,o])=>`<div class="op ${o?'on':''}" style="padding:11px 14px"><span class="rdo ${o?'on':''}"></span><span class="t" style="font-size:15px">${t}</span></div>`).join('')}</div>
+<div class="in ta" style="margin-top:10px;min-height:64px;color:var(--ink3);font-size:14.5px">Add details (optional). Example: my bike was stolen from Morrill last week</div>
+<div class="btn k" style="margin-top:12px">Send report</div>`));
+
+/* ===== 2. appeal form ===== */
+addAfter('X','Suspended','Appeal','What "Appeal this" opens. It shows exactly what was removed and why, then one box for their side. A real person answers, usually within two days.',
+`<div class="scr">${sb()}${nav('x','Appeal')}<div class="ct">
+<div class="card" style="margin-top:8px"><div class="mi" style="margin:0">Removed Sep 23 · Banned items rule</div><div style="display:flex;gap:10px;align-items:center;margin-top:10px">${thumb('pods',48,10)}<div><div class="t" style="font-size:14.5px">Vape pen, barely used</div><div class="s" style="font-size:12.5px">Your listing · $15</div></div></div></div>
+<div class="lbl" style="margin-top:18px">What happened?</div><div class="opts" style="margin-top:8px">${[['This was a mistake',1],['I didn\'t know the rule',0],['Someone else used my account',0]].map(([t,o])=>`<div class="op ${o?'on':''}" style="padding:11px 14px"><span class="rdo ${o?'on':''}"></span><span class="t" style="font-size:15px">${t}</span></div>`).join('')}</div>
+<div class="lbl" style="margin-top:16px">Tell us your side</div><div class="in ta f" style="min-height:96px">It's an empty case from a portable charger kit, not a vape. I can send another photo.<span class="caret" style="height:18px;margin-left:2px"></span></div>
+<div class="mi" style="text-align:right">86/500</div>
+<div class="hint" style="margin-top:6px">${ic('info',16)}<span>One appeal per decision. A person reviews it, usually within 48 hours, and you'll get a notification either way.</span></div></div>
+${dock(`<div class="btn k">Send appeal</div>`)}</div>`);
+
+/* ===== 3. web: legal, support, delete ===== */
+const wnav=`<div class="lnav">${WL()}<a style="margin-left:24px">How it works</a><a>Safety</a><a>Campuses</a><div style="margin-left:auto" class="wbtn k">Get the app</div></div>`;
+add('W','Privacy policy · web','The public Privacy page. Apple and Google both need a link to this before the app can go live. Same short-table-first layout as in the app, with Terms, rules and safety one click away.',
+wf('onlyswap.app/privacy',`${wnav}<div class="wdoc"><nav>${['Privacy policy','Terms of service','Community rules','Banned items','Safety','Cookies'].map((t,i)=>`<a class="${i?'':'on'}">${t}</a>`).join('')}</nav>
+<div><div class="mi">Last updated September 1, 2026</div><h1 style="margin-top:8px">Privacy policy</h1><p>The short version: we collect what we need to run a marketplace for students, we never sell it, and you can delete it any time.</p>
+<table class="htb" style="max-width:760px;margin-top:22px"><tr><th>What</th><th>Why</th><th>How long</th></tr>${[['School email','Check you\'re a student','Until you delete your account'],['Listings and photos','Show your stuff to buyers','Until you delete them'],['Messages','Deliver chats, handle reports','Deleted with your account'],['Rough location, only while picking a meetup','Suggest nearby safe spots','Never stored'],['Reports','Keep people safe','180 days after closing']].map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</table>
+<h3>We never sell your data</h3><p>No ads, no data brokers, no tracking across other apps. We only read messages when one is reported to us.</p>
+<h3>Your choices</h3><p>Download a copy of your data or delete your account from Settings in the app, or from <b style="color:var(--ink)">onlyswap.app/delete</b>.</p></div></div>`),{w:1});
+
+add('W','Support · web','The support link the stores require. Answers the common questions first, then a form that goes straight to your inbox. Safety issues get their own path at the top.',
+wf('onlyswap.app/help',`${wnav}<div style="padding:56px 0 80px;display:flex;justify-content:center"><div style="width:760px">
+<h1 class="lh2" style="font-size:48px">How can we help?</h1>
+<div class="in" style="margin-top:22px;height:56px;font-size:17px;border-radius:16px">${ic('search',20,'mu')}<span style="color:var(--ink3)">Search help</span></div>
+<div class="card" style="margin-top:18px;display:flex;gap:12px;align-items:center;background:var(--redbg)">${ic('shield',22)}<div style="flex:1"><div class="t">Something unsafe happened?</div><div class="s">If you're in danger, call 911 first. Then report it here and a person will look at it today.</div></div><div class="wbtn k">Report a safety issue</div></div>
+<div style="margin-top:22px">${['My code never arrived','My school isn\'t listed','How do I pay or get paid?','Someone didn\'t show up to a meetup','How do I delete my account?','I got banned. Can I appeal?'].map(q=>`<div class="faq"><span style="flex:1">${q}</span>${ic('chev',18,'mu')}</div>`).join('')}</div>
+<div class="card" style="margin-top:28px"><div class="t" style="font-size:17px">Still stuck?</div><div class="s">Write to us. We usually reply within a day.</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px"><div class="in" style="background:var(--bg)"><span style="color:var(--ink3)">Your school email</span></div><div class="in" style="background:var(--bg)"><span style="flex:1;color:var(--ink3)">Topic</span>${ic('down',16,'mu')}</div></div><div class="in ta" style="background:var(--bg);margin-top:10px;min-height:90px;color:var(--ink3)">What's going on?</div><div class="wbtn p" style="margin-top:12px">Send</div></div></div></div>`),{w:1});
+
+add('W','Delete account · web','Google requires a way to delete your account from the web, not just the app. Sign in with the school email code, see what goes away, confirm.',
+wf('onlyswap.app/delete',`${wnav}<div style="height:724px;display:flex;align-items:center;justify-content:center;background:var(--bg2)"><div style="width:520px;background:var(--bg);border-radius:24px;padding:40px">
+<div class="hm">Delete your OnlySwap account</div><p class="bd" style="margin-top:8px">Signed in as wkarim.12@osu.edu</p>
+<div class="dl" style="margin-top:16px">${['Your 3 active listings come down','Open offers are cancelled','Your chats are deleted on your side','Ratings you gave stay up, without your name'].map(x=>`<div>${ic('x',16,'b')}<span>${x}</span></div>`).join('')}</div>
+<p class="mi" style="margin-top:14px;line-height:1.5">Safety records are kept for 180 days, then deleted. You'll get an email when it's done.</p>
+<div class="lbl" style="margin-top:18px">Type DELETE to confirm</div><div class="in f">DELETE<span class="caret" style="margin-left:-8px"></span></div>
+<div class="btn dr" style="margin-top:14px">Delete my account</div></div></div>`),{w:1});
+
+/* ===== 4. location ===== */
+addAfter('X','Camera access','Location access','Asked only when someone picks a meetup spot, never at launch. Rough location is enough, and the screen says so.',
+`<div class="scr">${sb()}${nav('x')}<div class="ct stc"><div class="emptyart" style="background:var(--acc);color:var(--onacc)">${ic('pin',40)}</div>
+<div class="hl" style="margin-top:22px">Find safe spots near you</div><p class="bd" style="margin-top:8px;max-width:290px">We use your rough location to sort meetup spots by distance. It's never shown to anyone and never saved.</p>
+<div class="card" style="margin-top:20px;text-align:left;width:100%"><div class="tips">${['Only while you\'re picking a spot','Approximate is fine, precise isn\'t needed','You can still pick from the list without it'].map(t=>`<div style="font-size:14px">${ic('check',15,'b')}<span>${t}</span></div>`).join('')}</div></div></div>
+${dock(`<div class="btn p">Continue</div><div class="btn t" style="margin-top:2px">Not now</div>`)}</div>`);
+
+addAfter('X','Location access','Location off','If they say no, nothing breaks. Spots show in a plain list, safe-exchange zones first, with a small banner to turn it on later.',
+`<div class="scr">${sb()}${nav('back','Pick a spot')}<div class="ct">
+<div class="card" style="margin-top:6px;display:flex;gap:10px;align-items:center;padding:12px 14px">${ic('pin',18,'mu')}<span class="s" style="flex:1;font-size:13.5px">Location is off, so spots aren't sorted by distance.</span><span class="sm" style="font-weight:700;color:var(--ink)">Turn on</span></div>
+<div class="lbl" style="margin-top:16px">Safe-exchange zones</div><div class="opts" style="margin-top:8px">${[['RPAC safe-exchange zone','Cameras · lit · 24/7',1],['Ohio Union front desk','Staffed until midnight',0],['Campus police lobby','Open 24/7',0]].map(([t,s,o])=>`<div class="op ${o?'on':''}"><span class="rdo ${o?'on':''}"></span><div style="flex:1"><div class="t" style="font-size:15px">${t}</div><div class="s" style="font-size:12.5px">${s}</div></div><span class="tag ac">Safe zone</span></div>`).join('')}</div>
+<div class="lbl" style="margin-top:16px">Other public spots</div><div class="opts" style="margin-top:8px">${[['Thompson Library entrance','Busy during the day'],['18th Ave Library lobby','Open until 2 AM']].map(([t,s])=>`<div class="op"><span class="rdo"></span><div style="flex:1"><div class="t" style="font-size:15px">${t}</div><div class="s" style="font-size:12.5px">${s}</div></div></div>`).join('')}</div></div>
+${dock(`<div class="btn k">Suggest RPAC to Aisha</div>`)}</div>`);
+
+/* ===== 5. sell errors ===== */
+addAfter('D','Sell · details','Sell · fix these','What happens when Next is tapped with problems. Every issue shows at once, next to its field, and the banned-word check explains the rule instead of just blocking.',
+`<div class="scr">${sb()}${nav('back','New listing',stepR('2 of 3'))}<div class="pgb"><i class="on"></i><i class="on"></i><i></i></div>
+<div class="ct" style="padding-top:14px"><div class="ebanner">${ic('alert',18)}<span><b>3 things to fix</b> before you can post</span></div>
+<div class="lbl" style="margin-top:14px">Title</div><div class="in e2">Vape + charger bundle</div><div class="ferr">${ic('info',14)}<span>Vapes aren't allowed on OnlySwap. <u>See banned items</u></span></div>
+<div class="lbl" style="margin-top:14px">Category</div><div class="in e2"><span style="flex:1;color:var(--ink3)">Pick a category</span>${ic('chev',18,'mu')}</div><div class="ferr">${ic('info',14)}<span>Pick one so the right people see it</span></div>
+<div class="lbl" style="margin-top:14px">Condition</div><div class="sg"><div>New</div><div class="on">Like new</div><div>Good</div><div>Fair</div></div>
+<div class="lbl" style="margin-top:14px">Price</div><div class="in e2"><b>$4,500</b></div><div class="ferr">${ic('info',14)}<span>Prices go up to $2,000. For anything more, meet somewhere staffed and bring a friend.</span></div>
+<div class="rw" style="margin:14px 0 0"><span class="t">Open to offers</span><span class="tg on"></span></div></div>
+${dock(`<div class="btn p dis">Next</div>`)}</div>`);
+
+/* ===== 6. offer limit ===== */
+addAfter('B','Make an offer','Offer limit','Hit only by spammers or very keen shoppers. It says when they can offer again and points to Saved, so a real buyer doesn\'t feel punished.',
+withSheet(S.find(s=>s.sec==='B'&&s.name==='Swipe').html,`<div class="stc" style="padding:10px 0 4px"><div class="emptyart">${ic('clock',36)}</div><div class="hm" style="margin-top:16px">That's 10 offers this hour</div>
+<p class="bd" style="margin-top:6px;max-width:300px">To keep things fair for sellers, you can make more at <b style="color:var(--ink)">10:41 AM</b>. Anything you swipe right on until then gets saved for you.</p></div>
+<div class="btn k" style="margin-top:14px">Got it</div><div class="btn t" style="margin-top:2px">See your open offers</div>`));
+
+/* ===== 7. school not found ===== */
+addAfter('A','School email','School not found','When the email domain isn\'t on the campus list. It offers the likely fix (a typo or a different address), then the waitlist, so nobody hits a dead end.',
+`<div class="scr">${sb()}${nav('back')}
+<div class="ct"><div class="hl" style="margin-top:8px">What's your school email?</div>
+<div class="in e2" style="margin-top:24px">${ic('mail',20,'mu')}<span>jlee4@wittenberg.edu</span></div>
+<div class="card" style="margin-top:14px"><div class="t" style="font-size:15px">We don't know this school yet</div><div class="s" style="margin-top:4px">OnlySwap opens one campus at a time. Does your school use a different email, like one for students?</div>
+<div class="grp" style="margin-top:12px;background:var(--bg)"><div class="li"><span class="t" style="flex:1;font-size:15px">Try a different email</span>${ic('chev',16,'mu')}</div><div class="li" style="border:0"><span style="flex:1"><span class="t" style="font-size:15px;display:block">Get Wittenberg on the list</span><span class="s" style="font-size:12.5px">Opens once 500 students join</span></span>${ic('chev',16,'mu')}</div></div></div>
+<p class="mi" style="margin-top:14px;line-height:1.5">Personal emails like Gmail can't be used. Only school addresses prove you're a student.</p></div>
+${dock(`<div class="btn p">Join the waitlist</div>`)}</div>`);
+
+/* ===== 8. emails ===== */
+function email(subj,to,time,body){return `<div class="scr" style="background:#fff;color:#111">${sb()}<div class="nv" style="color:#007AFF;font-size:17px"><span style="display:flex;align-items:center;margin-left:-6px">${ic('back',24)} Inbox</span></div>
+<div class="ct" style="--line:#E6E6E6;--ink2:#6b6b6b;--ink3:#8e8e93;--ink:#111;--bg:#fff"><div style="display:flex;gap:10px;align-items:center;margin-top:6px">${mark(40,'var(--acc)','var(--onacc)')}<div style="flex:1"><div class="t" style="font-size:15px">OnlySwap</div><div class="s" style="font-size:13px">to me · ${time}</div></div></div>
+<div class="hm" style="margin-top:14px;font-size:21px">${subj}</div><div class="mailc"><div style="display:flex;align-items:center;gap:8px;font-size:18px;font-weight:800;letter-spacing:-.05em">${mark(26,'var(--acc)','var(--onacc)')}onlyswap</div>${body}
+<p style="font-size:12px;line-height:1.5;color:#999;margin-top:22px;border-top:1px solid #eee;padding-top:14px">OnlySwap · sent to ${to}. Not affiliated with any university.</p></div></div></div>`}
+const EP=(t,s='')=>`<p style="font-size:15px;line-height:1.55;margin-top:14px;${s}">${t}</p>`;
+add('T','Email · campus open','Sent to everyone on the waitlist the moment their school hits 500. The one email that should feel exciting, so it leads with the number and gets out of the way.',
+email('Michigan is open on OnlySwap','jlee@umich.edu','8:02 AM',`<div style="font-size:44px;font-weight:800;letter-spacing:-.05em;margin-top:18px;line-height:1">500 students.</div>${EP('That\'s the number Michigan needed, and you helped get there. Listings are already going up, and founding sellers get a badge for the first two weeks.')}<div class="btn p" style="margin-top:18px">Open OnlySwap</div>${EP('Your spot was number 213. Thanks for waiting.','font-size:13.5px;color:#6b6b6b')}`));
+add('T','Email · account paused','Short, specific and not scary. The same facts as the in-app screen, so someone who deleted the app still knows what happened.',
+email('Your OnlySwap account is paused until Oct 2','wkarim.12@osu.edu','3:04 PM',`${EP('One of your listings broke the banned items rule (vapes), so your account is paused until <b>Oct 2 at 9:00 AM</b>.')}${EP('You can still read and finish chats you already had open. You can\'t list, offer or post until then.')}<div class="btn k" style="margin-top:18px">Appeal this</div>${EP('If you think we got it wrong, appeals are read by a person, usually within 48 hours.','font-size:13.5px;color:#6b6b6b')}`));
+add('T','Email · re-verify','Once a year, to keep the marketplace students-only. Two weeks of warning, then a reminder, then listings pause until it\'s done.',
+email('Still at Ohio State? Confirm in 10 seconds','wkarim.12@osu.edu','9:15 AM',`${EP('Once a year we check everyone is still a student, so OnlySwap stays students-only.')}<div class="card" style="margin-top:16px;background:#f5f5f3"><div class="t">Confirm by Sep 30</div><div class="s">After that your listings pause until you do.</div></div><div class="btn p" style="margin-top:18px">Confirm I'm still a student</div>${EP('Graduated? Congrats. You can delete your account or keep it until your school email stops working.','font-size:13.5px;color:#6b6b6b')}`));
+add('T','Email · account deleted','The last one. Confirms what was deleted and when, which people often need as proof, and leaves the door open without begging.',
+email('Your OnlySwap account is deleted','wkarim.12@osu.edu','11:40 AM',`${EP('Done. Your account, listings, offers and your side of every chat are gone as of <b>Sep 25, 2026 at 11:38 AM</b>.')}${EP('Safety reports involving your account are kept for 180 days, then deleted too.')}${EP('Didn\'t ask for this? Reply to this email today and we\'ll look into it.','font-size:13.5px;color:#6b6b6b')}`));
+
+/* ===== 9. Play screenshots ===== */
+add('T','Play Store screenshots','Same five ideas as the App Store set, on the Android screens, because Google shows the real device frame and people notice when it\'s an iPhone.',
+`<div class="th shots">${[['Swipe what\'s for sale on your campus','N','Android · Discover'],['See it, ask, make an offer','N','Android · listing'],['Chat once they say yes','N','Android · chat'],['Say it anonymously on the Quad','N','Android · Quad'],['Only verified students. No randoms.','A','School email']].map(([c,s,n])=>`<div class="shot"><h5>${c}</h5>${phmini(s,n,.53)}</div>`).join('')}</div>`,{w:1});
+
+/* ===== 10. photos in chat ===== */
+addAfter('E','Chat','Photos in chat','Optional, your call. If you allow photos, they\'re for item details only. Photos from someone new arrive blurred until tapped, which blocks the worst surprises without reading anyone\'s messages.',
+`<div class="scr">${chat(`<div class="sys">You accepted Aisha's $50 offer · 2:14 PM</div><div class="m th">does it have any scratches on the screen?</div><div class="m me">nope, here's a close up</div>
+<div class="phm" style="${I('mon',500)};background-size:cover;background-position:center"></div>
+<div class="m th">and the back?</div><div class="phm th" style="${I('mon2',500)};background-size:cover"><div class="bl">${ic('eye',22)}<span>Photo from Aisha</span><span style="font-weight:500;opacity:.85">Tap to show</span></div></div>`).replace('<div class="ib f">'+ic('plus',22)+'</div>','<div class="ib f">'+ic('camera',21)+'</div>')}</div>`);
+
+/* ===== 11. admin extras ===== */
+add('G','Admin · team','When you bring on help, like a campus ambassador, they get only what the job needs. Moderators can handle reports on their campus but never reveal an anonymous account.',
+desk('Settings','settings/team',`<div class="mh"><h1>Team</h1><div class="btn k" style="width:auto;padding:0 16px;height:38px;font-size:14px;border-radius:10px">${ic('plus',16)} Invite someone</div></div>
+<div style="display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px">
+<div class="pn" style="padding:4px 8px"><table class="tb2"><tr><th>Person</th><th>Role</th><th>Campus</th><th>2-step</th><th>Last active</th></tr>
+${[['W','Wasif K.','Owner','All','On','now'],['M','Maya R.','Moderator','Ohio State','On','2h'],['J','Jess M.','Moderator','Ohio State','Pending','Invited Sep 24']].map(([i,n,r,c,t,l])=>`<tr><td><span style="display:flex;gap:8px;align-items:center">${av(i,AVC[i],28)}<b style="font-weight:650">${n}</b></span></td><td>${r}</td><td>${c}</td><td><span class="tag ${t==='On'?'gn':'am'}">${t}</span></td><td style="color:var(--ink3)">${l}</td></tr>`).join('')}</table></div>
+<div class="pn"><h3>What each role can do</h3><table class="tb2"><tr><th></th><th>Owner</th><th>Moderator</th></tr>${[['Review reports and appeals','✓','✓'],['Remove listings and posts','✓','✓'],['Suspend for up to 7 days','✓','✓'],['Ban accounts','✓',''],['Reveal an anonymous account','✓',''],['Read reported chats','✓','✓'],['Campus settings, team, metrics','✓','']].map(([a,b,c])=>`<tr><td>${a}</td><td style="text-align:center">${b}</td><td style="text-align:center">${c||'<span style="color:var(--ink3)">·</span>'}</td></tr>`).join('')}</table><div class="mi" style="margin-top:10px">Everything a moderator does lands in the audit log.</div></div></div>`),{w:1});
+
+add('G','Admin · announcement','For the rare message that should reach everyone on a campus: a safe-spot change, a scam going around, move-out week. Limited to one a week so it never turns into marketing.',
+desk('Campuses','campuses/osu/announce',`<div class="mh"><h1>New announcement</h1><div class="dd">Ohio State · 1,284 students ${ic('down',14)}</div></div>
+<div style="display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:14px">
+<div class="pn"><div class="lbl">Type</div><div class="sg" style="width:100%"><div class="on">Safety</div><div>Campus news</div><div>Update</div></div>
+<div class="lbl" style="margin-top:14px">Title</div><div class="in">Heads up: fake payment screenshots</div>
+<div class="lbl" style="margin-top:14px">Message</div><div class="in ta" style="min-height:110px">A few people have been sent fake Venmo screenshots this week. Only hand over an item once the money shows up in your own app.</div><div class="mi" style="text-align:right">142/200</div>
+<div class="rw" style="margin:6px 0 0"><span class="t">Also send as a push notification</span><span class="tg on"></span></div>
+<div class="mi" style="margin-top:10px">Last announcement: Sep 12. Next one allowed after it goes out: Oct 2.</div>
+<div style="display:flex;gap:8px;margin-top:14px"><div class="btn s sm3" style="flex:1">Save draft</div><div class="btn k sm3" style="flex:1">Send to 1,284 students</div></div></div>
+<div class="pn" style="background:linear-gradient(170deg,#6f8aa3 0%,#b5a08a 55%,#e3c9a8 100%)"><h3 style="color:#fff">Preview</h3><div class="push" style="margin-top:6px">${mark(38,'var(--acc)','var(--onacc)')}<div style="flex:1"><div style="display:flex;justify-content:space-between;font-size:14px"><b>Heads up: fake payment screenshots</b><span style="color:#555;font-size:12.5px">now</span></div><div style="font-size:14px;line-height:1.35;color:#222;margin-top:2px">A few people have been sent fake Venmo screenshots this week. Only hand over an item once…</div></div></div>
+<div class="card" style="margin-top:14px"><div class="mi" style="margin:0">In the app it shows as a pinned card at the top of the Campus tab for 3 days.</div></div></div></div>`),{w:1});
+
+add('G','Admin · banned words','The word list behind the listing and Quad checks. Each word says what it does (block, or send to review) and how often it fired, so you can spot the ones catching innocent posts.',
+desk('Settings','settings/words',`<div class="mh"><h1>Banned words</h1><div class="in" style="width:260px;height:38px;font-size:14px;border-radius:10px">${ic('plus',16,'mu')}<span style="color:var(--ink3)">Add a word or phrase</span></div><div class="sg" style="width:300px"><div class="on">All · 142</div><div>Block</div><div>Review</div></div></div>
+<div class="pn" style="padding:4px 8px"><table class="tb2"><tr><th>Word or phrase</th><th>Where</th><th>Action</th><th>Fired (30 days)</th><th>Overturned</th><th></th></tr>
+${[['vape, juul, disposable','Listings','Block','23','0'],['fake id','Everywhere','Block','2','0'],['zelle only, cash app first','Chats (on report)','Review','9','1'],['adderall, addy','Everywhere','Block','6','0'],['essay, do your homework','Listings','Review','14','5',1],['parking pass','Listings','Review','11','8',1],['beer, alcohol','Listings','Block','4','0']].map(([w,p,a,f,o,hl])=>`<tr><td style="font-weight:650">${w}</td><td>${p}</td><td><span class="tag ${a==='Block'?'rd':'am'}">${a}</span></td><td>${f}</td><td style="${hl?'color:var(--amber);font-weight:700':''}">${o}${hl?' · check this':''}</td><td>${ic('edit',16,'mu')}</td></tr>`).join('')}</table></div>
+<div class="mi" style="margin-top:10px">Chats are only checked when someone reports them. Nobody's private messages are scanned.</div>`),{w:1});
+
+/* ===== 12. settings extras ===== */
+(function(){const s=S.find(x=>x.sec==='F'&&x.name==='Settings');let h=s.html;const i=h.indexOf('>Notifications</div>');const st=h.lastIndexOf('<div class="lbl"',i);const en=h.indexOf('<div class="lbl"',i+5);
+h=h.slice(0,st)+grpS('',[['Notifications','']])+h.slice(en);
+h=h.replace('<div class="grp" style="margin-top:16px"><div class="li">','<div class="grp" style="margin-top:16px"><div class="li"><span class="t" style="flex:1;font-size:15px">Download your data</span>'+ic('chev',16,'mu')+'</div><div class="li"><span class="t" style="flex:1;font-size:15px">About OnlySwap</span><span class="s">1.0.4</span>'+ic('chev',16,'mu')+'</div><div class="li">');s.html=h})();
+addAfter('F','Delete account','Download your data','A copy of everything tied to the account, sent as a link to the school email. Required in some states, and it builds trust everywhere else.',
+`<div class="scr">${sb()}${nav('back','Your data')}<div class="ct"><div class="hl" style="margin-top:6px">Get a copy of your data</div><p class="bd" style="margin-top:8px">We'll put it in one file and email a download link to wkarim.12@osu.edu. It usually takes a few minutes, at most 48 hours.</p>
+<div class="lbl" style="margin-top:18px">What's included</div><div class="tips" style="margin-top:8px">${['Your profile and school email','Every listing, with photos','Offers you made and got','Your messages','Ratings you gave and got','Quad posts and replies (only you can see they\'re yours)'].map(t=>`<div style="font-size:14.5px">${ic('check',15,'b')}<span>${t}</span></div>`).join('')}</div>
+<p class="mi" style="margin-top:16px;line-height:1.5">The link works for 7 days. For your safety, it only opens after you enter a code we send to the same email.</p></div>
+${dock(`<div class="btn k">Email me my data</div>`)}</div>`);
+addAfter('F','Download your data','About','The quiet screen developers always forget: version, the legal links, open-source licenses and a way to reach you.',
+`<div class="scr">${sb()}${nav('back','About')}<div class="ct"><div class="stc" style="padding:20px 0 6px">${mark(76,'var(--acc)','var(--onacc)')}<div class="hm" style="margin-top:14px">OnlySwap</div><div class="mi">Version 1.0.4 (212)</div></div>
+${grpS('',[['Terms of service',''],['Privacy policy',''],['Community rules',''],['Open-source licenses','']])}
+${grpS('',[['Contact support','help@onlyswap.app'],['Rate OnlySwap','']])}
+<p class="mi" style="text-align:center;margin-top:22px;line-height:1.5">Made by a student in Ohio.<br>Not affiliated with or endorsed by any university.</p></div></div>`);
+
+/* ===== fix flow map node ===== */
+(function(){const s=S.find(x=>x.sec==='H'&&x.name==='Flow map');if(s)s.html=s.html.replace('>Pick school<','>School detected<').replace('>Waitlist (school not open)<','>School not found / waitlist<')})();
+
+/* ===== checklist round 3 ===== */
+const CK3=[['Missing pieces',[['Report a listing','Options menu and report sheet','B'],['Appeal form','What "Appeal this" opens','X'],['School not found','Unknown email domain','A'],['Location access','Ask, and the no-location fallback','X'],['Sell form errors','All problems at once','D'],['Offer limit','10 an hour, explained','B']]],
+['Web, email and store',[['Privacy policy page','Store-required link','W'],['Support page','Store-required link','W'],['Delete account on web','Google requirement','W'],['4 more emails','Campus open, paused, re-verify, deleted','T'],['Play Store screenshots','Android frames','T']]],
+['Extras',[['Photos in chat','Optional, blurred until tapped','E'],['Admin team and roles','Moderators with limits','G'],['Campus announcement','One a week, max','G'],['Banned words','With false-alarm tracking','G'],['Download your data','From Settings','F'],['About','Version, legal, licenses','F']]]];
+add('K','Third audit','The last sweep: buttons that pointed nowhere, pages the stores ask for, and the extras. All designed.',
+`<div class="th ck">${CK3.map(([h,items])=>`<div><h4>${h} · ${items.length}/${items.length} done</h4>${items.map(([t,s,sec])=>`<div class="cki"><span class="bx">${ic('check',15,'b')}</span><div style="flex:1"><b>${t}</b><span>${s}</span></div><span class="tag gy">${sec}</span></div>`).join('')}</div>`).join('')}</div>`,{w:1});
+</script>

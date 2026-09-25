@@ -1,0 +1,98 @@
+<style>
+body[data-theme=night] .ab.o{background:var(--acc)}
+.home{position:absolute;inset:0;background:linear-gradient(165deg,#5d7a92 0%,#a8927c 60%,#dcc3a2 100%);color:#fff}
+.wg{background:rgba(255,255,255,.94);color:#111;border-radius:22px;padding:14px;box-shadow:0 8px 24px -10px rgba(0,0,0,.35)}
+.wg.dk2{background:#141415;color:#fff}
+.apps{display:grid;grid-template-columns:repeat(4,1fr);gap:18px 0;justify-items:center;padding:0 22px}
+.apps div{display:flex;flex-direction:column;align-items:center;gap:5px;font-size:11.5px;font-weight:500}
+.apps i{width:60px;height:60px;border-radius:15px;display:block;background:rgba(255,255,255,.28)}
+.lwg{width:72px;height:72px;border-radius:36px;background:rgba(255,255,255,.18);backdrop-filter:blur(12px);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;line-height:1.1}
+.ipad{width:1180px;height:820px;border-radius:38px;background:var(--bg);color:var(--ink);box-shadow:0 0 0 12px #111,0 40px 80px -30px rgba(0,0,0,.4);overflow:hidden;display:grid;grid-template-columns:230px 1fr;margin:12px}
+.ipad aside{background:var(--bg2);padding:26px 14px}
+.ipad aside .an{display:flex;gap:10px;align-items:center;padding:11px 12px;border-radius:12px;font-weight:600;font-size:15px;color:var(--ink2)}
+.ipad aside .an.on{background:var(--bg);color:var(--ink)}
+.igrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.igrid .c .p{height:170px;border-radius:16px;background-size:cover;background-position:center}
+.storyb{width:1380px;background:var(--bg);color:var(--ink);border-radius:24px;padding:28px;box-shadow:0 0 0 1px rgba(0,0,0,.08)}
+.sbrow{display:flex;gap:16px;margin-top:18px}
+.sbf{width:205px;flex:none}
+.sbf .shot{width:205px;height:444px}
+.sbf .tc{font-size:12px;font-weight:700;color:var(--ink3);margin-top:10px}
+.sbf .ds{font-size:13.5px;line-height:1.4;margin-top:3px}
+.loc{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.loc div{background:var(--bg2);border-radius:12px;padding:10px 12px;font-size:14px}
+.loc b{display:block;font-size:11px;color:var(--ink3);font-weight:700;margin-bottom:3px}
+.dec{width:1380px;background:var(--bg);color:var(--ink);border-radius:24px;padding:30px;box-shadow:0 0 0 1px rgba(0,0,0,.08);display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.dec .bx2{border:1px solid var(--line);border-radius:18px;padding:18px}
+.dec h4{font-size:16px;font-weight:750;letter-spacing:-.02em}
+.dec .sub{font-size:13.5px;color:var(--ink2);margin-top:3px;line-height:1.45}
+.csw{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.csw button{border:0;border-radius:12px;padding:0;width:64px;cursor:pointer;background:none;font:600 12px/1.2 inherit;color:var(--ink2);text-align:center}
+.csw button i{display:block;height:48px;border-radius:12px;margin-bottom:5px;box-shadow:inset 0 0 0 1px rgba(128,128,128,.35)}
+.lgb{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.lgb button{border:1px solid var(--line);background:var(--bg);border-radius:14px;padding:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;font:600 12px inherit;color:var(--ink);width:92px}
+.lgb button span{width:44px;height:44px;border-radius:12px;background:var(--acc);color:var(--onacc);display:flex;align-items:center;justify-content:center}
+.lgb button svg{width:28px;height:28px}
+.ch2{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.ch2 span{border:1.5px solid var(--line2);border-radius:12px;padding:9px 12px;font-size:13.5px;font-weight:600;line-height:1.3}
+.ch2 span.rec{border-color:var(--ink)}
+.ch2 span small{display:block;font-weight:500;color:var(--ink3);font-size:12px}
+</style>
+<script>
+/* ===== widgets ===== */
+add('X','Home screen widgets','Optional, after launch. A medium widget shows what\'s new on campus, a small one counts down to your next meetup. Both open straight to the right screen.',
+`<div class="home">${sb()}<div style="padding:14px 18px 0;display:grid;grid-template-columns:1fr;gap:14px">
+<div class="wg"><div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700">${mark(20,'var(--acc)','var(--onacc)')}New at Ohio State<span style="margin-left:auto;color:#888;font-weight:500">12 today</span></div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px">${[['fridge','$40','Mini fridge'],['bike','$120','Trek bike'],['chair','$30','Desk chair']].map(([k,p,t])=>`<div><div style="height:74px;border-radius:12px;${I(k,300)};background-size:cover;background-position:center"></div><div style="font-size:13px;font-weight:800;margin-top:5px">${p}</div><div style="font-size:11.5px;color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t}</div></div>`).join('')}</div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px"><div class="wg dk2" style="height:150px;display:flex;flex-direction:column"><div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;opacity:.75">${mark(18,'var(--acc)','var(--onacc)')}Meetup</div><div style="font-size:34px;font-weight:800;letter-spacing:-.04em;color:var(--acc);margin-top:auto">4:30</div><div style="font-size:13px;font-weight:650">Aisha · RPAC</div><div style="font-size:11.5px;opacity:.65">Dell monitor · $50</div></div>
+<div class="wg" style="height:150px;display:flex;flex-direction:column"><div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#666">${mark(18,'var(--acc)','var(--onacc)')}Selling</div><div style="font-size:34px;font-weight:800;letter-spacing:-.04em;margin-top:auto">2</div><div style="font-size:13px;font-weight:650">new offers</div><div style="font-size:11.5px;color:#888">on your monitor</div></div></div></div>
+<div class="apps" style="margin-top:22px">${['Messages','Calendar','Photos','Camera','Maps','Canvas','Spotify','Notes'].map(n=>`<div><i></i>${n}</div>`).join('')}</div></div>`,{hi:'l'});
+
+add('X','Lock screen widgets','Small circles under the clock: meetup time and unread offers. Glanceable enough that people check them instead of opening the app.',
+`<div class="lock">${sb()}<div class="lclock"><div class="d">Friday, September 25</div><div class="t2">9:41</div></div>
+<div style="display:flex;gap:14px;justify-content:center;margin-top:10px"><div class="lwg"><span style="font-size:10px;opacity:.8">MEET</span><span style="font-size:17px">4:30</span></div><div class="lwg"><span style="font-size:10px;opacity:.8">OFFERS</span><span style="font-size:20px">2</span></div>
+<div style="height:72px;border-radius:20px;background:rgba(255,255,255,.18);backdrop-filter:blur(12px);padding:10px 14px;display:flex;flex-direction:column;justify-content:center;width:150px"><span style="font-size:11px;opacity:.8;font-weight:600">Next meetup</span><b style="font-size:15px">Aisha · RPAC</b><span style="font-size:12px;opacity:.8">in 4 hr 49 min</span></div></div>
+<div style="position:absolute;left:44px;bottom:40px;width:50px;height:50px;border-radius:25px;background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center">${ic('bell',22)}</div><div style="position:absolute;right:44px;bottom:40px;width:50px;height:50px;border-radius:25px;background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center">${ic('camera',22)}</div></div>`,{hi:'l'});
+
+/* ===== iPad ===== */
+const iside=a=>`<aside><div style="display:flex;align-items:center;gap:8px;font-size:21px;font-weight:800;letter-spacing:-.05em;padding:0 10px 20px">${mark(30,'var(--acc)','var(--onacc)')}onlyswap</div>${[['cards','Discover'],['quad','Quad'],['plussq','Sell'],['chat','Inbox'],['user','Profile']].map(([i,l])=>`<div class="an ${l===a?'on':''}">${ic(i,20)}${l}</div>`).join('')}<div class="card" style="margin-top:22px;background:var(--bg);padding:12px"><div class="mi" style="margin:0">Ohio State</div><div class="t" style="font-size:14px">1,284 students</div></div></aside>`;
+add('N','iPad · browse','If iPad ships, swiping gives way to a grid, since big screens are for comparing. Sidebar instead of a tab bar, filters always visible.',
+`<div class="th ipad">${iside('Discover')}<div style="padding:26px 30px;overflow:hidden"><div style="display:flex;align-items:center;gap:12px"><div class="hl" style="margin:0">What's new</div><div class="in" style="margin-left:auto;width:320px;height:42px;font-size:15px">${ic('search',18,'mu')}<span style="color:var(--ink3)">Search Ohio State</span></div></div>
+<div class="chips" style="margin-top:14px">${['All','Furniture','Tech','Textbooks','Kitchen','Free'].map((c,i)=>`<span class="ch ${i?'':'on'}">${c}</span>`).join('')}</div>
+<div class="igrid" style="margin-top:18px">${[['fridge','$40','Mini fridge, 3.1 cu ft','Baker Hall'],['bike','$120','Trek city bike','Morrill'],['chair','$30','Desk chair','Lincoln'],['mon','$60','Dell 24" monitor','Park-Stradley'],['books','$25','CHEM 1210 books','Thompson'],['lamp','$12','Desk lamp','Taylor']].map(([k,p,t,w])=>`<div class="c"><div class="p" style="${I(k,500)}"></div><div style="display:flex;gap:8px;align-items:baseline;margin-top:8px"><b style="font-size:18px;font-weight:800">${p}</b><span class="t" style="font-size:14.5px">${t}</span></div><div class="mi" style="margin:2px 0 0">${w} · 1h ago</div></div>`).join('')}</div></div></div>`,{w:1});
+
+add('N','iPad · inbox','Two panes, the way Messages works on iPad: conversations on the left, the chat and meetup card on the right.',
+`<div class="th ipad">${iside('Inbox')}<div style="display:grid;grid-template-columns:330px 1fr;height:820px"><div style="border-right:1px solid var(--line);padding:26px 16px"><div class="hl" style="margin:0 0 14px 6px">Inbox</div>
+${[['A','Aisha K.','Dell monitor · meetup 4:30',1],['L','Leo M.','Trek bike · can you do $95?'],['G','Grace T.','Textbooks · thanks!'],['D','Devin P.','Mini fridge · offer accepted']].map(([i,n,s,on])=>`<div style="display:flex;gap:10px;align-items:center;padding:12px 10px;border-radius:14px;${on?'background:var(--bg2)':''}">${av(i,AVC[i],42)}<div style="flex:1;min-width:0"><div class="t" style="font-size:15px">${n}</div><div class="s" style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s}</div></div></div>`).join('')}</div>
+<div class="scr" style="position:relative;height:820px">${chat(CHAT_A).replace(sb(),"<div style=\"height:18px\"></div>")}</div></div></div>`,{w:1});
+
+/* ===== languages ===== */
+add('N','Spanish','Every string lives in one file, so a new language is a translation, not a redesign. Spanish runs about 25% longer, which is why buttons never have fixed widths.',
+S.find(s=>s.sec==='B'&&s.name==='Swipe').html.split('>Discover<').join('>Descubrir<').split('>Sell<').join('>Vender<').split('>Inbox<').join('>Mensajes<').split('>Profile<').join('>Perfil<').split('>Swipe<').join('>Deslizar<').split('3 people saved this').join('3 personas lo guardaron').split('Good condition').join('Buen estado').split('12m ago').join('hace 12 min').split('swaps').join('intercambios').split('Mini fridge, 3.1 cu ft').join('Minirefrigerador, 88 L'));
+
+add('H','Languages','What has to be true before a second language: no text baked into images, room for longer words, and dates, prices and plurals formatted by the phone, not by hand.',
+`<div class="th ho"><h3>Languages and regions</h3><p class="sub">Launch in English. Spanish is the likely second, given how many US students use it daily.</p>
+<h4>Same button, three languages</h4><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">${[['English','Make an offer','3 offers'],['Español','Hacer una oferta','3 ofertas'],['Deutsch (longest case)','Ein Angebot machen','3 Angebote']].map(([l,b,c])=>`<div><div class="mi" style="margin:0 0 6px">${l}</div><div class="btn p">${b}</div><div class="mi" style="margin-top:6px">${c}</div></div>`).join('')}</div>
+<h4>Let the phone format it</h4><div class="loc"><div><b>Price</b>$40 · 40 US$</div><div><b>Date</b>Sep 25 · 25 sept</div><div><b>Time</b>4:30 PM · 16:30</div><div><b>Plurals</b>1 offer · 2 offers</div><div><b>Distance</b>0.3 mi · 0,5 km</div><div><b>Relative time</b>12m ago · hace 12 min</div></div>
+<h4>Rules</h4><div class="tips">${['No words inside images or screenshots, except the store screenshots made per language','Buttons and tags grow with their text, never a fixed width','Layouts mirror for right-to-left languages, icons with direction flip too','User posts are never auto-translated, a "Translate" link is offered instead'].map(t=>`<div style="font-size:14px">${ic('check',15,'b')}<span>${t}</span></div>`).join('')}</div></div>`,{w:1});
+
+/* ===== app preview video ===== */
+add('T','App preview video','A 25-second storyboard for the App Store video, which autoplays muted, so every beat reads without sound. Record it straight from the real app, no fake UI.',
+`<div class="th storyb"><h3 style="font-size:22px;font-weight:800;letter-spacing:-.03em">App preview · 25 seconds · no voice-over</h3><p class="sub" style="font-size:14.5px;color:var(--ink2);margin-top:4px">Captions sit in the top third so they don't cover the action. Music is optional, the story works muted.</p>
+<div class="sbrow">${[['0:00','Only students at your school','Verify with the school email, code autofills','A','School email'],['0:04','Swipe what\'s for sale','Two quick swipes, then a right swipe on the fridge','B','Swipe'],['0:09','Make an offer','Pick $35, tap send, the card flies away','B','Make an offer'],['0:13','They say yes, you chat','Accepted, chat opens with the meetup card','E','Chat'],['0:18','Meet somewhere safe','Map with the RPAC zone, "I\'m here" tap','E','Meetup day'],['0:22','OnlySwap','Logo, "Free on the App Store"','A','Launch']].map(([t,c,d,s,n])=>`<div class="sbf"><div class="shot"><h5 style="font-size:19px;padding:20px 18px 0">${c}</h5>${phmini(s,n,.43)}</div><div class="tc">${t}</div><div class="ds">${d}</div></div>`).join('')}</div></div>`,{w:1});
+
+/* ===== decisions board ===== */
+const THM=[['pistachio','#C8E27D','Pistachio'],['butter','#FFD95A','Butter'],['tangerine','#FF9A4D','Tangerine'],['coral','#FF7B67','Coral'],['bubblegum','#FFA3D1','Bubblegum'],['sky','#7CC0FF','Sky'],['cobalt','#2B45E8','Cobalt'],['night','#0C0C0D','Night']];
+const decHTML=`<div class="th dec">
+<div class="bx2"><h4>1 · Accent color</h4><div class="sub">Tap one and the whole file changes. The pick becomes <code>--acc</code> in the code.</div><div class="csw">${THM.map(([k,c,n])=>`<button onclick="document.querySelector('#theme button[data-t=${k}]').click()"><i style="background:${c}"></i>${n}</button>`).join('')}</div></div>
+<div class="bx2"><h4>2 · Logo</h4><div class="sub">Tap to swap it everywhere, including the icon sheet and store assets.</div><div class="lgb">${LOGOC.map(([k,n])=>`<button onclick="setLogo('${k}')"><span><svg viewBox="0 0 100 100" style="--cut:var(--acc)">${LOGO[k]}</svg></span>${n}</button>`).join('')}</div></div>
+<div class="bx2"><h4>3 · Photos in chat</h4><div class="sub">Helps buyers check condition, adds some moderation risk.</div><div class="ch2"><span class="rec">Yes, blurred from new people<small>Designed (E · Photos in chat)</small></span><span>No photos at launch<small>Composer keeps the calendar only</small></span></div></div>
+<div class="bx2"><h4>4 · Age policy</h4><div class="sub">Some first-years are 17. Affects the store age rating and privacy law exposure. Worth a quick word with a lawyer.</div><div class="ch2"><span>18+ with a birthday step<small>Adds one sign-up screen</small></span><span>Students only, no age check<small>Current design</small></span></div></div>
+<div class="bx2"><h4>5 · Devices at launch</h4><div class="sub">iPad and Android layouts exist, but each doubles testing.</div><div class="ch2"><span class="rec">iPhone + Android phones<small>Expo builds both</small></span><span>iPhone only first<small>Fastest to ship</small></span><span>Add iPad<small>Grid layout ready (N)</small></span></div></div>
+<div class="bx2"><h4>6 · Before launch, off the screen</h4><div class="sub">Not design work, but they block the store submission.</div><div class="tips" style="margin-top:10px">${['Trademark search on "OnlySwap"','Buy the domain and the @onlyswap handles','Walk the safe-exchange spots with campus police','Write the real Terms and Privacy text (the layouts are ready)','Set up help@onlyswap.app'].map(t=>`<div style="font-size:14px"><span style="width:16px;height:16px;border-radius:5px;border:1.5px solid var(--line2);flex:none;margin-top:2px"></span><span>${t}</span></div>`).join('')}</div></div></div>`;
+const ki=S.findIndex(s=>s.sec==='K');S.splice(ki,0,{sec:'K',name:'Decisions',note:'Everything that\'s still your call, on one board. The color and logo buttons work: tap one and the whole file updates.',html:decHTML,o:{w:1}});
+
+/* ===== checklist round 4 ===== */
+add('K','Fourth pass','The after-launch extras, plus a board for the decisions still open.',
+`<div class="th ck">${[['Extras',[['Home screen widgets','Medium and small','X'],['Lock screen widgets','Meetup and offers','X'],['App preview video','25-second storyboard','T']]],['More devices',[['iPad browse','Grid instead of swiping','N'],['iPad inbox','Two panes','N']]],['Languages',[['Spanish screen','Real strings, longer text','N'],['Language rules','Formats, expansion, RTL','H'],['Decisions board','Color, logo and the open calls','K']]]].map(([h,items])=>`<div><h4>${h} · ${items.length}/${items.length} done</h4>${items.map(([t,s,sec])=>`<div class="cki"><span class="bx">${ic('check',15,'b')}</span><div style="flex:1"><b>${t}</b><span>${s}</span></div><span class="tag gy">${sec}</span></div>`).join('')}</div>`).join('')}</div>`,{w:1});
+</script>

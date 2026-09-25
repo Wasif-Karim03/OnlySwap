@@ -1,0 +1,94 @@
+<style>
+.wapp{height:900px;display:flex;flex-direction:column}
+.wtop{height:72px;display:flex;align-items:center;gap:18px;padding:0 28px;border-bottom:1px solid var(--line);flex:none}
+.wbody{flex:1;display:flex;min-height:0}
+.wside{width:248px;flex:none;border-right:1px solid var(--line);padding:18px 14px;display:flex;flex-direction:column;gap:2px}
+.wside .an{font-size:15px;padding:10px 12px}
+.wside .an.on{background:var(--bg2);box-shadow:none}
+.wmain{flex:1;min-width:0;overflow:hidden;padding:30px 36px}
+.whd{display:flex;align-items:flex-end;gap:14px}
+.whd h1{font-size:34px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.catrow{display:flex;gap:8px;margin-top:22px;flex-wrap:nowrap;overflow:hidden}
+.catrow .ch{height:40px;padding:0 16px;font-size:14.5px}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:26px 18px;margin-top:24px}
+.g5 .gi{border-radius:18px}
+.offerbox{border:1px solid var(--line);border-radius:24px;padding:24px;box-shadow:0 12px 32px -18px rgba(0,0,0,.25)}
+.amtin{height:64px;border-radius:16px;box-shadow:inset 0 0 0 2px var(--ink);display:flex;align-items:center;padding:0 18px;font-size:30px;font-weight:800;letter-spacing:-.04em;margin-top:10px}
+.gthumbs{display:flex;flex-direction:column;gap:10px}
+.gthumbs .im{width:76px;height:76px;border-radius:12px}
+.pane{border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.drop{border:2px dashed var(--line2);border-radius:20px;padding:22px;display:flex;gap:12px;align-items:center}
+.drop .im{width:96px;height:96px;border-radius:14px;flex:none;position:relative}
+.wlogin{display:grid;grid-template-columns:1fr 1fr;height:860px}
+</style>
+<script>
+function wapp(active,url,main){const nv=[['cards','Browse'],['quad','The Quad'],['chat','Inbox','2'],['bookmark','Saved'],['tag','My listings'],['shield','Safety']];
+return wf(url,`<div class="wapp"><div class="wtop">${WL(34)}<div class="in" style="width:520px;height:46px;font-size:15.5px;margin-left:40px">${ic('search',19,'mu')}<span style="color:var(--ink3)">Search Ohio State</span><span class="mi" style="margin-left:auto;border:1px solid var(--line2);border-radius:6px;padding:1px 6px">/</span></div>
+<div style="margin-left:auto;display:flex;align-items:center;gap:8px"><div class="dd" style="height:42px">${ic('building',16)} Ohio State ${ic('down',14)}</div><div class="ib">${ic('bell',22)}</div><div class="wbtn p" style="height:42px">${ic('plus',18,'b')} Sell</div>${av('W',AVC.W,38)}</div></div>
+<div class="wbody"><aside class="wside">${nv.map(([i,l,c])=>`<div class="an ${l===active?'on':''}">${ic(i,20)}${l}${c?`<span class="cn">${c}</span>`:''}</div>`).join('')}
+<div style="margin-top:auto" class="card"><div class="t" style="font-size:14px">Ohio State</div><div class="s" style="font-size:12.5px">214 live listings · 1,284 students</div><div class="wbtn s" style="height:36px;font-size:13.5px;margin-top:10px;background:var(--bg);width:100%;justify-content:center">Invite classmates</div></div></aside>
+<main class="wmain">${main}</main></div></div>`)}
+
+add('W','Web login','Same no-password flow as the app: school email, then a 6-digit code. The left side keeps showing real listings so the page is never just a form.',
+wf('onlyswap.app/login',`<div class="wlogin"><div class="im" style="${I('camp2',1200)};position:relative"><div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,0) 30%,rgba(0,0,0,0) 60%,rgba(0,0,0,.55))"></div>
+<div style="position:absolute;left:44px;top:40px;color:#fff">${WL(36)}</div>
+<div class="fl" style="left:44px;top:330px">${mini('fridge','Mini fridge','$40','Baker Hall')}</div><div class="fl" style="left:180px;top:410px">${mini('books','CHEM 1210 books','$25','Thompson')}</div><div class="fl" style="left:90px;top:490px">${mini('lamp','Desk lamp','$12','Lincoln Tower')}</div>
+<div style="position:absolute;left:44px;right:44px;bottom:44px;color:#fff;font-size:30px;font-weight:800;letter-spacing:-.04em;line-height:1.1">214 things for sale at Ohio State right now.</div></div>
+<div style="display:flex;align-items:center;justify-content:center"><div style="width:400px">
+<div class="hl" style="font-size:36px">Check your email</div><p class="bd" style="margin-top:10px;font-size:16px">We sent a 6-digit code to <b style="color:var(--ink)">wkarim.12@osu.edu</b></p>
+<div class="code" style="margin-top:28px">${['4','8','1','','',''].map((d,i)=>`<div class="cd ${i===3?'f':''}" style="height:64px">${d}${i===3?'<span class="caret"></span>':''}</div>`).join('')}</div>
+<div class="wbtn p" style="width:100%;justify-content:center;height:56px;margin-top:22px;font-size:16px;opacity:.45">Continue</div>
+<div class="sm" style="margin-top:18px">Nothing yet? Check spam, or resend in <b style="color:var(--ink)">0:42</b></div>
+<div class="sm" style="margin-top:6px"><u style="color:var(--ink)">Use a different email</u></div>
+<div style="margin-top:40px;padding-top:20px;border-top:1px solid var(--line)" class="mi">New here? Same steps. We'll create your account after the code.</div></div></div></div>`),{w:1});
+
+add('W','Web · browse','The signed-in web app, for students on a laptop. Grid instead of swipe (swiping is a thumb thing), categories one click away, and the same offer-first rules as the app.',
+wapp('Browse','onlyswap.app/osu',`<div class="whd"><div><h1>Browse</h1><div class="sm" style="margin-top:8px">214 listings at Ohio State · 38 new today</div></div><div style="margin-left:auto;display:flex;gap:10px"><div class="dd">${ic('sliders',16)} Filters</div><div class="dd">Newest ${ic('down',14)}</div></div></div>
+<div class="catrow">${[['All',1],['Dorm & furniture'],['Textbooks'],['Tech'],['Clothes & shoes'],['Kitchen'],['Bikes'],['Free stuff'],['Music']].map(([c,o])=>`<span class="ch ${o?'on':''}">${c}</span>`).join('')}</div>
+<div class="promo" style="margin-top:22px;padding:18px 22px;border-radius:20px"><span class="fic" style="background:var(--onacc);color:var(--acc);width:44px;height:44px">${ic('gift',22)}</span><div style="flex:1"><div class="t" style="font-size:16px">Moving out soon?</div><div class="s">List your whole room in one go. Giveaways count too.</div></div><div class="btn" style="width:auto;height:42px;padding:0 18px;font-size:14.5px;border-radius:12px">Start listing</div></div>
+<div class="g5">${[...LIST,...LIST.slice(0,5)].slice(0,10).map(([k,p,t,m])=>gcard(k,p,t,m,p==='Free'?'<span class="tag ac pt2">Free</span>':'')).join('')}</div>`),{w:1});
+
+add('W','Web · listing','Everything from the app\'s listing and offer sheet on one screen. The offer panel stays put while you scroll, and it keeps the preset notes, so there\'s still no free-text first message.',
+wapp('Browse','onlyswap.app/l/k3f9',`<div class="sm" style="display:flex;gap:6px;align-items:center">Browse ${ic('chev',13)} Appliances ${ic('chev',13)} <span style="color:var(--ink)">Mini fridge</span></div>
+<div style="display:grid;grid-template-columns:1fr 400px;gap:36px;margin-top:18px">
+<div><div style="display:flex;gap:12px"><div class="gthumbs">${['fridge','fridge2','fridge','fridge2'].map((k,i)=>`<div class="im" style="${I(k,200)};${i?'opacity:.55':'box-shadow:0 0 0 2.5px var(--ink)'}"></div>`).join('')}</div><div class="im" style="flex:1;height:470px;border-radius:24px;${I('fridge',1100)};position:relative"><span class="cnt" style="font-size:13px">1 / 4</span></div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:26px"><div><div class="hs">About this item</div><p class="bd" style="margin-top:8px;color:var(--ink)">Galanz, small freezer on top. Moving into an apartment with a real kitchen so it has to go. Little dent on the left side (photo 3). It's heavy, bring a friend.</p>
+<div class="kv"><div><span>Condition</span><b>Good</b></div><div><span>Brand</span><b>Galanz</b></div><div><span>Posted</span><b>12 min ago · 18 views</b></div></div></div>
+<div><div class="hs">Pickup</div>${map(170,[[52,55]],'RPAC safe-exchange zone · 4 min')}</div></div></div>
+<div><div class="offerbox"><div class="rw" style="margin:0"><span class="tag gy">Good condition</span><div style="display:flex;gap:2px"><div class="ib">${ic('share',20)}</div><div class="ib">${ic('bookmark',20)}</div></div></div>
+<div style="font-size:44px;font-weight:800;letter-spacing:-.05em;margin-top:6px">$40</div><div class="hs" style="font-size:19px">Mini fridge, 3.1 cu ft</div>
+<div class="lbl" style="margin-top:20px">Your offer</div><div class="amtin">$35<span class="caret" style="height:30px;margin-left:3px"></span></div>
+<div class="chips" style="margin-top:10px"><span class="ch sm2">$30</span><span class="ch sm2 on">$35</span><span class="ch sm2">$40 · full</span></div>
+<div class="lbl" style="margin-top:16px">Quick note</div><div class="chips"><span class="ch sm2 on">Can pick up today</span><span class="ch sm2">Can meet at RPAC</span><span class="ch sm2">Bringing a friend</span></div>
+<div class="btn p" style="margin-top:18px">Send offer</div><div class="mi" style="margin-top:10px;text-align:center">Devin sees your offer first. A chat opens if they accept.</div></div>
+<div class="bcard" style="margin-top:14px">${av('D',AVC.D,46)}<div style="flex:1"><div class="t">Devin P. <span class="vf">${ic('shield',14,'b')} Verified</span></div><div class="s">9 swaps · 9/9 thumbs up · replies in ~1h</div></div>${ic('chev',18,'mu')}</div></div></div>`),{w:1});
+
+add('W','Web · inbox','Three panes, the way messaging works on a laptop: conversations, the chat, and the deal itself. Meetup, mark sold and report are always in reach on the right.',
+wapp('Inbox','onlyswap.app/inbox/aisha',`<div style="display:grid;grid-template-columns:320px 1fr 320px;height:calc(100% + 60px);margin:-30px -36px;min-height:0">
+<div class="pane" style="padding:22px 18px"><div class="hm">Inbox</div><div class="sg" style="margin-top:14px"><div>Offers<span class="dot2">2</span></div><div class="on">Chats</div></div>
+<div style="margin-top:6px">${chatRow('A','mon','Aisha K.','Monitor','see you there, I\'ll be in a grey hoodie','2m',1).replace('class="li"','class="li" style="background:var(--bg2);margin:0 -10px;padding:12px 10px;border-radius:14px;border:0"')}${chatRow('L','bike','Leo M.','Bike','cool, tomorrow at 6 works','1h',1)}${chatRow('M','lamp','Maya R.','Desk lamp','You: thanks! works great','Tue')}${chatRow('G','books','Grace T.','Textbooks','good luck with orgo lol','Sep 14')}</div></div>
+<div class="pane" style="position:relative">${chat(CHAT_A).replace(sb(),'').replace('<div class="ib" style="margin-left:-8px">'+ic('back',22)+'</div>','')}</div>
+<div class="pane" style="border:0;padding:22px 20px;gap:14px;overflow:hidden"><div class="hs">Deal</div>
+<div class="prev" style="margin:0">${thumb('mon',56)}<div><div class="t">Dell 24" monitor</div><div class="s">$50 accepted · asked $60</div></div></div>
+<div class="mc" style="margin:0">${MEET.replace('<div style="display:flex;gap:8px;margin-top:10px"><div class="btn s sm3">Directions</div><div class="btn s sm3">Change</div></div>','')}</div>
+${map(130,[[52,55]],'RPAC · 4 min')}
+<div class="btn p" style="height:48px;font-size:15.5px">${ic('check',18,'b')} Mark as sold</div>
+<div class="hint">${ic('shield',16)}<span>Check it turns on before paying. Never share a code sent to your phone.</span></div>
+<div class="sm" style="margin-top:auto;display:flex;gap:6px;align-items:center;color:var(--red);font-weight:600">${ic('flag',16)} Report or block Aisha</div></div></div>`),{w:1});
+
+add('W','Web · sell','Listing from a laptop is faster with a real keyboard and photos already on the computer. Drag and drop, with a live preview of exactly what buyers will see.',
+wapp('My listings','onlyswap.app/sell',`<div class="whd"><h1>New listing</h1><span class="sm" style="margin-left:8px">Draft saved · just now</span></div>
+<div style="display:grid;grid-template-columns:1fr 360px;gap:36px;margin-top:24px">
+<div><div class="drop">${['mon','mon2'].map((k,i)=>`<div class="im" style="${I(k,300)}">${i==0?'<span class="tag ink" style="position:absolute;left:6px;bottom:6px">Cover</span>':''}</div>`).join('')}<div style="flex:1;text-align:center;color:var(--ink2)">${ic('image',28).replace('class="ic "','class="ic " style="margin:0 auto 6px"')}<div class="t" style="font-size:15px">Drag photos here</div><div class="s">or <u style="color:var(--ink)">browse your files</u> · up to 8</div></div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px"><div><div class="lbl">Title</div><div class="in">Dell 24" monitor, 1080p</div></div><div><div class="lbl">Category</div><div class="in"><span style="flex:1">Tech / Monitors</span>${ic('down',18,'mu')}</div></div>
+<div><div class="lbl">Condition</div><div class="sg"><div>New</div><div>Like new</div><div class="on">Good</div><div>Fair</div></div></div>
+<div><div class="lbl">Price</div><div class="in f"><b>$60</b><span class="caret" style="margin-left:-6px"></span></div><div class="hint">${ic('trend',16)}<span>Similar monitors sold for <b style="color:var(--ink)">$50 to $70</b> here</span></div></div></div>
+<div class="lbl" style="margin-top:16px">Description</div><div class="in ta" style="min-height:90px">Dell SE2422H. No dead pixels, comes with the HDMI cable and stand. Upgraded to a bigger one.</div>
+<div class="lbl" style="margin-top:16px">Where can you meet?</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">${opt(true,'RPAC safe-exchange zone','Cameras, lit, 24/7','<span class="tag gn">Safest</span>')}${opt(false,'Ohio Union, High St','Busy most of the day')}</div></div>
+<div><div class="lbl">Preview</div><div class="card" style="padding:14px;background:var(--bg);border:1px solid var(--line)">${gcard('mon','$60','Dell 24" monitor, 1080p','RPAC · just now')}</div>
+<div class="tips" style="margin-top:14px">${['2 photos (3 or more gets more offers)','Price in the usual range','Safe meetup spot picked'].map((t,i)=>`<div>${ic(i?'check':'info',16,'b').replace('class="ic b"',i?'class="ic b"':'class="ic b" style="color:var(--amber)"')}<span>${t}</span></div>`).join('')}</div>
+<div class="btn p" style="margin-top:16px">Post listing</div><div class="mi" style="text-align:center;margin-top:10px">By posting you confirm it isn't on the <u>banned list</u>.</div></div></div>`),{w:1});
+
+/* keep the phone shared-listing screen at the end of the web section */
+(function(){const i=S.findIndex(s=>s.sec==='W'&&s.name==='Shared listing · phone');if(i>=0){const [x]=S.splice(i,1);S.push(x)}})();
+</script>

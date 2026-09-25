@@ -1,0 +1,105 @@
+<script>
+/* ================= S · SYSTEM ================= */
+add('S','Design system','One accent color, black ink, lots of white. Real photos carry the color. Typeface is SF Pro, the same font iOS itself uses, so it feels native instead of themed.',
+`<div class="th sysp">
+<div class="sy"><h4>Logo</h4><div style="display:flex;gap:14px;flex-wrap:wrap">
+<div class="lk" style="background:var(--bg);border:1px solid var(--line)">${mark(40,'var(--acc)','var(--onacc)')}<b>onlyswap</b></div>
+<div class="lk" style="background:var(--acc);color:var(--onacc)">${mark(40,'var(--markbg)','var(--markfg)')}<b>onlyswap</b></div>
+<div class="lk" style="background:#0F0F0F;color:#fff">${mark(40,'var(--acc)','var(--onacc)')}<b>onlyswap</b></div></div>
+<h4 style="margin-top:28px">Color</h4><div class="sw">${[['--bg','Paper'],['--bg2','Mist'],['--line2','Line'],['--ink','Ink'],['--ink2','Ink 2'],['--ink3','Ink 3'],['--acc','Accent'],['--red','Red'],['--green','Green'],['--amber','Amber']].map(([v,n])=>`<div><i style="background:var(${v})"></i><b>${n}</b><span>${v.slice(2)}</span></div>`).join('')}</div></div>
+<div class="sy ty"><h4>Type · SF Pro</h4>
+<div class="hx">Display 32 Heavy</div><div class="hl">Title 28 Heavy</div><div class="hm">Title 22 Bold</div><div class="hs">Headline 17 Bold</div>
+<div class="bd" style="color:var(--ink)">Body 15 Regular. Used for descriptions and anything people actually sit and read.</div><div class="s">Caption 13.5 Regular</div>
+<h4 style="margin-top:22px">Components</h4>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="btn p">Primary</div><div class="btn k">Dark</div><div class="btn s">Secondary</div><div class="btn dr">Destructive</div></div>
+<div class="chips" style="margin-top:14px;align-items:center"><span class="ch">Chip</span><span class="ch on">Selected</span><span class="ch g">Filled</span><span class="tag gn">${ic('shield',13,'b')} Verified</span><span class="tag am">Pending</span><span class="tag rd">Reported</span><span class="tag ac">Free</span><span class="tg on"></span><span class="tg"></span></div>
+<div style="display:flex;gap:16px;margin-top:18px;flex-wrap:wrap">${['cards','search','plussq','chat','user','bookmark','tag','pin','shield','cal','bell','flag','ban','camera','food','trend','eye','gift'].map(i=>ic(i,24)).join('')}</div></div>
+</div>`,{w:1});
+
+/* ================= A · ONBOARDING ================= */
+add('A','Launch','Shows for under a second while the session loads. Brand color, the mark, the wordmark. Nothing else.',
+`<div class="scr" style="background:var(--acc);color:var(--onacc)">${sb()}
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding-bottom:50px">
+${mark(96,'var(--markbg)','var(--markfg)')}<div style="font-size:36px;font-weight:800;letter-spacing:-.055em">onlyswap</div></div></div>`,{hi:'a'});
+
+function mini(k,t,p,l){return `<div class="mini"><div class="im" style="${I(k,160)}"></div><div><b>${t}</b><span><strong style="color:#111">${p}</strong> · ${l}</span></div></div>`}
+add('A','Welcome','A real campus photo with real listings floating on it, so the very first screen already shows what the app is. One main action.',
+`<div class="scr"><div class="im" style="height:452px;flex:none;position:relative;${I('camp2',900)}">
+<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.45) 0%,rgba(0,0,0,0) 32%,rgba(0,0,0,0) 62%,rgba(0,0,0,.28) 100%)"></div>
+<div style="position:relative;color:#fff">${sb()}<div style="padding:6px 22px;display:flex;align-items:center;gap:8px;font-size:21px;font-weight:800;letter-spacing:-.05em">${mark(28,'var(--acc)','var(--onacc)')}onlyswap</div></div>
+<div class="fl" style="left:18px;top:212px">${mini('fridge','Mini fridge','$40','Baker Hall')}</div>
+<div class="fl" style="right:16px;top:290px">${mini('books','CHEM 1210 books','$25','Thompson')}</div>
+<div class="fl" style="left:40px;top:368px">${mini('lamp','Desk lamp','$12','Lincoln Tower')}</div></div>
+<div style="flex:1;padding:26px 22px 0;display:flex;flex-direction:column">
+<div class="hx">Buy and sell with students at your school.</div>
+<p class="bd" style="margin-top:10px">Dorm stuff, textbooks, tech. Meet between classes and pay in person.</p></div>
+${dock(`<div class="btn p">Continue with school email</div><div class="btn t" style="margin-top:2px">I already have an account</div>`)}</div>`,{hi:''});
+
+add('A','School email','The school name shows up the moment the domain matches the campus list. Email keyboard, so @ and . are one tap.',
+`<div class="scr">${sb()}${nav('back')}
+<div class="ct"><div class="hl" style="margin-top:8px">What's your school email?</div>
+<p class="bd" style="margin-top:8px">We'll send a 6-digit code to check you're a student.</p>
+<div class="in f" style="margin-top:24px">${ic('mail',20,'mu')}<span>wkarim.12@osu.edu</span><span class="caret" style="margin-left:-6px"></span></div>
+<div class="det">${ic('building',18)}<span>The Ohio State University</span><span style="margin-left:auto" class="gr">${ic('check',18,'b')}</span></div></div>
+<div style="padding:0 20px 12px;flex:none"><div class="btn p">Send code</div></div>${kb()}</div>`);
+
+add('A','Verify code','Six digits with iOS one-tap autofill from Mail. Resend sits on a timer so nobody spams it.',
+`<div class="scr">${sb()}${nav('back')}
+<div class="ct"><div class="hl" style="margin-top:8px">Enter the code</div>
+<p class="bd" style="margin-top:8px">Sent to <b style="color:var(--ink)">wkarim.12@osu.edu</b>. It expires in 10 minutes.</p>
+<div class="code">${['4','8','1','','',''].map((d,i)=>`<div class="cd ${i===3?'f':''}">${d}${i===3?'<span class="caret"></span>':''}</div>`).join('')}</div>
+<div class="sm" style="margin-top:18px">Nothing yet? Check spam, or resend in <b style="color:var(--ink)">0:42</b></div>
+<div class="sm" style="margin-top:10px;color:var(--ink);font-weight:600;text-decoration:underline">Use a different email</div></div>${np()}</div>`);
+
+add('A','Wrong email','The error says how to fix it in one line. Alumni and staff get a straight answer instead of a vague rejection.',
+`<div class="scr">${sb()}${nav('back')}
+<div class="ct"><div class="hl" style="margin-top:8px">What's your school email?</div>
+<p class="bd" style="margin-top:8px">We'll send a 6-digit code to check you're a student.</p>
+<div class="in e" style="margin-top:24px">${ic('mail',20)}<span>wasifkarim@gmail.com</span></div>
+<div class="err">${ic('info',16)}<span>That's a personal email. Use the one your school gave you, ending in .edu.</span></div>
+<div class="grp" style="margin-top:28px">
+<div class="li"><div style="flex:1"><div class="t">Graduated, or work at the school?</div><div class="s">OnlySwap is only for current students, so alumni and staff emails can't join.</div></div></div>
+<div class="li" style="border:0"><div style="flex:1"><div class="t">My school doesn't use .edu</div><div class="s">Tell us where you go and we'll look into adding it.</div></div>${ic('chev',18,'mu')}</div></div></div>
+${dock(`<div class="btn p dis">Send code</div>`)}</div>`);
+
+add('A','Profile','First name and last initial only. A photo is optional but nudged, because it helps people find each other at the meetup.',
+`<div class="scr">${sb()}${nav('back','',stepR('3 of 4'))}
+<div class="ct"><div class="hl" style="margin-top:8px">Set up your profile</div><p class="bd" style="margin-top:6px">This is what buyers and sellers see.</p>
+<div style="display:flex;align-items:center;gap:16px;margin-top:22px"><div style="position:relative">${av('W','var(--bg3)',80)}<div class="camb">${ic('camera',15)}</div></div>
+<div><div class="hs">Add a photo</div><div class="s" style="margin-top:2px">Makes you easier to spot at pickup.</div></div></div>
+<div class="lbl" style="margin-top:24px">First name</div><div class="in">Wasif</div>
+<div class="lbl" style="margin-top:14px">Last name</div><div class="in">Karim</div>
+<div class="mi" style="margin-top:7px">Shown as Wasif K.</div>
+<div class="lbl" style="margin-top:18px">Year</div><div class="chips">${['Freshman','Sophomore','Junior','Senior','Grad'].map(x=>`<span class="ch ${x==='Sophomore'?'on':''}">${x}</span>`).join('')}</div></div>
+${dock(`<div class="btn p">Continue</div>`)}</div>`);
+
+function rule(i,t,s){return `<div class="rule"><div class="rq">${ic(i,20)}</div><div><div class="t">${t}</div><div class="s" style="margin-top:2px">${s}</div></div></div>`}
+add('A','Community rules','Four rules in plain words. This is also the screen App Store reviewers look for when they check how user content is handled.',
+`<div class="scr">${sb()}${nav('back','',stepR('4 of 4'))}
+<div class="ct"><div class="hl" style="margin-top:8px">Four rules</div><p class="bd" style="margin-top:6px">Everyone here agrees to these. Break them and your account comes down.</p>
+<div class="rules">${rule('pin','Meet in public','Use a safe-exchange zone or a busy spot on campus. Not a dorm room, not an empty parking lot.')}
+${rule('tag','Pay in person','Cash, Venmo, whatever you both agree on. OnlySwap never touches the money.')}
+${rule('ban','Nothing on the banned list','No alcohol, vapes, meds, weapons, tickets, meal swipes or coursework.')}
+${rule('chat','Keep chats about the deal','Anything creepy gets reported and looked at by a real person.')}</div>
+<div style="display:flex;gap:10px;align-items:center;margin-top:22px"><span class="cb on">${ic('check',14,'b')}</span><span class="sm" style="color:var(--ink)">I agree to the <u>Community Rules</u> and <u>Terms</u></span></div></div>
+${dock(`<div class="btn p">Agree and continue</div>`)}</div>`);
+
+function noti(tm,t,b){return `<div class="nt">${mark(38,'var(--acc)','var(--onacc)')}<div style="flex:1;min-width:0"><div class="nh"><b>${t}</b><span>${tm}</span></div><div class="nb">${b}</div></div></div>`}
+add('A','Notifications','Asks for permission only after showing three real examples. The system prompt fires on the button, never on launch.',
+`<div class="scr">${sb()}<div class="ct" style="display:flex;flex-direction:column;padding-top:34px">
+<div class="nstack">${noti('now','Devin accepted your offer','Mini fridge for $35. Say hi and plan the pickup.')}${noti('4m ago','Price drop on something you saved','Desk chair is now $30. It was $45.')}${noti('12m ago','Free pizza at Dreese Lab','Leftovers from the ACM meeting, 2nd floor lounge.')}</div>
+<div class="hl" style="margin-top:40px">Don't miss an offer</div>
+<p class="bd" style="margin-top:8px">Most things sell within a few hours. We only notify you about offers, messages and stuff you saved.</p></div>
+${dock(`<div class="btn p">Turn on notifications</div><div class="btn t" style="margin-top:2px">Not now</div>`)}</div>`);
+
+add('A','Campus waitlist','Only appears if your campus isn\'t live yet. Watching the count move toward 500 is what makes inviting people feel worth it.',
+`<div class="scr">${sb()}${nav('x')}
+<div class="ct"><div class="hl" style="margin-top:4px">Ohio State opens at 500 students</div>
+<div style="display:flex;align-items:baseline;gap:8px;margin-top:26px"><span style="font-size:80px;font-weight:800;letter-spacing:-.06em;line-height:.9">488</span><span style="font-size:24px;font-weight:700;color:var(--ink3)">/ 500</span></div>
+<div class="bar"><i style="width:97.6%"></i></div>
+<p class="bd" style="margin-top:14px">You're number 488. Once 12 more people join, it opens for everyone at OSU.</p>
+<div class="card" style="margin-top:24px"><div class="t" style="font-size:14.5px">Your invite link</div>
+<div class="in" style="margin-top:10px;background:var(--bg);height:50px;font-size:15.5px"><span style="flex:1">onlyswap.app/i/wasif</span>${ic('copy',20)}</div>
+<div class="shr">${[['chat','Messages'],['qr','QR code'],['copy','Copy'],['more','More']].map(([i,l])=>`<div><span>${ic(i,22)}</span>${l}</div>`).join('')}</div></div></div>
+${dock(`<div class="btn p">Invite friends</div><div class="mi" style="text-align:center;margin-top:12px">We'll let you know the minute it opens.</div>`)}</div>`);
+</script>

@@ -1,0 +1,86 @@
+<style>
+.strip{display:flex;gap:8px;margin-top:6px}.strip .im,.strip .add{width:78px;height:78px;border-radius:12px;flex:none;position:relative}
+.rv2{padding:14px 0;border-bottom:1px solid var(--line)}
+.reveal{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px;width:100%}
+.reveal>div{border-radius:18px;padding:14px;text-align:left}
+</style>
+<script>
+/* ===== 7. edit / relist / mark sold ===== */
+addAfter('F','Listing stats','Edit listing','Every field is editable after posting. Lowering the price tells you exactly how many people get notified, which is a strong nudge to drop it.',
+`<div class="scr">${sb()}<div class="nv"><div class="ib" style="margin-left:-8px">${ic('x',24)}</div><div class="tt">Edit listing</div><div class="btn p" style="width:auto;height:34px;padding:0 16px;font-size:14.5px;border-radius:17px">Save</div></div>
+<div class="ct"><div class="strip">${['mon','mon2'].map((k,i)=>`<div class="im" style="${I(k,200)}">${i==0?'<span class="tag ink" style="position:absolute;left:4px;bottom:4px;font-size:10.5px">Cover</span>':''}</div>`).join('')}<div class="add">${ic('plus',22)}</div></div>
+<div class="lbl" style="margin-top:18px">Title</div><div class="in">Dell 24" monitor, 1080p</div>
+<div class="lbl" style="margin-top:14px">Price</div><div class="in f"><b>$50</b><span class="caret" style="margin-left:-6px"></span><span class="mi" style="margin-left:auto;text-decoration:line-through">$60</span></div>
+<div class="hint">${ic('bell',16)}<span>Dropping to $50 notifies the <b style="color:var(--ink)">7 people</b> who saved it.</span></div>
+<div class="lbl" style="margin-top:14px">Status</div><div class="sg"><div class="on">Active</div><div>Reserved</div><div>Sold</div></div>
+<div class="lbl" style="margin-top:14px">Description</div><div class="in ta">Dell SE2422H. No dead pixels, comes with the HDMI cable and stand. Upgraded to a bigger one.</div>
+<div class="sm" style="margin-top:18px;color:var(--red);font-weight:650;display:flex;gap:6px;align-items:center">${ic('trash',17)} Delete listing</div></div></div>`);
+
+addAfter('F','Edit listing','Mark sold','Picking the buyer matters: it closes the other offers automatically and sends the right person the rating prompt.',
+`<div class="scr">${sb()}${nav('back','Listing stats')}<div class="ct"><div style="display:flex;gap:12px;align-items:center">${thumb('mon',56)}<div><div class="t">Dell 24" monitor</div><div class="s">$60 · live for 3 days</div></div></div></div>
+<div class="scrim"></div><div class="sh"><div class="grab"></div><div class="hm">Who bought it?</div><p class="bd" style="margin-top:6px">They'll get asked to rate the swap. Other open offers close with a polite note.</p>
+<div class="opts">${opt(true,'Aisha K.','Accepted $50 · met today at 4:30',`<span style="margin-left:4px">${av('A',AVC.A,32)}</span>`)}${opt(false,'Ben O.','Offered $40 · declined',`<span>${av('B',AVC.B,32)}</span>`)}${opt(false,'Someone not on OnlySwap','No rating, offers still close')}</div>
+<div class="lbl" style="margin-top:16px">Sold for</div><div class="in" style="height:50px"><b>$50</b></div>
+<div class="btn p" style="margin-top:16px">${ic('check',19,'b')} Mark as sold</div></div></div>`);
+
+addAfter('F','Mark sold','Relist','Sold listings stay in your history. Relisting a similar item reuses the photos and description, so the second one takes ten seconds.',
+`<div class="scr">${sb()}${nav('back','My listings',`<div class="ib">${ic('plus',22)}</div>`)}<div class="ct">
+<div class="sg" style="margin-top:4px"><div>Active · 3</div><div class="on">Sold · 9</div><div>Drafts</div></div>
+${[['fridge','Mini fridge, 3.1 cu ft','$35 · sold to Devin P. · Sep 12'],['lamp','Desk lamp, black','$12 · sold to Maya R. · Sep 3'],['books2','Intro psych textbook','$20 · sold to Grace T. · Aug 28']].map(([k,t,s])=>`<div class="li">${thumb(k,56)}<div style="flex:1;min-width:0"><div class="t el">${t}</div><div class="s" style="font-size:12.5px">${s}</div></div><div class="btn s" style="width:auto;height:34px;padding:0 12px;font-size:13.5px;border-radius:10px">Relist</div></div>`).join('')}</div>
+<div class="scrim"></div><div class="sh"><div class="grab"></div><div style="display:flex;gap:12px;align-items:center">${thumb('fridge',56)}<div><div class="hs">Relist mini fridge?</div><div class="s">Same photos, description and meetup spot</div></div></div>
+<div class="lbl" style="margin-top:18px">Price</div><div class="chips"><span class="ch">$30</span><span class="ch on">$35 · same as last time</span><span class="ch">$40</span></div>
+<div class="rw" style="margin:16px 0 0"><span class="t" style="font-size:15px">Review the photos first</span><span class="tg"></span></div>
+<div class="btn p" style="margin-top:18px">Relist now</div></div></div>`);
+
+/* ===== 8. posting screens ===== */
+addAfter('C','Wanted','Post a Wanted','Buyers describe what they need and a budget. Sellers who have it can send an offer straight away, and the poster gets an alert if a matching listing goes up.',
+`<div class="scr">${sb()}<div class="nv"><div class="ib" style="margin-left:-8px">${ic('x',24)}</div><div class="tt">Post what you need</div><div class="btn p" style="width:auto;height:34px;padding:0 16px;font-size:14.5px;border-radius:17px">Post</div></div>
+<div class="ct"><div class="lbl" style="margin-top:6px">What are you looking for?</div><div class="in f">TI-84 Plus for MATH 1151<span class="caret" style="margin-left:-6px"></span></div>
+<div class="lbl" style="margin-top:16px">Budget</div><div class="step" style="margin:4px 0 0"><div class="sb2">${ic('minus',22,'b')}</div><div class="v" style="font-size:44px">Up to $40</div><div class="sb2">${ic('plus',22,'b')}</div></div>
+<div class="lbl" style="margin-top:16px">Need it by</div><div class="chips">${['This week','Before midterms','No rush'].map((x,i)=>`<span class="ch ${i==1?'on':''}">${x}</span>`).join('')}</div>
+<div class="lbl" style="margin-top:16px">Category</div><div class="chips">${['Textbooks','Tech','Dorm','Other'].map((x,i)=>`<span class="ch sm2 ${i==1?'on':''}">${x}</span>`).join('')}</div>
+<div class="rw" style="margin:18px 0 0"><div><div class="t" style="font-size:15px">Alert me when one's listed</div><div class="s" style="font-size:12.5px">Even if nobody answers this post</div></div><span class="tg on"></span></div>
+<div class="inf">${ic('info',18)}<span>Sellers see your first name, budget and year. They reply with an offer, never a DM.</span></div></div></div>`);
+
+addAfter('C','Campus feed','Post free food','Three fields, one photo. It expires on its own when the time runs out or enough people mark it gone, so the feed never fills with dead leftovers.',
+`<div class="scr">${sb()}<div class="nv"><div class="ib" style="margin-left:-8px">${ic('x',24)}</div><div class="tt">Post free food</div><div class="btn p" style="width:auto;height:34px;padding:0 16px;font-size:14.5px;border-radius:17px">Post</div></div>
+<div class="ct"><div class="im" style="height:170px;border-radius:18px;margin-top:6px;position:relative;${I('pizza',700)}"><span class="xx">${ic('x',12,'b')}</span></div>
+<div class="lbl" style="margin-top:16px">What is it?</div><div class="in">Leftover pizza from the ACM meeting</div>
+<div class="lbl" style="margin-top:14px">Where exactly?</div><div class="in">${ic('pin',19,'mu')}Dreese Lab, 2nd floor lounge</div>
+<div class="lbl" style="margin-top:14px">Around for about</div><div class="chips">${['30 min','1 hour','2 hours'].map((x,i)=>`<span class="ch ${i==1?'on':''}">${x}</span>`).join('')}</div>
+<div class="inf">${ic('clock',18)}<span>People nearby with free food alerts on get a notification. The post hides itself after an hour, or sooner if people say it's gone.</span></div></div></div>`);
+
+addAfter('D','Sell · details','Sell · give it away','Same form, with a switch at the top. Free items skip the price, go on the Free shelf, and set a pickup deadline so nothing lingers.',
+`<div class="scr">${sb()}${nav('back','New listing',stepR('2 of 3'))}<div class="pgb"><i class="on"></i><i class="on"></i><i></i></div>
+<div class="ct" style="padding-top:16px"><div class="sg"><div>Sell it</div><div class="on">${ic('gift',15).replace('class="ic "','class="ic " style="display:inline;vertical-align:-2px;margin-right:4px"')}Give it away</div></div>
+<div class="lbl" style="margin-top:16px">Title</div><div class="in">Floor mirror, full length</div>
+<div class="lbl" style="margin-top:14px">Condition</div><div class="sg"><div>New</div><div>Like new</div><div class="on">Good</div><div>Fair</div></div>
+<div class="lbl" style="margin-top:14px">Pick up by</div><div class="chips">${['Tomorrow','Sunday','This week'].map((x,i)=>`<span class="ch ${i==1?'on':''}">${x}</span>`).join('')}</div>
+<div class="card" style="margin-top:16px;display:flex;gap:12px;align-items:flex-start"><span class="fic ac">${ic('gift',18)}</span><div><div class="t" style="font-size:14.5px">Goes on the Free shelf</div><div class="s" style="font-size:13px">Free things usually go within a day. You pick who gets it from the people who ask.</div></div></div>
+<div class="lbl" style="margin-top:14px">Description</div><div class="in ta">Moving out, can't take it. Small chip on the bottom corner, glass is perfect.</div></div>
+${dock(`<div class="btn p">Next</div>`)}</div>`);
+
+/* ===== 9. reviews ===== */
+addAfter('B','Seller profile','Seller reviews','Reviews are thumbs plus tags, never paragraphs. That keeps them honest at low volume and impossible to use for insults.',
+`<div class="scr">${sb()}${nav('back','',`<div class="ib">${ic('more',22)}</div>`)}<div class="ct">
+<div style="display:flex;gap:14px;align-items:center">${av('D',AVC.D,56)}<div><div class="hm">Devin P.</div><div class="vf" style="margin-top:3px">${ic('shield',14,'b')} Ohio State email verified</div></div></div>
+<div class="sg" style="margin-top:18px"><div>Listings · 4</div><div class="on">Reviews · 9</div></div>
+<div class="card" style="margin-top:14px;display:flex;align-items:center;gap:14px"><div style="font-size:40px;font-weight:800;letter-spacing:-.04em">9<span style="color:var(--ink3);font-size:24px">/9</span></div><div><div class="t" style="font-size:15px">thumbs up</div><div class="s" style="font-size:12.5px">From 6 buyers and 3 sellers</div></div></div>
+<div class="chips" style="margin-top:12px">${[['On time',7],['As described',9],['Friendly',6],['Quick replies',5]].map(([t,n])=>`<span class="ch g sm2">${t} <b style="color:var(--ink3)">${n}</b></span>`).join('')}</div>
+${[['A','Aisha K.','Bought Microwave · Sep 20',['On time','As described']],['N','Noah B.','Sold him a lamp · Sep 8',['Friendly','Paid as agreed']],['G','Grace T.','Bought Coffee maker · Aug 30',['As described','Quick replies']]].map(([i,n,w,tg])=>`<div class="rv2"><div class="fh">${av(i,AVC[i],34)}<div style="flex:1"><div class="t" style="font-size:14.5px">${n}</div><div class="mi">${w}</div></div><span class="tag gn">${ic('up',13,'b')} Good</span></div><div class="chips" style="margin-top:8px;padding-left:44px">${tg.map(t=>`<span class="ch sm2">${t}</span>`).join('')}</div></div>`).join('')}</div></div>`);
+
+addAfter('E','Rate the swap','Rating reveal','The double-blind moment. Neither person saw the other\'s rating until both were in, so nobody rated out of politeness or revenge.',
+`<div class="scr">${sb()}${nav('x')}<div class="ct stc"><div style="display:flex">${av('W',AVC.W,64)}<span style="margin-left:-14px;box-shadow:0 0 0 4px var(--bg);border-radius:50%">${av('A',AVC.A,64)}</span></div>
+<div class="hl" style="margin-top:18px">Aisha rated you too</div><p class="bd" style="margin-top:6px">Dell 24" monitor · $50 · yesterday</p>
+<div class="reveal"><div style="background:var(--bg2)"><div class="mi">You gave</div><div class="t" style="margin-top:6px;display:flex;gap:6px;align-items:center">${ic('up',18)} Good</div><div class="s" style="margin-top:6px;font-size:12.5px">On time · Paid as agreed</div></div>
+<div style="background:var(--acc);color:var(--onacc)"><div class="mi" style="color:inherit;opacity:.7">Aisha gave</div><div class="t" style="margin-top:6px;display:flex;gap:6px;align-items:center">${ic('up',18)} Good</div><div class="s" style="margin-top:6px;font-size:12.5px;color:inherit;opacity:.8">Friendly · As described</div></div></div>
+<div class="card" style="width:100%;margin-top:12px"><div class="rw" style="margin:0"><span class="t" style="font-size:14.5px">Your profile</span><span class="sm"><b style="color:var(--ink)">13/13</b> thumbs up</span></div></div></div>
+${dock(`<div class="btn k">Done</div>`)}</div>`);
+
+/* ===== 10. saved searches ===== */
+addAfter('B','Saved','Saved searches','A saved search is the best reason to come back. Each shows what\'s new since you last looked and has its own alert switch.',
+`<div class="scr">${sb()}${nav('back','Saved')}<div class="ct"><div class="sg" style="margin-top:4px"><div>Items · 6</div><div class="on">Searches · 3</div></div>
+${[['mini fridge','Under $50 · walkable','3 new',1],['monitor','1080p or better · under $80','1 new',1],['bike','Under $150 · any condition','',0]].map(([q,f,n,on])=>`<div class="li" style="padding:16px 0"><span class="fic gy">${ic('search',18)}</span><div style="flex:1;min-width:0"><div class="t">"${q}"</div><div class="s" style="font-size:12.5px">${f}</div>${n?`<span class="tag ac" style="margin-top:6px">${n}</span>`:''}</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><span class="tg ${on?'on':''}"></span><span class="mi">${on?'Alerts on':'Alerts off'}</span></div></div>`).join('')}
+<div class="btn s" style="margin-top:16px">${ic('plus',19,'b')} Save a new search</div>
+<div class="inf">${ic('bell',18)}<span>Alerts arrive at most once an hour, bundled together, so a busy search doesn't spam you.</span></div></div>${tb('Profile')}</div>`);
+</script>

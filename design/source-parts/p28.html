@@ -1,0 +1,117 @@
+<style>
+.dobw{display:grid;grid-template-columns:1.3fr .8fr 1fr;gap:8px;margin-top:24px}
+.dobw div{height:58px;border-radius:14px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:650;color:var(--ink3)}
+.dobw div.f{background:var(--bg);box-shadow:inset 0 0 0 2px var(--ink);color:var(--ink)}
+.wheel{margin-top:14px;border-radius:16px;background:var(--bg2);height:190px;position:relative;overflow:hidden;display:grid;grid-template-columns:1.3fr .8fr 1fr;align-items:center;text-align:center;font-size:19px;color:var(--ink3)}
+.wheel .hl2{position:absolute;left:8px;right:8px;top:74px;height:42px;border-radius:10px;background:var(--bg);z-index:0}
+.wheel>div{position:relative;z-index:1;display:flex;flex-direction:column;gap:14px}
+.wheel b{color:var(--ink);font-weight:650}
+.cmpl{width:1380px;background:var(--bg);color:var(--ink);border-radius:24px;padding:30px;box-shadow:0 0 0 1px rgba(0,0,0,.08)}
+.cmpl h3{font-size:22px;font-weight:800;letter-spacing:-.03em}
+.cmpl .sub{font-size:14.5px;color:var(--ink2);margin-top:4px}
+.cmpl table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:16px}
+.cmpl th{text-align:left;font-size:12px;font-weight:700;color:var(--ink3);padding:8px 10px;border-bottom:1.5px solid var(--line2)}
+.cmpl td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.4}
+.cmpl td:first-child{font-weight:650;white-space:nowrap}
+</style>
+<script>
+/* ===== compliance: age gate (Apple DAR + Google Play restrict minors) ===== */
+addAfter('A','Verify code','Birthday','Required now: Google Play needs apps with anonymous features to keep minors out, and Texas, Utah and Louisiana laws require an age check. The screen is neutral on purpose: no age hint, nothing prefilled. On phones that support it, the OS age signal is asked first and this only shows as a fallback.',
+`<div class="scr">${sb()}${nav('back','',stepR('3 of 5'))}<div class="ct"><div class="hl" style="margin-top:8px">When's your birthday?</div>
+<p class="bd" style="margin-top:8px">We ask everyone. It's never shown on your profile.</p>
+<div class="dobw"><div class="f">Month</div><div>Day</div><div>Year</div></div>
+<div class="wheel"><div class="hl2"></div><div><span>July</span><span>August</span><b>September</b><span>October</span><span>November</span></div><div><span>23</span><span>24</span><b>25</b><span>26</span><span>27</span></div><div><span>2004</span><span>2005</span><b>Year</b><span>2007</span><span>2008</span></div></div>
+<p class="mi" style="margin-top:14px;line-height:1.5">Used only to confirm you can use OnlySwap. Details in the <u>Privacy Policy</u>.</p></div>
+${dock(`<div class="btn p dis">Continue</div>`)}</div>`);
+
+addAfter('A','Birthday','Not eligible','Calm and final, with no way to retry a different date from here (the answer is saved server-side against the email). The account and email are deleted right away, which is what the privacy policy promises.',
+`<div class="scr">${sb()}<div class="ct stc"><div class="emptyart">${ic('lock',38)}</div>
+<div class="hm" style="margin-top:20px">OnlySwap isn't available to you yet</div><p class="bd" style="margin-top:8px;max-width:300px">You need to be 18 or older to use OnlySwap. We haven't kept your email or any details.</p>
+<div class="card" style="margin-top:22px;width:100%;text-align:left"><div class="t" style="font-size:14.5px">Selling something before then?</div><div class="s" style="margin-top:4px">Ask a friend who's 18 or older to post it for you and meet together.</div></div></div>
+${dock(`<div class="btn s">Close</div>`)}</div>`);
+
+/* ===== reviewer login ===== */
+addAfter('A','School email','Reviewer sign-in','Only for the accounts listed for Apple and Google reviewers (review.onlyswap.test). Both stores require a login that works without a one-time code. Everyone else never sees a password field.',
+`<div class="scr">${sb()}${nav('back')}
+<div class="ct"><div class="hl" style="margin-top:8px">What's your school email?</div>
+<div class="in" style="margin-top:24px">${ic('mail',20,'mu')}<span>appreview@review.onlyswap.test</span></div>
+<div class="det">${ic('building',18)}<span>Demo University · review account</span></div>
+<div class="lbl" style="margin-top:16px">Password</div><div class="in f"><span>••••••••••••</span><span class="caret" style="margin-left:-4px"></span></div></div>
+<div style="padding:0 20px 12px;flex:none"><div class="btn p">Sign in</div></div>${kb()}</div>`);
+
+/* ===== notification + privacy settings (Apple 4.5.4, 5.1.1(ii)) ===== */
+addAfter('F','Settings','Notification settings','Every type from the catalog, grouped. Anything promotional (tips, campus news) sits in its own group, off by default with its consent line, because Apple only allows marketing pushes after an explicit opt-in. Message previews are hidden on the lock screen unless turned on.',
+`<div class="scr">${sb()}${nav('back','Notifications')}<div class="ct">
+${grpS('Buying and selling',[['Offers and counters','T1'],['Messages','T1'],['Meetup reminders','T1'],['Saved search matches','T1'],['Price drops on saved items','T1']])}
+${grpS('Community',[['Quad replies','T0'],['Free food nearby','T0']])}
+${grpS('Lock screen',[['Show message previews','T0']])}
+<div class="lbl" style="margin:16px 0 8px 4px">News and tips</div><div class="grp"><div class="li"><span class="t" style="flex:1;font-size:15px">Selling tips and campus news</span><span class="tg"></span></div><div class="li" style="border:0"><span class="s" style="font-size:12.5px;line-height:1.4">Occasional tips like when to drop a price, and news about OnlySwap at your school. Off unless you turn it on.</span></div></div>
+<p class="mi" style="margin:14px 4px 0">Safety alerts and account notices always come through.</p></div></div>`);
+
+addAfter('F','Notification settings','Privacy settings','A simple off switch for analytics. Apple requires a way to withdraw consent, and Google\'s Data safety answers depend on it.',
+`<div class="scr">${sb()}${nav('back','Privacy')}<div class="ct">
+${grpS('',[['Share usage analytics','T1']])}<p class="mi" style="margin:8px 4px 0;line-height:1.5">Anonymous stats about which screens get used. No messages, no location. Turning it off doesn't change anything else.</p>
+${grpS('',[['Crash reports','T1']])}<p class="mi" style="margin:8px 4px 0;line-height:1.5">Sent when the app breaks so we can fix it.</p>
+${grpS('Your data',[['Download your data',''],['Privacy Policy',''],['Delete account','']])}</div></div>`);
+
+/* Settings: point Privacy row to the new page */
+(function(){const s=S.find(x=>x.sec==='F'&&x.name==='Settings');if(s)s.html=s.html.replace('>Safety center<','>Safety center</span></div><div class="li"><span class="t" style="flex:1;font-size:15px">Privacy<')})();
+
+/* ===== banned items expanded (Apple 1.4.3, Play restricted content) ===== */
+(function(){const s=S.find(x=>x.sec==='X'&&x.name==='Banned items');if(!s)return;
+s.note='The full list, in plain words, linked from the sell flow and every removal message. Expanded to match Apple 1.4.3 and Google Play\'s restricted content rules, and it applies to Wanted, free-stuff and Quad posts too.';
+s.html=`<div class="scr">${sb()}${nav('back','Banned items')}<div class="ct" style="overflow:hidden"><p class="bd" style="margin:4px 0 6px">These can't be listed, asked for in a Wanted post, given away or posted on the Quad.</p>
+<ul class="ban">${[['Alcohol, vapes, nicotine and weed','Including pouches, carts, THC or CBD products and empty bottles'],['Medication and drugs','Any prescription (like Adderall), over the counter, supplements'],['Weapons','Guns and parts, ammo, knives, pepper spray, tasers, fireworks'],['Fakes and IDs','Counterfeits, fake IDs, someone else\'s student ID'],['Tickets, meal swipes, parking','Anything tied to your school account'],['Coursework','Essays, test banks, answer keys. Textbooks are fine'],['Services and people','Rides, dates, "companionship", homework help'],['Housing and sublets','Not allowed yet']].map(([t,d])=>`<li><span class="fic" style="background:var(--redbg);color:var(--red);width:34px;height:34px">${ic('ban',17)}</span><div><div class="t" style="font-size:15px">${t}</div><div class="s" style="font-size:13px">${d}</div></div></li>`).join('')}</ul></div></div>`})();
+
+/* ===== community rules: 18+ ===== */
+(function(){const s=S.find(x=>x.sec==='A'&&x.name==='Profile');if(s)s.html=s.html.replace('3 of 4','4 of 5')})();
+(function(){const s=S.find(x=>x.sec==='A'&&x.name==='Community rules');if(s){s.html=s.html.replace('4 of 4','5 of 5').replace('No alcohol, vapes, meds, weapons, tickets, meal swipes or coursework.','No alcohol, vapes, meds, weapons, fakes, tickets, meal swipes or coursework.').replace('I agree to the <u>Community Rules</u> and <u>Terms</u>','I\'m 18 or older and agree to the <u>Community Rules</u>, <u>Terms</u> and <u>Privacy Policy</u>')}})();
+
+/* ===== Quad: naming a student ===== */
+addAfter('Q','Post blocked','Post held','When a post looks like it names or rates a real student, it waits for a person to look at it instead of going live. Google\'s bullying policy and Apple 1.1.1 are the biggest risk for any anonymous board, so this check runs before posting, not after reports.',
+`<div class="scr">${sb()}<div class="nv"><div class="ib" style="margin-left:-8px">${ic('x',24)}</div><div class="tt">New post</div><span style="width:60px"></span></div>
+<div class="ct"><div style="font-size:18px;line-height:1.45;margin-top:18px">rate the guys on 4th floor Morrill, 1 to 10, starting with jake r</div></div>
+<div class="scrim"></div><div class="sh"><div class="grab"></div><div style="width:52px;height:52px;border-radius:16px;background:var(--amberbg);color:var(--amber);display:flex;align-items:center;justify-content:center">${ic('users',26)}</div>
+<div class="hm" style="margin-top:14px">This looks like it's about a real student</div>
+<p class="bd" style="margin-top:6px">Posts that name, rate or single out students don't go on the Quad. If we got it wrong, send it for review and a person will check it.</p>
+<div class="btn p" style="margin-top:16px">Edit post</div><div class="btn t" style="margin-top:4px">Send for review</div></div></div>`);
+
+/* ===== legal pages: processors, 18+, Quad disclosure ===== */
+(function(){const p=S.find(x=>x.sec==='X'&&x.name==='Privacy');if(p){p.html=p.html.replace('<h4>We never sell your data</h4>','<h4>Who helps us run OnlySwap</h4><p>Supabase (accounts and data), Cloudflare (photos and website), Expo and Google/Apple (push notifications), Sentry (crash reports), PostHog (usage stats, can be turned off), and our email sender. They only process data for us.</p><h4>The Quad</h4><p>Posts are anonymous to other students, not to OnlySwap. We only connect a post to an account for a valid legal request or if someone is in danger, and every time is logged.</p><h4>We never sell your data</h4>')}
+const t=S.find(x=>x.sec==='X'&&x.name==='Terms');if(t){t.html=t.html.replace("'You must be a current student at your school'","'You must be 18 or older and a current student at your school'").replace('You must be a current student at your school','You must be 18 or older and a current student at your school')}
+const w=S.find(x=>x.sec==='W'&&x.name==='Privacy policy · web');if(w){w.html=w.html.replace('<h3>Your choices</h3>','<h3>Who helps us run OnlySwap</h3><p>Supabase (accounts and data), Cloudflare (photos and website), Expo, Apple and Google (push notifications), Sentry (crash reports), PostHog (usage stats, can be turned off in Settings) and our email provider. They process data only on our instructions.</p><h3>The Quad</h3><p>Anonymous to other students, not to OnlySwap. An account is only connected to a post for a valid legal request or an emergency, and every lookup is logged.</p><h3>Age</h3><p>OnlySwap is for people 18 and older. We ask your age at sign-up and delete the details of anyone under 18.</p><h3>Your choices</h3>')}})();
+
+/* ===== web: child safety standards (Google Play) ===== */
+addAfter('W','Delete account · web','Child safety standards · web','Google Play asks social and anonymous-content apps for a public page on child sexual abuse and exploitation standards plus a named contact. Short, specific and linked from the Play Console.',
+wf('onlyswap.app/child-safety',`${wnav}<div class="wdoc"><nav>${['Privacy policy','Terms of service','Community rules','Banned items','Safety','Child safety standards'].map((t,i)=>`<a class="${i==5?'on':''}">${t}</a>`).join('')}</nav>
+<div><h1>Child safety standards</h1><p>OnlySwap is only for verified students 18 and older. We have zero tolerance for child sexual abuse and exploitation (CSAE) of any kind.</p>
+<h3>What we do</h3><p>Anyone under 18 is blocked at sign-up. Any content that sexualizes minors is removed immediately, the account is banned, and we report it to the NCMEC CyberTipline as US law requires.</p>
+<h3>How to report</h3><p>Use Report on any post, listing, message or profile, and choose "Something else", or email the address below. Reports about minors skip the queue.</p>
+<h3>Contact</h3><p>Child safety contact: Wasif Karim, <b style="color:var(--ink)">safety@onlyswap.app</b></p></div></div>`),{w:1});
+
+/* ===== store assets: no university trademarks, 18+, accurate claims ===== */
+(function(){const MAP=[['The Ohio State University','Northfield University'],['Ohio State','Northfield'],['osu.edu','northfield.edu'],['OSU','NU'],['Buckeye Donuts','Corner Donuts'],['RPAC','Rec Center'],['Only verified students. No randoms.','Verified with your school email.'],['Age<b>17+</b>','Age<b>18+</b>']];
+['App Store screenshots','App Store page','Play Store screenshots','App preview video','Play feature graphic'].forEach(n=>{const s=S.find(x=>x.sec==='T'&&x.name===n);if(!s)return;MAP.forEach(([a,b])=>{s.html=s.html.split(a).join(b)})});
+const pg=S.find(x=>x.sec==='T'&&x.name==='App Store page');if(pg)pg.note='How the listing reads in the store. "New" instead of a rating at launch and an 18+ rating (overridden up from 13+, because of the anonymous Quad and meeting in person). Screenshots use a made-up school, since university names and marks can\'t appear in store assets without permission (Apple 5.2.1, Google impersonation policy).';
+const sh=S.find(x=>x.sec==='T'&&x.name==='App Store screenshots');if(sh)sh.note='Five screenshots, one idea each, with real screens underneath. They show a made-up school ("Northfield") because real university names and marks need permission (Apple 5.2.1). Claims stay accurate: "verified with your school email", not "only students" (Apple 2.3.1).'})();
+
+/* ===== H: store compliance map ===== */
+add('H','Store compliance','Every Apple and Google rule that touches OnlySwap, what the design does about it, and where. Checked against the live guidelines on September 25, 2026.',
+`<div class="th cmpl"><h3>Store compliance map</h3><p class="sub">Apple App Review Guidelines (updated June 8, 2026) and Google Play Developer Program Policies (July 2026 update). Status: done in design, or done in build (see the plan).</p>
+<table><tr><th>Rule</th><th>What it asks</th><th>How OnlySwap meets it</th><th>Where</th></tr>
+${[['Apple 1.2 · Play UGC','Filter, report, block, act on reports, contact info; terms before posting','Report and block everywhere, hide an anonymous poster, banned words, auto-hide at -5, 24h queue, rules checkbox at sign-up','A, E, Q, G'],
+['Apple 1.2 (Feb 2026) · Play age-restricted (Jul 2026)','Anonymous chat is restricted; Play needs minors blocked for anonymous features','No anonymous chat at all. The Quad is a moderated board. App is 18+ with Play "Restrict minor access"','Q, A Birthday'],
+['TX / UT / LA laws · Apple DAR · Play Age Signals','Check age through the store','OS age signal first, neutral birthday fallback, under-18 blocked and deleted','A Birthday, Not eligible'],
+['Apple 1.4.3 · Play restricted content','No sale of drugs, tobacco, nicotine, weapons, ammo','Expanded banned list, applies to every post type','X Banned items'],
+['Apple 1.1.1 · Play bullying','No defamation or harassment','Posts naming or rating students are held for review','Q Post held, Post blocked'],
+['Apple 2.1 · Play App access','Working login without one-time codes','Reviewer password accounts on Demo University','A Reviewer sign-in'],
+['Apple 2.3 / 5.2.1 · Play impersonation, metadata','Accurate claims, no third-party trademarks, title ≤ 30','Made-up school in store assets, "verified with your school email", "Not affiliated" line','T, W'],
+['Apple 4.5.4','Promotional push only after explicit opt-in','"Selling tips and campus news" off by default with consent line','F Notification settings'],
+['Apple 5.1.1(ii) · Play Data safety','Way to withdraw consent; declare all data','Analytics switch; processors named in privacy policy','F Privacy settings, X Privacy, W Privacy'],
+['Apple 5.1.1(iv) · Play prominent disclosure','Explain before permission prompts; manual fallback','Pre-prompts for notifications, camera, location; spot list without location','A, X'],
+['Apple 5.1.1(v) · Play account deletion','Delete in app and on the web','In-app and web delete flows','F, W'],
+['Play Child safety standards','Public CSAE standards page + contact','Web page','W Child safety'],
+['Apple 3.1.3(e)','Physical goods don\'t use in-app purchase','Cash in person, no payments in app','Rules, Terms'],
+['Apple 4.8','Sign in with Apple only if social login is used','Email code only, not required','A'],
+['Apple 2.3.10','No other platforms in iOS metadata','iOS screenshots show only the iPhone app','T']].map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</table></div>`,{w:1});
+</script>

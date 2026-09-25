@@ -1,0 +1,80 @@
+<svg width="0" height="0" style="position:absolute"><defs><symbol id="lg-cur" viewBox="0 0 100 100"></symbol></defs></svg>
+<style>
+.lgwrap{width:1380px;background:var(--bg);color:var(--ink);border-radius:24px;padding:28px;box-shadow:0 0 0 1px rgba(0,0,0,.08)}
+.lggrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.lgc{border:1.5px solid var(--line);border-radius:22px;padding:22px;cursor:pointer;position:relative;transition:box-shadow .15s,border-color .15s}
+.lgc:hover{border-color:var(--line2)}
+.lgc.on{border-color:var(--ink);box-shadow:0 0 0 4px var(--acc)}
+.lgc .lgbadge{position:absolute;top:18px;right:18px;display:none}.lgc.on .lgbadge{display:inline-flex}
+.lgh{display:flex;align-items:baseline;gap:9px}.lgh b{font-size:12.5px;color:var(--ink3)}.lgh span{font-size:21px;font-weight:800;letter-spacing:-.03em}
+.lgidea{font-size:14px;line-height:1.5;color:var(--ink2);margin-top:6px;min-height:63px}
+.lgi{border-radius:23%;display:flex;align-items:center;justify-content:center;flex:none}
+.lgi svg{width:62%;height:62%;display:block}
+.lgi.a{background:var(--acc);color:var(--onacc);--cut:var(--acc)}
+.lgi.b{background:#111;color:var(--acc);--cut:#111}
+.lgrow{display:flex;align-items:flex-end;gap:12px;margin-top:16px}
+.lgsz{display:flex;gap:9px;align-items:flex-end;margin-left:auto}
+.lgsz>div{display:flex;flex-direction:column;align-items:center;gap:5px;font-size:11px;color:var(--ink3);font-weight:600}
+.lglk{display:flex;gap:8px;margin-top:14px}
+.lglk>div{flex:1;height:62px;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:22px;font-weight:800;letter-spacing:-.055em}
+.lglk svg{width:26px;height:26px;display:block}
+.lglk .l1{background:var(--bg2);color:var(--ink);--cut:var(--bg2)}
+.lglk .l2{background:#111;color:#fff;--cut:#111}.lglk .l2 svg{color:var(--acc)}
+.lgnote{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;line-height:1.5;color:var(--ink2)}
+.lgnote b{color:var(--ink)}
+.lm svg.lgm{display:block}
+.hsw{position:absolute;inset:0;background:linear-gradient(160deg,#8aa3b8,#c9b7a3 55%,#e8d3b8);padding:78px 24px 0}
+.hsg{display:grid;grid-template-columns:repeat(4,1fr);gap:26px 16px}
+.hsa{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11.5px;color:#fff;font-weight:500;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+.hsa .lgi{width:62px;height:62px;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.hsa .ghost{background:rgba(255,255,255,.35)}
+.hsdock{position:absolute;left:14px;right:14px;bottom:22px;height:92px;border-radius:32px;background:rgba(255,255,255,.3);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:space-around}
+.hsdock div{width:62px;height:62px;border-radius:23%;background:rgba(255,255,255,.45)}
+</style>
+<script>
+const LOGO={
+handoff:`<path d="M45 14a32 32 0 0 0 0 64z" fill="currentColor"/><path d="M55 22a32 32 0 0 1 0 64z" fill="currentColor"/>`,
+pair:`<circle cx="36" cy="50" r="22" fill="currentColor"/><circle cx="64" cy="50" r="18.5" fill="none" stroke="currentColor" stroke-width="8"/>`,
+stack:`<rect x="36" y="14" width="40" height="56" rx="11" transform="rotate(14 56 42)" fill="none" stroke="currentColor" stroke-width="8"/><rect x="22" y="28" width="40" height="56" rx="11" transform="rotate(-7 42 56)" fill="currentColor"/>`,
+splits:`<g fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"><path d="M72 26H45a13 13 0 0 0 0 26"/><path d="M28 74h27a13 13 0 0 0 0-26"/></g>`,
+tag:`<path d="M12 50 35.5 25.6A6 6 0 0 1 39.8 24H82a6 6 0 0 1 6 6v40a6 6 0 0 1-6 6H39.8a6 6 0 0 1-4.3-1.6z" fill="currentColor"/><circle cx="35" cy="50" r="6.5" fill="var(--cut)"/><path d="M52 42h22M67 35l7 7-7 7M74 58H52M59 51l-7 7 7 7" fill="none" stroke="var(--cut)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>`,
+gate:`<path d="M20 86V48a30 30 0 0 1 60 0v38" fill="none" stroke="currentColor" stroke-width="10"/><path d="M37 86V60a13 13 0 0 1 26 0v26z" fill="currentColor"/>`,
+arrows:`<g fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><path d="M32 17 17 32l15 15M17 32h55M68 83l15-15-15-15M83 68H28"/></g>`
+};
+const LOGOC=[
+['handoff','Handoff','Two halves of one circle, one slightly ahead of the other, like something being passed between two hands.','<b>My pick.</b> Strongest at tiny sizes and animates well: the halves can slide past each other on launch. Worth checking it isn\'t mistaken for a "contrast" icon.'],
+['pair','Pair','Two people, one deal. A solid circle and an outline overlapping: the buyer and the seller.','Friendly and very readable. Echoes the double o in "only" and "swap".'],
+['stack','Stack','A card being flicked off the top of a deck. The swipe feed is what makes this different from Marketplace.','Says "swipe" instantly. Card stacks are common in swipe apps, so it\'s less unique.'],
+['splits','Split S','An S built from two separate hooks that fit together. Two pieces, one swap.','Most "brand name" of the set. Great on stickers and merch, less obvious about what the app does.'],
+['tag','Swap tag','A price tag with the exchange built in: the tag hole and two arrows cut out of the shape.','Clearest about being a marketplace. Most detail, so it gets busy at 16px.'],
+['gate','Gate','A campus archway with a doorway inside. Only people from here get in.','The only one that says "campus". Doesn\'t say "buying and selling" on its own.']
+];
+function lsvg(k){return `<svg viewBox="0 0 100 100">${LOGO[k]}</svg>`}
+function mark(s,bg,fg){const g=Math.round(s*.62);return `<span class="lm" style="width:${s}px;height:${s}px;border-radius:${Math.round(s*.28)}px;background:${bg};color:${fg};--cut:${bg}"><svg class="lgm" width="${g}" height="${g}" viewBox="0 0 100 100"><use href="#lg-cur"/></svg></span>`}
+let CURLOGO='handoff';
+function setLogo(k){CURLOGO=k;document.getElementById('lg-cur').innerHTML=LOGO[k];
+document.querySelectorAll('.lgc').forEach(c=>c.classList.toggle('on',c.dataset.k===k));
+document.querySelectorAll('#logo button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));}
+document.getElementById('lg-cur').innerHTML=LOGO[CURLOGO];
+// toolbar: logo switch + live brand mark
+(function(){const top=document.querySelector('.top');const seg=document.createElement('div');seg.className='seg';seg.id='logo';
+seg.innerHTML=LOGOC.map(([k,n])=>`<button data-k="${k}" class="${k===CURLOGO?'on':''}" title="${n}" style="padding:6px 8px"><span class="lm" style="width:20px;height:20px;border-radius:6px;background:#111;color:#C8E27D;--cut:#111"><svg width="13" height="13" viewBox="0 0 100 100">${LOGO[k]}</svg></span></button>`).join('');
+top.insertBefore(seg,document.getElementById('zoom'));
+seg.querySelectorAll('button').forEach(b=>b.onclick=()=>setLogo(b.dataset.k));
+const bm=document.querySelector('.brandx .lm');bm.style.setProperty('--cut','#111');bm.innerHTML=`<svg width="18" height="18" viewBox="0 0 100 100"><use href="#lg-cur"/></svg>`;})();
+
+/* ================= L · LOGO ================= */
+add('L','Logo directions','Click any card (or use the logo switch in the top bar) and that mark replaces the logo on every screen in this file: launch, welcome, notifications, admin and the system panel.',
+`<div class="th lgwrap"><div class="lggrid">${LOGOC.map(([k,n,idea,note],i)=>`<div class="lgc ${k===CURLOGO?'on':''}" data-k="${k}" onclick="setLogo('${k}')">
+<span class="tag ink lgbadge">${ic('check',12,'b')} In use</span>
+<div class="lgh"><b>0${i+1}</b><span>${n}</span></div><p class="lgidea">${idea}</p>
+<div class="lgrow"><div class="lgi a" style="width:92px;height:92px">${lsvg(k)}</div><div class="lgi b" style="width:92px;height:92px">${lsvg(k)}</div>
+<div class="lgsz">${[40,28,20,16].map(s=>`<div><div class="lgi a" style="width:${s}px;height:${s}px">${lsvg(k)}</div>${s}</div>`).join('')}</div></div>
+<div class="lglk"><div class="l1">${lsvg(k)}onlyswap</div><div class="l2">${lsvg(k)}onlyswap</div></div>
+<p class="lgnote">${note}</p></div>`).join('')}</div></div>`,{w:1});
+
+add('L','On a home screen','All six at real size between other apps. The ones that still read clearly at 62px on a busy wallpaper are the ones worth keeping.',
+`<div class="hsw"><div class="hsg">${Array.from({length:16},(_,i)=>{const j=[1,4,7,9,12,14].indexOf(i);return j>=0?`<div class="hsa"><div class="lgi a">${lsvg(LOGOC[j][0])}</div>${LOGOC[j][1]}</div>`:`<div class="hsa"><div class="lgi ghost"></div>&nbsp;</div>`}).join('')}</div>
+<div class="hsdock"><div></div><div></div><div></div><div></div></div>
+<div style="position:absolute;top:0;left:0;right:0;color:#fff">${sb()}</div></div>`,{hi:'l'});
+</script>

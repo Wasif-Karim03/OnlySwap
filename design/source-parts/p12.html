@@ -1,0 +1,81 @@
+<style>
+/* launch sequence phone */
+@keyframes lmIn2{0%{transform:scale(.55);opacity:0}9%{transform:scale(1.08);opacity:1}14%,100%{transform:scale(1);opacity:1}}
+@keyframes wmIn2{0%,7%{transform:translateY(14px);opacity:0}16%,100%{transform:translateY(0);opacity:1}}
+@keyframes lnOut{0%,52%{opacity:1}66%,96%{opacity:0}100%{opacity:1}}
+@keyframes wlIn{0%,52%{opacity:0;transform:scale(1.05)}68%,94%{opacity:1;transform:scale(1)}100%{opacity:0}}
+.lau .lyr{position:absolute;inset:0}
+.lau .l1{animation:lnOut 4.6s infinite;z-index:2}
+.lau .l1 .lm{animation:lmIn2 4.6s cubic-bezier(.2,.9,.25,1.2) infinite}
+.lau .l1 .wmk{animation:wmIn2 4.6s cubic-bezier(.2,.8,.2,1) infinite}
+.lau .l2{animation:wlIn 4.6s cubic-bezier(.2,.8,.2,1) infinite}
+/* micro-interaction panel */
+.mip{width:1380px;background:var(--bg);color:var(--ink);border-radius:24px;padding:26px;box-shadow:0 0 0 1px rgba(0,0,0,.08);display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.mt{border:1px solid var(--line);border-radius:18px;padding:14px}
+.mt h4{font-size:15px;font-weight:750;letter-spacing:-.01em}
+.dmf{height:160px;border-radius:14px;background:var(--bg2);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;margin-top:10px}
+.spec{margin-top:10px;font-size:12.5px;line-height:1.55;color:var(--ink2)}
+.spec b{color:var(--ink);font-weight:650}
+@keyframes press{0%,40%,100%{transform:scale(1)}48%{transform:scale(.96)}62%{transform:scale(1.01)}70%{transform:scale(1)}}
+@keyframes pop{0%,30%{transform:scale(1)}38%{transform:scale(1.3)}46%{transform:scale(.94)}54%,100%{transform:scale(1)}}
+@keyframes fillon{0%,32%{opacity:0}36%,88%{opacity:1}100%{opacity:0}}
+@keyframes roll{0%,32%{transform:translateY(0)}42%,88%{transform:translateY(-22px)}100%{transform:translateY(0)}}
+@keyframes cardfly{0%,15%{transform:translate(0,0) rotate(0)}45%{transform:translate(46px,-4px) rotate(8deg)}60%{transform:translate(260px,-20px) rotate(22deg);opacity:1}61%{opacity:0;transform:translate(0,0)}75%{opacity:0;transform:scale(.95)}90%,100%{opacity:1;transform:scale(1)}}
+@keyframes toastin{0%,10%{transform:translateY(80px);opacity:0}20%,75%{transform:translateY(0);opacity:1}85%,100%{transform:translateY(80px);opacity:0}}
+@keyframes circ{0%,10%{transform:scale(.4);opacity:0}24%{transform:scale(1.08);opacity:1}30%,90%{transform:scale(1);opacity:1}100%{opacity:0}}
+@keyframes draw{0%,24%{stroke-dashoffset:30}40%,90%{stroke-dashoffset:0}100%{stroke-dashoffset:0;opacity:0}}
+@keyframes sheetup{0%,12%{transform:translateY(100%)}30%,70%{transform:translateY(0)}86%,100%{transform:translateY(100%)}}
+@keyframes scrimf{0%,12%{opacity:0}30%,70%{opacity:1}86%,100%{opacity:0}}
+@keyframes pull{0%,10%{transform:translateY(0)}30%,65%{transform:translateY(46px)}80%,100%{transform:translateY(0)}}
+@keyframes spinop{0%,12%{opacity:0}30%,65%{opacity:1}75%,100%{opacity:0}}
+@keyframes xa{0%,45%{opacity:1}55%,95%{opacity:0}100%{opacity:1}}
+@keyframes xb{0%,45%{opacity:0}55%,95%{opacity:1}100%{opacity:0}}
+@keyframes pushin{0%,20%{transform:translateX(100%)}40%,80%{transform:translateX(0)}95%,100%{transform:translateX(100%)}}
+@keyframes pushout{0%,20%{transform:translateX(0);filter:brightness(1)}40%,80%{transform:translateX(-30%);filter:brightness(.8)}95%,100%{transform:translateX(0);filter:brightness(1)}}
+@keyframes shake{0%,30%,100%{transform:translateX(0)}34%{transform:translateX(-8px)}38%{transform:translateX(7px)}42%{transform:translateX(-5px)}46%{transform:translateX(3px)}50%{transform:translateX(0)}}
+.mini2{position:absolute;inset:14px 24px;border-radius:12px;background:var(--bg);box-shadow:0 0 0 1px var(--line);overflow:hidden}
+.rowsk{height:12px;margin:12px 14px 0}
+/* admin quad */
+.rv{border:1.5px solid var(--red);border-radius:14px;padding:14px;margin-top:14px}
+</style>
+<script>
+/* ---- make the A1 launch frame animate on the board ---- */
+S.forEach(s=>{if(s.sec==='A'&&s.name==='Launch'){s.html=s.html.replace('<div class="scr" style="background:var(--acc);color:var(--onacc)">','<div class="scr launchanim" style="background:var(--acc);color:var(--onacc)">').replace('<div style="font-size:36px;font-weight:800;letter-spacing:-.055em">onlyswap</div>','<div class="wmk" style="font-size:36px;font-weight:800;letter-spacing:-.055em">onlyswap</div>');s.note+=' On the real device the system launch screen is static (Apple\'s rule), and this animation plays on the very first frame the app draws.'}});
+
+/* ================= G · ADMIN QUAD ================= */
+add('G','Admin · Quad','Anonymous posts are reviewed without seeing who wrote them. Revealing an account is a separate, logged action, only for threats, danger or legal requests.',
+desk('Quad','quad',`<div class="mh"><h1>Quad moderation</h1><div class="sg" style="width:360px"><div class="on">Queue · 9</div><div>Auto-hidden</div><div>Resolved</div></div><div class="dd">Ohio State ${ic('down',14)}</div></div>
+<div style="display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:14px">
+<div class="pn" style="padding:4px 8px;overflow:hidden"><table class="tb2 wr"><tr><th>Why it's here</th><th>Post</th><th>Score</th><th>Reports</th><th>Age</th></tr>
+${[['rd','Self-harm language','Text hidden in the list. Open to read.','0','1','8m'],['am','Filter: name','Tyler on the 7th floor of Baker needs to stop blasting music at 3am...','0','0','12m',1],['am','Reported','the girl in my 9am stats lecture who always...','-3','4','20m'],['gy','Auto-hidden','ok but who actually likes the new dining hall','-5','2','1h'],['gy','Reported','Prof. Hale\'s midterm was a war crime','44','2','3h']].map(([c,s,p,v,r,t,on])=>`<tr class="${on?'cur':''}"><td><span class="tag ${c}">${s}</span></td><td style="color:var(--ink2)">${p}</td><td>${v}</td><td>${r}</td><td style="color:var(--ink3)">${t}</td></tr>`).join('')}</table></div>
+<div class="pn"><div style="display:flex;gap:8px;align-items:center"><span class="tag am">Held by filter</span><span class="mi">Possible student name · never shown publicly</span></div>
+<div class="ev" style="margin-top:12px"><div style="font-size:15px;line-height:1.45"><span class="hl2">Tyler</span> on the 7th floor of Baker needs to stop blasting music at 3am every single night</div></div>
+<div class="kv" style="margin-top:12px"><div><span>Author</span><b style="font-weight:600">Anonymous · account hidden</b></div><div><span>Quad strikes</span><b style="font-weight:600">1</b></div><div><span>Posts · karma</span><b style="font-weight:600">23 · 1,284</b></div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px"><div class="btn s sm3">Approve</div><div class="btn k sm3">Remove</div><div class="btn s sm3">Remove + strike</div><div class="btn s sm3">Mute 6 hours</div></div>
+<div class="rv"><div style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--red)">${ic('lock',18)}</span><div style="flex:1"><div class="t" style="font-size:14.5px">Reveal account</div><div class="s" style="font-size:12.5px">Only for threats, someone in danger, or a legal request. You must give a reason, and it's saved to the audit log.</div></div></div><div class="btn s sm3" style="margin-top:10px;color:var(--red);width:100%">Reveal with reason…</div></div></div></div>`),{w:1});
+
+/* ================= M · MOTION ================= */
+add('M','Launch sequence','Loops every few seconds. The mark springs in, the wordmark rises under it, then the whole screen dissolves into Welcome. About 1.2 seconds on a real phone.',
+`<div class="scr lau"><div class="lyr l2">${S.find(s=>s.sec==='A'&&s.name==='Welcome').html}</div>
+<div class="lyr l1" style="background:var(--acc);color:var(--onacc);display:flex;flex-direction:column"><div style="color:var(--onacc)">${sb()}</div><div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding-bottom:50px">${mark(96,'var(--markbg)','var(--markfg)')}<div class="wmk" style="font-size:36px;font-weight:800;letter-spacing:-.055em">onlyswap</div></div></div></div>`);
+
+function mt(t,demo,spec){return `<div class="mt"><h4>${t}</h4><div class="dmf">${demo}</div><div class="spec">${spec}</div></div>`}
+add('M','Micro-interactions','Every one of these is playing live. Timings follow Apple and Material guidance; spring values are tuned for React Native Reanimated. With Reduce Motion on, slides and bounces become simple fades.',
+`<div class="th mip">
+${mt('Button press',`<div class="btn p" style="width:190px;animation:press 1.6s infinite">Send offer</div>`,'<b>Scale 0.96</b> over 100ms, spring back on release. No haptic, it would get annoying.')}
+${mt('Save',`<div style="position:relative;width:64px;height:64px;border-radius:32px;background:var(--bg);display:flex;align-items:center;justify-content:center;animation:pop 2s infinite">${ic('bookmark',28)}<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;animation:fillon 2s infinite">${ic('bookmark',28,'fillb')}</div></div>`,'<b>1 → 1.3 → 1</b> spring (damping 10, stiffness 200), fills in, count updates instantly. <b>Light haptic.</b>')}
+${mt('Upvote',`<div style="display:flex;flex-direction:column;align-items:center;gap:4px"><span style="width:44px;height:40px;border-radius:12px;background:var(--acc);color:var(--onacc);display:flex;align-items:center;justify-content:center;animation:pop 2s infinite">${ic('chup',26,'b')}</span><div style="height:22px;overflow:hidden;font-weight:800;font-size:18px;font-variant-numeric:tabular-nums"><div style="animation:roll 2s infinite"><div style="height:22px">213</div><div style="height:22px">214</div></div></div></div>`,'Arrow pops, number <b>rolls up</b> like an odometer. <b>Selection haptic.</b>')}
+${mt('Card swipe',`<div class="im" style="width:100px;height:130px;border-radius:14px;${I('fridge',300)};animation:cardfly 2.6s cubic-bezier(.3,.7,.3,1) infinite;box-shadow:0 8px 20px rgba(0,0,0,.2)"></div>`,'Rotates up to <b>±12°</b> with the drag. Commits past <b>35% of the width</b> or a fast flick (800px/s). <b>Light haptic</b> at the commit point. Next card grows 0.95 → 1.')}
+${mt('Skeleton',`<div class="mini2"><div class="sk rowsk" style="height:70px;margin-top:14px"></div><div class="sk rowsk" style="width:60%"></div><div class="sk rowsk" style="width:40%"></div></div>`,'<b>1.3s</b> linear shimmer. Only after <b>300ms</b> of waiting. Reduce Motion: a slow opacity pulse instead.')}
+${mt('Toast',`<div class="toastx" style="position:absolute;left:14px;right:14px;bottom:14px;animation:toastin 3.2s cubic-bezier(.2,.8,.2,1) infinite">${ic('check',17,'b')}<span>Saved</span><b>${ic('undo',16,'b')} Undo</b></div>`,'Slides up in <b>220ms</b>, stays <b>4s</b> when it has Undo, fades out in <b>180ms</b>.')}
+${mt('Success',`<svg width="84" height="84" viewBox="0 0 84 84"><circle cx="42" cy="42" r="40" fill="var(--acc)" style="transform-origin:center;animation:circ 2.4s infinite"/><path d="M26 43l11 11 22-23" fill="none" stroke="var(--onacc)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="30" style="animation:draw 2.4s infinite" pathLength="30"/></svg>`,'Circle springs in, check <b>draws over 350ms</b>, holds <b>800ms</b>, then moves on. <b>Success haptic.</b>')}
+${mt('Typing',`<div class="typing" style="align-self:center"><i></i><i></i><i></i></div>`,'Three dots, <b>1.2s</b> wave. Shows within 1 second of the other person typing and hides after 4 seconds of silence.')}
+${mt('Bottom sheet',`<div class="mini2"><div style="position:absolute;inset:0;background:rgba(0,0,0,.35);animation:scrimf 3s infinite"></div><div style="position:absolute;left:0;right:0;bottom:0;height:62%;background:var(--bg);border-radius:14px 14px 0 0;animation:sheetup 3s cubic-bezier(.2,.8,.2,1) infinite;padding:8px"><div class="grab" style="margin-bottom:8px"></div><div class="sk rowsk" style="margin:0 6px 8px"></div><div class="sk rowsk" style="margin:0 6px;width:60%"></div></div></div>`,'Up in <b>350ms</b>, down in <b>220ms</b>. Drag down to dismiss. Asks before throwing away a half-typed offer.')}
+${mt('Pull to refresh',`<div class="mini2"><div style="position:absolute;top:12px;left:50%;margin-left:-13px;width:26px;height:26px;border-radius:13px;border:3px solid var(--line2);border-top-color:var(--ink);animation:spin 1s linear infinite,spinop 2.8s infinite"></div><div style="animation:pull 2.8s cubic-bezier(.2,.8,.2,1) infinite;background:var(--bg);position:absolute;inset:0"><div class="rowsk" style="height:40px;background:var(--bg2);border-radius:10px;margin-top:14px"></div><div class="rowsk" style="height:40px;background:var(--bg2);border-radius:10px"></div></div></div>`,'Native pull-to-refresh on the feed, inbox and Quad. New items slide in from the top.')}
+${mt('Tab switch',`<div class="mini2"><div style="position:absolute;inset:0;padding:14px;animation:xa 2.4s infinite"><div class="hs">Discover</div><div class="sk rowsk" style="height:70px;margin:10px 0 0"></div></div><div style="position:absolute;inset:0;padding:14px;animation:xb 2.4s infinite"><div class="hs">The Quad</div><div class="rowsk" style="height:14px;background:var(--bg2);margin:12px 0 0;border-radius:6px"></div><div class="rowsk" style="height:14px;width:70%;background:var(--bg2);margin:8px 0 0;border-radius:6px"></div></div></div>`,'<b>No slide.</b> A quick 150ms crossfade and a <b>selection haptic</b>. Tabs keep their scroll position.')}
+${mt('Wrong code',`<div class="code" style="margin:0;animation:shake 1.8s infinite;width:220px">${['4','8','1','2'].map(d=>`<div class="cd" style="height:46px;font-size:20px;background:var(--redbg);color:var(--red)">${d}</div>`).join('')}</div>`,'Boxes shake <b>3 times in 300ms</b> with an <b>error haptic</b>, then clear themselves.')}
+</div>`,{w:1});
+
+add('M','Clickable prototype','Tap the phone to move through the main flow with the real transitions. Use the list to jump anywhere, or the arrow keys.',
+`<div class="th plw" id="plw"></div>`,{w:1});
+</script>

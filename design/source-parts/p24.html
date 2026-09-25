@@ -1,0 +1,79 @@
+<style>
+.funnel{display:flex;flex-direction:column;gap:8px}
+.funnel div{display:flex;align-items:center;gap:12px;font-size:13.5px}
+.funnel i{height:26px;border-radius:7px;background:var(--ink);display:block}
+.funnel span{width:130px;color:var(--ink2);flex:none}
+.coh td{text-align:center}
+.og{width:1200px;height:630px;border-radius:14px;overflow:hidden;display:grid;grid-template-columns:630px 1fr;background:var(--bg);color:var(--ink);box-shadow:0 0 0 1px rgba(0,0,0,.09),0 30px 60px -24px rgba(0,0,0,.28)}
+.imsg{align-self:flex-end;width:250px;border-radius:18px;overflow:hidden;background:var(--bg2);margin-top:4px}
+.imsg .im{height:130px}
+.fg{width:1024px;height:500px;border-radius:14px;overflow:hidden;background:var(--acc);color:var(--onacc);position:relative;box-shadow:0 0 0 1px rgba(0,0,0,.09),0 30px 60px -24px rgba(0,0,0,.28)}
+</style>
+<script>
+/* ===== 3. admin ===== */
+add('G','Admin · sign in','Admin access gets a second step: an authenticator code on top of the email code. One stolen email shouldn\'t unlock every student\'s account.',
+wf('admin.onlyswap.app/login',`<div style="height:800px;display:flex;align-items:center;justify-content:center;background:var(--bg2)"><div style="width:420px;background:var(--bg);border-radius:24px;padding:40px;box-shadow:0 20px 50px -20px rgba(0,0,0,.2)">
+<div style="display:flex;align-items:center;gap:8px;font-size:22px;font-weight:800;letter-spacing:-.05em">${mark(34,'var(--acc)','var(--onacc)')}onlyswap <span class="tag gy" style="letter-spacing:0">Admin</span></div>
+<div class="hm" style="margin-top:28px">Two-step check</div><p class="bd" style="margin-top:6px">Enter the 6-digit code from your authenticator app.</p>
+<div class="code" style="margin-top:22px">${['2','9','4','','',''].map((d,i)=>`<div class="cd ${i===3?'f':''}">${d}${i===3?'<span class="caret"></span>':''}</div>`).join('')}</div>
+<div class="btn p dis" style="margin-top:20px">Sign in</div>
+<div class="mi" style="margin-top:18px;line-height:1.5">Admin sessions end after 8 hours. Every sign-in is recorded in the audit log.</div></div></div>`),{w:1});
+
+add('G','Admin · users','Every account on the campus, searchable and filterable, with the numbers that flag trouble early: reports against, no-shows, and a quick status.',
+desk('Users','users',`<div class="mh"><h1>Users</h1><div class="in" style="width:280px;height:38px;font-size:14px;border-radius:10px">${ic('search',16,'mu')}<span style="color:var(--ink3)">Name or email</span></div><div class="sg" style="width:380px"><div class="on">All · 1,284</div><div>Flagged · 6</div><div>Suspended · 2</div><div>New</div></div></div>
+<div class="pn" style="padding:4px 8px"><table class="tb2"><tr><th>Student</th><th>Year</th><th>Joined</th><th>Listings</th><th>Swaps</th><th>Thumbs</th><th>Reports</th><th>No-shows</th><th>Status</th></tr>
+${[['W','Wasif K.','Sophomore','Aug 22','3','12','12/12','0','0','gn','Active'],['D','Devin P.','Sophomore','Aug 24','4','9','9/9','0','0','gn','Active'],['B','Ben O.','Freshman','Sep 2','2','0','0/0','3','0','rd','Suspended'],['A','Aisha K.','Junior','Aug 30','1','4','4/4','0','0','gn','Active'],['S','Sam W.','Senior','Sep 1','2','2','1/2','1','2','am','Flagged'],['T','Tyler V.','Junior','Aug 25','0','1','0/1','3','0','rd','Banned'],['J','Jess M.','Freshman','Sep 22','2','0','0/0','0','0','gy','New']].map(([i,n,y,j,l,s,t,r,ns,c,st])=>`<tr><td><span style="display:flex;gap:8px;align-items:center">${av(i,AVC[i],28)}<b style="font-weight:650">${n}</b></span></td><td>${y}</td><td style="color:var(--ink3)">${j}</td><td>${l}</td><td>${s}</td><td>${t}</td><td style="${+r?'color:var(--red);font-weight:700':''}">${r}</td><td style="${+ns?'color:var(--amber);font-weight:700':''}">${ns}</td><td><span class="tag ${c}">${st}</span></td></tr>`).join('')}</table></div>`),{w:1});
+
+add('G','Admin · chats','Who is talking to whom, about what, and how far the deal got. Message text stays hidden unless there\'s an open report, and opening it is logged.',
+desk('Chats','chats',`<div class="mh"><h1>Chats</h1><div class="sg" style="width:320px"><div class="on">All · 418</div><div>With a report · 2</div><div>Stalled</div></div></div>
+<div style="display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:14px">
+<div class="pn" style="padding:4px 8px"><table class="tb2"><tr><th>Between</th><th>Item</th><th>Stage</th><th>Last message</th></tr>
+${[['Wasif K. · Aisha K.','Dell monitor · $50','<span class="tag gn">Sold</span>','2h',0],['Maya R. · Ben O.','Desk lamp','<span class="tag rd">Reported</span>','12m',1],['Leo M. · Wasif K.','Trek bike · $100','<span class="tag am">Meetup set</span>','1h',0],['Grace T. · Wasif K.','Textbooks · $25','<span class="tag gn">Sold</span>','Sep 14',0],['Sam W. · Chris A.','Switch · $150','<span class="tag gy">Stalled</span>','4d',0]].map(([b,i,s,t,on])=>`<tr class="${on?'cur':''}"><td style="font-weight:650">${b}</td><td>${i}</td><td>${s}</td><td style="color:var(--ink3)">${t}</td></tr>`).join('')}</table></div>
+<div class="pn"><div class="hs">Maya R. and Ben O.</div><div class="mi">About: Desk lamp · started Sep 24</div>
+<div class="kv" style="margin-top:12px"><div><span>Offer</span><b style="font-weight:600">$6, declined</b></div><div><span>Messages</span><b style="font-weight:600">7 (6 from Ben)</b></div><div><span>Meetup</span><b style="font-weight:600">None</b></div><div><span>Open report</span><b style="font-weight:600;color:var(--red)">#R-2291 · threat</b></div></div>
+<div class="card" style="margin-top:10px;display:flex;gap:10px;align-items:flex-start">${ic('lock',18)}<div><div class="t" style="font-size:14px">Messages are private</div><div class="s" style="font-size:12.5px">You can read them only because of the open report. This will be logged.</div></div></div>
+<div class="btn k sm3" style="margin-top:12px;width:100%">Open messages for report #R-2291</div></div></div>`),{w:1});
+
+add('G','Admin · metrics','The health numbers from the research, all on one page: the funnel from opening the app to a sale, retention by signup week, and the liquidity signals that warn you before a campus goes quiet.',
+desk('Metrics','metrics',`<div class="mh"><h1>Metrics</h1><div class="dd">Ohio State ${ic('down',14)}</div><div class="dd">Last 30 days ${ic('down',14)}</div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+<div class="pn"><h3>Funnel <span class="mi">people</span></h3><div class="funnel">${[['Opened the app',1284,100],['Swiped 10+ cards',1012,79],['Made an offer',538,42],['Offer accepted',341,27],['Met up',262,20],['Marked sold',231,18]].map(([l,n,p])=>`<div><span>${l}</span><i style="width:${p*2.6}px;${p<30?'background:var(--acc)':''}"></i><b>${n.toLocaleString()}</b></div>`).join('')}</div></div>
+<div class="pn"><h3>Retention by signup week</h3><table class="tb2 coh"><tr><th style="text-align:left">Week</th><th>Users</th><th>Day 1</th><th>Day 7</th><th>Day 30</th></tr>
+${[['Aug 25',412,'48%','31%','22%'],['Sep 1',366,'51%','34%','24%'],['Sep 8',290,'46%','29%','—'],['Sep 15',216,'53%','—','—']].map(r=>`<tr><td style="text-align:left">${r[0]}</td>${r.slice(1).map((c,i)=>`<td style="${i&&c!=='—'?`background:rgba(23,128,74,${parseInt(c)/100})`:''}">${c}</td>`).join('')}</tr>`).join('')}</table></div>
+<div class="pn" style="grid-column:span 2"><h3>Liquidity warnings</h3><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">${[['Sessions that ran out of feed','22%','up from 14%','dn'],['New listings per day','14','down 30% this week','dn'],['Median time to first offer','3.2h','steady','up'],['Chats with no reply in 24h','19%','steady','up']].map(([a,b,c,d])=>`<div class="kp"><span>${a}</span><b>${b}</b><em class="${d}">${c}</em></div>`).join('')}</div></div></div>`),{w:1});
+
+/* ===== 11. web ===== */
+add('W','Waitlist joined','What someone sees after joining from a school that isn\'t open yet. It turns waiting into something to do: share your link, watch the number move.',
+wf('onlyswap.app/joined',`<div class="lnav">${WL()}<div style="margin-left:auto" class="wbtn k">Get the app</div></div>
+<div style="height:724px;display:flex;align-items:center;justify-content:center"><div style="width:620px;text-align:center"><div class="okc" style="margin:0 auto;width:100px;height:100px;border-radius:50px">${ic('check',48,'b')}</div>
+<div class="lh2" style="margin-top:28px">You're on the list at Michigan</div><p class="llead" style="margin-top:14px">You're number 213. Michigan opens once 500 students join, and we'll email wkarim@umich.edu the minute it does.</p>
+<div class="card" style="margin-top:28px;text-align:left;padding:20px"><div class="rw" style="margin:0"><span class="t">213 of 500</span><span class="sm">287 to go</span></div><div class="bar" style="margin-top:12px;height:10px"><i style="width:42.6%"></i></div>
+<div class="in" style="margin-top:18px;background:var(--bg)"><span style="flex:1">onlyswap.app/i/wasif</span><span class="wbtn k" style="height:38px;font-size:14px">${ic('copy',16)} Copy link</span></div>
+<div class="mi" style="margin-top:10px">Everyone who joins with your link counts toward opening your campus.</div></div></div></div>`),{w:1});
+
+add('W','Not found','The 404 page. A short joke that fits the product, then straight back to something useful.',
+wf('onlyswap.app/l/zz91',`<div class="lnav">${WL()}<div style="margin-left:auto" class="wbtn k">Get the app</div></div>
+<div style="height:724px;display:flex;align-items:center;justify-content:center"><div style="width:560px;text-align:center"><div style="font-size:150px;font-weight:800;letter-spacing:-.07em;line-height:.9">404</div>
+<div class="lh2" style="margin-top:18px;font-size:40px">Looks like this one already sold.</div><p class="llead" style="margin-top:12px">The page you're after doesn't exist anymore. It happens, stuff moves fast here.</p>
+<div style="display:flex;gap:10px;justify-content:center;margin-top:28px"><div class="wbtn p">Browse what's new</div><div class="wbtn s">Go home</div></div></div></div>`),{w:1});
+
+add('W','Share image','The preview image made automatically for every shared listing (1200 × 630). This is what shows up in iMessage, GroupMe and Instagram DMs, so it carries the photo, the price and the campus.',
+`<div class="th og"><div class="im" style="${I('fridge',1200)}"></div><div style="padding:56px 52px;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;gap:10px;font-size:28px;font-weight:800;letter-spacing:-.05em">${mark(44,'var(--acc)','var(--onacc)')}onlyswap</div>
+<div style="font-size:108px;font-weight:800;letter-spacing:-.06em;line-height:1;margin-top:auto">$40</div><div style="font-size:38px;font-weight:750;letter-spacing:-.035em;line-height:1.1;margin-top:8px">Mini fridge, 3.1 cu ft</div>
+<div style="display:flex;gap:10px;margin-top:22px"><span class="tag gy" style="font-size:18px;padding:8px 14px">Good condition</span><span class="tag ac" style="font-size:18px;padding:8px 14px">Ohio State only</span></div></div></div>`,{w:1});
+
+add('W','Link preview','How that image looks inside a real group chat. The one card does the selling before anyone taps.',
+`<div class="scr" style="background:#fff;color:#111">${sb()}<div class="nv" style="flex-direction:column;height:auto;padding-bottom:10px;border-bottom:1px solid #eee"><div style="display:flex;width:100%;align-items:center"><span style="color:#007AFF">${ic('back',24)}</span><div style="flex:1;display:flex;flex-direction:column;align-items:center">${av('M','#E6E6EA',40)}<div style="font-size:12px;margin-top:4px">Morrill 7th floor ${ic('chev',11)}</div></div><span style="width:24px"></span></div></div>
+<div class="msgs" style="--bg2:#E9E9EB;--ink:#111"><div class="sys" style="color:#8e8e93">Today 4:12 PM</div><div class="m th">anyone need a fridge still? devin is selling his</div>
+<div class="imsg" style="align-self:flex-start"><div class="im" style="${I('fridge',500)};height:150px;position:relative"><span style="position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.72);color:#fff;font-weight:800;font-size:16px;padding:4px 8px;border-radius:8px">$40</span></div><div style="padding:9px 12px"><div style="font-size:13.5px;font-weight:650">Mini fridge, 3.1 cu ft · $40</div><div style="font-size:12px;color:#8e8e93">onlyswap.app</div></div></div>
+<div class="m me" style="background:#007AFF;color:#fff">omg yes how do I get on this</div><div class="m th">need ur osu email, takes like a minute</div></div>
+<div class="cmp" style="border-color:#eee"><div class="ib" style="background:#eee;color:#8e8e93">${ic('plus',22)}</div><div class="in" style="flex:1;height:38px;border-radius:19px;background:#fff;box-shadow:inset 0 0 0 1px #ddd;font-size:16px;color:#8e8e93">iMessage</div></div></div>`);
+
+/* ===== 12. Play feature graphic ===== */
+add('T','Play feature graphic','Google Play requires a 1024 × 500 banner at the top of the listing. Kept simple: the name, one line, and the app itself.',
+`<div class="th fg"><div style="position:absolute;left:64px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;width:470px">
+<div style="display:flex;align-items:center;gap:12px;font-size:40px;font-weight:800;letter-spacing:-.055em">${mark(62,'#0F0F0F','var(--acc)')}onlyswap</div>
+<div style="font-size:44px;font-weight:800;letter-spacing:-.045em;line-height:1.05;margin-top:26px">Buy and sell with students at your school.</div></div>
+<div style="position:absolute;right:170px;top:60px;transform:rotate(-6deg)">${phmini('Q','Quad',.52)}</div><div style="position:absolute;right:40px;top:34px;transform:rotate(5deg)">${phmini('B','Swipe',.56)}</div></div>`,{w:1});
+</script>

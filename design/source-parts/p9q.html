@@ -1,0 +1,93 @@
+<script>
+/* ================= Q · THE QUAD ================= */
+function votes(n,st=''){return `<div class="qv ${st}"><span class="u">${ic('chup',22,'b')}</span><b>${n}</b><span class="d">${ic('chdn',22,'b')}</span></div>`}
+function qpost(o){return `<div class="qp"><div style="flex:1;min-width:0"><div class="qm">${o.fl?`<span class="qf">${o.fl}</span>`:''}<span>${o.time}</span></div><div class="qt">${o.text}</div>${o.img?`<div class="im qimg" style="${I(o.img,600)}"></div>`:''}${o.poll||''}<div class="qa">${ic('chat',16)} ${o.rep}<span style="margin-left:16px;display:flex">${ic('share',16)}</span><span style="margin-left:auto;display:flex">${ic('more',18)}</span></div></div>${votes(o.v,o.st)}</div>`}
+function qhead(a){return `<div class="qhd"><div><h2>The Quad</h2><div class="mi">${ic('lock',13)} Anonymous · Ohio State only</div></div><div style="display:flex"><div class="ib">${ic('bell',22)}</div><div class="ib" style="margin-right:-6px">${ic('user',22)}</div></div></div><div class="qtabs">${['Hot','New','Top'].map(x=>`<span class="${x===a?'on':''}">${x}</span>`).join('')}</div>`}
+const POLL=`<div style="margin-top:8px">${[['Buckeye Donuts',41,1],['Insomnia Cookies',33],['Waffle House',26]].map(([t,p,me])=>`<div class="po ${me?'me':''}"><i style="width:${p}%"></i><span>${t}${me?' '+ic('check',13,'b').replace('class="ic b"','class="ic b" style="display:inline;vertical-align:-2px"'):''}</span><b>${p}%</b></div>`).join('')}<div class="mi" style="margin-top:6px">389 votes · 6h left</div></div>`;
+
+add('Q','Welcome to the Quad','First visit only. The anonymity disclosure is in plain words, and nobody can post until they agree. Google Play requires terms acceptance before posting.',
+`<div class="scr">${sb()}${nav('x')}<div class="ct"><div style="width:64px;height:64px;border-radius:20px;background:var(--acc);color:var(--onacc);display:flex;align-items:center;justify-content:center;margin-top:6px">${ic('quad',32)}</div>
+<div class="hl" style="margin-top:18px">Say it without your name on it</div>
+<p class="bd" style="margin-top:8px">The Quad is Ohio State's anonymous board. Four things to know first.</p>
+<div class="rules">${rule('lock','Anonymous to students, not to us','Nobody here sees who you are. We keep your account on file and only share it if the law requires it or someone is in danger.')}
+${rule('users','Don\'t call out students','No names, initials, photos or dorm rooms of students in a negative way. Professors are fair game.')}
+${rule('ban','No threats, hate or harassment','These get removed and can end your account, on the Quad and the marketplace.')}
+${rule('chdn','Downvotes count','If a post drops to -5, it disappears and we take a look.')}</div>
+<div style="display:flex;gap:10px;align-items:center;margin-top:20px"><span class="cb on">${ic('check',14,'b')}</span><span class="sm" style="color:var(--ink)">I agree to the <u>Quad rules</u></span></div></div>
+${dock(`<div class="btn p">Enter the Quad</div>`)}</div>`);
+
+add('Q','Quad','Votes on the right, the same place every time. There are no names or avatars in the feed at all, only flair, time and replies. Tap the pencil to post.',
+`<div class="scr">${sb()}${qhead('Hot')}<div class="ct">
+${qpost({fl:'PSA',time:'1h',text:'The 3rd floor of Thompson finally has outlets at every table. You\'re welcome.',v:214,rep:31,st:'up'})}
+${qpost({fl:'Poll',time:'2h',text:'Best late night food near campus?',v:156,rep:48,poll:POLL})}
+${qpost({time:'3h',text:'Whoever keeps microwaving fish in the Morrill lounge at 2am, we need to talk',v:187,rep:46})}
+<div class="qhid">${ic('eye',16)} A post was hidden after too many downvotes</div>
+${qpost({fl:'Lost & found',time:'4h',text:'Found a blue Hydro Flask covered in stickers outside Dreese. Left it at the front desk.',v:76,rep:9})}</div>
+<div class="fab">${ic('edit',24)}</div>${tb('Quad')}</div>`);
+
+add('Q','Quad · new','The New tab, with a photo post. Photos go through the same filter as text before anyone sees them.',
+`<div class="scr">${sb()}${qhead('New')}<div class="ct">
+${qpost({fl:'Question',time:'2m',text:'Is the wifi dead in Lincoln Tower or is it just me',v:4,rep:3})}
+${qpost({time:'6m',text:'The Oval right now. Nobody is studying today.',img:'camp',v:38,rep:5,st:'up'})}
+${qpost({fl:'Event',time:'11m',text:'Free bagels at the Union, 2nd floor, until they run out',v:22,rep:2})}
+${qpost({time:'15m',text:'my roommate has been "going to the gym" for 3 hours and I can hear him playing Mario Kart in the lounge',v:61,rep:12})}</div>
+<div class="fab">${ic('edit',24)}</div>${tb('Quad')}</div>`);
+
+function qc(e,bg,name,text,v,t,op){return `<div class="qc"><span class="qe ${op?'qop':''}" style="${op?'':'background:'+bg}">${op?'OP':e}</span><div style="flex:1;min-width:0"><div class="qm">${name?`<b style="color:var(--ink2)">${name}</b>`:''}<span>${t}</span></div>${text}</div>${v!==null?votes(v):''}</div>`}
+add('Q','Post','Everyone in a thread gets a random emoji that sticks for that thread only, so people can follow a conversation without being trackable across posts. The original poster is always "OP".',
+`<div class="scr">${sb()}${nav('back','Post',`<div class="ib">${ic('more',22)}</div>`)}<div class="ct">
+<div class="qp" style="padding-top:4px"><div style="flex:1"><div class="qm"><span class="qe qop" style="width:28px;height:28px;font-size:10px">OP</span><span>3h</span></div><div class="qt" style="font-size:18px">Whoever keeps microwaving fish in the Morrill lounge at 2am, we need to talk</div><div class="qa">${ic('chat',16)} 46 replies</div></div>${votes(187,'up')}</div>
+${qc('🦊','#FDE3C8','','<div class="qt">it\'s a lifestyle at this point</div>',64,'2h')}
+${qc('','','','<div class="qt">if you\'re reading this and it\'s you, I have questions</div>',41,'2h',1)}
+${qc('🐸','#D8EFD0','','<div class="qt">honestly respect the commitment</div>',22,'1h')}
+${qc('🦉','#E4DCF2','','<div class="qrm">Removed for naming a student</div>',null,'1h')}
+${qc('🐙','#FAD4DC','','<div class="qt">floor 11 smells like it too so there might be two of them</div>',9,'40m')}</div>
+<div class="cmp"><span class="qe" style="background:#D2E7F5;width:36px;height:36px">🐢</span><div class="in" style="flex:1;height:42px;border-radius:21px;font-size:15px;color:var(--ink3)">Reply as 🐢</div><div class="ib f">${ic('send',19)}</div></div></div>`);
+
+add('Q','New post','The filter checks while you type. When it spots what looks like a student\'s name, it warns before posting instead of silently deleting later.',
+`<div class="scr">${sb()}<div class="nv"><div class="ib" style="margin-left:-8px">${ic('x',24)}</div><div class="tt">New post</div><div class="btn p" style="width:auto;height:34px;padding:0 16px;font-size:14.5px;border-radius:17px;opacity:.4">Post</div></div>
+<div class="ct"><div class="chips" style="margin-top:4px">${['General','Question','PSA','Lost & found','Event','Meme'].map((x,i)=>`<span class="ch sm2 ${i==0?'on':''}">${x}</span>`).join('')}</div>
+<div style="font-size:18px;line-height:1.45;margin-top:18px;letter-spacing:-.01em;min-height:90px"><mark class="nm">Tyler</mark> on the 7th floor of Baker needs to stop blasting music at 3am every single night<span class="caret" style="margin-left:1px;height:20px"></span></div>
+<div class="warnb">${ic('alert',18)}<div><b>This might name a student.</b> Posts that call out students by name get removed, even as a joke. Try "someone on 7th floor Baker" instead.</div></div>
+<div class="rw" style="margin:14px 0 0"><div style="display:flex;gap:4px;color:var(--ink2)"><div class="ib f" style="width:36px;height:36px">${ic('image',19)}</div><div class="ib f" style="width:36px;height:36px">${ic('poll',19)}</div></div><span class="mi">94 / 280 · posting anonymously</span></div></div>${kb()}</div>`);
+
+add('Q','Post blocked','Some things never post: phone numbers, emails, dorm room numbers, links to other apps. The message says exactly why and how to fix it.',
+`<div class="scr">${sb()}<div class="nv"><div class="ib" style="margin-left:-8px">${ic('x',24)}</div><div class="tt">New post</div><span style="width:60px"></span></div>
+<div class="ct"><div style="font-size:18px;line-height:1.45;margin-top:18px">selling my extra parking pass for this semester, text me at 614-555-0142</div></div>
+<div class="scrim"></div><div class="sh"><div class="grab"></div><div style="width:52px;height:52px;border-radius:16px;background:var(--amberbg);color:var(--amber);display:flex;align-items:center;justify-content:center">${ic('lock',26)}</div>
+<div class="hm" style="margin-top:14px">This can't go on the Quad</div>
+<p class="bd" style="margin-top:6px">It has a phone number in it. Numbers, emails and room numbers stay off the Quad so nobody can be tracked down.</p>
+<div class="inf">${ic('tag',18)}<span>Selling something? Post it as a listing instead. Buyers can message you there without seeing your number.</span></div>
+<div class="btn p" style="margin-top:16px">Edit post</div><div class="btn t" style="margin-top:4px">Make it a listing</div></div></div>`);
+
+add('Q','Report post','Categories match the rules, so reports can be sorted automatically. Threats and self-harm jump to the top of your queue.',
+`<div class="scr">${sb()}${qhead('Hot')}<div class="ct">${qpost({time:'3h',text:'Whoever keeps microwaving fish in the Morrill lounge at 2am, we need to talk',v:187,rep:46})}</div>${tb('Quad')}
+<div class="scrim"></div><div class="sh"><div class="grab"></div><div class="hs">What's wrong with this post?</div><div class="s" style="margin-top:4px">Reports are anonymous too.</div>
+<div class="opts" style="margin-top:14px;gap:6px">${[['Calls out a student',1],['Hate speech',0],['Threat or violence',0],['Shares private info',0],['Spam or scam',0],['Self-harm',0],['Something else',0]].map(([t,o])=>`<div class="op ${o?'on':''}" style="padding:11px 14px"><span class="rdo ${o?'on':''}"></span><span class="t" style="font-size:15px">${t}</span></div>`).join('')}</div>
+<div class="btn k" style="margin-top:14px">Report</div></div></div>`);
+
+add('Q','Your Quad','Karma goes up with upvotes and replies. Removed posts show the reason and an appeal link, so nobody is left guessing.',
+`<div class="scr">${sb()}${nav('back','Your Quad')}<div class="ct"><div class="karma"><b>1,284</b><span class="sm">karma · only you can see this</span></div>
+<div class="stats" style="margin-top:12px"><div><b>23</b><span>posts</span></div><div><b>81</b><span>replies</span></div><div><b>0</b><span>strikes</span></div></div>
+<div class="sg" style="margin-top:16px"><div class="on">Posts</div><div>Replies</div></div>
+${qpost({fl:'PSA',time:'1h',text:'The 3rd floor of Thompson finally has outlets at every table. You\'re welcome.',v:214,rep:31,st:'up'})}
+<div class="qp"><div style="flex:1"><div class="qm"><span class="tag rd">Removed</span><span>2d</span></div><div class="qt" style="color:var(--ink3)">the guy who parks his scooter across the whole Hagerty bike rack every day...</div><div class="sm" style="margin-top:8px">Reason: points to one specific person. <u style="color:var(--ink)">Appeal</u></div></div></div></div></div>`);
+
+add('Q','Muted','Strikes step up: a warning, then mutes of 1 hour, 6 hours, 1 day and 1 week, then a ban. A mute only affects the Quad, never the marketplace.',
+`<div class="scr">${sb()}${qhead('Hot')}<div class="ct" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+<div style="width:76px;height:76px;border-radius:38px;background:var(--amberbg);color:var(--amber);display:flex;align-items:center;justify-content:center">${ic('clock',36)}</div>
+<div class="hm" style="margin-top:18px">You're muted until 9:41 PM</div>
+<p class="bd" style="margin-top:8px;max-width:290px">A reply of yours called out a student by name. You can still read the Quad, vote, and use everything else in OnlySwap.</p>
+<div class="card" style="margin-top:20px;width:100%;text-align:left"><div class="rw" style="margin:0"><span class="t" style="font-size:14.5px">Strike 2 of 5</span><span class="mi">Next one: 1-day mute</span></div><div class="bar" style="margin-top:10px;height:8px"><i style="width:40%;background:var(--amber)"></i></div><div class="s" style="margin-top:10px">Strikes fade after 90 days without another one.</div></div>
+<div style="width:100%;margin-top:16px;display:flex;gap:10px"><div class="btn s" style="flex:1">Read the rules</div><div class="btn s" style="flex:1">Appeal</div></div></div>${tb('Quad')}</div>`);
+
+add('Q','Check-in','Shown when a draft contains self-harm language. It never blocks posting outright. It offers a way to talk to someone right now and quietly flags the post for a human to see first.',
+`<div class="scr">${sb()}<div class="nv"><div class="ib" style="margin-left:-8px">${ic('x',24)}</div><div class="tt">New post</div><span style="width:60px"></span></div>
+<div class="ct" style="padding-top:20px"><div style="width:64px;height:64px;border-radius:32px;background:var(--bg2);display:flex;align-items:center;justify-content:center">${ic('heart',30)}</div>
+<div class="hl" style="margin-top:18px">Before you post this</div>
+<p class="bd" style="margin-top:8px">It sounds like things might be really heavy right now. You can still post. You can also talk to someone tonight, for free.</p>
+<div class="grp" style="margin-top:20px">
+<div class="li"><span class="fic gy">${ic('phone',18)}</span><div style="flex:1"><div class="t">Call or text 988</div><div class="s">Suicide and Crisis Lifeline, any time</div></div>${ic('chev',18,'mu')}</div>
+<div class="li" style="border:0"><span class="fic gy">${ic('building',18)}</span><div style="flex:1"><div class="t">Campus counseling</div><div class="s">Your school's counseling center</div></div>${ic('chev',18,'mu')}</div></div></div>
+${dock(`<div class="btn k">Talk to someone</div><div class="btn t" style="margin-top:2px">Go back to my post</div>`)}</div>`);
+</script>

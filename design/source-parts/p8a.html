@@ -1,0 +1,64 @@
+<script>
+/* ================= G · ADMIN ================= */
+function desk(active,path,main){const n=[['grid','Overview'],['flag','Reports','7'],['tag','Listings'],['users','Users'],['quad','Quad','4'],['chat','Chats'],['building','Campuses'],['chart','Metrics'],['gear','Settings']];
+return `<div class="dk"><div class="chrome"><i></i><i></i><i></i><div class="url">${ic('lock',12)} admin.onlyswap.app/${path}</div></div><div class="dkb"><aside>
+<div style="display:flex;align-items:center;gap:8px;padding:2px 8px 18px;font-size:19px;font-weight:800;letter-spacing:-.05em">${mark(28,'var(--acc)','var(--onacc)')}onlyswap <span class="tag gy" style="margin-left:2px;letter-spacing:0">Admin</span></div>
+${n.map(([i,l,c])=>`<div class="an ${l===active?'on':''}">${ic(i,18)}${l}${c?`<span class="cn">${c}</span>`:''}</div>`).join('')}
+<div class="me">${av('W',AVC.W,28)}<span>Wasif · owner</span></div></aside><main>${main}</main></div></div>`}
+function kp(l,v,d,c){return `<div class="kp"><span>${l}</span><b>${v}</b><em class="${c}">${d}</em></div>`}
+function chart(){const L=[48,62,55,71,80,52,44],Sd=[18,22,25,27,31,26,22];const pt=a=>a.map((v,i)=>`${40+i*95},${170-v*1.8}`).join(' ');
+return `<svg viewBox="0 0 660 200" width="100%" height="190">${[0,1,2,3].map(i=>`<line x1="40" x2="640" y1="${20+i*50}" y2="${20+i*50}" stroke="var(--line)"/>`).join('')}
+<polyline points="${pt(L)}" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linejoin="round"/><polyline points="${pt(Sd)}" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linejoin="round"/>
+${L.map((v,i)=>`<circle cx="${40+i*95}" cy="${170-v*1.8}" r="3.5" fill="var(--ink)"/>`).join('')}${['Sat','Sun','Mon','Tue','Wed','Thu','Fri'].map((d,i)=>`<text x="${40+i*95}" y="196" text-anchor="middle" font-size="11" fill="var(--ink3)">${d}</text>`).join('')}</svg>
+<div style="display:flex;gap:18px;font-size:12.5px;color:var(--ink2)"><span><i class="lgd" style="background:var(--ink)"></i>New listings</span><span><i class="lgd" style="background:var(--green)"></i>Marked sold</span></div>`}
+
+add('G','Admin · overview','Headline numbers plus the liquidity metrics from the research: sell-through, time to first offer, and how often people run out of feed.',
+desk('Overview','overview',`<div class="mh"><h1>Overview</h1><div class="dd">${ic('building',16)} Ohio State ${ic('down',14)}</div><div class="dd">Last 7 days ${ic('down',14)}</div></div>
+<div class="kpis">${kp('Weekly active','1,284','+9% vs last week','up')}${kp('New listings','412','+14%','up')}${kp('Offers sent','638','+6%','up')}${kp('Marked sold','171','-3%','dn')}${kp('Open reports','7','3 safety','dn')}</div>
+<div style="display:grid;grid-template-columns:1.6fr 1fr;gap:12px;margin-top:12px"><div class="pn"><h3>Listings vs sold <span class="mi">daily</span></h3>${chart()}</div>
+<div class="pn"><h3>Liquidity</h3>${[['Sell-through, 14 days','38%'],['Median time to first offer','3.2 h'],['Sessions that ran out of feed','22%'],['Buyers per active seller','3.1'],['Accepted offers that got a reply','81%']].map(([a,b])=>`<div class="lq"><span>${a}</span><b>${b}</b></div>`).join('')}</div></div>
+<div class="pn" style="margin-top:12px"><h3>Needs attention <span class="mi">newest first</span></h3><table class="tb2"><tr><th>Type</th><th>What</th><th>Who</th><th>Auto action</th><th>Age</th></tr>
+<tr><td><span class="tag rd">Safety</span></td><td>Threat in chat</td><td>Ben O.</td><td>Chat locked</td><td>12m</td></tr>
+<tr><td><span class="tag am">Prohibited</span></td><td>Vape pods in a listing</td><td>Jake M.</td><td>Listing hidden</td><td>1h</td></tr>
+<tr><td><span class="tag gy">Rate limit</span></td><td>31 offers in 10 minutes</td><td>Kyle P.</td><td>Offers paused 24h</td><td>2h</td></tr></table></div>`),{w:1});
+
+add('G','Admin · reports','Sorted by severity. Automatic actions (hide, lock chat, rate limit) are listed so you can see what already happened while you were asleep.',
+desk('Reports','reports',`<div class="mh"><h1>Reports</h1><div class="sg" style="width:300px"><div class="on">Open · 7</div><div>Resolved</div><div>All</div></div><div class="dd">Severity ${ic('down',14)}</div></div>
+<div style="display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:14px">
+<div class="pn" style="padding:4px 8px;overflow:hidden"><table class="tb2 wr"><tr><th>Severity</th><th>Report</th><th>Against</th><th>Auto action</th><th>Age</th></tr>
+${[['rd','Safety','Threat in chat','Ben O.','Chat locked','12m',1],['rd','Safety','Pushing to meet off campus','Kyle R.','None','26m'],['am','Scam','Fake Zelle screenshot','Tyler V.','None','40m'],['am','Prohibited','Vape pods in a bundle','Jake M.','Hidden, keyword','1h'],['am','Harassment','Keeps messaging after decline','Nick D.','Rate limited','3h'],['gy','Spam','Same listing posted 6 times','Kyle P.','Hidden, duplicate','5h'],['gy','No-show','Missed 2 meetups','Sam W.','None','1d']].map(([c,s,r,a,x,t,on])=>`<tr class="${on?'cur':''}"><td><span class="tag ${c}">${s}</span></td><td>${r}</td><td>${a}</td><td style="color:var(--ink2)">${x}</td><td style="color:var(--ink3)">${t}</td></tr>`).join('')}</table></div>
+<div class="pn"><div style="display:flex;gap:8px;align-items:center"><span class="tag rd">Safety</span><span class="mi">#R-2291 · 12 min ago</span></div>
+<div class="hm" style="margin-top:8px">Threat in chat</div><div class="s">Reported by Maya R. after declining an offer on her desk lamp.</div>
+<div class="bcard" style="margin-top:14px">${av('B',AVC.B,40)}<div style="flex:1"><div class="t">Ben O.</div><div class="s">Freshman · joined 3 weeks ago · 2 earlier reports</div></div><span class="sm" style="font-weight:600;color:var(--ink)">View user</span></div>
+<div class="lbl" style="margin-top:14px">Evidence, flagged words highlighted</div>
+<div class="ev"><div class="m th">why did you decline</div><div class="m th">i know you're in <span class="hl2">morrill</span></div><div class="m th">you <span class="hl2">better</span> sell it to me</div></div>
+<div class="mi" style="margin-top:8px">Auto action: chat locked, Ben can't send new messages.</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px"><div class="btn k sm3">Suspend 7 days</div><div class="btn dr sm3">Ban</div><div class="btn s sm3">Warn</div><div class="btn s sm3">Dismiss</div></div>
+<div style="display:flex;gap:8px;align-items:center;margin-top:12px"><span class="cb on">${ic('check',14,'b')}</span><span class="sm" style="color:var(--ink)">Tell Maya we took action</span></div></div></div>`),{w:1});
+
+add('G','Admin · user','Everything about one account on one page, including swipe count, offers and who they\'ve chatted with.',
+desk('Users','users/ben-o',`<div class="mh"><div style="display:flex;align-items:center;gap:6px;color:var(--ink2);font-weight:600;margin-right:auto;font-size:15px">Users ${ic('chev',14)} <span style="color:var(--ink)">Ben O.</span></div>
+<div class="btn s" style="width:auto;padding:0 16px;height:38px;font-size:14px;border-radius:10px">Force re-verify</div><div class="btn s" style="width:auto;padding:0 16px;height:38px;font-size:14px;border-radius:10px">Unsuspend</div><div class="btn dr" style="width:auto;padding:0 16px;height:38px;font-size:14px;border-radius:10px">Ban</div></div>
+<div style="display:grid;grid-template-columns:300px 1fr;gap:14px"><div class="pn">${av('B',AVC.B,64)}<div class="hm" style="margin-top:12px">Ben O.</div><span class="tag rd" style="margin-top:6px">Suspended · 6 days left</span>
+<div class="kv" style="margin-top:14px">${[['Email','ben.o.4@osu.edu'],['Verified','Sep 2, 2026'],['School','Ohio State'],['Year','Freshman'],['Joined','Sep 2, 2026'],['Last active','12 min ago']].map(([a,b])=>`<div><span>${a}</span><b style="font-weight:600">${b}</b></div>`).join('')}</div></div>
+<div><div class="kpis" style="grid-template-columns:repeat(6,1fr)">${[['Listings','2'],['Offers made','14'],['Swipes','1,208'],['Chats','9'],['Reports against','3'],['Reports filed','0']].map(([a,b])=>`<div class="kp"><span>${a}</span><b>${b}</b></div>`).join('')}</div>
+<div class="pn" style="margin-top:12px"><div class="sg" style="width:440px;margin-bottom:10px"><div class="on">Activity</div><div>Listings</div><div>Offers</div><div>Chats</div><div>Reports</div></div>
+<table class="tb2"><tr><th>When</th><th>Event</th><th>Detail</th></tr>${[['12m','Report filed against','Threat in chat, by Maya R.'],['14m','Message sent','Chat with Maya R. about Desk lamp'],['20m','Offer declined','Maya R. declined $6 on Desk lamp ($12)'],['1h','Offer sent','$6 on Desk lamp'],['3h','Swipe session','212 cards, 0 saves, 9 offers'],['1d','Report filed against','Unwanted messages, by Chloe F.']].map(([a,b,c])=>`<tr><td style="color:var(--ink3)">${a}</td><td style="font-weight:600">${b}</td><td style="color:var(--ink2)">${c}</td></tr>`).join('')}</table></div></div></div>`),{w:1});
+
+function lc(k,t,p,s,tag,why,sel){return `<div class="lc"><div class="im" style="${I(k,400)}"><span class="cb cbx ${sel?'on':''}">${ic('check',14,'b')}</span>${tag}</div><div class="bd2"><div style="display:flex;justify-content:space-between"><span class="t el" style="font-size:14px">${t}</span><b>${p}</b></div><div class="mi">${s}</div>${why?`<div class="why">${why}</div>`:''}</div></div>`}
+add('G','Admin · listings','Flagged listings show why they were flagged. Bulk actions for the day after move-out when there are hundreds.',
+desk('Listings','listings?filter=flagged',`<div class="mh"><h1>Listings</h1><div class="in" style="width:260px;height:38px;font-size:14px;border-radius:10px">${ic('search',16,'mu')}<span style="color:var(--ink3)">Search listings</span></div><div class="sg" style="width:380px"><div>All</div><div class="on">Flagged · 5</div><div>Hidden</div><div>Removed</div></div></div>
+<div class="bulk">3 selected<span class="f">Approve</span><span>Remove</span><span>Message sellers</span></div>
+<div class="lgrid">
+${lc('sw','Switch + 2 games','$40','Tyler V. · 2h','<span class="tag am">Flagged</span>','Price 78% under similar items',1)}
+${lc('pods','AirPods Pro','$20','New account · 3h','<span class="tag am">Flagged</span>','Price far under usual, new seller',1)}
+${lc('jkt2','Puffer jacket, M','$60','Rae P. · 5h','<span class="tag am">Flagged</span>','Reported as counterfeit',1)}
+${lc('calc','Calculator + notes','$15','Omar H. · 6h','<span class="tag rd">Hidden</span>','Keyword: "exam answers"')}
+${lc('bike2','Mountain bike','$80','Luis G. · 1d','<span class="tag am">Flagged</span>','Reported as possibly stolen')}
+${lc('fridge','Mini fridge','$40','Devin P. · 12m','<span class="tag gn">Live</span>','')}
+${lc('gtr2','Squier Strat','$140','Eli W. · 1d','<span class="tag gn">Live</span>','')}
+${lc('shoe','AF1, size 10','$55','Marcus J. · 1d','<span class="tag gn">Live</span>','')}
+${lc('mw2','Microwave','$25','Devin P. · 2d','<span class="tag gn">Live</span>','')}
+${lc('sco','Kick scooter','$35','Ana L. · 2d','<span class="tag gn">Live</span>','')}</div>`),{w:1});
+
+</script>
