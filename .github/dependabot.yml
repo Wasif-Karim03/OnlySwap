@@ -1,0 +1,32 @@
+# RELEASE §3: weekly updates for npm and GitHub Actions. Expo SDK packages are
+# only updated through `npx expo install --fix`, so they are ignored here.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: 'expo'
+      - dependency-name: 'expo-*'
+      - dependency-name: '@expo/*'
+      - dependency-name: 'react'
+      - dependency-name: 'react-dom'
+      - dependency-name: 'react-native'
+      - dependency-name: 'react-native-*'
+      - dependency-name: '@react-native-community/*'
+      - dependency-name: '@shopify/flash-list'
+      - dependency-name: '@sentry/react-native'
+      - dependency-name: 'jest-expo'
+      - dependency-name: 'eslint-config-expo'
+      - dependency-name: 'typescript'
+      - dependency-name: 'react-test-renderer'
+      - dependency-name: '@types/react'
+    groups:
+      dev-tooling:
+        dependency-type: development
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
