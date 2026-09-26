@@ -9,12 +9,15 @@
     "lint": "pnpm -r --if-present lint && prettier --check .",
     "format": "prettier --write .",
     "typecheck": "pnpm -r --if-present typecheck",
-    "test": "pnpm -r --if-present test",
+    "test": "pnpm -r --if-present test && pnpm test:scripts",
     "doctor": "pnpm --filter mobile doctor",
     "verify:prebuild": "node scripts/verify/check-prebuild.mjs",
     "prepare": "simple-git-hooks",
     "secrets:scan": "gitleaks git --no-banner --redact .",
-    "scan:bundle": "node scripts/verify/scan-bundle.mjs"
+    "scan:bundle": "node scripts/verify/scan-bundle.mjs",
+    "test:scripts": "node --experimental-strip-types --test scripts/rpc-contract.test.ts && node scripts/verify/check-staging-migrations.mjs",
+    "rpc:contract": "node --experimental-strip-types scripts/rpc-contract.ts generate",
+    "rpc:check": "node --experimental-strip-types scripts/rpc-contract.ts check"
   },
   "devDependencies": {
     "prettier": "3.9.9",

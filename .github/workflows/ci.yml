@@ -30,6 +30,8 @@ jobs:
           filters: |
             db:
               - 'supabase/**'
+              - 'scripts/rpc-contract.ts'
+              - 'packages/shared/src/rpc-contract.json'
             mobile:
               - 'apps/mobile/**'
               - 'pnpm-lock.yaml'
@@ -115,5 +117,10 @@ jobs:
           version: 2.118.0
       - name: G7 start local Supabase
         run: supabase start -x studio,imgproxy,vector,logflare,supavisor,edge-runtime
-      - name: G7 pgTAP
+      - name: G7 pgTAP (includes the tracked integrity suite, P3-DB-12)
         run: supabase test db
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - name: G4 RPC contract (T-CONTRACT-01)
+        run: node --experimental-strip-types scripts/rpc-contract.ts check
