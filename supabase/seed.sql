@@ -1,0 +1,1 @@
+-- Local seed data. Filled in by P3-SEED-01 (S10). Runs after migrations on `supabase db reset`.
