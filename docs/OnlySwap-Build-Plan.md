@@ -1,3 +1,5 @@
+> **Status (2026-09-25 spec freeze):** this research plan is still valid for the stack, free-tier limits and store research. **Scope, schema, API and tasks are superseded** by `docs/PRD.md`, `docs/DATA_MODEL.md`, `docs/API.md` and `docs/TASKS.md`. Differences are listed in `docs/REVIEW.md` §14 and `docs/DECISIONS_LOG.md`.
+
 # OnlySwap: Build and Launch Plan (iOS + Android, $0 infra)
 
 Researched and verified September 25, 2026. Sources are linked inline and collected at the end. Free tiers change often, so re-check the pricing pages once per quarter.

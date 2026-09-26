@@ -11,8 +11,10 @@ Nothing has been built yet. This repo holds the design, the research, and the co
 | `design/OS_FInal Design.html` | Full design board: 212 frames covering the app, web, admin, store assets and handoff. Open it in a browser. The color and logo switchers at the top work. |
 | `design/source-parts/` | Source files for the board. Rebuild with `design/build.sh`. |
 | `design/concepts/` | Early prototypes, logo concepts and color explorations |
-| `docs/OnlySwap-Build-Plan.md` | Stack, free-tier limits, costs, and store compliance (§19) |
-| `docs/blueprint/` | Build blueprint: `screens.md`, `backend.md`, `functions.md`, `tasks.md` (198 tasks), `testing.md`, `launch.md` |
+| `docs/PRD.md` … `docs/DECISIONS_LOG.md` | **Locked spec**: PRD, design system, architecture, data model, API, security, testing, release, tasks, decisions |
+| `docs/REVIEW.md` | Pre-build review: 102 findings, decisions, open questions, verdict |
+| `docs/OnlySwap-Build-Plan.md` | Research plan: stack, free-tier limits, store research |
+| `docs/archive/` | Superseded blueprint v0 (history only) |
 | `docs/research/` | Market research and the engagement memo |
 | `CLAUDE.md` | Instructions for Claude Code sessions |
 
@@ -29,4 +31,4 @@ The running cost target is $0/month. See the build plan for details.
 
 ## How to build
 
-Follow the build order in `docs/blueprint/launch.md` §7, one session at a time. For example, "S1: do P1-SETUP-01 through P1-SETUP-06". Tick the boxes in `docs/blueprint/tasks.md` as you go.
+Read `CLAUDE.md`, then follow the build order at the end of `docs/TASKS.md`, one session at a time. For example: "Do session S1 (P1-SETUP-01 to P1-SETUP-06)".
