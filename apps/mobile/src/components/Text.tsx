@@ -4,7 +4,9 @@ import { StyleSheet } from 'react-native-unistyles';
 
 /** Text colors allowed for type. `accent` is deliberately absent (UX-03). */
 /** `inverse` is the screen background color, for text on ink or red fills. */
-export type TextTone = 'ink' | 'ink2' | 'ink3' | 'red' | 'green' | 'amber' | 'onAccent' | 'inverse';
+/** `onPhoto` is white in both modes, for text on a photo scrim or the dark photo viewer. */
+export type TextTone =
+  'ink' | 'ink2' | 'ink3' | 'red' | 'green' | 'amber' | 'onAccent' | 'inverse' | 'onPhoto';
 
 export type TextProps = RNTextProps & {
   variant?: TypeVariant;

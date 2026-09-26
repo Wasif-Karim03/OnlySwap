@@ -9,11 +9,13 @@ type Props = {
   name: IconName;
   size?: number;
   /** Theme color key. Never `accent` on light backgrounds (UX-03). */
-  tone?: 'ink' | 'ink2' | 'ink3' | 'red' | 'green' | 'amber' | 'onAccent' | 'inverse';
+  tone?: 'ink' | 'ink2' | 'ink3' | 'red' | 'green' | 'amber' | 'onAccent' | 'inverse' | 'onPhoto';
+  /** Stroke width; 2.2 marks the selected tab (board tab bar). */
+  strokeWidth?: number;
 };
 
 /** Stroke icon from the board (24x24, 1.8 px, round caps). Decorative by default. */
-export function Icon({ name, size = 22, tone = 'ink' }: Props) {
+export function Icon({ name, size = 22, tone = 'ink', strokeWidth = 1.8 }: Props) {
   const { theme } = useUnistyles();
   const color = tone === 'inverse' ? theme.colors.bg : theme.colors[tone];
   return (
@@ -23,7 +25,7 @@ export function Icon({ name, size = 22, tone = 'ink' }: Props) {
       viewBox="0 0 24 24"
       fill="none"
       stroke={color}
-      strokeWidth={1.8}
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
       accessible={false}

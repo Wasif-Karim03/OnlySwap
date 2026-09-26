@@ -2,6 +2,7 @@ import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { Icon, type IconName } from './icons/Icon';
+import type { TextTone } from './Text';
 import { Tappable } from './Tappable';
 
 type Props = {
@@ -12,6 +13,8 @@ type Props = {
   onPress?: () => void;
   disabled?: boolean;
   filled?: boolean;
+  /** `onPhoto` for controls over photos or the dark photo viewer. */
+  tone?: Extract<TextTone, 'ink' | 'onPhoto'>;
   testID?: string;
 };
 
@@ -23,6 +26,7 @@ export function IconButton({
   onPress,
   disabled,
   filled,
+  tone = 'ink',
   testID,
 }: Props) {
   return (
@@ -36,7 +40,7 @@ export function IconButton({
       onPress={onPress}
     >
       <View style={styles.hit(!!filled, !!disabled)}>
-        <Icon name={icon} />
+        <Icon name={icon} tone={tone} />
       </View>
     </Tappable>
   );

@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react-native';
+import { fireEvent, screen } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 
 import RootLayout from '../app/_layout';
@@ -41,11 +41,21 @@ describe('P1-SETUP-02 tab shell (R1.0 tabs: Discover, Sell, Inbox, Profile)', ()
     await screen.findByTestId('screen-discover');
     const r10Tabs = [tabs.discover, tabs.sell, tabs.inbox, tabs.profile];
     const labels = screen
-      .getAllByRole('button')
+      .getAllByRole('tab')
       .map((b) => b.props.accessibilityLabel as string | undefined)
       .filter((l): l is string => !!l && (r10Tabs as string[]).includes(l));
     expect(labels).toEqual(r10Tabs);
-    expect(screen.getByRole('button', { name: tabs.discover, selected: true })).toBeTruthy();
+    expect(screen.getByRole('tab', { name: tabs.discover, selected: true })).toBeTruthy();
+    expect(screen.getByTestId('tab-bar').props.accessibilityRole).toBe('tablist');
+  });
+
+  it('P2-CMP-09 switches tabs from the tab bar', async () => {
+    const router = renderRouter(routes, { initialUrl: '/discover' });
+    await screen.findByTestId('screen-discover');
+    fireEvent.press(screen.getByRole('tab', { name: tabs.inbox }));
+    expect(await screen.findByTestId('screen-inbox')).toBeTruthy();
+    expect(router.getPathname()).toBe('/inbox');
+    expect(screen.getByRole('tab', { name: tabs.inbox, selected: true })).toBeTruthy();
   });
 
   it.each([
