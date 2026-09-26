@@ -85,7 +85,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 - [x] `P1-ENV-02`: a commit containing a fake key is blocked
 - [ ] `P1-CI-01`: green on a PR
 - [ ] `P1-CI-02`: CI fails on a planted high-severity dep and on a planted secret
-- [ ] `P1-DB-01`: local Studio opens
+- [x] `P1-DB-01`: local Studio opens
 
 **Gates:** G1, G2, G3, G5, G4, G10, G11
 

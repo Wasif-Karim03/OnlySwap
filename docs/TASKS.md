@@ -48,7 +48,7 @@
 - [ ] **P1-CI-01** Add `.github/workflows/ci.yml` (Linux) with lint (eslint + prettier), typecheck, jest, pgTAP (later), and turbo-less pnpm filters. · SETUP-02 · green on a PR · M
 - [ ] 🆕 **P1-CI-02** CI hardening: `eslint-plugin-react-native-a11y`, `pnpm audit --audit-level high`, bundle secret scan, Dependabot config, path filters (DB tests only on `supabase/**`). · deps P1-CI-01 · done when CI fails on a planted high-severity dep and on a planted secret · S
 - [ ] 🆕 **P1-CI-03** RPC contract snapshot: `scripts/rpc-contract.ts` generates `packages/shared/src/rpc-contract.json` from the DB; CI compares it (T-CONTRACT-01). · deps P1-CI-01, P3-DB-01 · done when changing a signature without `_v2` fails CI · M
-- [ ] **P1-DB-01** Supabase CLI init; `supabase start` works locally; link staging. · P0-ACC-04 · local Studio opens · S
+- [x] **P1-DB-01** Supabase CLI init; `supabase start` works locally; link staging. · P0-ACC-04 · local Studio opens · S
 - [ ] **P1-SPIKE-01** Spike: Edge Function sending mail over SMTP 465 via Gmail. If it's blocked, build the Worker `mailer` fallback. Record the outcome. · DB-01, P0-ACC-10 · a test email arrives from a staging function · M
 - [ ] **P1-SPIKE-03** Spike: `expo-age-range` returns a result or `unknown` on both OSes (with the entitlement `com.apple.developer.declared-age-range`). · SETUP-06 · logged result on devices · S
 - [ ] 🆕 **P1-SPIKE-04** Spike: New Architecture/Nitro modules (MMKV v4, Unistyles 3, keyboard-controller) build and run on both dev clients. · deps P1-SETUP-06 · done when a demo screen uses all three on iOS + Android · S
