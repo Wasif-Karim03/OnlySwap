@@ -6,6 +6,7 @@ Newest first. Each entry records the date, the decision, why it was made, who de
 
 | # | Date | Decision | Why | By | Supersedes |
 |---|---|---|---|---|---|
+| 42 | 2026-09-25 | Device checks (G8) run on the iOS Simulator only. Android is still built and shipped, but it's verified by CI (prebuild T-STORE check + merged release manifest on Linux) and by Play closed-test testers on real phones (P11-BETA-01); no Android phone or emulator is required from the owner | Owner choice: test only on the Mac's iPhone Simulator | Owner | DEC 41 (Android phone part) |
 | 41 | 2026-09-25 | No iPhone: iOS device checks (G8) run on the iOS Simulator (local build or EAS `development-simulator` profile). Checks the Simulator can't cover (camera, Declared Age Range, real push delivery) move to TestFlight testers with iPhones before S42; Android keeps the physical phone | Owner has an Android phone only; $0 rule | Owner | "your iPhone" in GOALS G8 |
 | 40 | 2026-09-25 | Quality protocol: every session starts with `/goal`, runs the step loop per task, and ends with `/verify`. Sandbox gates G1–G6 must pass before push; Mac/device gates G7–G11 before merge (`docs/GOALS.md`) | Owner requires every step to be tested and perfect before pushing | Owner | — |
 | 39 | 2026-09-25 | Second scope cut (DEC-13): waitlist gate/unlock screens, Around campus (food, Wanted, campus feed), price-hint UI, data export screen, `/i` + `/joined` pages → R1.1 | R1.0 still ~1,090 h after the first cut | Review | — |

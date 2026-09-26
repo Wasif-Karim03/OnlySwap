@@ -38,11 +38,11 @@
 ## P1 · Foundations
 
 - [x] **P1-SETUP-01** ✎ Scaffold the pnpm monorepo: `apps/mobile`, `apps/admin`, `apps/site`, `workers/media`, `supabase/`, `packages/tokens`, `packages/shared`, `scripts/`, `docs/`; Node 24 LTS `.nvmrc`; root `CLAUDE.md` unchanged. · deps P0-ACC-03 · done when `pnpm i` succeeds · S
-- [ ] **P1-SETUP-02** Create the Expo SDK 57 app (`npx create-expo-app@latest apps/mobile -t tabs`) with TypeScript strict and Expo Router. · SETUP-01 · runs on the iOS simulator and Android emulator · S
+- [ ] **P1-SETUP-02** Create the Expo SDK 57 app (`npx create-expo-app@latest apps/mobile -t tabs`) with TypeScript strict and Expo Router. · SETUP-01 · runs on the iOS simulator; Android bundle and prebuild pass in CI (DEC 42) · S
 - [x] **P1-SETUP-03** ✎ Install the SDK-pinned deps with `npx expo install`: reanimated, gesture-handler, react-native-keyboard-controller, react-native-safe-area-context, expo-image, flash-list, react-native-mmkv, react-native-unistyles, @tanstack/react-query, zustand, @supabase/supabase-js, expo-secure-store, @react-native-community/netinfo, @react-native-community/datetimepicker, expo-haptics, expo-image-picker, expo-image-manipulator, expo-notifications, expo-age-range, expo-updates, expo-store-review, expo-application, react-native-view-shot, expo-clipboard, @sentry/react-native, posthog-react-native. **No maplibre, no expo-location in R1.0.** · deps P1-SETUP-02 · done when `npx expo-doctor` passes · S
 - [ ] **P1-SETUP-04** ✎ Configure `app.config.ts`: bundle and package `app.onlyswap`; scheme `onlyswap`; `ios.supportsTablet=false`; `orientation: portrait`; `usesNonExemptEncryption:false`; entitlements (Associated Domains for `onlyswap.pages.dev` [+ custom domain if Q2], Time Sensitive Notifications, Declared Age Range); `expo-build-properties` minSdk 26, target/compile 36; `android.blockedPermissions` = fine+coarse location, READ_MEDIA_*, READ_EXTERNAL_STORAGE, RECORD_AUDIO, READ_CONTACTS, SCHEDULE_EXACT_ALARM, USE_EXACT_ALARM, AD_ID; permission strings from `en.ts`; runtimeVersion fingerprint; `ios.privacyManifests`. · deps P1-SETUP-03 · done when `expo prebuild` output has exactly the expected Info.plist keys, entitlements and merged manifest permissions (T-STORE check) · M
 - [ ] **P1-SETUP-05** Create `eas.json` profiles `development`, `preview` and `production` with channels, `appVersionSource: remote` and `autoIncrement`. · SETUP-04 · `eas build -p ios --profile development` succeeds · S
-- [ ] **P1-SETUP-06** Build development clients for the iOS Simulator (`development-simulator` profile or `expo run:ios`) and your Android phone (DEC 41). · SETUP-05 · the app launches on the iOS Simulator and the Android phone · M
+- [ ] **P1-SETUP-06** Build the development client for the iOS Simulator (`development-simulator` profile or `expo run:ios`); Android dev client built on EAS but not device-tested (DEC 42). · SETUP-05 · the app launches on the iOS Simulator and the Android EAS build succeeds · M
 - [ ] **P1-ENV-01** Environment plumbing: `.env.example`, EAS env vars per environment (Secret visibility for secrets), `src/lib/env.ts` validated with zod at startup. · SETUP-05 · a missing env var crashes dev with a clear message · S
 - [ ] **P1-ENV-02** Add gitleaks pre-commit and CI secret scan. · SETUP-01 · a commit containing a fake key is blocked · S
 - [ ] **P1-CI-01** Add `.github/workflows/ci.yml` (Linux) with lint (eslint + prettier), typecheck, jest, pgTAP (later), and turbo-less pnpm filters. · SETUP-02 · green on a PR · M
@@ -319,7 +319,7 @@ Each session ends runnable and with its tests green. **P0 tasks are yours** (man
 
 | # | Session | Tasks | Runnable result |
 |---|---|---|---|
-| S1 | Scaffold | P1-SETUP-01, P1-SETUP-02, P1-SETUP-03, P1-SETUP-04, P1-SETUP-05, P1-SETUP-06 | blank tabs app on the iOS Simulator and the Android phone |
+| S1 | Scaffold | P1-SETUP-01, P1-SETUP-02, P1-SETUP-03, P1-SETUP-04, P1-SETUP-05, P1-SETUP-06 | blank tabs app on the iOS Simulator; Android build green |
 | S2 | Env + CI | P1-ENV-01, P1-ENV-02, P1-CI-01, P1-CI-02, P1-DB-01 | CI green, local Supabase up |
 | S3 | Libs + spikes | P1-LIB-01, P1-LIB-02, P1-SPIKE-01, P1-SPIKE-03, P1-SPIKE-04 | email from a function, age signal logged, Nitro modules OK, Sentry test crash |
 | S4 | Tokens + type | P2-TOK-01, P2-TOK-02, P2-TOK-03, P2-FONT-01, P2-MOT-01 | light/dark switching, contrast test green |

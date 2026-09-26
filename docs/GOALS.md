@@ -32,7 +32,7 @@ For each task ID in a session, in order:
 | G5 Security scan | Claude (sandbox) | gitleaks + bundle secret scan + `pnpm audit --audit-level high` (from S2) | every session |
 | G6 Expo health | Claude (sandbox) | `npx expo-doctor` + `npx expo config --type prebuild` sanity (from S1) | sessions touching the mobile app |
 | G7 DB | **You (Mac)** | `supabase start && supabase db reset && supabase test db` | sessions touching SQL |
-| G8 Devices | **You (Simulator + phone)** | install + the listed device checks on the iOS Simulator and the Android phone (DEC 41) | sessions touching the app UI |
+| G8 Devices | **You (Simulator)** | install + the listed device checks on the iOS Simulator; Android is covered by CI and Play closed testers (DEC 42) | sessions touching the app UI |
 | G9 E2E | **You (Mac)** | Maestro / Playwright flows listed | sessions that finish a user flow |
 | G10 CI | GitHub | PR checks green (from S2) | every PR |
 | G11 Review | Claude + you | PR description contains the goal, the checklist with evidence, and screenshots for UI | every PR |
@@ -60,20 +60,20 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 ### S1 · Scaffold
 
-**Goal:** the pnpm monorepo and an Expo SDK 57 app with the locked config (bundle id, entitlements, blocked permissions, minSdk 26, portrait, 4-tab shell: Discover, Sell, Inbox, Profile) build and launch on the iOS Simulator and your Android phone, and `expo-doctor` is clean.
+**Goal:** the pnpm monorepo and an Expo SDK 57 app with the locked config (bundle id, entitlements, blocked permissions, minSdk 26, portrait, 4-tab shell: Discover, Sell, Inbox, Profile) launch on the iOS Simulator, the Android build is green, and `expo-doctor` is clean.
 
 **Checks:**
 
 - [x] `P1-SETUP-01`: `pnpm i` succeeds
-- [ ] `P1-SETUP-02`: runs on the iOS simulator and Android emulator
+- [ ] `P1-SETUP-02`: runs on the iOS simulator; Android bundle and prebuild pass in CI
 - [x] `P1-SETUP-03`: `npx expo-doctor` passes
 - [ ] `P1-SETUP-04`: `expo prebuild` output has exactly the expected Info.plist keys, entitlements and merged manifest permissions (T-STORE check)
 - [ ] `P1-SETUP-05`: `eas build -p ios --profile development` succeeds
-- [ ] `P1-SETUP-06`: the app launches on the iOS Simulator and the Android phone
+- [ ] `P1-SETUP-06`: the app launches on the iOS Simulator and the Android EAS build succeeds
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11
 
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 
 ### S2 · Env + CI
 
@@ -105,7 +105,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11
 
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 
 ### S4 · Tokens + type
 
@@ -121,7 +121,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11
 
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 
 ### S5 · Components 1
 
@@ -138,7 +138,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11
 
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 
 ### S6 · Components 2
 
@@ -156,7 +156,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11
 
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 
 ### S7 · Schema
 
@@ -237,7 +237,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 **Gates:** G1, G2, G3, G5, G6, G4, G10, G11
 
 - **[MAC] DB:** `supabase start && supabase db reset && supabase test db` all green (paste the summary line)
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 
 ### S12 · Sign-in screens
 
@@ -251,7 +251,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11
 
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 
 ### S13 · Media pipeline
 
@@ -267,7 +267,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 **Gates:** G1, G2, G3, G5, G6, G4, G10, G11
 
 - **[MAC] DB:** `supabase start && supabase db reset && supabase test db` all green (paste the summary line)
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 
 ### S14 · Onboarding rest
 
@@ -284,7 +284,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 **Gates:** G1, G2, G3, G5, G6, G4, G10, G11
 
 - **[MAC] DB:** `supabase start && supabase db reset && supabase test db` all green (paste the summary line)
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 
 ### S15 · Account safety + reviewer
 
@@ -300,7 +300,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 **Gates:** G1, G2, G3, G5, G6, G4, G10, G11
 
 - **[MAC] DB:** `supabase start && supabase db reset && supabase test db` all green (paste the summary line)
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 
 ### S16 · Sell 1
 
@@ -315,7 +315,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 **Gates:** G1, G2, G3, G5, G6, G4, G10, G11
 
 - **[MAC] DB:** `supabase start && supabase db reset && supabase test db` all green (paste the summary line)
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 
 ### S17 · Sell 2
 
@@ -329,7 +329,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11
 
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 
 ### S18 · Feed backend + deck
 
@@ -343,7 +343,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 **Gates:** G1, G2, G3, G5, G6, G4, G10, G11
 
 - **[MAC] DB:** `supabase start && supabase db reset && supabase test db` all green (paste the summary line)
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 
 ### S19 · Discover + listing
 
@@ -358,7 +358,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11
 
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 - **[MAC] E2E:** the Maestro flows listed for this session pass on iOS simulator and Android emulator
 
 ### S20 · Search
@@ -375,7 +375,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 **Gates:** G1, G2, G3, G5, G6, G4, G10, G11
 
 - **[MAC] DB:** `supabase start && supabase db reset && supabase test db` all green (paste the summary line)
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 
 ### S21 · Saved + profiles
 
@@ -388,7 +388,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11
 
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 
 ### S22 · Offers backend
 
@@ -402,7 +402,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 **Gates:** G1, G2, G3, G5, G6, G4, G10, G11
 
 - **[MAC] DB:** `supabase start && supabase db reset && supabase test db` all green (paste the summary line)
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 
 ### S23 · Offers UI
 
@@ -418,7 +418,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11
 
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 - **[MAC] E2E:** the Maestro flows listed for this session pass on iOS simulator and Android emulator
 
 ### S24 · Chat core
@@ -433,7 +433,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 **Gates:** G1, G2, G3, G5, G6, G4, G10, G11
 
 - **[MAC] DB:** `supabase start && supabase db reset && supabase test db` all green (paste the summary line)
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 
 ### S25 · Chat UI
 
@@ -447,7 +447,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11
 
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 
 ### S26 · Meetups
 
@@ -463,7 +463,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 **Gates:** G1, G2, G3, G5, G6, G4, G10, G11
 
 - **[MAC] DB:** `supabase start && supabase db reset && supabase test db` all green (paste the summary line)
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 
 ### S27 · Deals
 
@@ -479,7 +479,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 **Gates:** G1, G2, G3, G5, G6, G4, G10, G11
 
 - **[MAC] DB:** `supabase start && supabase db reset && supabase test db` all green (paste the summary line)
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 - **[MAC] E2E:** the Maestro flows listed for this session pass on iOS simulator and Android emulator
 
 ### S28 · Push
@@ -496,7 +496,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 **Gates:** G1, G2, G3, G5, G6, G4, G10, G11
 
 - **[MAC] DB:** `supabase start && supabase db reset && supabase test db` all green (paste the summary line)
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 - **[YOU] Console:** the store/console steps in the tasks are done; screenshots of the final state
 
 ### S29 · Notifications + email + cron
@@ -516,7 +516,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 **Gates:** G1, G2, G3, G5, G6, G4, G10, G11
 
 - **[MAC] DB:** `supabase start && supabase db reset && supabase test db` all green (paste the summary line)
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 
 ### S30 · Safety screens
 
@@ -532,7 +532,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11
 
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 - **[MAC] E2E:** the Maestro flows listed for this session pass on iOS simulator and Android emulator
 
 ### S31 · Profile + settings
@@ -546,7 +546,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11
 
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 - **[MAC] E2E:** the Maestro flows listed for this session pass on iOS simulator and Android emulator
 
 ### S32 · Site foundation + deep links
@@ -561,7 +561,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11
 
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 - **[MAC] Web:** `pnpm --filter admin build && pnpm --filter site build` succeed; preview URL loads; Playwright suite for the session green
 - **[MAC] E2E:** the Maestro flows listed for this session pass on iOS simulator and Android emulator
 
@@ -576,7 +576,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11
 
-- **[DEV] Devices:** run on the iOS Simulator and your Android phone per the session commands (iPhone-only checks go to TestFlight testers, DEC 41); confirm each check in "Device checks" with a screenshot or "OK"
+- **[DEV] Devices:** run on the iOS Simulator per the session commands (iPhone-only checks go to TestFlight testers, Android checks to Play closed testers; DEC 41, 42); confirm each check in "Device checks" with a screenshot or "OK"
 - **[MAC] E2E:** the Maestro flows listed for this session pass on iOS simulator and Android emulator
 - **[YOU] Console:** the store/console steps in the tasks are done; screenshots of the final state
 

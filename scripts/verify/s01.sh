@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # S1 Mac verification (docs/GOALS.md S1). Run from the repo root:
 #   bash scripts/verify/s01.sh            automated checks only
-#   bash scripts/verify/s01.sh --run      also builds and launches on the iOS simulator and Android emulator
+#   bash scripts/verify/s01.sh --run      also builds and launches on the iOS Simulator
+# Android is verified in CI and by Play closed testers (DEC 42); the Android steps
+# here run only if Android Studio is installed, and are skipped otherwise.
 # Paste the summary block at the end back to Claude.
 set -u
 cd "$(git rev-parse --show-toplevel)"
@@ -102,8 +104,11 @@ step "G5 dependency audit (high)" pnpm audit --audit-level high
 step "P1-SETUP-03 / G6 expo-doctor" bash -c "cd apps/mobile && npx expo-doctor"
 step "P1-SETUP-04 T-STORE prebuild (development)" prebuild_check development
 step "P1-SETUP-04 T-STORE prebuild (production)" prebuild_check production
-step "Android toolchain (JDK + SDK)" android_ok
-step "P1-SETUP-04 T-STORE merged Android manifest (release)" merged_manifest_check
+if android_ok >/dev/null 2>&1; then
+  step "P1-SETUP-04 T-STORE merged Android manifest (release)" merged_manifest_check
+else
+  SUMMARY+=("SKIP  P1-SETUP-04 merged Android manifest (no Android SDK; runs in CI, DEC 42)")
+fi
 
 if [ "$RUN_APPS" = 1 ]; then
   echo ""
@@ -111,13 +116,15 @@ if [ "$RUN_APPS" = 1 ]; then
   (cd apps/mobile && npx expo start --dev-client >/tmp/onlyswap-metro.log 2>&1 &)
   step "Xcode + iPhone simulator" xcode_ok
   step "P1-SETUP-02 build + launch on iOS simulator" run_ios
-  step "P1-SETUP-02 build + launch on Android emulator" run_android
-  echo "Check on each: app opens on Discover; tabs read Discover, Sell, Inbox, Profile; portrait only."
+  if android_ok >/dev/null 2>&1; then
+    step "P1-SETUP-02 build + launch on Android emulator (optional)" run_android
+  fi
+  echo "Check in the Simulator: app opens on Discover; tabs read Discover, Sell, Inbox, Profile; portrait only."
 fi
 
 echo ""
 echo "================ S1 summary ================"
 printf '%s\n' "${SUMMARY[@]}"
-echo "Manual (EAS + phones, see PR body): P1-SETUP-05 eas build -p ios --profile development; P1-SETUP-06 launch on both phones"
+echo "Manual: P1-SETUP-05/06 EAS builds (iOS development-simulator + Android development) and launch in the Simulator"
 [ "$FAILED" = 0 ] && echo "RESULT: PASS" || echo "RESULT: FAIL"
 exit "$FAILED"

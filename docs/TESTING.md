@@ -213,13 +213,11 @@ Each is a YAML flow in `.maestro/`, run against staging with seeded data. Steps 
 
 ## 4. Manual QA checklist (per screen group, both OSes)
 
-**Device matrix** (free: your own phones plus simulators/emulators):
+**Device matrix** (free: iOS Simulators on your Mac plus testers' phones, DEC 41 and 42):
 - iPhone SE (3rd gen) simulator for the small phone
 - iPhone 17 Pro Max simulator for the large one
 - a physical iPhone via TestFlight testers (DEC 41; you have none), for camera, HEIC, age range and push
-- a Pixel 5 emulator (API 36) for small Android
-- your physical Android phone
-- your physical Android phone if you have one; otherwise borrow a tester's during the closed test
+- Android: Play closed-test testers' phones (DEC 42); Pixel emulators optional if you install Android Studio
 
 **Run every screen group against:**
 - [ ] Light skin and Night skin, plus one bright accent (Butter) and Cobalt
