@@ -8,3 +8,4 @@ coverage
 design
 docs
 *.md
+apps/mobile/src/components/icons/iconData.ts
