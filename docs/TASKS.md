@@ -93,7 +93,7 @@
 - [ ] **P3-AUTH-02** Trigger `on_auth_user_created`: profile, prefs, waitlist status, invite link · AUTH-01 · a new user gets a profile row · S
 - [ ] **P3-AUTH-03** Auth config: email OTP length 6, expiry 600 s, custom SMTP (Gmail 465 or Resend), rate limits raised to 200/h, "Confirm email" ON, password provider on (reviewers), OTP template with the code in the subject (T3) · AUTH-01, P1-SPIKE-01 · a real .edu inbox receives the code · M
 - [ ] **P3-SEED-01** ✎ `supabase/seed.sql` (local only): Ohio State, Demo University, a waitlist campus, 40 demo listings, fixture users. Production reference data is in P3-DB-11. · deps P3-DB-09 · done when `db reset` gives a usable app · M
-- [ ] **P3-TYPES-01** `supabase gen types` script plus CI drift check · DB-09 · CI fails on drift · S
+- [x] **P3-TYPES-01** `supabase gen types` script plus CI drift check · DB-09 · CI fails on drift · S
 - [x] **P3-TEST-02** `private.now()` wrapper used by every time-based function and cron job, plus a staging-only `test_set_now(ts)` RPC (dropped in production migrations through `if current_setting('app.env')='prod'`). · DB-07 · pgTAP time-travel tests work · S
 - [x] **P3-SAFE-01** RPCs `create_report`, `get_my_report`, `block_user`, `unblock_user`, `create_appeal`; auto-hide trigger; priority-1 alert email · P3-DB-07 · pgTAP · M
 - [x] **P3-TEST-01** pgTAP harness `supabase/tests/` with fixtures (two campuses, users A/B/C, an admin, a moderator) · DB-08 · `supabase test db` runs in CI · M
