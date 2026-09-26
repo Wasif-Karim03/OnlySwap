@@ -1,5 +1,6 @@
+import { Link } from 'expo-router';
 import { useState, type ReactNode } from 'react';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { StyleSheet } from 'react-native-unistyles';
 
@@ -22,8 +23,17 @@ import { Text } from '@/components/Text';
 import { TextArea } from '@/components/TextArea';
 import { useToastStore } from '@/components/Toast';
 import { Toggle } from '@/components/Toggle';
-import { kit } from '@/strings/en';
+import { kit, kit2 } from '@/strings/en';
 import { THEME_MODES, useThemeModeStore } from '@/theme/mode';
+
+import {
+  AccentPicker,
+  DialogSection,
+  NavigationSection,
+  PhotoSection,
+  PrimerSection,
+  StatesSection,
+} from './KitSections2';
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -36,7 +46,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-/** Dev builds only: every S5 component in every state (P2-CMP-01..06, kit page). */
+/** Dev builds only: every component in every state (P2-KIT-01). */
 export function KitScreen() {
   const [chips, setChips] = useState<string[]>(['books']);
   const [cond, setCond] = useState<'new' | 'good' | 'fair'>('good');
@@ -69,6 +79,14 @@ export function KitScreen() {
           onChange={setMode}
           segments={THEME_MODES.map((m) => ({ value: m, label: m[0]!.toUpperCase() + m.slice(1) }))}
         />
+        <AccentPicker />
+        <Link href="/dev/states" asChild>
+          <Pressable accessibilityRole="link">
+            <Text variant="label" tone="ink2">
+              {kit2.openStates}
+            </Text>
+          </Pressable>
+        </Link>
 
         <Section title={kit.buttons}>
           <Button label={kit.primary} />
@@ -204,6 +222,12 @@ export function KitScreen() {
           <Banner kind="info" message={kit.bannerInfo} />
           <Banner kind="warning" message={kit.bannerWarning} />
         </Section>
+
+        <PhotoSection />
+        <NavigationSection />
+        <StatesSection />
+        <PrimerSection />
+        <DialogSection />
 
         <Section title={kit.surfaces}>
           <Card onPress={() => {}} accessibilityLabel={kit.cardTitle}>
