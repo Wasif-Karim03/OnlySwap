@@ -8,3 +8,7 @@ ios/
 android/
 *.log
 .DS_Store
+coverage/
+expo-env.d.ts
+.expo-shared/
+*.tsbuildinfo

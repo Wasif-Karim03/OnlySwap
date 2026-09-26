@@ -1,0 +1,19 @@
+{
+  "name": "onlyswap",
+  "private": true,
+  "packageManager": "pnpm@10.34.5",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "lint": "pnpm -r --if-present lint && prettier --check .",
+    "format": "prettier --write .",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test",
+    "doctor": "pnpm --filter mobile doctor",
+    "verify:prebuild": "node scripts/verify/check-prebuild.mjs"
+  },
+  "devDependencies": {
+    "prettier": "3.9.9"
+  }
+}
