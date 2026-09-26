@@ -63,7 +63,7 @@
 - [ ] **P2-FONT-01** ✎ Type components on **system fonts** (SF Pro / Roboto) with the DESIGN_SYSTEM §3 scale, tabular numerals and `maxFontSizeMultiplier` rules. · deps P2-TOK-03 · done when every type row renders at 100% and 200% · S
 - [ ] **P2-CMP-01** Button (all variants, states, loading, haptic) · TOK-03 · kitchen-sink row matches H3 · S
 - [ ] **P2-CMP-02** Input, TextArea (counter), OTPInput · CMP-01 · states match H3 · M
-- [ ] **P2-CMP-03** Chip/ChipGroup, SegmentedControl, Toggle, Checkbox, OptionRow (radio), Stepper · CMP-01 · a11y roles set · M
+- [x] **P2-CMP-03** Chip/ChipGroup, SegmentedControl, Toggle, Checkbox, OptionRow (radio), Stepper · CMP-01 · a11y roles set · M
 - [ ] **P2-CMP-04** Sheet + ActionSheet (Reanimated, pan to close, focus trap, Android back) · CMP-01 · works with keyboard open · L
 - [ ] **P2-CMP-05** Toast, ToastUndo, Banner, OfflineBanner · CMP-01 · offline toggle shows the banner · S
 - [ ] **P2-CMP-06** Card, ListRow/GroupedList, Tag, Avatar, Mark (logo from the shared SVG) · CMP-01 · matches F10 styling · S

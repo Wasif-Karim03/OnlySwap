@@ -131,7 +131,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 - [ ] `P2-CMP-01`: kitchen-sink row matches H3
 - [ ] `P2-CMP-02`: states match H3
-- [ ] `P2-CMP-03`: a11y roles set
+- [x] `P2-CMP-03`: a11y roles set
 - [ ] `P2-CMP-04`: works with keyboard open
 - [ ] `P2-CMP-05`: offline toggle shows the banner
 - [ ] `P2-CMP-06`: matches F10 styling

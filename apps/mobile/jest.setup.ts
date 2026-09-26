@@ -11,7 +11,9 @@ jest.mock('react-native-nitro-modules', () => ({
   NitroModules: { createHybridObject: jest.fn() },
 }));
 
-// Unistyles and keyboard-controller ship Jest mocks for their native parts.
+// Gesture handler, Unistyles and keyboard-controller ship Jest mocks for their native parts.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+require('react-native-gesture-handler/jestSetup');
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 require('react-native-unistyles/mocks');
 jest.mock('react-native-keyboard-controller', () =>

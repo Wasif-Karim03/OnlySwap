@@ -1,10 +1,10 @@
 import { motion } from '@onlyswap/tokens';
 import { useEffect } from 'react';
+import { useReducedMotion } from './reducedMotion';
 import {
   Easing,
   ReduceMotion,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withSpring,
   withTiming,

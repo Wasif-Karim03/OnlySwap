@@ -6,6 +6,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
+import { OfflineBanner } from '@/components/Banner';
+import { ToastHost } from '@/components/Toast';
 import { getEnv } from '@/lib/env';
 import { createQueryClient, wireQueryManagers } from '@/lib/queryClient';
 
@@ -26,6 +28,8 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <ThemeProvider value={dark ? DarkTheme : DefaultTheme}>
             <Stack screenOptions={{ headerShown: false }} />
+            <OfflineBanner />
+            <ToastHost />
             <StatusBar style={dark ? 'light' : 'dark'} />
           </ThemeProvider>
         </QueryClientProvider>

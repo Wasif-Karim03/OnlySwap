@@ -56,6 +56,19 @@ export const errors = {
   UNKNOWN: 'Something went wrong. Try again.',
 } as const;
 
+export const sheet = {
+  close: 'Close',
+  cancel: 'Cancel',
+} as const;
+
+export const toast = {
+  undo: 'Undo',
+} as const;
+
+export const banner = {
+  offline: "You're offline. Some things won't update until you reconnect.",
+} as const;
+
 /** Dev-build-only spike screen (P1-SPIKE-03/04). Not shown in store builds. */
 export const dev = {
   open: 'Open developer spikes',
@@ -89,6 +102,90 @@ export const dev = {
   motionDone: 'Done',
 } as const;
 
-export const en = { permissions, tabs, shell, errors, dev } as const;
+/** Dev-build-only component kit (P2-KIT-01). Sample copy, not shipped UI. */
+export const kit = {
+  open: 'Open component kit',
+  title: 'Component kit',
+  buttons: 'Buttons',
+  primary: 'Post item',
+  dark: 'Make an offer',
+  secondary: 'Save for later',
+  text: 'Not now',
+  destructive: 'Delete listing',
+  loading: 'Sending',
+  disabled: 'Unavailable',
+  iconBack: 'Back',
+  iconShare: 'Share',
+  iconMore: 'More options',
+  inputs: 'Inputs',
+  email: 'School email',
+  emailPlaceholder: 'you@school.edu',
+  price: 'Price',
+  search: 'Search listings',
+  searchPlaceholder: 'Search',
+  name: 'First name',
+  nameError: 'Use letters only.',
+  disabledField: 'Campus',
+  description: 'Description',
+  code: 'Verification code',
+  codeError: 'Show code error',
+  controls: 'Controls',
+  categories: 'Categories',
+  catBooks: 'Books',
+  catTech: 'Tech',
+  catDorm: 'Dorm',
+  catFree: 'Free',
+  condition: 'Condition',
+  condNew: 'New',
+  condGood: 'Good',
+  condFair: 'Fair',
+  removable: 'Under $20',
+  remove: 'remove filter',
+  alerts: 'Price drop alerts',
+  alertsHint: 'Get a push when a saved item gets cheaper',
+  pickup: 'Pickup only',
+  meetup: 'Meet on campus',
+  agree: 'I agree to the community rules',
+  quantity: 'Quantity',
+  decrease: 'Decrease',
+  increase: 'Increase',
+  overlays: 'Sheets and toasts',
+  openSheet: 'Open sheet',
+  openActions: 'Open actions',
+  sheetTitle: 'Make an offer',
+  sheetBody: 'Drag down, tap outside or use back to close. Type below to check the keyboard.',
+  offerAmount: 'Your offer',
+  actionsTitle: 'Listing',
+  actionShare: 'Share listing',
+  actionReport: 'Report listing',
+  showToast: 'Show toast',
+  toastMessage: 'Offer sent',
+  showUndo: 'Show undo toast',
+  undoMessage: 'Listing hidden',
+  showError: 'Show error toast',
+  errorMessage: "Couldn't send. Try again.",
+  banners: 'Banners',
+  bannerInfo: 'Finals week: meetups close at 9 PM.',
+  bannerWarning: 'Your account needs a quick re-verify.',
+  surfaces: 'Cards, rows and tags',
+  cardTitle: 'Desk lamp',
+  cardMeta: 'Posted 2 hours ago',
+  tagNew: 'New',
+  tagAccent: 'Founding seller',
+  tagGreen: 'Verified',
+  tagAmber: 'On hold',
+  tagRed: 'Sold',
+  settings: 'Account',
+  rowEmail: 'Email',
+  rowEmailValue: 'you@school.edu',
+  rowNotifications: 'Notifications',
+  rowDelete: 'Delete account',
+  settingsFooter: 'Deleting removes your listings and chats.',
+  avatarA: 'Maya Chen',
+  avatarB: 'Jordan',
+  avatarC: 'Sam Rivera',
+} as const;
+
+export const en = { permissions, tabs, shell, errors, sheet, toast, banner, dev, kit } as const;
 
 export default en;

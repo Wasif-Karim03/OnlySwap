@@ -3,7 +3,8 @@ import { Text as RNText, type TextProps as RNTextProps } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 /** Text colors allowed for type. `accent` is deliberately absent (UX-03). */
-export type TextTone = 'ink' | 'ink2' | 'ink3' | 'red' | 'green' | 'amber' | 'onAccent';
+/** `inverse` is the screen background color, for text on ink or red fills. */
+export type TextTone = 'ink' | 'ink2' | 'ink3' | 'red' | 'green' | 'amber' | 'onAccent' | 'inverse';
 
 export type TextProps = RNTextProps & {
   variant?: TypeVariant;
@@ -42,7 +43,7 @@ const styles = StyleSheet.create((theme) => ({
       letterSpacing: t.letterSpacing,
       lineHeight: t.lineHeight,
       fontVariant: 'fontVariant' in t ? [...t.fontVariant] : undefined,
-      color: theme.colors[tone],
+      color: tone === 'inverse' ? theme.colors.bg : theme.colors[tone],
     };
   },
 }));

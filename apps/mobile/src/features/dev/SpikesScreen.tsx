@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { createMMKV } from 'react-native-mmkv';
-import Animated, { useReducedMotion } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
 
 import { SuccessCheck } from '@/components/SuccessCheck';
@@ -12,6 +12,7 @@ import { Text } from '@/components/Text';
 import { THEME_MODES, useThemeModeStore, type ThemeMode } from '@/theme/mode';
 import { usePressFeedback } from '@/theme/motion';
 import { dev } from '@/strings/en';
+import { useReducedMotion } from '@/theme/reducedMotion';
 
 /**
  * Dev builds only: P1-SPIKE-03/04 checks plus the S4 type, theme and motion
