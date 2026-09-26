@@ -67,7 +67,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 - [x] `P1-SETUP-01`: `pnpm i` succeeds
 - [x] `P1-SETUP-02`: runs on the iOS simulator; Android bundle and prebuild pass in CI
 - [x] `P1-SETUP-03`: `npx expo-doctor` passes
-- [ ] `P1-SETUP-04`: `expo prebuild` output has exactly the expected Info.plist keys, entitlements and merged manifest permissions (T-STORE check)
+- [x] `P1-SETUP-04`: `expo prebuild` output has exactly the expected Info.plist keys, entitlements and merged manifest permissions (T-STORE check)
 - [x] `P1-SETUP-05`: `eas build -p ios --profile development` succeeds
 - [x] `P1-SETUP-06`: the app launches on the iOS Simulator and the Android EAS build succeeds
 
@@ -83,8 +83,8 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 - [x] `P1-ENV-01`: a missing env var crashes dev with a clear message
 - [x] `P1-ENV-02`: a commit containing a fake key is blocked
-- [ ] `P1-CI-01`: green on a PR
-- [ ] `P1-CI-02`: CI fails on a planted high-severity dep and on a planted secret
+- [x] `P1-CI-01`: green on a PR
+- [x] `P1-CI-02`: CI fails on a planted high-severity dep and on a planted secret
 - [x] `P1-DB-01`: local Studio opens
 
 **Gates:** G1, G2, G3, G5, G4, G10, G11
