@@ -78,16 +78,16 @@
 
 ## P3 · Data model, RLS, auth hooks
 
-- [ ] **P3-DB-01** Migration `0001_extensions_enums.sql` · P1-DB-01 · `db reset` succeeds · S
-- [ ] **P3-DB-02** ✎ `0002_campus_identity.sql` per DATA_MODEL §2.1. · deps P3-DB-01 · done when `db reset` ok · M
-- [ ] **P3-DB-03** ✎ `0003_listings.sql` per DATA_MODEL §2.2 (soft delete, `wanted_ref`, reservations). · deps P3-DB-02 · done when — · M
-- [ ] **P3-DB-04** ✎ `0004_deals.sql` per DATA_MODEL §2.3 (`set null` FKs, chat snapshot, `meetups_one_active`, spot designation). · deps P3-DB-03 · done when — · M
-- [ ] **P3-DB-06** ✎ `0005_safety_ops.sql` + `0006_notifications.sql` per DATA_MODEL §2.4–2.5 (evidence, unlogged rate_counters, `dedupe_key`, claim states, email outbox). · deps P3-DB-02 · done when — · M
+- [x] **P3-DB-01** Migration `0001_extensions_enums.sql` · P1-DB-01 · `db reset` succeeds · S
+- [x] **P3-DB-02** ✎ `0002_campus_identity.sql` per DATA_MODEL §2.1. · deps P3-DB-01 · done when `db reset` ok · M
+- [x] **P3-DB-03** ✎ `0003_listings.sql` per DATA_MODEL §2.2 (soft delete, `wanted_ref`, reservations). · deps P3-DB-02 · done when — · M
+- [x] **P3-DB-04** ✎ `0004_deals.sql` per DATA_MODEL §2.3 (`set null` FKs, chat snapshot, `meetups_one_active`, spot designation). · deps P3-DB-03 · done when — · M
+- [x] **P3-DB-06** ✎ `0005_safety_ops.sql` + `0006_notifications.sql` per DATA_MODEL §2.4–2.5 (evidence, unlogged rate_counters, `dedupe_key`, claim states, email outbox). · deps P3-DB-02 · done when — · M
 - [ ] **P3-DB-07** `0007_helpers.sql`: `private.*` helpers (require_active, hit, hit_ip, check_text, pii_check, names_student, email_hash, is_blocked, queue_notification, new_invite_code, unaccent_immutable) · DB-06 · pgTAP helper tests pass · L
 - [ ] **P3-DB-08** ✎ `0008_rls_grants.sql`: RLS on every table per DATA_MODEL §3; `revoke all` from anon/authenticated; column grants on profiles; `realtime.messages` policies. · deps P3-DB-02..06 · done when T-INT-RLS-* and T-SEC-19 pass · L
 - [ ] **P3-DB-09** `0009_views.sql`: public_profiles, profile_stats (MV), ratings_visible, campus_progress, price_hints, campus_trending_terms, my_reports · DB-08 · — · M
 - [ ] 🆕 **P3-DB-10** `0007_helpers.sql` extras: `private.now()`, `queue_notification` (dedupe), `queue_email`, `snapshot_evidence`, `can_upload`, `unlock_campus`. · deps P3-DB-07 · done when pgTAP helper tests · M
-- [ ] 🆕 **P3-DB-11** `0100_ref_data.sql`: categories, banned words (≈150 + pets, gift cards, recalled items), `app_config` defaults (`rules_version`, min versions, flags). Idempotent upserts (BE-15). · deps P3-DB-02 · done when re-running the migration is a no-op · S
+- [x] 🆕 **P3-DB-11** `0100_ref_data.sql`: categories, banned words (≈150 + pets, gift cards, recalled items), `app_config` defaults (`rules_version`, min versions, flags). Idempotent upserts (BE-15). · deps P3-DB-02 · done when re-running the migration is a no-op · S
 - [ ] 🆕 **P3-DB-12** Integrity pgTAP suite: T-INT-DEL-02, T-INT-NOTIF-DEDUPE, T-INT-LIST-04, T-INT-MEET-02/03, T-INT-SAFE-03, T-INT-OFF-RACE-02, T-INT-SOLD-01, T-INT-TZ-01 (written now as failing tests, turned green by later phases). · deps P3-TEST-01 · done when tests exist and are tracked in CI (marked todo until their phase) · M
 - [ ] **P3-AUTH-01** Postgres auth hooks `hook_before_user_created` and `hook_custom_access_token`, enabled in config.toml and on staging/prod · DB-07 · signups from unknown domains are rejected; JWT has the claims · M
 - [ ] **P3-AUTH-02** Trigger `on_auth_user_created`: profile, prefs, waitlist status, invite link · AUTH-01 · a new user gets a profile row · S
