@@ -1,0 +1,107 @@
+# CI (P1-CI-01, P1-CI-02). Linux runners only; RELEASE §3.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  GITLEAKS_VERSION: 8.30.1
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      db: ${{ steps.filter.outputs.db }}
+      mobile: ${{ steps.filter.outputs.mobile }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            db:
+              - 'supabase/**'
+            mobile:
+              - 'apps/mobile/**'
+              - 'pnpm-lock.yaml'
+              - 'scripts/verify/**'
+
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: G1 lint (eslint + a11y + prettier)
+        run: pnpm lint
+      - name: G2 typecheck
+        run: pnpm typecheck
+      - name: G3 unit tests
+        run: pnpm test
+      - name: G5 dependency audit (fails on high)
+        run: pnpm audit --audit-level high
+      - name: G5 secret scan (gitleaks, full history)
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" | tar xz gitleaks
+          ./gitleaks git --config .gitleaks.toml --redact --no-banner .
+
+  mobile:
+    needs: changes
+    if: needs.changes.outputs.mobile == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: G6 expo-doctor
+        working-directory: apps/mobile
+        run: npx expo-doctor
+      - name: G6 T-STORE prebuild check (development)
+        run: |
+          (cd apps/mobile && APP_VARIANT=development npx expo prebuild --clean --no-install)
+          node scripts/verify/check-prebuild.mjs --variant development
+      - name: G6 T-STORE prebuild check (production)
+        run: |
+          (cd apps/mobile && APP_VARIANT=production npx expo prebuild --clean --no-install)
+          node scripts/verify/check-prebuild.mjs --variant production
+      - name: G5 bundle secret scan (T-SEC-12)
+        run: |
+          (cd apps/mobile && APP_VARIANT=production npx expo export -p ios -p android --output-dir dist)
+          node scripts/verify/scan-bundle.mjs apps/mobile/dist
+
+  db:
+    needs: changes
+    if: needs.changes.outputs.db == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: supabase/setup-cli@v3
+        with:
+          version: 2.118.0
+      - name: G7 start local Supabase
+        run: supabase start -x studio,imgproxy,vector,logflare,supavisor,edge-runtime
+      - name: G7 pgTAP
+        run: supabase test db
