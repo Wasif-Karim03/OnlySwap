@@ -16,6 +16,7 @@ const FILL = { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 } as c
 
 /** Pan-to-close rule: past 30% of the sheet height or a fast downward fling. */
 export function shouldCloseSheet(translationY: number, velocityY: number, height: number): boolean {
+  'worklet';
   return translationY > height * 0.3 || velocityY > 800;
 }
 
@@ -54,6 +55,8 @@ export function Sheet({ visible, onClose, title, children, testID }: Props) {
     return () => clearTimeout(t);
   }, [visible, reduced, panelH, y, fade]);
 
+  // Resolved on the JS thread; the gesture callbacks run as worklets on the UI thread.
+  const snapBack = resolveMotion('sheet', reduced);
   const pan = Gesture.Pan()
     .activeOffsetY(8)
     .onUpdate((e) => {
@@ -63,7 +66,7 @@ export function Sheet({ visible, onClose, title, children, testID }: Props) {
       if (shouldCloseSheet(e.translationY, e.velocityY, panelH)) {
         runOnJS(onClose)();
       } else {
-        y.set(animateTo(0, resolveMotion('sheet', reduced)));
+        y.set(animateTo(0, snapBack));
       }
     });
 

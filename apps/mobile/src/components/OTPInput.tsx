@@ -27,6 +27,8 @@ type Props = {
   label: string;
   error?: boolean;
   disabled?: boolean;
+  /** Focus on mount (the verify-code screen); off by default. */
+  autoFocus?: boolean;
 };
 
 /**
@@ -40,6 +42,7 @@ export function OTPInput({
   label,
   error = false,
   disabled = false,
+  autoFocus = false,
 }: Props) {
   const input = useRef<TextInput>(null);
   const reduced = useReducedMotion();
@@ -68,7 +71,10 @@ export function OTPInput({
         <View style={styles.row}>
           {Array.from({ length: OTP_LENGTH }, (_, i) => (
             <View key={i} style={styles.cell(i === focusIndex && !disabled, error, disabled)}>
-              <Text variant="title">{value[i] ?? ''}</Text>
+              {/* Fixed-size cells: digits follow Dynamic Type up to the 1.4x overlay cap. */}
+              <Text variant="title" overlay>
+                {value[i] ?? ''}
+              </Text>
             </View>
           ))}
         </View>
@@ -79,7 +85,7 @@ export function OTPInput({
         accessibilityLabel={label}
         value={value}
         editable={!disabled}
-        autoFocus={!disabled}
+        autoFocus={autoFocus && !disabled}
         keyboardType="number-pad"
         textContentType="oneTimeCode"
         autoComplete="one-time-code"

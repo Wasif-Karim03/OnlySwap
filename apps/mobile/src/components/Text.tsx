@@ -1,5 +1,5 @@
-import { fontScale, type TypeVariant } from '@onlyswap/tokens';
-import { Text as RNText, type TextProps as RNTextProps } from 'react-native';
+import { fontScale as fontScaleTokens, type TypeVariant } from '@onlyswap/tokens';
+import { Text as RNText, useWindowDimensions, type TextProps as RNTextProps } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 /** Text colors allowed for type. `accent` is deliberately absent (UX-03). */
@@ -24,10 +24,14 @@ export function Text({
   style,
   ...rest
 }: TextProps) {
+  // Re-mount the native text node when the user changes Dynamic Type while the
+  // app is running; otherwise iOS keeps the old line boxes and clips glyphs.
+  const { fontScale } = useWindowDimensions();
   return (
     <RNText
+      key={fontScale}
       allowFontScaling
-      maxFontSizeMultiplier={overlay ? fontScale.overlayMax : undefined}
+      maxFontSizeMultiplier={overlay ? fontScaleTokens.overlayMax : undefined}
       style={[styles.text(variant, tone), style]}
       {...rest}
     />

@@ -68,14 +68,14 @@ export function Button({
         if (hapticOnPress) haptic(hapticOnPress);
         onPress?.();
       }}
-      style={fullWidth ? styles.full : undefined}
+      style={fullWidth ? styles.full : styles.hug}
     >
       <View style={styles.body(variant, size, disabled)}>
         <View style={loading ? styles.hidden : undefined}>
           <Text
             variant={size === 'S' ? 'label' : 'bodyStrong'}
             tone={TONE[variant]}
-            numberOfLines={1}
+            style={styles.label}
           >
             {label}
           </Text>
@@ -88,12 +88,14 @@ export function Button({
 
 const styles = StyleSheet.create((theme) => ({
   full: { alignSelf: 'stretch' },
+  hug: { alignSelf: 'flex-start' },
   body: (variant: ButtonVariant, size: ButtonSize, disabled: boolean) => ({
     minHeight: theme.size[`button${size}`],
     paddingHorizontal: size === 'S' ? theme.space.lg : theme.space.xl,
     borderRadius: theme.radius.control,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: theme.space.sm,
     opacity: disabled ? 0.35 : 1,
     backgroundColor:
       variant === 'primary'
@@ -107,5 +109,7 @@ const styles = StyleSheet.create((theme) => ({
               : 'transparent',
   }),
   hidden: { opacity: 0 },
+  // Labels wrap at large Dynamic Type sizes instead of truncating (rule 10).
+  label: { textAlign: 'center' },
   spinner: { position: 'absolute' },
 }));
