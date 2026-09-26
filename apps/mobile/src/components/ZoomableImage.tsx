@@ -107,8 +107,11 @@ export function ZoomableImage({ source, blurhash, accessibilityLabel, onDismiss,
       savedY.set(y.get());
     });
 
+  // maxDistance: a finger that moves is a drag, so the pan starts right away
+  // instead of waiting for the double-tap window to run out.
   const doubleTap = Gesture.Tap()
     .numberOfTaps(2)
+    .maxDistance(10)
     .onEnd(() => {
       if (scale.get() > MIN_ZOOM + 0.01) {
         reset();

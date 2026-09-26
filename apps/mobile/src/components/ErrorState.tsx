@@ -65,7 +65,7 @@ export function ErrorState({
           {errorTitle(appError)}
         </Text>
         <Text variant="body" tone="ink2" style={styles.center}>
-          {errorCopy(appError, { campusTimeZone })}
+          {offline ? statesCopy.offlineBody : errorCopy(appError, { campusTimeZone })}
         </Text>
       </View>
       {onRetry ? (
@@ -74,7 +74,6 @@ export function ErrorState({
           variant="secondary"
           loading={retrying}
           onPress={retry}
-          fullWidth={layout === 'screen'}
           size={layout === 'screen' ? 'L' : 'M'}
         />
       ) : null}

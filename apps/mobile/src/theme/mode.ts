@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react';
+import { useWindowDimensions } from 'react-native';
 import { UnistylesRuntime } from 'react-native-unistyles';
 import { create } from 'zustand';
 
@@ -50,3 +52,22 @@ export const useThemeModeStore = create<ThemeModeState>((set) => ({
     set({ mode });
   },
 }));
+
+/**
+ * Unistyles falls back to the system theme when iOS changes the text size
+ * while the app runs, so views mounted after the change (every Text re-mounts
+ * to re-layout) came up in light colors under a forced Dark mode. Re-applying
+ * the chosen mode on each text-size change keeps every view on one theme.
+ * Mounted once in the root layout.
+ */
+export function useKeepModeOnFontScale(): void {
+  const { fontScale } = useWindowDimensions();
+  const first = useRef(true);
+  useEffect(() => {
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    applyMode(useThemeModeStore.getState().mode);
+  }, [fontScale]);
+}

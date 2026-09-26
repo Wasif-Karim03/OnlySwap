@@ -21,7 +21,10 @@ type Props = Omit<PressableProps, 'style' | 'children' | 'onPress'> & {
   onPress?: () => void;
   /** Themed styles go on children (Unistyles re-themes native views only). */
   children: ReactNode;
-  /** Layout-only styles for the animated wrapper (no colors). */
+  /**
+   * Layout-only styles (no colors), applied to the pressable itself so
+   * alignSelf / flex work inside any parent, including centered columns.
+   */
   style?: StyleProp<ViewStyle>;
   guard?: boolean;
 };
@@ -40,8 +43,9 @@ export function Tappable({ onPress, children, style, guard = true, disabled, ...
       onPress={guard ? guarded : onPress}
       onPressIn={press.onPressIn}
       onPressOut={press.onPressOut}
+      style={style}
     >
-      <Animated.View style={[style, press.animatedStyle]}>{children}</Animated.View>
+      <Animated.View style={press.animatedStyle}>{children}</Animated.View>
     </Pressable>
   );
 }

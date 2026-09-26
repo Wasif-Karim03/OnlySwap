@@ -10,6 +10,7 @@ import { OfflineBanner } from '@/components/Banner';
 import { ToastHost } from '@/components/Toast';
 import { getEnv } from '@/lib/env';
 import { createQueryClient, wireQueryManagers } from '@/lib/queryClient';
+import { useKeepModeOnFontScale } from '@/theme/mode';
 
 // Fail fast: a missing or invalid EXPO_PUBLIC_* value stops the app at launch
 // with a message naming each variable (P1-ENV-01).
@@ -21,6 +22,7 @@ export default function RootLayout() {
   const { rt } = useUnistyles();
   const dark = rt.themeName === 'dark';
   const [queryClient] = useState(createQueryClient);
+  useKeepModeOnFontScale();
 
   return (
     <GestureHandlerRootView style={styles.root}>

@@ -1,7 +1,15 @@
+import { act, renderHook } from '@testing-library/react-native';
+import * as RN from 'react-native';
 import { UnistylesRuntime } from 'react-native-unistyles';
 
 import { getStorage } from '../src/lib/storage';
-import { applyMode, readStoredMode, startupSettings, useThemeModeStore } from '../src/theme/mode';
+import {
+  applyMode,
+  readStoredMode,
+  startupSettings,
+  useKeepModeOnFontScale,
+  useThemeModeStore,
+} from '../src/theme/mode';
 import { darkTheme, lightTheme } from '../src/theme/themes';
 
 describe('P2-TOK-03 theme mode (System / Light / Dark)', () => {
@@ -46,5 +54,29 @@ describe('P2-TOK-03 theme mode (System / Light / Dark)', () => {
     expect(darkTheme.colors.bg).toBe('#0C0C0D');
     expect(lightTheme.colors.accent).toBe(darkTheme.colors.accent);
     expect(Object.keys(lightTheme.colors).sort()).toEqual(Object.keys(darkTheme.colors).sort());
+  });
+});
+
+describe('Dark mode survives a live text-size change (Simulator finding, S6)', () => {
+  it('re-applies the chosen mode when fontScale changes, not on mount', () => {
+    jest.spyOn(UnistylesRuntime, 'setAdaptiveThemes').mockImplementation(() => {});
+    const setTheme = jest.spyOn(UnistylesRuntime, 'setTheme').mockImplementation(() => {});
+    useThemeModeStore.setState({ mode: 'dark' });
+    const base = { width: 390, height: 844, scale: 3 };
+    act(() =>
+      RN.Dimensions.set({ window: { ...base, fontScale: 1 }, screen: { ...base, fontScale: 1 } }),
+    );
+    renderHook(() => useKeepModeOnFontScale());
+    expect(setTheme).not.toHaveBeenCalled();
+    act(() =>
+      RN.Dimensions.set({
+        window: { ...base, fontScale: 3.1 },
+        screen: { ...base, fontScale: 3.1 },
+      }),
+    );
+    expect(setTheme).toHaveBeenCalledWith('dark');
+    act(() =>
+      RN.Dimensions.set({ window: { ...base, fontScale: 1 }, screen: { ...base, fontScale: 1 } }),
+    );
   });
 });

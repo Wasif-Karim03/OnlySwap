@@ -195,7 +195,11 @@ export function ReportSheet({
         </View>
         <TextArea
           label={reportCopy.detailsLabel}
-          placeholder={reportCopy.detailsPlaceholder}
+          placeholder={
+            target === 'listing'
+              ? reportCopy.detailsPlaceholderListing
+              : reportCopy.detailsPlaceholderPerson
+          }
           maxLength={REPORT_DETAILS_MAX}
           value={details}
           onChangeText={setDetails}

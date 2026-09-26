@@ -158,7 +158,7 @@ describe('P2-CMP-08 EmptyState, ErrorState, Skeleton', () => {
       <ErrorState error={toAppError(new TypeError('Network request failed'))} onRetry={onRetry} />,
     );
     expect(screen.getByRole('header', { name: states.offlineTitle })).toBeTruthy();
-    expect(screen.getByText(errors.ERR_OFFLINE)).toBeTruthy();
+    expect(screen.getByText(states.offlineBody)).toBeTruthy();
     fireEvent.press(screen.getByRole('button', { name: states.retry }));
     expect(onRetry).toHaveBeenCalledTimes(1);
     expect(

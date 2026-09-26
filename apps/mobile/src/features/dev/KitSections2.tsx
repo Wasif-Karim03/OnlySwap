@@ -1,6 +1,8 @@
 import type { AccentName } from '@onlyswap/tokens';
 import { useState, type ReactNode } from 'react';
+import { StatusBar } from 'expo-status-bar';
 import { Modal, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { Button } from '@/components/Button';
@@ -22,9 +24,10 @@ import { useToastStore } from '@/components/Toast';
 import { ZoomableImage } from '@/components/ZoomableImage';
 import { toAppError } from '@/lib/errors';
 import type { PermissionKind } from '@/lib/permissions';
-import { kit2, tabs } from '@/strings/en';
+import { fill } from '@/lib/format';
+import { kit2, photo as photoCopy, tabs } from '@/strings/en';
 
-import { ACCENT_NAMES, previewAccent } from './accentPreview';
+import { ACCENT_NAMES, currentPreviewAccent, previewAccent } from './accentPreview';
 import { brokenPhotoUrl, samplePhotos } from './fixtures';
 
 export function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -40,14 +43,14 @@ export function Section({ title, children }: { title: string; children: ReactNod
 
 /** Dev-only accent switcher: every mode x accent pair (DESIGN_SYSTEM D2). */
 export function AccentPicker() {
-  const [accent, setAccent] = useState<AccentName[]>(['pistachio']);
+  const [accent, setAccent] = useState<AccentName[]>(() => [currentPreviewAccent()]);
   return (
     <ChipGroup
       label={kit2.accent}
       mode="single"
       value={accent}
       onChange={(next) => {
-        const picked = next[0] ?? 'pistachio';
+        const picked = next[0] ?? accent[0]!;
         setAccent([picked]);
         previewAccent(picked);
       }}
@@ -61,22 +64,29 @@ export function PhotoViewer({ index, onClose }: { index: number | null; onClose:
   const photo = index === null ? null : samplePhotos[index];
   return (
     <Modal visible={photo !== null} animationType="fade" onRequestClose={onClose}>
-      <View style={styles.viewer}>
-        <NavBar
-          tone="onPhoto"
-          leading="close"
-          onLeading={onClose}
-          title={index === null ? undefined : `${index + 1} / ${samplePhotos.length}`}
-        />
-        {photo ? (
-          <ZoomableImage
-            source={photo.source}
-            blurhash={photo.blurhash}
-            accessibilityLabel={kit2.photoAlt}
-            onDismiss={onClose}
+      <GestureHandlerRootView style={styles.fill}>
+        <StatusBar style="light" />
+        <View style={styles.viewer}>
+          <NavBar
+            tone="onPhoto"
+            leading="close"
+            onLeading={onClose}
+            title={
+              index === null
+                ? undefined
+                : fill(photoCopy.count, { index: index + 1, count: samplePhotos.length })
+            }
           />
-        ) : null}
-      </View>
+          {photo ? (
+            <ZoomableImage
+              source={photo.source}
+              blurhash={photo.blurhash}
+              accessibilityLabel={kit2.photoAlt}
+              onDismiss={onClose}
+            />
+          ) : null}
+        </View>
+      </GestureHandlerRootView>
     </Modal>
   );
 }
@@ -346,5 +356,6 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: theme.radius.card,
     overflow: 'hidden',
   },
+  fill: { flex: 1 },
   viewer: { flex: 1, backgroundColor: theme.colors.photoBg },
 }));

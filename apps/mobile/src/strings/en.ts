@@ -80,6 +80,7 @@ export const states = {
   loading: 'Loading',
   errorTitle: "Couldn't load this",
   offlineTitle: "You're offline",
+  offlineBody: 'Check your connection and try again.',
   retry: 'Try again',
 } as const;
 
@@ -159,14 +160,15 @@ export const report = {
     },
   },
   detailsLabel: 'Add details (optional)',
-  detailsPlaceholder: 'Example: my bike was stolen from outside the library last week',
+  detailsPlaceholderListing: 'Example: my bike was stolen from outside the library last week',
+  detailsPlaceholderPerson: 'Example: kept messaging me after I said no',
   alsoBlock: 'Also block {name}',
   blockHint: "They can't message you, make offers or see your listings.",
   send: 'Send report',
   sentTitle: 'Report sent',
   sentBody: "Thanks for telling us. We'll look into it, usually within a day.",
   sentBodyBlocked:
-    "Thanks for telling us. We'll look into it, usually within a day. You blocked {name}.",
+    "Thanks for telling us. You blocked {name}, and we'll look into it, usually within a day.",
   duplicateTitle: 'Already reported',
   duplicateBody: "You've already reported this. We're on it.",
   done: 'Done',
