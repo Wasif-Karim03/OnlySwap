@@ -10,3 +10,15 @@ process.env.EXPO_PUBLIC_SITE_URL = 'https://onlyswap.pages.dev';
 jest.mock('react-native-nitro-modules', () => ({
   NitroModules: { createHybridObject: jest.fn() },
 }));
+
+// Unistyles and keyboard-controller ship Jest mocks for their native parts.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+require('react-native-unistyles/mocks');
+jest.mock('react-native-keyboard-controller', () =>
+  jest.requireActual('react-native-keyboard-controller/jest'),
+);
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+require('./src/theme/unistyles');
+jest.mock('@react-native-community/netinfo', () =>
+  jest.requireActual('@react-native-community/netinfo/jest/netinfo-mock.js'),
+);

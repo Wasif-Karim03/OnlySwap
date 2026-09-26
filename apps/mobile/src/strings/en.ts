@@ -56,6 +56,27 @@ export const errors = {
   UNKNOWN: 'Something went wrong. Try again.',
 } as const;
 
-export const en = { permissions, tabs, shell, errors } as const;
+/** Dev-build-only spike screen (P1-SPIKE-03/04). Not shown in store builds. */
+export const dev = {
+  open: 'Open developer spikes',
+  openHint: 'Opens the dev-only test screen',
+  title: 'Developer spikes',
+  mmkvLabel: 'MMKV counter (survives a reload)',
+  mmkvButton: 'Add one',
+  mmkvHint: 'Adds one to the saved counter',
+  unistylesLabel: 'Unistyles theme',
+  unistylesButton: 'Switch theme',
+  unistylesHint: 'Switches between light and dark',
+  ageLabel: 'OS age signal',
+  ageButton: 'Ask for age range',
+  ageHint: 'Asks the system for your age range',
+  ageNotAsked: 'Not asked yet',
+  ageUnknown: 'Unknown',
+  keyboardLabel: 'Keyboard avoiding field',
+  keyboardHint: 'Type to check the field stays above the keyboard',
+  keyboardPlaceholder: 'Type here',
+} as const;
+
+export const en = { permissions, tabs, shell, errors, dev } as const;
 
 export default en;
