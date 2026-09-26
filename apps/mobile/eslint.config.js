@@ -5,7 +5,12 @@ const prettierConfig = require('eslint-config-prettier');
 const a11y = require('eslint-plugin-react-native-a11y');
 
 // CLAUDE.md rule 10 / P1-CI-02: the plugin's `all` preset (iOS + Android rules), as errors.
-const a11yRules = a11y.configs.all.rules;
+// Hints stay optional (Apple HIG / Android guidance): requiring one on every
+// labelled element forced meaningless hints on images and plain text.
+const a11yRules = {
+  ...a11y.configs.all.rules,
+  'react-native-a11y/has-accessibility-hint': 'off',
+};
 
 module.exports = defineConfig([
   expoConfig,

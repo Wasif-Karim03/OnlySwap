@@ -2,10 +2,9 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 import { getEnv } from '@/lib/env';
 import { createQueryClient, wireQueryManagers } from '@/lib/queryClient';
@@ -16,16 +15,18 @@ getEnv();
 wireQueryManagers();
 
 export default function RootLayout() {
-  const scheme = useColorScheme();
+  // Navigation chrome and the status bar follow the Unistyles theme (P2-TOK-03).
+  const { rt } = useUnistyles();
+  const dark = rt.themeName === 'dark';
   const [queryClient] = useState(createQueryClient);
 
   return (
     <GestureHandlerRootView style={styles.root}>
       <KeyboardProvider>
         <QueryClientProvider client={queryClient}>
-          <ThemeProvider value={scheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <ThemeProvider value={dark ? DarkTheme : DefaultTheme}>
             <Stack screenOptions={{ headerShown: false }} />
-            <StatusBar style="auto" />
+            <StatusBar style={dark ? 'light' : 'dark'} />
           </ThemeProvider>
         </QueryClientProvider>
       </KeyboardProvider>

@@ -1,27 +1,70 @@
+import type { TypeVariant } from '@onlyswap/tokens';
 import * as AgeRange from 'expo-age-range';
 import { useState } from 'react';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { Pressable, TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { createMMKV } from 'react-native-mmkv';
+import Animated, { useReducedMotion } from 'react-native-reanimated';
 import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
 
+import { SuccessCheck } from '@/components/SuccessCheck';
+import { Text } from '@/components/Text';
+import { THEME_MODES, useThemeModeStore, type ThemeMode } from '@/theme/mode';
+import { usePressFeedback } from '@/theme/motion';
 import { dev } from '@/strings/en';
 
 /**
- * P1-SPIKE-03 / P1-SPIKE-04 (dev builds only). Proves MMKV v4, Unistyles 3 and
- * keyboard-controller run in the dev client, and logs the OS age signal.
- * Removed with its route once the spikes are recorded (P11-A11Y-01 cleanup).
+ * Dev builds only: P1-SPIKE-03/04 checks plus the S4 type, theme and motion
+ * specimen. Removed with its route before store builds (see PR notes).
  */
 const spikeStore = createMMKV({ id: 'spike' });
 
-function describeAgeResult(result: unknown): string {
-  return JSON.stringify(result, null, 1);
+const TYPE_ROWS: TypeVariant[] = [
+  'display',
+  'title',
+  'heading',
+  'price',
+  'body',
+  'bodyStrong',
+  'label',
+  'meta',
+];
+
+function DemoButton({
+  label,
+  hint,
+  onPress,
+}: {
+  label: string;
+  hint: string;
+  onPress: () => void;
+}) {
+  const press = usePressFeedback();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityHint={hint}
+      onPress={onPress}
+      onPressIn={press.onPressIn}
+      onPressOut={press.onPressOut}
+    >
+      <Animated.View style={[styles.button, press.animatedStyle]}>
+        <Text variant="label" tone="onAccent">
+          {label}
+        </Text>
+      </Animated.View>
+    </Pressable>
+  );
 }
 
 export function SpikesScreen() {
   const [count, setCount] = useState(() => spikeStore.getNumber('count') ?? 0);
   const [age, setAge] = useState<string>(dev.ageNotAsked);
   const [text, setText] = useState('');
+  const [done, setDone] = useState(false);
+  const mode = useThemeModeStore((s) => s.mode);
+  const setMode = useThemeModeStore((s) => s.setMode);
+  const reduced = useReducedMotion();
 
   const bump = () => {
     const next = count + 1;
@@ -29,16 +72,11 @@ export function SpikesScreen() {
     setCount(next);
   };
 
-  const toggleTheme = () => {
-    UnistylesRuntime.setAdaptiveThemes(false);
-    UnistylesRuntime.setTheme(UnistylesRuntime.themeName === 'dark' ? 'light' : 'dark');
-  };
-
   const askAge = async () => {
     try {
       const access = await AgeRange.requestAgeSignalsAccessAsync();
       const range = await AgeRange.requestAgeRangeAsync({ threshold1: 18 });
-      const line = describeAgeResult({ access, range });
+      const line = JSON.stringify({ access, range }, null, 1);
       console.warn('[SPIKE-03] age range', line);
       setAge(line);
     } catch (e) {
@@ -50,55 +88,83 @@ export function SpikesScreen() {
 
   return (
     <KeyboardAwareScrollView bottomOffset={24} contentContainerStyle={styles.content}>
-      <Text accessibilityRole="header" style={styles.title}>
+      <Text variant="title" accessibilityRole="header">
         {dev.title}
       </Text>
 
       <View style={styles.card}>
-        <Text style={styles.label}>{dev.mmkvLabel}</Text>
-        <Text testID="spike-mmkv-count" style={styles.value}>
+        <Text variant="label" tone="ink2">
+          {dev.themeLabel}
+        </Text>
+        <Text variant="bodyStrong">{`${mode} (${UnistylesRuntime.themeName})`}</Text>
+        <View style={styles.row}>
+          {THEME_MODES.map((m: ThemeMode) => (
+            <Pressable
+              key={m}
+              accessibilityRole="button"
+              accessibilityState={{ selected: m === mode }}
+              accessibilityHint={dev.themeHint}
+              onPress={() => setMode(m)}
+              style={[styles.segment, m === mode && styles.segmentOn]}
+            >
+              <Text variant="label" tone={m === mode ? 'onAccent' : 'ink'}>
+                {dev.themeModes[m]}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.card}>
+        <Text variant="label" tone="ink2">
+          {dev.typeLabel}
+        </Text>
+        {TYPE_ROWS.map((v) => (
+          <Text key={v} variant={v} testID={`type-${v}`}>
+            {v === 'price' ? dev.typePrice : `${v} ${dev.typeSample}`}
+          </Text>
+        ))}
+        <Text variant="meta" tone="ink2" overlay>
+          {dev.typeOverlay}
+        </Text>
+      </View>
+
+      <View style={styles.card}>
+        <Text variant="label" tone="ink2">
+          {reduced ? dev.motionReduced : dev.motionFull}
+        </Text>
+        <SuccessCheck visible={done} accessibilityLabel={dev.motionDone} />
+        <DemoButton
+          label={dev.motionButton}
+          hint={dev.motionHint}
+          onPress={() => setDone((d) => !d)}
+        />
+      </View>
+
+      <View style={styles.card}>
+        <Text variant="label" tone="ink2">
+          {dev.mmkvLabel}
+        </Text>
+        <Text variant="price" testID="spike-mmkv-count">
           {count}
         </Text>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityHint={dev.mmkvHint}
-          onPress={bump}
-          style={styles.button}
-        >
-          <Text style={styles.buttonText}>{dev.mmkvButton}</Text>
-        </Pressable>
+        <DemoButton label={dev.mmkvButton} hint={dev.mmkvHint} onPress={bump} />
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.label}>{dev.unistylesLabel}</Text>
-        <Text style={styles.value}>{UnistylesRuntime.themeName}</Text>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityHint={dev.unistylesHint}
-          onPress={toggleTheme}
-          style={styles.button}
-        >
-          <Text style={styles.buttonText}>{dev.unistylesButton}</Text>
-        </Pressable>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.label}>{dev.ageLabel}</Text>
-        <Text testID="spike-age" style={styles.mono}>
+        <Text variant="label" tone="ink2">
+          {dev.ageLabel}
+        </Text>
+        <Text variant="meta" testID="spike-age">
           {age}
         </Text>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityHint={dev.ageHint}
-          onPress={askAge}
-          style={styles.button}
-        >
-          <Text style={styles.buttonText}>{dev.ageButton}</Text>
-        </Pressable>
+        <DemoButton label={dev.ageButton} hint={dev.ageHint} onPress={askAge} />
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.label}>{dev.keyboardLabel}</Text>
+        <Text variant="label" tone="ink2">
+          {dev.keyboardLabel}
+        </Text>
         <TextInput
           accessibilityLabel={dev.keyboardLabel}
           accessibilityHint={dev.keyboardHint}
@@ -114,35 +180,41 @@ export function SpikesScreen() {
 
 const styles = StyleSheet.create((theme) => ({
   content: {
-    padding: theme.space(4),
-    gap: theme.space(4),
+    padding: theme.space.screen,
+    gap: theme.space.lg,
     backgroundColor: theme.colors.bg,
     minHeight: '100%',
   },
-  title: { color: theme.colors.ink, fontSize: 26, fontWeight: '800' },
   card: {
     backgroundColor: theme.colors.bg2,
-    borderRadius: 16,
-    padding: theme.space(4),
-    gap: theme.space(2),
+    borderRadius: theme.radius.card,
+    padding: theme.space.lg,
+    gap: theme.space.sm,
   },
-  label: { color: theme.colors.ink2, fontSize: 13, fontWeight: '600' },
-  value: { color: theme.colors.ink, fontSize: 22, fontWeight: '700' },
-  mono: { color: theme.colors.ink, fontSize: 12, fontFamily: 'Menlo' },
-  button: {
-    backgroundColor: theme.colors.accent,
-    borderRadius: 12,
-    minHeight: 44,
+  row: { flexDirection: 'row', gap: theme.space.sm },
+  segment: {
+    flex: 1,
+    minHeight: theme.space.xl + theme.space.lg + theme.space.xs,
+    borderRadius: theme.radius.control,
+    backgroundColor: theme.colors.bg3,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  buttonText: { color: theme.colors.onAccent, fontSize: 15, fontWeight: '700' },
+  segmentOn: { backgroundColor: theme.colors.accent },
+  button: {
+    backgroundColor: theme.colors.accent,
+    borderRadius: theme.radius.control,
+    minHeight: theme.space.xl + theme.space.lg + theme.space.xs,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   input: {
-    minHeight: 44,
+    minHeight: theme.space.xl + theme.space.lg + theme.space.xs,
     borderWidth: 1,
     borderColor: theme.colors.line,
-    borderRadius: 12,
-    paddingHorizontal: theme.space(3),
+    borderRadius: theme.radius.control,
+    paddingHorizontal: theme.space.md,
     color: theme.colors.ink,
+    fontSize: theme.type.body.fontSize,
   },
 }));

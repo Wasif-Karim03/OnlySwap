@@ -75,6 +75,18 @@ export const dev = {
   keyboardLabel: 'Keyboard avoiding field',
   keyboardHint: 'Type to check the field stays above the keyboard',
   keyboardPlaceholder: 'Type here',
+  themeLabel: 'Appearance',
+  themeHint: 'Changes light or dark mode right away',
+  themeModes: { system: 'System', light: 'Light', dark: 'Dark' },
+  typeLabel: 'Type scale',
+  typeSample: 'Swap a desk lamp for a bike light',
+  typePrice: '$1,234.50',
+  typeOverlay: 'Photo overlay text stops growing at 1.4x',
+  motionFull: 'Motion: full',
+  motionReduced: 'Motion: reduced (fades only)',
+  motionButton: 'Show success',
+  motionHint: 'Plays or clears the success check',
+  motionDone: 'Done',
 } as const;
 
 export const en = { permissions, tabs, shell, errors, dev } as const;

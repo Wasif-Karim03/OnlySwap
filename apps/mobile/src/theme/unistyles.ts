@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native-unistyles';
 
+import { readStoredMode, startupSettings } from './mode';
 import { darkTheme, lightTheme } from './themes';
 
 const appThemes = { light: lightTheme, dark: darkTheme };
@@ -13,5 +14,5 @@ declare module 'react-native-unistyles' {
 
 StyleSheet.configure({
   themes: appThemes,
-  settings: { adaptiveThemes: true },
+  settings: startupSettings(readStoredMode()),
 });
