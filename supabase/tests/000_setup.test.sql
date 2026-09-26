@@ -47,6 +47,12 @@ as $$
 declare
   rules text := (select value #>> '{}' from public.app_config where key = 'rules_version');
 begin
+  -- Start from an empty campus world: seed.sql data (local demo campuses and
+  -- users) would collide with the fixtures. Each test file rolls this back.
+  delete from auth.users;
+  truncate public.campuses cascade;
+  perform tests.set_pepper();
+
   insert into public.campuses (id, slug, name, short_name, status, timezone) values
     (tests.uid('OSU'), 'osu', 'The Ohio State University', 'Ohio State', 'live', 'America/New_York'),
     (tests.uid('UMICH'), 'umich', 'University of Michigan', 'Michigan', 'waitlist', 'America/Detroit');
@@ -70,7 +76,13 @@ begin
                 when 'MOD' then 'Mo' when 'OWN' then 'Olive' else 'Nora' end,
          left(u, 1), current_date + 365,
          now(), 'self_declared', now(), rules
-  from unnest(array['A','B','C','D','MOD','OWN','NOMFA']) as u;
+  from unnest(array['A','B','C','D','MOD','OWN','NOMFA']) as u
+  on conflict (id) do update set
+    campus_id = excluded.campus_id, email_hash = excluded.email_hash, status = excluded.status,
+    first_name = excluded.first_name, last_initial = excluded.last_initial,
+    verified_until = excluded.verified_until, adult_confirmed_at = excluded.adult_confirmed_at,
+    age_method = excluded.age_method, rules_accepted_at = excluded.rules_accepted_at,
+    rules_version = excluded.rules_version;
 
   insert into public.admins (user_id, role, campus_id) values
     (tests.uid('MOD'), 'moderator', tests.uid('OSU')),

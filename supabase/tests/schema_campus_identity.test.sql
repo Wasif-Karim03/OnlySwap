@@ -27,13 +27,19 @@ select throws_ok(
   '23514', null, 'domain kind is student or blocked'
 );
 
+-- The on_auth_user_created trigger (0010) needs a known school domain and
+-- the email_hash pepper; it makes the profile, which this test then fills in.
+select tests.set_pepper();
+insert into public.campus_domains (domain, campus_id, kind)
+values ('test.edu', '00000000-0000-4000-8000-00000000c001', 'student') on conflict do nothing;
 insert into auth.users (id, email) values
   ('00000000-0000-4000-8000-0000000000a1', 'maya@test.edu'),
   ('00000000-0000-4000-8000-0000000000a2', 'sam@test.edu');
 insert into public.profiles (id, campus_id, email_hash, first_name, last_initial, verified_until)
 values
   ('00000000-0000-4000-8000-0000000000a1', '00000000-0000-4000-8000-00000000c001', 'h1', 'Maya', 'C', current_date + 365),
-  ('00000000-0000-4000-8000-0000000000a2', '00000000-0000-4000-8000-00000000c001', 'h2', 'Sam', null, current_date + 365);
+  ('00000000-0000-4000-8000-0000000000a2', '00000000-0000-4000-8000-00000000c001', 'h2', 'Sam', null, current_date + 365)
+on conflict (id) do update set campus_id = excluded.campus_id, email_hash = excluded.email_hash, first_name = excluded.first_name, last_initial = excluded.last_initial, verified_until = excluded.verified_until;
 
 select is(
   (select display_name from public.profiles where id = '00000000-0000-4000-8000-0000000000a1'),

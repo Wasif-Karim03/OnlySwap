@@ -68,6 +68,7 @@ select ok(not private.is_blocked(tests.uid('A'), tests.uid('C')) and not private
   'is_blocked is false otherwise, including null');
 
 -- email_hash: stable, case-insensitive, peppered, fails closed without a pepper
+delete from vault.secrets where name = 'email_hash_pepper';  -- seed.sql adds a local one
 select throws_ok($$select private.email_hash('a@osu.edu')$$, 'P0001', 'CONFIG_MISSING:email_hash_pepper',
   'email_hash refuses to run without a pepper');
 select tests.set_pepper();

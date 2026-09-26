@@ -35,7 +35,6 @@ insert into public.reports (campus_id, reporter_id, target_type, target_id, targ
 values (tests.uid('OSU'), tests.uid('B'), 'user', tests.uid('C')::text, tests.uid('C'), 'spam');
 insert into public.strikes (user_id, reason) values (tests.uid('C'), 'test');
 insert into public.notifications (user_id, type, grp, title, body) values (tests.uid('A'), 'tip', 'campus', 't', 'b');
-insert into public.notification_prefs (user_id) values (tests.uid('A'));
 insert into public.audit_log (action) values ('test');
 insert into public.announcements (campus_id, type, title, body, pinned_until) values
   (tests.uid('OSU'), 'safety', 'Pinned', 'b', now() + interval '1 day'),
@@ -123,7 +122,7 @@ select is(tests.try_text_as(tests.uid('NOMFA'), 'select count(*)::text from publ
 
 -- notifications ------------------------------------------------------------------
 select is(tests.try_text_as(tests.uid('A'), 'select count(*)::text from public.notifications'), '1', 'notifications: own');
-select is(tests.try_text_as(tests.uid('B'), 'select count(*)::text from public.notification_prefs'), '0', 'notification_prefs: others none');
+select is(tests.try_text_as(tests.uid('B'), 'select count(*)::text from public.notification_prefs'), '1', 'notification_prefs: own row only (made at signup)');
 
 -- anon ---------------------------------------------------------------------------
 select ok(not has_table_privilege('anon', 'public.listings', 'select')

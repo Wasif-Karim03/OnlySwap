@@ -6,12 +6,18 @@ select plan(17);
 
 insert into public.campuses (id, slug, name, short_name, status)
 values ('00000000-0000-4000-8000-00000000c001', 'test-u', 'Test University', 'Test U', 'live');
+-- The on_auth_user_created trigger (0010) needs a known school domain and
+-- the email_hash pepper; it makes the profile, which this test then fills in.
+select tests.set_pepper();
+insert into public.campus_domains (domain, campus_id, kind)
+values ('test.edu', '00000000-0000-4000-8000-00000000c001', 'student') on conflict do nothing;
 insert into auth.users (id, email) values
   ('00000000-0000-4000-8000-0000000000a1', 'seller@test.edu'),
   ('00000000-0000-4000-8000-0000000000b1', 'buyer@test.edu');
 insert into public.profiles (id, campus_id, email_hash, first_name, verified_until) values
   ('00000000-0000-4000-8000-0000000000a1', '00000000-0000-4000-8000-00000000c001', 'h1', 'Sella', current_date + 365),
-  ('00000000-0000-4000-8000-0000000000b1', '00000000-0000-4000-8000-00000000c001', 'h2', 'Bea', current_date + 365);
+  ('00000000-0000-4000-8000-0000000000b1', '00000000-0000-4000-8000-00000000c001', 'h2', 'Bea', current_date + 365)
+on conflict (id) do update set campus_id = excluded.campus_id, email_hash = excluded.email_hash, first_name = excluded.first_name, verified_until = excluded.verified_until;
 insert into public.listings (id, campus_id, seller_id, title, price_cents)
 values ('00000000-0000-4000-8000-0000000001a1', '00000000-0000-4000-8000-00000000c001',
         '00000000-0000-4000-8000-0000000000a1', 'Desk lamp', 1200);
