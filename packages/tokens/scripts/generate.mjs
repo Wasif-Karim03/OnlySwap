@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // P2-TOK-01: tokens.json -> dist/unistyles.ts (app) + dist/tokens.css (site, admin).
 // `--check` exits 1 when the committed dist files are stale (used in tests/CI).
-import { readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -139,6 +139,7 @@ if (process.argv.includes('--check')) {
   }
   console.log('tokens: generated files are up to date');
 } else {
+  mkdirSync(join(root, 'dist'), { recursive: true });
   for (const [f, c] of Object.entries(outputs)) writeFileSync(join(root, f), c);
   console.log(`tokens: wrote ${Object.keys(outputs).join(', ')}`);
 }
