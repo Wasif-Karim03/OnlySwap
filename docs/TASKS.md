@@ -60,19 +60,19 @@
 - [x] **P2-TOK-01** ✎ `packages/tokens`: `tokens.json` per DESIGN_SYSTEM §2–5 (light, dark, accent options, type, space, radius, motion) plus a generator producing `dist/unistyles.ts` and `dist/tokens.css`. · deps P1-SETUP-01 · done when generated files committed; values match DESIGN_SYSTEM tables · M
 - [x] **P2-TOK-02** ✎ Contrast test T-UNIT-TOK-01 (light + dark × every accent option), including the rule that `accent` never appears as text on `bg`. · deps P2-TOK-01 · done when all required pairs pass · S
 - [x] **P2-TOK-03** ✎ Unistyles themes: mode System/Light/Dark × one accent (from config), persisted in MMKV and `profiles.theme_mode`. · deps P2-TOK-01 · done when switching mode is instant with no flash · S
-- [ ] **P2-FONT-01** ✎ Type components on **system fonts** (SF Pro / Roboto) with the DESIGN_SYSTEM §3 scale, tabular numerals and `maxFontSizeMultiplier` rules. · deps P2-TOK-03 · done when every type row renders at 100% and 200% · S
-- [ ] **P2-CMP-01** Button (all variants, states, loading, haptic) · TOK-03 · kitchen-sink row matches H3 · S
-- [ ] **P2-CMP-02** Input, TextArea (counter), OTPInput · CMP-01 · states match H3 · M
+- [x] **P2-FONT-01** ✎ Type components on **system fonts** (SF Pro / Roboto) with the DESIGN_SYSTEM §3 scale, tabular numerals and `maxFontSizeMultiplier` rules. · deps P2-TOK-03 · done when every type row renders at 100% and 200% · S
+- [x] **P2-CMP-01** Button (all variants, states, loading, haptic) · TOK-03 · kitchen-sink row matches H3 · S
+- [x] **P2-CMP-02** Input, TextArea (counter), OTPInput · CMP-01 · states match H3 · M
 - [x] **P2-CMP-03** Chip/ChipGroup, SegmentedControl, Toggle, Checkbox, OptionRow (radio), Stepper · CMP-01 · a11y roles set · M
-- [ ] **P2-CMP-04** Sheet + ActionSheet (Reanimated, pan to close, focus trap, Android back) · CMP-01 · works with keyboard open · L
+- [x] **P2-CMP-04** Sheet + ActionSheet (Reanimated, pan to close, focus trap, Android back) · CMP-01 · works with keyboard open · L
 - [ ] **P2-CMP-05** Toast, ToastUndo, Banner, OfflineBanner · CMP-01 · offline toggle shows the banner · S
-- [ ] **P2-CMP-06** Card, ListRow/GroupedList, Tag, Avatar, Mark (logo from the shared SVG) · CMP-01 · matches F10 styling · S
+- [x] **P2-CMP-06** Card, ListRow/GroupedList, Tag, Avatar, Mark (logo from the shared SVG) · CMP-01 · matches F10 styling · S
 - [ ] **P2-CMP-07** Photo (expo-image + blurhash), PhotoCarousel, ZoomableImage · CMP-01 · a 4-photo carousel works · M
 - [ ] **P2-CMP-08** EmptyState, ErrorState, Skeleton set · CMP-01 · matches X3/X36 · S
 - [ ] **P2-CMP-09** NavBar, TabBar (iOS style + Android pill variant), StepIndicator, ProgressBar · CMP-06 · N1 look on Android · M
 - [ ] **P2-CMP-10** ✎ PermissionPrimer for camera, photos and notifications (undetermined → primer → OS prompt; denied → Settings). · deps P2-CMP-01 · done when every OS status handled · M
 - [ ] **P2-CMP-11** ConfirmDialog, ReportSheet shell · CMP-04 · — · S
-- [ ] **P2-MOT-01** Motion primitives: press scale, spring presets, check-draw success, reduce-motion hook · CMP-01 · reduce motion swaps to fades · S
+- [x] **P2-MOT-01** Motion primitives: press scale, spring presets, check-draw success, reduce-motion hook · CMP-01 · reduce motion swaps to fades · S
 - [ ] **P2-KIT-01** Kitchen-sink route `/dev/kit` (dev builds only) showing every component and state in every skin. · CMP-01..11 · visual pass against H3 in 8 skins · S
 - [ ] **P2-KIT-02** States gallery route `/dev/states` (dev builds only) rendering every X-section state with fixtures, used by manual QA · KIT-01 · every X frame is reachable · S
 
