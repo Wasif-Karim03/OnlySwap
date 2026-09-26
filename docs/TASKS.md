@@ -67,14 +67,14 @@
 - [x] **P2-CMP-04** Sheet + ActionSheet (Reanimated, pan to close, focus trap, Android back) · CMP-01 · works with keyboard open · L
 - [ ] **P2-CMP-05** Toast, ToastUndo, Banner, OfflineBanner · CMP-01 · offline toggle shows the banner · S
 - [x] **P2-CMP-06** Card, ListRow/GroupedList, Tag, Avatar, Mark (logo from the shared SVG) · CMP-01 · matches F10 styling · S
-- [ ] **P2-CMP-07** Photo (expo-image + blurhash), PhotoCarousel, ZoomableImage · CMP-01 · a 4-photo carousel works · M
-- [ ] **P2-CMP-08** EmptyState, ErrorState, Skeleton set · CMP-01 · matches X3/X36 · S
-- [ ] **P2-CMP-09** NavBar, TabBar (iOS style + Android pill variant), StepIndicator, ProgressBar · CMP-06 · N1 look on Android · M
-- [ ] **P2-CMP-10** ✎ PermissionPrimer for camera, photos and notifications (undetermined → primer → OS prompt; denied → Settings). · deps P2-CMP-01 · done when every OS status handled · M
-- [ ] **P2-CMP-11** ConfirmDialog, ReportSheet shell · CMP-04 · — · S
+- [x] **P2-CMP-07** Photo (expo-image + blurhash), PhotoCarousel, ZoomableImage · CMP-01 · a 4-photo carousel works · M
+- [x] **P2-CMP-08** EmptyState, ErrorState, Skeleton set · CMP-01 · matches X3/X36 · S
+- [x] **P2-CMP-09** NavBar, TabBar (iOS style + Android pill variant), StepIndicator, ProgressBar · CMP-06 · N1 look on Android · M
+- [x] **P2-CMP-10** ✎ PermissionPrimer for camera, photos and notifications (undetermined → primer → OS prompt; denied → Settings). · deps P2-CMP-01 · done when every OS status handled · M
+- [x] **P2-CMP-11** ConfirmDialog, ReportSheet shell · CMP-04 · — · S
 - [x] **P2-MOT-01** Motion primitives: press scale, spring presets, check-draw success, reduce-motion hook · CMP-01 · reduce motion swaps to fades · S
-- [ ] **P2-KIT-01** Kitchen-sink route `/dev/kit` (dev builds only) showing every component and state in every skin. · CMP-01..11 · visual pass against H3 in 8 skins · S
-- [ ] **P2-KIT-02** States gallery route `/dev/states` (dev builds only) rendering every X-section state with fixtures, used by manual QA · KIT-01 · every X frame is reachable · S
+- [x] **P2-KIT-01** Kitchen-sink route `/dev/kit` (dev builds only) showing every component and state in every skin. · CMP-01..11 · visual pass against H3 in 8 skins · S
+- [x] **P2-KIT-02** States gallery route `/dev/states` (dev builds only) rendering every X-section state with fixtures, used by manual QA · KIT-01 · every X frame is reachable · S
 
 ## P3 · Data model, RLS, auth hooks
 
