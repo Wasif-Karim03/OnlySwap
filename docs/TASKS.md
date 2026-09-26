@@ -50,8 +50,8 @@
 - [ ] 🆕 **P1-CI-03** RPC contract snapshot: `scripts/rpc-contract.ts` generates `packages/shared/src/rpc-contract.json` from the DB; CI compares it (T-CONTRACT-01). · deps P1-CI-01, P3-DB-01 · done when changing a signature without `_v2` fails CI · M
 - [x] **P1-DB-01** Supabase CLI init; `supabase start` works locally; link staging. · P0-ACC-04 · local Studio opens · S
 - [ ] **P1-SPIKE-01** Spike: Edge Function sending mail over SMTP 465 via Gmail. If it's blocked, build the Worker `mailer` fallback. Record the outcome. · DB-01, P0-ACC-10 · a test email arrives from a staging function · M
-- [ ] **P1-SPIKE-03** Spike: `expo-age-range` returns a result or `unknown` on both OSes (with the entitlement `com.apple.developer.declared-age-range`). · SETUP-06 · logged result on devices · S
-- [ ] 🆕 **P1-SPIKE-04** Spike: New Architecture/Nitro modules (MMKV v4, Unistyles 3, keyboard-controller) build and run on both dev clients. · deps P1-SETUP-06 · done when a demo screen uses all three on iOS + Android · S
+- [x] **P1-SPIKE-03** Spike: `expo-age-range` returns a result or `unknown` on both OSes (with the entitlement `com.apple.developer.declared-age-range`). · SETUP-06 · logged result on devices · S
+- [x] 🆕 **P1-SPIKE-04** Spike: New Architecture/Nitro modules (MMKV v4, Unistyles 3, keyboard-controller) build and run on both dev clients. · deps P1-SETUP-06 · done when a demo screen uses all three on iOS + Android · S
 - [x] **P1-LIB-01** `lib/supabase.ts`, `lib/rpc.ts`, `lib/errors.ts` (initial codes), `lib/storage.ts`, `lib/queryClient.ts`. · ENV-01 · unit tests pass (T-UNIT-LIB-*) · M
 - [ ] **P1-LIB-02** `lib/sentry.ts` and `lib/analytics.ts` with the opt-in flag, plus the Sentry source-map upload set up through its EAS integration. · LIB-01, P0-ACC-08/09 · a test crash shows symbolicated in Sentry · M
 
@@ -59,7 +59,7 @@
 
 - [x] **P2-TOK-01** ✎ `packages/tokens`: `tokens.json` per DESIGN_SYSTEM §2–5 (light, dark, accent options, type, space, radius, motion) plus a generator producing `dist/unistyles.ts` and `dist/tokens.css`. · deps P1-SETUP-01 · done when generated files committed; values match DESIGN_SYSTEM tables · M
 - [x] **P2-TOK-02** ✎ Contrast test T-UNIT-TOK-01 (light + dark × every accent option), including the rule that `accent` never appears as text on `bg`. · deps P2-TOK-01 · done when all required pairs pass · S
-- [ ] **P2-TOK-03** ✎ Unistyles themes: mode System/Light/Dark × one accent (from config), persisted in MMKV and `profiles.theme_mode`. · deps P2-TOK-01 · done when switching mode is instant with no flash · S
+- [x] **P2-TOK-03** ✎ Unistyles themes: mode System/Light/Dark × one accent (from config), persisted in MMKV and `profiles.theme_mode`. · deps P2-TOK-01 · done when switching mode is instant with no flash · S
 - [ ] **P2-FONT-01** ✎ Type components on **system fonts** (SF Pro / Roboto) with the DESIGN_SYSTEM §3 scale, tabular numerals and `maxFontSizeMultiplier` rules. · deps P2-TOK-03 · done when every type row renders at 100% and 200% · S
 - [ ] **P2-CMP-01** Button (all variants, states, loading, haptic) · TOK-03 · kitchen-sink row matches H3 · S
 - [ ] **P2-CMP-02** Input, TextArea (counter), OTPInput · CMP-01 · states match H3 · M
