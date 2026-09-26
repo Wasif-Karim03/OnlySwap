@@ -48,6 +48,8 @@ export const space = ${j(t.space)} as const;
 
 export const radius = ${j(t.radius)} as const;
 
+export const size = ${j(strip(t.size))} as const;
+
 export const elevation = ${j(t.elevation)} as const;
 
 export const motion = ${j(t.motion)} as const;
@@ -67,6 +69,7 @@ export function makeTheme(mode: Mode, accentName: AccentName = defaultAccent) {
     type,
     space,
     radius,
+    size,
     elevation,
     motion,
     fontScale,

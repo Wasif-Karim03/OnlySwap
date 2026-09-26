@@ -158,6 +158,19 @@ export const radius = {
   "avatar": 999
 } as const;
 
+export const size = {
+  "hit": 44,
+  "buttonL": 54,
+  "buttonM": 44,
+  "buttonS": 36,
+  "toggleW": 51,
+  "toggleH": 31,
+  "otpCell": 52,
+  "avatarS": 32,
+  "avatarM": 44,
+  "avatarL": 72
+} as const;
+
 export const elevation = {
   "soft": {
     "color": "#000000",
@@ -206,6 +219,7 @@ export function makeTheme(mode: Mode, accentName: AccentName = defaultAccent) {
     type,
     space,
     radius,
+    size,
     elevation,
     motion,
     fontScale,

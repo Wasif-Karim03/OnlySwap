@@ -78,6 +78,8 @@ test('P2-TOK-01 space, radius and motion match DESIGN_SYSTEM §4-5', () => {
   assert.equal(tokens.radius.card, 18);
   assert.equal(tokens.radius.sheet, 28);
   assert.equal(tokens.radius.thumb, 12);
+  assert.equal(tokens.size.hit, 44);
+  assert.deepEqual([tokens.size.buttonL, tokens.size.buttonM, tokens.size.buttonS], [54, 44, 36]);
   assert.deepEqual(tokens.motion.sheet, { damping: 22, stiffness: 240 });
   assert.deepEqual(tokens.motion.swipe, { damping: 18, stiffness: 180, flyOut: 220 });
   assert.equal(tokens.motion.tap.scale, 0.97);
