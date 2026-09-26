@@ -81,8 +81,8 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Checks:**
 
-- [ ] `P1-ENV-01`: a missing env var crashes dev with a clear message
-- [ ] `P1-ENV-02`: a commit containing a fake key is blocked
+- [x] `P1-ENV-01`: a missing env var crashes dev with a clear message
+- [x] `P1-ENV-02`: a commit containing a fake key is blocked
 - [ ] `P1-CI-01`: green on a PR
 - [ ] `P1-CI-02`: CI fails on a planted high-severity dep and on a planted secret
 - [ ] `P1-DB-01`: local Studio opens
