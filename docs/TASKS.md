@@ -19,7 +19,7 @@
 
 - [ ] **P0-ACC-01** Register the Google Play Console personal account ($25, one-time, unavoidable). Complete government ID, phone and email verification, and the device check in the Play Console app. · deps — · done when the Console home shows "Verified" · S 💲 *(unavoidable; no free alternative)*
 - [ ] **P0-ACC-02** Confirm the Apple Developer Program membership is active and accept the latest agreements in App Store Connect. · — · Agreements page has no pending items · S
-- [ ] **P0-ACC-03** ✎ GitHub repo `Wasif-Karim03/OnlySwap` (exists). After the first scaffold is pushed, protect `main`: require PRs and CI. From then on each session works on a `feat/*` branch. · deps — · done when a direct push to main is rejected · S
+- [x] **P0-ACC-03** ✎ GitHub repo `Wasif-Karim03/OnlySwap` (exists). After the first scaffold is pushed, protect `main`: require PRs and CI. From then on each session works on a `feat/*` branch. · deps — · done when a direct push to main is rejected · S
 - [ ] **P0-ACC-04** Create Supabase projects `onlyswap-staging` and `onlyswap-prod` (US East) and save their refs and keys in the password manager. · — · both dashboards reachable · S
 - [ ] **P0-ACC-05** Create a Cloudflare account, enable R2 (complete the checkout; set a billing notification at $1), and create buckets `onlyswap-media`, `onlyswap-private` and `onlyswap-backups`. · — · buckets listed · S
 - [ ] **P0-ACC-06** Create an Expo account, org and project `onlyswap`, plus a robot access token. · — · `eas whoami` works · S

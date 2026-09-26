@@ -25,6 +25,7 @@ When docs conflict, the order is: this file → the docs below → `design/OS_FI
 | `docs/TESTING.md` | test IDs and what each must cover |
 | `docs/RELEASE.md` | environments, CI/CD, signing, store submission, ops |
 | `docs/TASKS.md` | the checklist + **build order (sessions S1–S44)** |
+| `docs/GOALS.md` | **goal state + gates for every session; the step loop; definition of done** |
 | `docs/DECISIONS_LOG.md` | why things are the way they are |
 | `docs/REVIEW.md` | the pre-build review (findings, open questions) |
 
@@ -143,13 +144,20 @@ supabase functions serve                 # Edge Functions locally
 wrangler dev -c workers/media/wrangler.toml
 ```
 
-## Session protocol (Claude Code)
+## Session protocol (Claude Code), mandatory quality gates
 
-1. Read this file + the task rows for the session (`docs/TASKS.md` build order).
-2. Read the linked specs (DESIGN_SYSTEM screen rows, API contracts, DATA_MODEL tables).
-3. Create the branch → implement → write tests → run `pnpm lint && pnpm typecheck && pnpm test` (+ `supabase test db` if SQL changed).
-4. Tick the tasks, and list any spec gap you found under "Open" in `docs/DECISIONS_LOG.md` instead of guessing.
-5. Summarize what's runnable and the exact commands the owner should run on devices.
+Full rules are in **`docs/GOALS.md`**. In short:
+
+1. **`/goal SNN`** first. State the session goal, checks, gates and the spec rows read. Stop on any open question.
+2. Create the branch `feat/sNN-name`.
+3. For **each task, in order**, run the step loop (GOALS §1): goal → spec check → tests first → implement → gates → self-review → tick → commit.
+4. **`/verify SNN`** at the end. Every sandbox gate (G1–G6) must be PASS with evidence. If anything fails, fix it and re-run the whole verify.
+5. Only then hand the owner:
+   - the Mac/device verification command (`bash scripts/verify/sNN.sh`)
+   - the push + PR commands
+   - a filled PR body
+6. **The owner merges only when G7–G11 are green.** Mac and device failures come back to the same branch.
+7. Never mark a task done, push, or say "done" without proof. Never skip a gate because it's inconvenient.
 
 ## Environment notes for the owner's Mac
 
