@@ -29,7 +29,8 @@ planted_secret_blocked() {
 }
 
 supabase_up() {
-  docker info >/dev/null 2>&1 || { echo "Docker is not running"; return 1; }
+  command -v docker >/dev/null || { echo "Docker is not installed: install Docker Desktop (free for personal use), open it once, then re-run"; return 1; }
+  docker info >/dev/null 2>&1 || { echo "Docker is installed but not running: open Docker Desktop and wait until it says Running"; return 1; }
   pnpm supabase start
 }
 
