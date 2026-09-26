@@ -87,103 +87,108 @@ export function SpikesScreen() {
   };
 
   return (
-    <KeyboardAwareScrollView bottomOffset={24} contentContainerStyle={styles.content}>
-      <Text variant="title" accessibilityRole="header">
-        {dev.title}
-      </Text>
-
-      <View style={styles.card}>
-        <Text variant="label" tone="ink2">
-          {dev.themeLabel}
+    // Unistyles updates native views only; the third-party scroll view's
+    // contentContainerStyle is not re-themed, so the background lives on a View.
+    <View style={styles.screen}>
+      <KeyboardAwareScrollView bottomOffset={24} contentContainerStyle={styles.content}>
+        <Text variant="title" accessibilityRole="header">
+          {dev.title}
         </Text>
-        <Text variant="bodyStrong">{`${mode} (${UnistylesRuntime.themeName})`}</Text>
-        <View style={styles.row}>
-          {THEME_MODES.map((m: ThemeMode) => (
-            <Pressable
-              key={m}
-              accessibilityRole="button"
-              accessibilityState={{ selected: m === mode }}
-              accessibilityHint={dev.themeHint}
-              onPress={() => setMode(m)}
-              style={[styles.segment, m === mode && styles.segmentOn]}
-            >
-              <Text variant="label" tone={m === mode ? 'onAccent' : 'ink'}>
-                {dev.themeModes[m]}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      </View>
 
-      <View style={styles.card}>
-        <Text variant="label" tone="ink2">
-          {dev.typeLabel}
-        </Text>
-        {TYPE_ROWS.map((v) => (
-          <Text key={v} variant={v} testID={`type-${v}`}>
-            {v === 'price' ? dev.typePrice : `${v} ${dev.typeSample}`}
+        <View style={styles.card}>
+          <Text variant="label" tone="ink2">
+            {dev.themeLabel}
           </Text>
-        ))}
-        <Text variant="meta" tone="ink2" overlay>
-          {dev.typeOverlay}
-        </Text>
-      </View>
+          <Text variant="bodyStrong">{`${mode} (${UnistylesRuntime.themeName})`}</Text>
+          <View style={styles.row}>
+            {THEME_MODES.map((m: ThemeMode) => (
+              <Pressable
+                key={m}
+                accessibilityRole="button"
+                accessibilityState={{ selected: m === mode }}
+                accessibilityHint={dev.themeHint}
+                onPress={() => setMode(m)}
+                style={[styles.segment, m === mode && styles.segmentOn]}
+              >
+                <Text variant="label" tone={m === mode ? 'onAccent' : 'ink'}>
+                  {dev.themeModes[m]}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
 
-      <View style={styles.card}>
-        <Text variant="label" tone="ink2">
-          {reduced ? dev.motionReduced : dev.motionFull}
-        </Text>
-        <SuccessCheck visible={done} accessibilityLabel={dev.motionDone} />
-        <DemoButton
-          label={dev.motionButton}
-          hint={dev.motionHint}
-          onPress={() => setDone((d) => !d)}
-        />
-      </View>
+        <View style={styles.card}>
+          <Text variant="label" tone="ink2">
+            {dev.typeLabel}
+          </Text>
+          {TYPE_ROWS.map((v) => (
+            <Text key={v} variant={v} testID={`type-${v}`}>
+              {v === 'price' ? dev.typePrice : `${v} ${dev.typeSample}`}
+            </Text>
+          ))}
+          <Text variant="meta" tone="ink2" overlay>
+            {dev.typeOverlay}
+          </Text>
+        </View>
 
-      <View style={styles.card}>
-        <Text variant="label" tone="ink2">
-          {dev.mmkvLabel}
-        </Text>
-        <Text variant="price" testID="spike-mmkv-count">
-          {count}
-        </Text>
-        <DemoButton label={dev.mmkvButton} hint={dev.mmkvHint} onPress={bump} />
-      </View>
+        <View style={styles.card}>
+          <Text variant="label" tone="ink2">
+            {reduced ? dev.motionReduced : dev.motionFull}
+          </Text>
+          <SuccessCheck visible={done} accessibilityLabel={dev.motionDone} />
+          <DemoButton
+            label={dev.motionButton}
+            hint={dev.motionHint}
+            onPress={() => setDone((d) => !d)}
+          />
+        </View>
 
-      <View style={styles.card}>
-        <Text variant="label" tone="ink2">
-          {dev.ageLabel}
-        </Text>
-        <Text variant="meta" testID="spike-age">
-          {age}
-        </Text>
-        <DemoButton label={dev.ageButton} hint={dev.ageHint} onPress={askAge} />
-      </View>
+        <View style={styles.card}>
+          <Text variant="label" tone="ink2">
+            {dev.mmkvLabel}
+          </Text>
+          <Text variant="price" testID="spike-mmkv-count">
+            {count}
+          </Text>
+          <DemoButton label={dev.mmkvButton} hint={dev.mmkvHint} onPress={bump} />
+        </View>
 
-      <View style={styles.card}>
-        <Text variant="label" tone="ink2">
-          {dev.keyboardLabel}
-        </Text>
-        <TextInput
-          accessibilityLabel={dev.keyboardLabel}
-          accessibilityHint={dev.keyboardHint}
-          value={text}
-          onChangeText={setText}
-          placeholder={dev.keyboardPlaceholder}
-          style={styles.input}
-        />
-      </View>
-    </KeyboardAwareScrollView>
+        <View style={styles.card}>
+          <Text variant="label" tone="ink2">
+            {dev.ageLabel}
+          </Text>
+          <Text variant="meta" testID="spike-age">
+            {age}
+          </Text>
+          <DemoButton label={dev.ageButton} hint={dev.ageHint} onPress={askAge} />
+        </View>
+
+        <View style={styles.card}>
+          <Text variant="label" tone="ink2">
+            {dev.keyboardLabel}
+          </Text>
+          <TextInput
+            accessibilityLabel={dev.keyboardLabel}
+            accessibilityHint={dev.keyboardHint}
+            value={text}
+            onChangeText={setText}
+            placeholder={dev.keyboardPlaceholder}
+            style={styles.input}
+          />
+        </View>
+      </KeyboardAwareScrollView>
+    </View>
   );
 }
 
-const styles = StyleSheet.create((theme) => ({
+const styles = StyleSheet.create((theme, rt) => ({
+  screen: { flex: 1, backgroundColor: theme.colors.bg },
   content: {
     padding: theme.space.screen,
+    paddingTop: rt.insets.top + theme.space.lg,
+    paddingBottom: rt.insets.bottom + theme.space.xl,
     gap: theme.space.lg,
-    backgroundColor: theme.colors.bg,
-    minHeight: '100%',
   },
   card: {
     backgroundColor: theme.colors.bg2,

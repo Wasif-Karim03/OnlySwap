@@ -14,11 +14,13 @@ export function SuccessCheck({ visible, accessibilityLabel }: Props) {
   const { progress, opacity } = useSuccessProgress(visible);
 
   const wrap = useAnimatedStyle(() => ({ opacity: opacity.value }));
-  const shortStroke = useAnimatedStyle(() => ({
-    transform: [{ scaleX: interpolate(progress.value, [0, 0.4], [0, 1], 'clamp') }],
+  // A check is an L (short foot + tall stem) rotated 45 degrees. The foot draws
+  // first, then the stem grows upward.
+  const foot = useAnimatedStyle(() => ({
+    transform: [{ scaleX: interpolate(progress.value, [0, 0.35], [0, 1], 'clamp') }],
   }));
-  const longStroke = useAnimatedStyle(() => ({
-    transform: [{ scaleX: interpolate(progress.value, [0.4, 1], [0, 1], 'clamp') }],
+  const stem = useAnimatedStyle(() => ({
+    transform: [{ scaleY: interpolate(progress.value, [0.35, 1], [0, 1], 'clamp') }],
   }));
 
   return (
@@ -28,13 +30,9 @@ export function SuccessCheck({ visible, accessibilityLabel }: Props) {
       accessibilityLabel={accessibilityLabel}
       style={[styles.circle, wrap]}
     >
-      <View style={styles.checkBox}>
-        <View style={[styles.strokeHolder, styles.shortHolder]}>
-          <Animated.View style={[styles.stroke, styles.fromLeft, shortStroke]} />
-        </View>
-        <View style={[styles.strokeHolder, styles.longHolder]}>
-          <Animated.View style={[styles.stroke, styles.fromLeft, longStroke]} />
-        </View>
+      <View style={styles.check}>
+        <Animated.View style={[styles.foot, foot]} />
+        <Animated.View style={[styles.stem, stem]} />
       </View>
     </Animated.View>
   );
@@ -49,26 +47,30 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  checkBox: { width: theme.space.xl + theme.space.sm, height: theme.space.xl },
-  strokeHolder: { position: 'absolute' },
-  shortHolder: {
-    left: 0,
-    top: theme.space.md,
+  check: {
     width: theme.space.md,
+    height: theme.space.xl,
+    marginTop: -theme.space.sm,
     transform: [{ rotate: '45deg' }],
-    transformOrigin: 'left',
   },
-  longHolder: {
-    left: theme.space.sm,
-    top: theme.space.xl - theme.space.xs,
-    width: theme.space.xl,
-    transform: [{ rotate: '-50deg' }],
-    transformOrigin: 'left',
-  },
-  stroke: {
+  foot: {
+    position: 'absolute',
+    left: 0,
+    bottom: 0,
+    width: theme.space.md,
     height: theme.space.xs,
     borderRadius: theme.radius.chip,
     backgroundColor: theme.colors.onAccent,
+    transformOrigin: 'left',
   },
-  fromLeft: { transformOrigin: 'left' },
+  stem: {
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
+    width: theme.space.xs,
+    height: theme.space.xl,
+    borderRadius: theme.radius.chip,
+    backgroundColor: theme.colors.onAccent,
+    transformOrigin: 'bottom',
+  },
 }));
