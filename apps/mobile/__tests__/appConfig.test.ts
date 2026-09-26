@@ -120,3 +120,20 @@ describe('T-STORE (TESTING §7) app.config.ts matches the locked native config (
     expect(cfg.updates?.url).toBe('https://u.expo.dev/9636167e-faf3-47ce-b089-17eb9c5f216b');
   });
 });
+
+describe('T-STORE blocked-permission lists stay in sync', () => {
+  it('check-prebuild.mjs blocks exactly what app.config.ts blocks', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const fs = require('node:fs') as typeof import('node:fs');
+    const script = fs.readFileSync(
+      `${__dirname}/../../../scripts/verify/check-prebuild.mjs`,
+      'utf8',
+    );
+    const block = script.slice(
+      script.indexOf('const BLOCKED = ['),
+      script.indexOf('];', script.indexOf('const BLOCKED = [')),
+    );
+    const listed = [...block.matchAll(/'([^']+)'/g)].map((m) => m[1]);
+    expect([...listed].sort()).toEqual([...BLOCKED_ANDROID_PERMISSIONS].sort());
+  });
+});

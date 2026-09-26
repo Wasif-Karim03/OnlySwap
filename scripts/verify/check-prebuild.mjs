@@ -104,6 +104,29 @@ const BLOCKED = [
   'android.permission.USE_EXACT_ALARM',
   'android.permission.SYSTEM_ALERT_WINDOW',
   'com.google.android.gms.permission.AD_ID',
+  // Launcher badge permissions added by ShortcutBadger (via expo-notifications).
+  // Android 8+ shows notification dots without them; blocked to keep the
+  // Play permission list minimal (DEC 42 CI check).
+  'android.permission.READ_APP_BADGE',
+  'com.android.launcher.permission.READ_SETTINGS',
+  'com.android.launcher.permission.WRITE_SETTINGS',
+  'com.android.launcher.permission.INSTALL_SHORTCUT',
+  'com.android.launcher.permission.UNINSTALL_SHORTCUT',
+  'com.sec.android.provider.badge.permission.READ',
+  'com.sec.android.provider.badge.permission.WRITE',
+  'com.htc.launcher.permission.READ_SETTINGS',
+  'com.htc.launcher.permission.UPDATE_SHORTCUT',
+  'com.sonyericsson.home.permission.BROADCAST_BADGE',
+  'com.sonymobile.home.permission.PROVIDER_INSERT_BADGE',
+  'com.anddoes.launcher.permission.UPDATE_COUNT',
+  'com.majeur.launcher.permission.UPDATE_BADGE',
+  'com.huawei.android.launcher.permission.CHANGE_BADGE',
+  'com.huawei.android.launcher.permission.READ_SETTINGS',
+  'com.huawei.android.launcher.permission.WRITE_SETTINGS',
+  'com.oppo.launcher.permission.READ_SETTINGS',
+  'com.oppo.launcher.permission.WRITE_SETTINGS',
+  'me.everything.badger.permission.BADGE_COUNT_READ',
+  'me.everything.badger.permission.BADGE_COUNT_WRITE',
 ];
 
 // Permissions allowed in the final merged manifest (libraries add most of these).
