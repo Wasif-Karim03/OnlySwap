@@ -100,7 +100,7 @@ jobs:
           node scripts/verify/check-prebuild.mjs --merged "$merged"
       - name: G5 bundle secret scan (T-SEC-12)
         run: |
-          (cd apps/mobile && APP_VARIANT=production npx expo export -p ios -p android --output-dir dist)
+          (cd apps/mobile && APP_VARIANT=production npx expo export -p ios -p android --no-bytecode --output-dir dist)
           node scripts/verify/scan-bundle.mjs apps/mobile/dist
 
   db:

@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 // T-SEC-12: the exported JS bundles contain no secrets (SECURITY T13).
 // Usage: node scripts/verify/scan-bundle.mjs [dir]   (default: apps/mobile/dist)
-// Build the bundles first: cd apps/mobile && npx expo export -p ios -p android --output-dir dist
+// Build the bundles first (plain JS, same strings as the Hermes bytecode that ships;
+// bytecode packs strings back to back, which makes regex boundaries unreliable):
+//   cd apps/mobile && npx expo export -p ios -p android --no-bytecode --output-dir dist
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
@@ -39,7 +41,13 @@ try {
   console.error(`scan-bundle: ${dir} not found. Export the bundles first.`);
   process.exit(2);
 }
-const jsFiles = list.filter((f) => f.endsWith('.js') || f.endsWith('.hbc'));
+if (list.some((f) => f.endsWith('.hbc'))) {
+  console.error(
+    'scan-bundle: found Hermes bytecode; export with --no-bytecode so the scan reads plain JS',
+  );
+  process.exit(2);
+}
+const jsFiles = list.filter((f) => f.endsWith('.js'));
 if (jsFiles.length === 0) {
   console.error(`scan-bundle: no bundles in ${dir}`);
   process.exit(2);
@@ -52,7 +60,9 @@ for (const f of list) {
     const m = text.match(re);
     if (m) {
       hits++;
-      console.log(`FAIL  ${label} in ${f}: ${m[0].slice(0, 12)}…`);
+      const at = m.index ?? 0;
+      const context = text.slice(Math.max(0, at - 40), at + 60).replace(/\s+/g, ' ');
+      console.log(`FAIL  ${label} in ${f}: ${m[0].slice(0, 12)}… context: ${context}`);
     }
   }
 }
