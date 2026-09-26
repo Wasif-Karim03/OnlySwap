@@ -28,9 +28,8 @@ select enum_has_labels('public', 'spot_designation', array['public','police'], '
 
 select has_schema('private', 'private schema exists');
 select ok(
-  not has_schema_privilege('anon', 'private', 'usage')
-    and not has_schema_privilege('authenticated', 'private', 'usage'),
-  'anon and authenticated cannot use the private schema'
+  not has_schema_privilege('anon', 'private', 'usage'),
+  'anon cannot use the private schema (authenticated only reaches the policy helpers, 0008)'
 );
 
 select is(private.unaccent_immutable('Café Crème'), 'Cafe Creme', 'unaccent_immutable strips accents');

@@ -20,7 +20,7 @@ select is(private.queue_notification(tests.uid('A'), 'offer_new', 'offers', 't',
 select todo_start('P9-PUSH-04: trg_offers_notify fires offer_new with dedupe offer_new:{offer}:{round}');
 select ok(tests.try_ok_as(tests.uid('B'), $$select public.make_offer('00000000-0000-4000-8000-0000000001a1', 1000, null, '{}')$$),
   'NOTIF-DEDUPE: B makes an offer');
-select is(tests.try_text($$select count(*)::text from public.notifications where type = 'offer_new' and user_id = '00000000-0000-4000-8000-00000000000a'$$),
+select is(tests.try_text($$select count(*)::text from public.notifications n join public.offers o on n.dedupe_key like 'offer_new:' || o.id::text || ':%' where n.type = 'offer_new' and o.listing_id = '00000000-0000-4000-8000-0000000001a1' and o.buyer_id = '00000000-0000-4000-8000-00000000000b'$$),
   '1', 'NOTIF-DEDUPE: the seller gets exactly one offer_new for that round');
 select todo_end();
 
@@ -117,18 +117,15 @@ select todo_end();
 
 -- ---------------------------------------------------------------------------
 -- T-INT-SAFE-03 (BE-09): auto-hide needs 3 distinct reporters older than 7 days.
-select todo_start('P3-SAFE-01: create_report and the auto-hide trigger');
+-- Live since S9 (P3-SAFE-01); the aged-reporter case is in safety_rpcs.test.sql.
 insert into public.listings (id, campus_id, seller_id, title)
 values ('00000000-0000-4000-8000-0000000001a3', tests.uid('OSU'), tests.uid('C'), 'Sketchy item');
 select ok(tests.try_ok_as(tests.uid('B'), $$select public.create_report('listing', '00000000-0000-4000-8000-0000000001a3', 'scam', null)$$),
   'SAFE-03: a young account can report');
-select todo_end();
-select todo_start('P3-SAFE-01: young accounts never trigger auto-hide');
 select is((select status::text from public.listings where id = '00000000-0000-4000-8000-0000000001a3'),
   'active', 'SAFE-03: reports from new accounts do not hide the listing');
 select ok(exists (select 1 from public.reports where target_id = '00000000-0000-4000-8000-0000000001a3' and status = 'open'),
   'SAFE-03: the report stays open');
-select todo_end();
 
 -- ---------------------------------------------------------------------------
 -- T-INT-TZ-01 (BE-12): campus time zone across the DST change.

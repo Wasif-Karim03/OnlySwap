@@ -1,7 +1,7 @@
 -- P3-DB-10: queue_notification, queue_email, unlock_campus, can_upload,
 -- snapshot_evidence, names_student; and no API role can call private.*.
 begin;
-select plan(25);
+select plan(26);
 select tests.create_fixtures();
 
 -- queue_notification dedupes on (user, dedupe_key) (BE-04, T-INT-NOTIF-DEDUPE helper part)
@@ -90,13 +90,20 @@ insert into public.common_first_names (name) values ('maya');
 select ok(private.names_student('I saw Maya at the rec'), 'a capitalized common first name is flagged');
 select ok(not private.names_student('maya is a word here'), 'lowercase words are not names');
 
--- No API role can call any private helper directly.
+-- anon can call nothing in private; authenticated only the read-only helpers
+-- that RLS policies use (0008).
+select is(
+  array(
+    select p.proname::text from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'private' and has_function_privilege('authenticated', p.oid, 'execute')
+    order by 1),
+  array['admin_rank','is_admin','is_blocked','is_chat_participant','is_public_config_key','my_campus','now'],
+  'authenticated can execute only the policy helpers in private'
+);
 select is(
   (select count(*)::int from pg_proc p join pg_namespace n on n.oid = p.pronamespace
-   where n.nspname = 'private'
-     and (has_function_privilege('anon', p.oid, 'execute')
-          or has_function_privilege('authenticated', p.oid, 'execute'))),
-  0, 'anon and authenticated cannot execute private.*'
+   where n.nspname = 'private' and has_function_privilege('anon', p.oid, 'execute')),
+  0, 'anon cannot execute anything in private'
 );
 
 -- New public functions start with no EXECUTE for the API roles (explicit grants only).

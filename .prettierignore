@@ -9,3 +9,5 @@ design
 docs
 *.md
 apps/mobile/src/components/icons/iconData.ts
+packages/shared/src/db.ts
+packages/shared/src/rpc-contract.json

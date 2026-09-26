@@ -32,6 +32,8 @@ jobs:
               - 'supabase/**'
               - 'scripts/rpc-contract.ts'
               - 'packages/shared/src/rpc-contract.json'
+              - 'packages/shared/src/db.ts'
+              - 'scripts/verify/check-db-types.sh'
             mobile:
               - 'apps/mobile/**'
               - 'pnpm-lock.yaml'
@@ -124,3 +126,5 @@ jobs:
           node-version-file: .nvmrc
       - name: G4 RPC contract (T-CONTRACT-01)
         run: node --experimental-strip-types scripts/rpc-contract.ts check
+      - name: G4 generated DB types match the schema (P3-TYPES-01)
+        run: bash scripts/verify/check-db-types.sh
