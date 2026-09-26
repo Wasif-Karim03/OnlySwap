@@ -65,11 +65,11 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 **Checks:**
 
 - [x] `P1-SETUP-01`: `pnpm i` succeeds
-- [ ] `P1-SETUP-02`: runs on the iOS simulator; Android bundle and prebuild pass in CI
+- [x] `P1-SETUP-02`: runs on the iOS simulator; Android bundle and prebuild pass in CI
 - [x] `P1-SETUP-03`: `npx expo-doctor` passes
 - [ ] `P1-SETUP-04`: `expo prebuild` output has exactly the expected Info.plist keys, entitlements and merged manifest permissions (T-STORE check)
-- [ ] `P1-SETUP-05`: `eas build -p ios --profile development` succeeds
-- [ ] `P1-SETUP-06`: the app launches on the iOS Simulator and the Android EAS build succeeds
+- [x] `P1-SETUP-05`: `eas build -p ios --profile development` succeeds
+- [x] `P1-SETUP-06`: the app launches on the iOS Simulator and the Android EAS build succeeds
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11
 
