@@ -57,8 +57,8 @@
 
 ## P2 · Design system and component kit
 
-- [ ] **P2-TOK-01** ✎ `packages/tokens`: `tokens.json` per DESIGN_SYSTEM §2–5 (light, dark, accent options, type, space, radius, motion) plus a generator producing `dist/unistyles.ts` and `dist/tokens.css`. · deps P1-SETUP-01 · done when generated files committed; values match DESIGN_SYSTEM tables · M
-- [ ] **P2-TOK-02** ✎ Contrast test T-UNIT-TOK-01 (light + dark × every accent option), including the rule that `accent` never appears as text on `bg`. · deps P2-TOK-01 · done when all required pairs pass · S
+- [x] **P2-TOK-01** ✎ `packages/tokens`: `tokens.json` per DESIGN_SYSTEM §2–5 (light, dark, accent options, type, space, radius, motion) plus a generator producing `dist/unistyles.ts` and `dist/tokens.css`. · deps P1-SETUP-01 · done when generated files committed; values match DESIGN_SYSTEM tables · M
+- [x] **P2-TOK-02** ✎ Contrast test T-UNIT-TOK-01 (light + dark × every accent option), including the rule that `accent` never appears as text on `bg`. · deps P2-TOK-01 · done when all required pairs pass · S
 - [ ] **P2-TOK-03** ✎ Unistyles themes: mode System/Light/Dark × one accent (from config), persisted in MMKV and `profiles.theme_mode`. · deps P2-TOK-01 · done when switching mode is instant with no flash · S
 - [ ] **P2-FONT-01** ✎ Type components on **system fonts** (SF Pro / Roboto) with the DESIGN_SYSTEM §3 scale, tabular numerals and `maxFontSizeMultiplier` rules. · deps P2-TOK-03 · done when every type row renders at 100% and 200% · S
 - [ ] **P2-CMP-01** Button (all variants, states, loading, haptic) · TOK-03 · kitchen-sink row matches H3 · S

@@ -113,8 +113,8 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Checks:**
 
-- [ ] `P2-TOK-01`: generated files committed; values match DESIGN_SYSTEM tables
-- [ ] `P2-TOK-02`: all required pairs pass
+- [x] `P2-TOK-01`: generated files committed; values match DESIGN_SYSTEM tables
+- [x] `P2-TOK-02`: all required pairs pass
 - [ ] `P2-TOK-03`: switching mode is instant with no flash
 - [ ] `P2-FONT-01`: every type row renders at 100% and 200%
 - [ ] `P2-MOT-01`: reduce motion swaps to fades

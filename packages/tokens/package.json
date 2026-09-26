@@ -1,0 +1,17 @@
+{
+  "name": "@onlyswap/tokens",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/unistyles.ts",
+  "types": "dist/unistyles.ts",
+  "exports": {
+    ".": "./dist/unistyles.ts",
+    "./tokens.css": "./dist/tokens.css",
+    "./tokens.json": "./tokens.json"
+  },
+  "scripts": {
+    "build": "node scripts/generate.mjs",
+    "test": "node --test test/tokens.test.mjs"
+  }
+}
