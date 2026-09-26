@@ -216,9 +216,9 @@ Each is a YAML flow in `.maestro/`, run against staging with seeded data. Steps 
 **Device matrix** (free: your own phones plus simulators/emulators):
 - iPhone SE (3rd gen) simulator for the small phone
 - iPhone 17 Pro Max simulator for the large one
-- your physical iPhone
+- a physical iPhone via TestFlight testers (DEC 41; you have none), for camera, HEIC, age range and push
 - a Pixel 5 emulator (API 36) for small Android
-- a Pixel 9 Pro XL emulator
+- your physical Android phone
 - your physical Android phone if you have one; otherwise borrow a tester's during the closed test
 
 **Run every screen group against:**
@@ -238,7 +238,7 @@ Each is a YAML flow in `.maestro/`, run against staging with seeded data. Steps 
 - **A:** code autofill on iOS from Mail; resend timer; wrong/expired code; native date picker accessible; Updated-rules gate; (R1.1: waitlist count updates).
 - **B:** the swipe feels smooth, there are no stuck cards after a fast swipe, and undo works; the listing carousel works; owner and hold states; report sheet.
 - **C [R1.1]:** free food countdown hits zero and removes the post; the Wanted prefill goes to sell.
-- **D:** 8 photos reordered; HEIC from the iPhone camera; draft restored after a kill; all D3 errors; share card looks right.
+- **D:** 8 photos reordered; HEIC from an iPhone camera (tester or a HEIC file dragged into the Simulator); draft restored after a kill; all D3 errors; share card looks right.
 - **E:** offers in all states; chat realtime between two devices; scam hint; spot list + Directions to Maps; no-show timing; ratings reveal.
 - **F:** every settings row navigates; theme and icon switching; delete and export.
 - **Q:** votes, polls, aliases consistent within a thread; blocked and held sheets; hide person; muted keywords.
@@ -271,7 +271,7 @@ Each is a YAML flow in `.maestro/`, run against staging with seeded data. Steps 
 
 | ID | Metric | Target | How |
 |---|---|---|---|
-| Perf-01 | Cold start to first interactive frame | < 2.0 s on a mid Android (Pixel 5 emulator at release build), < 1.2 s on the iPhone | Sentry app start measurement + stopwatch on a release build |
+| Perf-01 | Cold start to first interactive frame | < 2.0 s on a mid Android (Pixel 5 emulator at release build), < 1.2 s on a tester iPhone (TestFlight, DEC 41) | Sentry app start measurement + stopwatch on a release build |
 | Perf-02 | Swipe deck frame rate | ≥ 58 fps sustained over 50 swipes | Android GPU profiler / Perf Monitor; Reanimated worklets only |
 | Perf-03 | List scroll (Inbox, Results, Quad) | no blank cells at fling speed | FlashList `estimatedItemSize` tuned |
 | Perf-04 | Image load | next card image already cached (prefetch 3); thumbnails under 150 ms on 4G | expo-image cache logs |

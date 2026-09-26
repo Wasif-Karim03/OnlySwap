@@ -131,7 +131,7 @@ design/          design board + sources
 ```bash
 pnpm i                                   # install
 pnpm --filter mobile start               # Metro (dev client)
-npx expo run:ios --device                # local iOS build to your iPhone (Mac + Xcode 26.4+)
+npx expo run:ios                         # local iOS build to the Simulator (Mac + Xcode 26.4+; no iPhone, DEC 41)
 npx expo run:android                     # local Android build (USB debugging)
 eas build --profile development -p ios   # cloud dev client (counts toward 15/mo)
 supabase start && supabase db reset      # local DB with seed (Docker)

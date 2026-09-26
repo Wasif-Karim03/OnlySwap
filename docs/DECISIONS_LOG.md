@@ -6,6 +6,7 @@ Newest first. Each entry records the date, the decision, why it was made, who de
 
 | # | Date | Decision | Why | By | Supersedes |
 |---|---|---|---|---|---|
+| 41 | 2026-09-25 | No iPhone: iOS device checks (G8) run on the iOS Simulator (local build or EAS `development-simulator` profile). Checks the Simulator can't cover (camera, Declared Age Range, real push delivery) move to TestFlight testers with iPhones before S42; Android keeps the physical phone | Owner has an Android phone only; $0 rule | Owner | "your iPhone" in GOALS G8 |
 | 40 | 2026-09-25 | Quality protocol: every session starts with `/goal`, runs the step loop per task, and ends with `/verify`. Sandbox gates G1–G6 must pass before push; Mac/device gates G7–G11 before merge (`docs/GOALS.md`) | Owner requires every step to be tested and perfect before pushing | Owner | — |
 | 39 | 2026-09-25 | Second scope cut (DEC-13): waitlist gate/unlock screens, Around campus (food, Wanted, campus feed), price-hint UI, data export screen, `/i` + `/joined` pages → R1.1 | R1.0 still ~1,090 h after the first cut | Review | — |
 | 38 | 2026-09-25 | Spec frozen. `CLAUDE.md` + `docs/*.md` are the source of truth; `docs/archive/blueprint-v0/` is kept for history only | Pre-build review | Review | blueprint v0 |
