@@ -11,9 +11,17 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "pnpm -r --if-present test",
     "doctor": "pnpm --filter mobile doctor",
-    "verify:prebuild": "node scripts/verify/check-prebuild.mjs"
+    "verify:prebuild": "node scripts/verify/check-prebuild.mjs",
+    "prepare": "simple-git-hooks",
+    "secrets:scan": "gitleaks git --no-banner --redact .",
+    "scan:bundle": "node scripts/verify/scan-bundle.mjs"
   },
   "devDependencies": {
-    "prettier": "3.9.9"
+    "prettier": "3.9.9",
+    "simple-git-hooks": "2.14.0",
+    "supabase": "2.118.0"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "bash scripts/hooks/pre-commit.sh"
   }
 }

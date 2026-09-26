@@ -1,0 +1,21 @@
+# gitleaks config (P1-ENV-02, SECURITY §4). Default rules plus OnlySwap-specific ones.
+[extend]
+useDefault = true
+
+[[rules]]
+id = "supabase-secret-key"
+description = "Supabase secret (service) API key"
+regex = '''sb_secret_[A-Za-z0-9_-]{20,}'''
+keywords = ["sb_secret_"]
+
+[[rules]]
+id = "supabase-service-role-jwt"
+description = "JWT whose payload claims role service_role"
+# base64url of '"role":"service_role"' at the three possible alignments
+regex = '''eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]*(InJvbGUiOiJzZXJ2aWNlX3JvbG|Jyb2xlIjoic2VydmljZV9yb2xl|icm9sZSI6InNlcnZpY2Vfcm9sZ)[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+'''
+keywords = ["eyj"]
+
+[allowlist]
+description = "Test fixtures that are not real keys"
+paths = ['''pnpm-lock\.yaml''']
+regexes = ['''sb_(publishable|secret)_test_only_not_a_real_key''']
