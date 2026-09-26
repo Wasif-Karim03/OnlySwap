@@ -114,10 +114,9 @@ describe('T-STORE (TESTING §7) app.config.ts matches the locked native config (
     expect(names.some((n) => n.includes('maplibre'))).toBe(false);
   });
 
-  it('wires EAS Update only when a project id is provided', () => {
-    expect(cfg.updates).toBeUndefined();
-    const withId = load({ EAS_PROJECT_ID: 'test-project-id' });
-    expect(withId.updates?.url).toBe('https://u.expo.dev/test-project-id');
-    expect(withId.extra?.eas?.projectId).toBe('test-project-id');
+  it('is linked to the EAS project and EAS Update', () => {
+    expect(cfg.owner).toBe('wasifkarim03');
+    expect(cfg.extra?.eas?.projectId).toBe('9636167e-faf3-47ce-b089-17eb9c5f216b');
+    expect(cfg.updates?.url).toBe('https://u.expo.dev/9636167e-faf3-47ce-b089-17eb9c5f216b');
   });
 });

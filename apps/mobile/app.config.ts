@@ -17,6 +17,9 @@ const BRAND = {
 } as const;
 
 export const BUNDLE_ID = 'app.onlyswap';
+// Created by `eas init` (@wasifkarim03/onlyswap). Public identifiers, not secrets.
+export const EAS_PROJECT_ID = '9636167e-faf3-47ce-b089-17eb9c5f216b';
+export const EXPO_OWNER = 'wasifkarim03';
 export const WEB_HOST = 'onlyswap.pages.dev';
 
 export const BLOCKED_ANDROID_PERMISSIONS = [
@@ -46,15 +49,13 @@ function appVariant(): AppVariant {
 }
 
 export default ({ config }: ConfigContext): ExpoConfig => {
-  // Set after `eas init` on the owner's machine; not a secret.
-  const easProjectId = process.env.EAS_PROJECT_ID;
   const variant = appVariant();
 
   return {
     ...config,
     name: 'OnlySwap',
     slug: 'onlyswap',
-    owner: process.env.EXPO_OWNER,
+    owner: EXPO_OWNER,
     version: '1.0.0',
     platforms: ['ios', 'android'],
     scheme: 'onlyswap',
@@ -62,8 +63,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     userInterfaceStyle: 'automatic',
     icon: './assets/images/icon.png',
     runtimeVersion: { policy: 'fingerprint' },
-    updates: easProjectId ? { url: `https://u.expo.dev/${easProjectId}` } : undefined,
-    extra: easProjectId ? { eas: { projectId: easProjectId } } : undefined,
+    updates: { url: `https://u.expo.dev/${EAS_PROJECT_ID}` },
+    extra: { eas: { projectId: EAS_PROJECT_ID } },
     ios: {
       bundleIdentifier: BUNDLE_ID,
       supportsTablet: false,
