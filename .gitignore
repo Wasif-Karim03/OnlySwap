@@ -12,3 +12,6 @@ coverage/
 expo-env.d.ts
 .expo-shared/
 *.tsbuildinfo
+supabase/.temp/
+supabase/.branches/
+apps/mobile/dist/

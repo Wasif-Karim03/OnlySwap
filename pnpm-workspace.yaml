@@ -6,3 +6,10 @@ packages:
 onlyBuiltDependencies:
   - '@sentry/cli'
   - unrs-resolver
+  - simple-git-hooks
+  - supabase
+
+peerDependencyRules:
+  allowedVersions:
+    # The plugin works with ESLint 9 flat config; its peer range predates ESLint 9.
+    eslint-plugin-react-native-a11y>eslint: '9'
