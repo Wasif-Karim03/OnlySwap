@@ -1,0 +1,32 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`T-UNIT-LIB-02 lib/errors.errorCopy has copy for every ErrorCode 1`] = `
+{
+  "AGE_BLOCKED": "OnlySwap is for people 18 and older.",
+  "AGE_REQUIRED": "Confirm you are 18 or older to keep going.",
+  "ALREADY_APPEALED": "You've already sent an appeal. We'll get back to you.",
+  "ALREADY_REPORTED": "You've already reported this. We're on it.",
+  "BANNED": "This account has been removed from OnlySwap.",
+  "BANNED_TERM": "That text includes words that aren't allowed on OnlySwap.",
+  "CHAT_BLOCKED": "You can't send messages in this chat.",
+  "CHAT_CLOSED": "This chat is closed.",
+  "DOMAIN_BLOCKED": "That email domain can't be used. Use your school email.",
+  "ERR_OFFLINE": "You're offline. Check your connection and try again.",
+  "FEATURE_OFF": "That isn't available yet.",
+  "FORBIDDEN": "You don't have access to that.",
+  "INVALID": "Something in the form needs a fix. Check the highlighted fields.",
+  "LISTING_UNAVAILABLE": "This item isn't taking offers right now.",
+  "MEETUP_WINDOW": "That can't be done at this point in the meetup.",
+  "NOT_ACTIVE": "Your account can't do that right now. Check your profile for details.",
+  "NOT_ADMIN": "Admins only.",
+  "NOT_AUTHENTICATED": "Sign in to keep going.",
+  "NOT_FOUND": "We couldn't find that. It may have been removed.",
+  "OFFERS_PAUSED": "Offers are paused on your account after a missed meetup.",
+  "OFFER_NOT_PENDING": "This offer changed. Pull to refresh.",
+  "RATE_LIMITED": "You're doing that a lot. Try again in a little while.",
+  "RULES_REQUIRED": "Read and accept the community rules to keep going.",
+  "SCHOOL_UNKNOWN": "We don't support that school email yet.",
+  "SESSION_EXPIRED": "Your session ended. Sign in again.",
+  "UNKNOWN": "Something went wrong. Try again.",
+}
+`;
