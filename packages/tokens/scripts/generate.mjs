@@ -52,7 +52,7 @@ export const size = ${j(strip(t.size))} as const;
 
 export const elevation = ${j(t.elevation)} as const;
 
-export const motion = ${j(t.motion)} as const;
+export const motion = ${j(strip(t.motion))} as const;
 
 export const fontScale = ${j(t.fontScale)} as const;
 

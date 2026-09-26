@@ -17,7 +17,9 @@ export const palette = {
   "greenBg": "#E5F3EA",
   "amber": "#9A6200",
   "amberBg": "#FBF0DA",
-  "overlay": "rgba(0,0,0,0.45)"
+  "overlay": "rgba(0,0,0,0.45)",
+  "onPhoto": "#FFFFFF",
+  "photoBg": "#000000"
 },
   dark: {
   "bg": "#0C0C0D",
@@ -35,7 +37,9 @@ export const palette = {
   "greenBg": "#0F2A1C",
   "amber": "#F5B84B",
   "amberBg": "#2A2110",
-  "overlay": "rgba(0,0,0,0.6)"
+  "overlay": "rgba(0,0,0,0.6)",
+  "onPhoto": "#FFFFFF",
+  "photoBg": "#000000"
 },
 } as const;
 
@@ -168,7 +172,17 @@ export const size = {
   "otpCell": 52,
   "avatarS": 32,
   "avatarM": 44,
-  "avatarL": 72
+  "avatarL": 72,
+  "glyphTile": 88,
+  "glyphIcon": 38,
+  "tabIcon": 25,
+  "tabPillW": 64,
+  "tabPillH": 32,
+  "badge": 18,
+  "stepBar": 4,
+  "progressBar": 8,
+  "navBar": 46,
+  "copyMax": 320
 } as const;
 
 export const elevation = {
@@ -199,6 +213,10 @@ export const motion = {
   },
   "fade": {
     "duration": 150
+  },
+  "skeleton": {
+    "duration": 1300,
+    "delay": 300
   }
 } as const;
 
