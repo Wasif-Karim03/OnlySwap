@@ -107,7 +107,7 @@
 - [x] **P4-AUTH-05** S-A03 School email with detect, not-found, personal-email and reviewer password states · AUTH-02 · all A3/A4/A5 states reachable · M
 - [x] **P4-AUTH-06** S-A04 Verify code with autofill, errors, resend timer and lockout · AUTH-05 · wrong/expired/locked states tested · M
 - [x] **P4-DEL-01** Edge Function `delete-account` (normal + underage mode; ratings anonymized; banned hash; R2 prefix deletion added in P5-MEDIA-04) · P3-AUTH-02 · T-INT-DEL-01 shows no rows left except retained reports · M
-- [ ] **P4-AUTH-07** ✎ A05 Age check: OS signal (`expo-age-range`) → native date picker fallback → Not eligible; underage path calls `delete-account` (underage) and signs out. · deps P4-AUTH-06, P1-SPIKE-03, P4-DEL-01 · done when the minor path deletes the auth user and blocks retry (T-INT-AUTH-04, E2E-02) · M
+- [x] **P4-AUTH-07** ✎ A05 Age check: OS signal (`expo-age-range`) → native date picker fallback → Not eligible; underage path calls `delete-account` (underage) and signs out. · deps P4-AUTH-06, P1-SPIKE-03, P4-DEL-01 · done when the minor path deletes the auth user and blocks retry (T-INT-AUTH-04, E2E-02) · M
 - [ ] **P4-AUTH-08** S-A10 Profile setup, including avatar upload (depends on the media pipeline) · AUTH-07, P5-MEDIA-03 · the profile row is updated · M
 - [ ] **P4-AUTH-09** S-A11 Community rules with the 18+ checkbox and legal links · AUTH-08 · can't continue unchecked · S
 - [ ] **P4-AUTH-10** S-A12 Notifications primer (permission flow; registration completed in P9) · AUTH-09, P2-CMP-10 · the OS prompt fires only on the button · S
