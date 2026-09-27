@@ -1,6 +1,5 @@
-import { ShellScreen } from '@/components/ShellScreen';
+import { RulesScreen } from '@/features/auth/RulesScreen';
 
-/** Placeholder so the launch gate can route here; built in P4-AUTH-09. */
 export default function Screen() {
-  return <ShellScreen testID="screen-rules" />;
+  return <RulesScreen />;
 }

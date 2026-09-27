@@ -42,7 +42,7 @@ select ok(
 
 select set_eq(
   $$select key from public.app_config$$,
-  array['maintenance','min_version_ios','min_version_android','rules_version','quad_enabled','chat_photos_enabled'],
+  array['maintenance','min_version_ios','min_version_android','rules_version','rules_changes','quad_enabled','chat_photos_enabled'],
   'app_config has the public keys'
 );
 select is(

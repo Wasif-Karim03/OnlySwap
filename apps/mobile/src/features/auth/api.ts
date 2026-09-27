@@ -55,6 +55,15 @@ export type SchoolLookup =
   | { kind: 'unknown' }
   | { kind: 'school'; school: School };
 
+export type ClassYear = 'freshman' | 'sophomore' | 'junior' | 'senior' | 'grad' | 'other';
+
+export type ProfileInput = {
+  firstName: string;
+  lastInitial: string | null;
+  year: ClassYear | null;
+  avatarPath: string | null;
+};
+
 /** Edge Function caller (supabase.functions.invoke adds the user's JWT). */
 export type FunctionsClient = {
   invoke: (
@@ -172,7 +181,25 @@ export function createAuthApi(deps: Deps) {
       if (error) throw toAppError(error);
     },
 
-    /** A school we don't support yet (A5). The Edge Function arrives with P4-AUTH-11. */
+    /**
+     * Profile basics (A06). Only the first name and last initial are stored;
+     * the avatar is an object key the server issued for this user.
+     */
+    async updateProfile(input: ProfileInput): Promise<void> {
+      await rpc<unknown>('update_profile', {
+        first_name: input.firstName,
+        last_initial: input.lastInitial,
+        year: input.year,
+        avatar_path: input.avatarPath,
+      });
+    },
+
+    /** Community rules (A07). The version must be the one from get_app_config. */
+    async acceptRules(version: string): Promise<void> {
+      await rpc<unknown>('accept_rules', { version });
+    },
+
+    /** A school we don't support yet (A5), via the waitlist-request function (P4-AUTH-11). */
     async joinWaitlist(input: string): Promise<void> {
       const email = requireEmail(input);
       if (!deps.functions) throw toAppError({ message: 'functions unavailable' });
