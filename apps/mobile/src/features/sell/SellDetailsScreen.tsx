@@ -292,16 +292,21 @@ export function SellDetailsScreen({
         </>
       ) : (
         <>
-          <ChipGroup<PickupBy>
-            label={copy.pickupLabel}
-            mode="single"
-            options={PICKUPS.map((p) => ({ value: p, label: copy.pickup[p] }))}
-            value={[draft.pickupBy]}
-            onChange={(v) => {
-              const pick = v[0];
-              if (pick) update({ pickupBy: pick });
-            }}
-          />
+          <View style={styles.field}>
+            <Text variant="label" tone="ink2">
+              {copy.pickupLabel}
+            </Text>
+            <ChipGroup<PickupBy>
+              label={copy.pickupLabel}
+              mode="single"
+              options={PICKUPS.map((p) => ({ value: p, label: copy.pickup[p] }))}
+              value={[draft.pickupBy]}
+              onChange={(v) => {
+                const pick = v[0];
+                if (pick) update({ pickupBy: pick });
+              }}
+            />
+          </View>
           <View style={styles.freeCard}>
             <View style={styles.freeIcon}>
               <Icon name="gift" size={20} tone="onAccent" />
