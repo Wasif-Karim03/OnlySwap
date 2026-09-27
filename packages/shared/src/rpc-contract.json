@@ -30,6 +30,16 @@
     ]
   },
   {
+    "name": "check_text",
+    "args": "text text, scope text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "complete_reverify",
     "args": "",
     "returns": "jsonb",
@@ -60,9 +70,29 @@
     ]
   },
   {
+    "name": "create_listing",
+    "args": "id uuid, kind listing_kind, title text, description text, category_id smallint, condition item_condition, price_cents integer, open_to_offers boolean, photos jsonb, meet_spot_ids uuid[], meet_note text, availability text[], wanted_max_cents integer, wanted_ref uuid, food_minutes integer, pickup_by date",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "create_report",
     "args": "target_type text, target_id text, reason text, details text",
     "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "delete_listing",
+    "args": "id uuid",
+    "returns": "void",
     "security": "definer",
     "grants": [
       "authenticated",
@@ -102,6 +132,16 @@
     ]
   },
   {
+    "name": "mark_sold",
+    "args": "id uuid, buyer_id uuid",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "my_waitlist_position",
     "args": "",
     "returns": "jsonb",
@@ -112,9 +152,49 @@
     ]
   },
   {
+    "name": "price_hint",
+    "args": "category_id smallint",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "relist_listing",
+    "args": "id uuid, price_cents integer",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "reserve_listing_id",
+    "args": "",
+    "returns": "uuid",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "unblock_user",
     "args": "user_id uuid",
     "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "update_listing",
+    "args": "id uuid, title text, description text, category_id smallint, condition item_condition, price_cents integer, open_to_offers boolean, photos jsonb, meet_spot_ids uuid[], meet_note text, availability text[]",
+    "returns": "jsonb",
     "security": "definer",
     "grants": [
       "authenticated",

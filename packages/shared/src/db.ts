@@ -1595,6 +1595,9 @@ isOneToOne: false
 "block_user":
 { Args: { "user_id": string }; Returns: undefined
                            },
+"check_text":
+{ Args: { "scope": string,"text": string }; Returns: Json
+                           },
 "complete_reverify":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
@@ -1604,8 +1607,14 @@ isOneToOne: false
 "create_appeal":
 { Args: { "body"?: string,"reason_choice"?: string,"subject_id": string,"subject_type": string }; Returns: Json
                            },
+"create_listing":
+{ Args: { "availability"?: (string)[],"category_id"?: number,"condition"?: Database["public"]['Enums']["item_condition"],"description"?: string,"food_minutes"?: number,"id": string,"kind"?: Database["public"]['Enums']["listing_kind"],"meet_note"?: string,"meet_spot_ids"?: (string)[],"open_to_offers"?: boolean,"photos"?: Json,"pickup_by"?: string,"price_cents"?: number,"title"?: string,"wanted_max_cents"?: number,"wanted_ref"?: string }; Returns: Json
+                           },
 "create_report":
 { Args: { "details"?: string,"reason": string,"target_id": string,"target_type": string }; Returns: Json
+                           },
+"delete_listing":
+{ Args: { "id": string }; Returns: undefined
                            },
 "get_app_config":
 { Args: Record<PropertyKey, never>; Returns: Json
@@ -1616,11 +1625,26 @@ isOneToOne: false
 "lookup_school":
 { Args: { "domain": string }; Returns: Json
                            },
+"mark_sold":
+{ Args: { "buyer_id"?: string,"id": string }; Returns: undefined
+                           },
 "my_waitlist_position":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"price_hint":
+{ Args: { "category_id": number }; Returns: Json
+                           },
+"relist_listing":
+{ Args: { "id": string,"price_cents"?: number }; Returns: Json
+                           },
+"reserve_listing_id":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           },
 "unblock_user":
 { Args: { "user_id": string }; Returns: undefined
+                           },
+"update_listing":
+{ Args: { "availability"?: (string)[],"category_id"?: number,"condition"?: Database["public"]['Enums']["item_condition"],"description"?: string,"id": string,"meet_note"?: string,"meet_spot_ids"?: (string)[],"open_to_offers"?: boolean,"photos"?: Json,"price_cents"?: number,"title"?: string }; Returns: Json
                            },
 "update_profile":
 { Args: { "areas"?: (string)[],"avatar_path"?: string,"bio"?: string,"first_name": string,"last_initial"?: string,"year"?: Database["public"]['Enums']["class_year"] }; Returns: Json
