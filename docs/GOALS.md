@@ -276,8 +276,8 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 **Checks:**
 
 - [ ] `P4-AUTH-08`: the profile row is updated
-- [ ] `P4-AUTH-09`: can't continue unchecked
-- [ ] `P4-AUTH-10`: the OS prompt fires only on the button
+- [x] `P4-AUTH-09`: can't continue unchecked
+- [x] `P4-AUTH-10`: the OS prompt fires only on the button
 - [ ] `P4-AUTH-11`: a duplicate email is a silent success; IP limited
 - [ ] `P4-AUTH-17`: T-UNIT-AUTH-06, E2E-22
 

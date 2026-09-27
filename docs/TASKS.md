@@ -109,8 +109,8 @@
 - [x] **P4-DEL-01** Edge Function `delete-account` (normal + underage mode; ratings anonymized; banned hash; R2 prefix deletion added in P5-MEDIA-04) · P3-AUTH-02 · T-INT-DEL-01 shows no rows left except retained reports · M
 - [x] **P4-AUTH-07** ✎ A05 Age check: OS signal (`expo-age-range`) → native date picker fallback → Not eligible; underage path calls `delete-account` (underage) and signs out. · deps P4-AUTH-06, P1-SPIKE-03, P4-DEL-01 · done when the minor path deletes the auth user and blocks retry (T-INT-AUTH-04, E2E-02) · M
 - [ ] **P4-AUTH-08** S-A10 Profile setup, including avatar upload (depends on the media pipeline) · AUTH-07, P5-MEDIA-03 · the profile row is updated · M
-- [ ] **P4-AUTH-09** S-A11 Community rules with the 18+ checkbox and legal links · AUTH-08 · can't continue unchecked · S
-- [ ] **P4-AUTH-10** S-A12 Notifications primer (permission flow; registration completed in P9) · AUTH-09, P2-CMP-10 · the OS prompt fires only on the button · S
+- [x] **P4-AUTH-09** S-A11 Community rules with the 18+ checkbox and legal links · AUTH-08 · can't continue unchecked · S
+- [x] **P4-AUTH-10** S-A12 Notifications primer (permission flow; registration completed in P9) · AUTH-09, P2-CMP-10 · the OS prompt fires only on the button · S
 - [ ] **P4-AUTH-11** Edge Function `waitlist-request` + Turnstile helper · P3-DB-02 · a duplicate email is a silent success; IP limited · M
 - [ ] **P4-AUTH-14** Session expired modal (X7) and the re-verify gate (X9) with `complete_reverify` · AUTH-06 · forcing `verified_until` into the past shows X9; a new code restores it · M
 - [ ] **P4-AUTH-15** Reviewer accounts: `scripts/seed-review.ts` + `review_accounts` rows on staging · AUTH-05 · a reviewer logs in with a password on staging · S
