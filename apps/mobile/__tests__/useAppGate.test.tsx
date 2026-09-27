@@ -13,6 +13,7 @@ const config: AppConfig = {
   minVersionIos: '1.0.0',
   minVersionAndroid: '1.0.0',
   rulesVersion: '1',
+  rulesChanges: [],
 };
 const profile: GateProfile = {
   status: 'active',

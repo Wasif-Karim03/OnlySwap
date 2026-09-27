@@ -57,6 +57,19 @@ export function validateName(input: string): 'ok' | 'empty' | 'too_long' | 'inva
   return /^\p{L}(?:[\p{L}\p{M} '’-]*[\p{L}\p{M}])?$/u.test(name) ? 'ok' : 'invalid';
 }
 
+/** The one letter shown after the first name, from whatever was typed as the last name. */
+export function lastInitialOf(input: string): string | null {
+  const first = [...input.trim()][0];
+  return first && /\p{L}/u.test(first) ? first.toLocaleUpperCase() : null;
+}
+
+/** How the name appears to other students: "Wasif K." or just "Wasif". */
+export function shownAs(firstName: string, lastName: string): string {
+  const first = firstName.trim();
+  const initial = lastInitialOf(lastName);
+  return initial ? `${first} ${initial}.` : first;
+}
+
 /** Compares dotted versions numerically: -1, 0 or 1. Missing parts count as 0. */
 export function compareVersions(a: string, b: string): number {
   const pa = a.split('.').map((n) => Number.parseInt(n, 10) || 0);
@@ -76,6 +89,8 @@ export type AppConfig = {
   minVersionIos: string;
   minVersionAndroid: string;
   rulesVersion: string;
+  /** "What changed" lines for the Updated rules screen (D10, DEC 52). */
+  rulesChanges: string[];
 };
 
 export type GateProfile = {
@@ -178,5 +193,8 @@ export function parseAppConfig(raw: unknown): AppConfig {
     minVersionIos: str(r.min_version_ios, '0'),
     minVersionAndroid: str(r.min_version_android, '0'),
     rulesVersion: str(r.rules_version, ''),
+    rulesChanges: Array.isArray(r.rules_changes)
+      ? r.rules_changes.filter((x): x is string => typeof x === 'string' && x.trim() !== '')
+      : [],
   };
 }

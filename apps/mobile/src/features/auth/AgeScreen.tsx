@@ -16,6 +16,7 @@ import { age as copy } from '@/strings/en';
 import { requestAgeSignal, toIsoDate, type AgeRangeModule, type Device } from './age';
 import { authApi, type AuthApi } from './api';
 import { AuthStep } from './AuthStep';
+import { useGateHandoff } from './useAppGate';
 
 type Phase = 'checking' | 'form' | 'saving' | 'blocked';
 
@@ -56,7 +57,7 @@ export function AgeScreen({
   const [error, setError] = useState<string | null>(null);
   const started = useRef(false);
 
-  const finishAdult = () => router.replace('/');
+  const finishAdult = useGateHandoff();
 
   const finishMinor = async () => {
     // Delete first, then sign out; either failing still ends on the blocked

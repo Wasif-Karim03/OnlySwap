@@ -510,6 +510,97 @@ export const age = {
   close: 'Close',
 } as const;
 
+/** A06 Profile setup (board A10). */
+export const profileSetup = {
+  step: '4 of 5',
+  title: 'Set up your profile',
+  body: 'This is what buyers and sellers see.',
+  addPhoto: 'Add a photo',
+  changePhoto: 'Change photo',
+  photoHint: 'Makes you easier to spot at pickup.',
+  photoLabel: 'Profile photo',
+  uploading: 'Uploading your photo',
+  uploaded: 'Photo added',
+  uploadFailed: "Your photo didn't upload. Try again, or continue without it.",
+  removePhoto: 'Remove photo',
+  firstName: 'First name',
+  lastName: 'Last name',
+  lastNameHint: 'Only the first letter is shown.',
+  shownAs: 'Shown as {name}',
+  year: 'Year',
+  years: {
+    freshman: 'Freshman',
+    sophomore: 'Sophomore',
+    junior: 'Junior',
+    senior: 'Senior',
+    grad: 'Grad',
+  },
+  nameEmpty: 'Add your first name.',
+  nameTooLong: 'Keep it to 30 letters or fewer.',
+  nameInvalid: 'Use letters only. Spaces, hyphens and apostrophes are fine.',
+  continue: 'Continue',
+  waitForPhoto: 'Wait for the photo to finish uploading',
+} as const;
+
+/** A07 Community rules (board A11) and the D10 Updated rules variant. */
+export const rules = {
+  step: '5 of 5',
+  title: 'Four rules',
+  body: 'Everyone here agrees to these. Break them and your account comes down.',
+  updatedTitle: 'We updated the rules',
+  updatedBody: 'Read what changed, then agree to keep using OnlySwap.',
+  whatChanged: 'What changed',
+  noChangeList: 'The community rules were reworded. Read them again below.',
+  items: [
+    {
+      icon: 'pin',
+      title: 'Meet in public',
+      body: 'Use a Meetup spot or a busy place on campus. Not a dorm room, not an empty parking lot.',
+    },
+    {
+      icon: 'tag',
+      title: 'Pay in person',
+      body: 'Cash, Venmo, whatever you both agree on. OnlySwap never touches the money.',
+    },
+    {
+      icon: 'ban',
+      title: 'Nothing on the banned list',
+      body: 'No alcohol, vapes, meds, weapons, fakes, tickets, meal swipes or coursework.',
+    },
+    {
+      icon: 'chat',
+      title: 'Keep chats about the deal',
+      body: 'Anything creepy gets reported and looked at by a real person.',
+    },
+  ],
+  agreeLabel: "I'm 18 or older and agree to the Community Rules, Terms and Privacy Policy",
+  communityRules: 'Community Rules',
+  terms: 'Terms',
+  privacy: 'Privacy Policy',
+  openLink: 'Opens {page} in your browser',
+  agree: 'Agree and continue',
+} as const;
+
+/** A08 Notifications primer (board A12). Sample notifications are decorative. */
+export const notifyPrimer = {
+  samples: [
+    {
+      time: 'now',
+      title: 'Devin accepted your offer',
+      body: 'Mini fridge for $35. Say hi and plan the pickup.',
+    },
+    {
+      time: '4m ago',
+      title: 'Price drop on something you saved',
+      body: 'Desk chair is now $30. It was $45.',
+    },
+    { time: '12m ago', title: 'New message from Priya', body: 'Can we meet at the library at 3?' },
+  ],
+  turnOn: 'Turn on notifications',
+  notNow: 'Not now',
+  openSettings: 'Open Settings',
+} as const;
+
 export const en = {
   permissions,
   tabs,
@@ -531,6 +622,9 @@ export const en = {
   welcome,
   signIn,
   age,
+  profileSetup,
+  rules,
+  notifyPrimer,
 } as const;
 
 export default en;

@@ -2,9 +2,11 @@ import {
   compareVersions,
   computeGate,
   emailDomain,
+  lastInitialOf,
   GATE_HREF,
   normalizeEmail,
   parseAppConfig,
+  shownAs,
   validateName,
   type AppConfig,
   type GateInput,
@@ -29,6 +31,19 @@ describe('T-UNIT-AUTH-01 auth/logic.validateName', () => {
   });
   it('counts characters, not UTF-16 units', () => {
     expect(validateName('美'.repeat(30))).toBe('ok');
+  });
+});
+
+describe('P4-AUTH-08 name shown to others', () => {
+  it('first name plus the initial of the last name', () => {
+    expect(shownAs(' Wasif ', 'karim')).toBe('Wasif K.');
+    expect(shownAs('Ana', '')).toBe('Ana');
+    expect(shownAs('Zoë', 'Ólafsdóttir')).toBe('Zoë Ó.');
+  });
+  it('the initial is a letter or nothing', () => {
+    expect(lastInitialOf('  ng')).toBe('N');
+    expect(lastInitialOf("'Brien")).toBeNull();
+    expect(lastInitialOf('')).toBeNull();
   });
 });
 
@@ -58,6 +73,7 @@ const config: AppConfig = {
   minVersionIos: '1.0.0',
   minVersionAndroid: '1.0.0',
   rulesVersion: '2',
+  rulesChanges: [],
 };
 const ready: GateProfile = {
   status: 'active',
@@ -149,6 +165,7 @@ describe('parseAppConfig', () => {
         min_version_ios: '1.1.0',
         min_version_android: '1.0.2',
         rules_version: '3',
+        rules_changes: ['Fakes are now on the banned list.', '', 7],
         quad_enabled: false,
       }),
     ).toEqual({
@@ -156,6 +173,7 @@ describe('parseAppConfig', () => {
       minVersionIos: '1.1.0',
       minVersionAndroid: '1.0.2',
       rulesVersion: '3',
+      rulesChanges: ['Fakes are now on the banned list.'],
     });
   });
   it('falls back safely on junk', () => {
@@ -164,6 +182,7 @@ describe('parseAppConfig', () => {
       minVersionIos: '0',
       minVersionAndroid: '0',
       rulesVersion: '',
+      rulesChanges: [],
     });
     expect(parseAppConfig({ maintenance: 'yes' }).maintenance.enabled).toBe(false);
   });

@@ -1,6 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Application from 'expo-application';
-import { useEffect, useState } from 'react';
+import { useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 
 import { getStorage } from '@/lib/storage';
@@ -74,4 +75,18 @@ export function useAppGate(options: Options = {}): AppGate {
 
 function defaultNotificationsAsked(): boolean {
   return getStorage().get('onboarding.notificationsAsked') === true;
+}
+
+/**
+ * After an onboarding step saves, hand back to the launch gate. The cached
+ * profile is dropped first so the gate reads the new row instead of routing
+ * back to the step that was just finished.
+ */
+export function useGateHandoff(): () => void {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  return useCallback(() => {
+    queryClient.removeQueries({ queryKey: ['profile'] });
+    router.replace('/');
+  }, [queryClient, router]);
 }
