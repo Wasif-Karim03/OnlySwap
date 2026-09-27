@@ -125,9 +125,9 @@
 - [x] **P5-MEDIA-02** ✎ Edge Function `upload-url` + `private.can_upload` + `_shared/r2.ts`; **signs content-length and content-type** (SEC-02); kinds listing/avatar/share. · deps P3-DB-10 · done when presigned PUT works; wrong owner → 403; oversize body → 403 (T-SEC-18) · M
 - [x] **P5-MEDIA-03** `lib/media.ts`: pickPhotos, processPhoto (1080/400 WebP, EXIF stripped, blurhash), uploadPhotos (retry, progress) · MEDIA-02 · T-UNIT-MEDIA-01..05 pass; output has no GPS EXIF · M
 - [x] **P5-MEDIA-04** ✎ Extend `delete-account`: move photo keys referenced by open reports to `onlyswap-private/evidence/` (BE-02), then delete the user's R2 prefixes (avatar, own listings, share cards). · deps P5-MEDIA-02, P4-DEL-01 · done when T-INT-DEL-03 passes; no other user objects remain · M
-- [ ] **P5-SELL-01** ✎ RPCs `reserve_listing_id`, `create_listing` (idempotent), `update_listing`, `delete_listing` (soft), `relist_listing`, `mark_sold`, `check_text` (`price_hint` RPC is built too; its UI is R1.1) · deps P3-DB-10 · done when pgTAP incl. banned words, limits, T-INT-LIST-04 pass · L
-- [ ] **P5-SELL-02** `useDraft` + S-D01 Sell·photos (grid, reorder, camera/library, permission primer and denied states, X16) · MEDIA-03 · a draft survives an app kill · L
-- [ ] **P5-SELL-03** ✎ D02 Sell·details with every D3 error state and the give-away toggle (D4); no price hint UI in R1.0 · deps P5-SELL-01 · done when all errors show at once · M
+- [x] **P5-SELL-01** ✎ RPCs `reserve_listing_id`, `create_listing` (idempotent), `update_listing`, `delete_listing` (soft), `relist_listing`, `mark_sold`, `check_text` (`price_hint` RPC is built too; its UI is R1.1) · deps P3-DB-10 · done when pgTAP incl. banned words, limits, T-INT-LIST-04 pass · L
+- [x] **P5-SELL-02** `useDraft` + S-D01 Sell·photos (grid, reorder, camera/library, permission primer and denied states, X16) · MEDIA-03 · a draft survives an app kill · L
+- [x] **P5-SELL-03** ✎ D02 Sell·details with every D3 error state and the give-away toggle (D4); no price hint UI in R1.0 · deps P5-SELL-01 · done when all errors show at once · M
 - [ ] **P5-SELL-04** ✎ D03 Sell step 3: meetup spot list (police-designated first), extra place text, availability chips. No map. · deps P5-SELL-03 · done when spots saved on the listing · S
 - [ ] **P5-SELL-05** S-D06 Posted + ShareCard generation (view-shot) + share sheet · SELL-04 · `share_image_path` is set and the OG image loads · M
 - [ ] **P5-SELL-07** Draft photo cleanup (cron + R2 list/delete) · MEDIA-02 · orphan drafts older than 24 h are removed on staging · S
