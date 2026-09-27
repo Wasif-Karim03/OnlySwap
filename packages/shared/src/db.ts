@@ -1589,8 +1589,14 @@ isOneToOne: false
             "accept_rules":
 { Args: { "version": string }; Returns: undefined
                            },
+"admin_change_email":
+{ Args: { "new_email": string,"user_id": string }; Returns: Json
+                           },
 "block_user":
 { Args: { "user_id": string }; Returns: undefined
+                           },
+"complete_reverify":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "confirm_age":
 { Args: { "birth_date"?: string,"is_adult"?: boolean,"method": string }; Returns: Json

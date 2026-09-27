@@ -12,6 +12,7 @@ import {
   type AppConfig,
   type GateProfile,
 } from './logic';
+import { noteIntentionalSignOut } from './sessionExpiry';
 
 /**
  * Auth calls (P4-AUTH-02). Built from injected clients so tests run without a
@@ -28,6 +29,7 @@ export type AuthClient = {
   verifyOtp: (args: { email: string; token: string; type: 'email' }) => PromiseLike<AuthResult>;
   signInWithPassword: (args: { email: string; password: string }) => PromiseLike<AuthResult>;
   signOut: (args?: { scope?: 'local' | 'global' | 'others' }) => PromiseLike<{ error: unknown }>;
+  getUser: () => PromiseLike<{ data: { user: { id: string; email?: string } | null } | null }>;
 };
 
 type ProfileRow = {
@@ -35,6 +37,7 @@ type ProfileRow = {
   first_name: string | null;
   adult_confirmed_at: string | null;
   rules_version: string | null;
+  verified_until?: string | null;
 };
 
 export type ProfileQuery = (
@@ -155,6 +158,7 @@ export function createAuthApi(deps: Deps) {
 
     /** `global` signs out every device (Settings, PM-03). */
     async signOut(scope: 'local' | 'global' = 'local'): Promise<void> {
+      noteIntentionalSignOut();
       const { error } = await deps.auth().signOut({ scope });
       if (error) throw toAppError(error);
     },
@@ -199,6 +203,34 @@ export function createAuthApi(deps: Deps) {
       await rpc<unknown>('accept_rules', { version });
     },
 
+    /** X9: renews the yearly student check right after a code sign-in (P4-AUTH-14). */
+    async completeReverify(): Promise<{ verifiedUntil: string }> {
+      const res = await rpc<{ verified_until: string }>('complete_reverify');
+      return { verifiedUntil: res.verified_until };
+    },
+
+    /** The signed-in address and when the yearly check is due (X9). */
+    async getAccountEmail(): Promise<{ email: string; verifiedUntil: string | null } | null> {
+      const { data } = await deps.auth().getUser();
+      const user = data?.user;
+      if (!user?.email) return null;
+      const { data: row } = await deps.profile(user.id);
+      return { email: user.email, verifiedUntil: row?.verified_until ?? null };
+    },
+
+    /** F20 Help form (P4-AUTH-19). Works signed out: people who lost their inbox can't sign in. */
+    async sendSupportRequest(input: {
+      email: string;
+      topic: 'general' | 'cant_access_email' | 'safety' | 'bug' | 'other';
+      body: string;
+    }): Promise<void> {
+      if (!deps.functions) throw toAppError({ message: 'functions unavailable' });
+      const { error } = await deps.functions().invoke('support-request', {
+        body: { email: input.email.trim(), topic: input.topic, body: input.body.trim() },
+      });
+      if (error) throw toAppError(error);
+    },
+
     /** A school we don't support yet (A5), via the waitlist-request function (P4-AUTH-11). */
     async joinWaitlist(input: string): Promise<void> {
       const email = requireEmail(input);
@@ -221,6 +253,7 @@ export function createAuthApi(deps: Deps) {
         firstName: data.first_name,
         adultConfirmed: data.adult_confirmed_at !== null,
         rulesVersion: data.rules_version,
+        verifiedUntil: data.verified_until ?? null,
       };
     },
   };
@@ -235,7 +268,7 @@ export const authApi: AuthApi = createAuthApi({
   profile: (userId) =>
     getSupabase()
       .from('profiles')
-      .select('status, first_name, adult_confirmed_at, rules_version')
+      .select('status, first_name, adult_confirmed_at, rules_version, verified_until')
       .eq('id', userId)
       .maybeSingle<ProfileRow>(),
 });

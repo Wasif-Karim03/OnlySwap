@@ -8,6 +8,11 @@
 //     Raises rules_version by one and sets a "What changed" line (E2E-22).
 //   SERVICE_KEY=... node scripts/verify/sim-onboarding.mjs reset
 //     Puts rules_version back to 1 with no changes listed.
+//   SERVICE_KEY=... node scripts/verify/sim-onboarding.mjs overdue
+//     S15: puts the newest profile's yearly check in the past (X9 on reload).
+//   SERVICE_KEY=... node scripts/verify/sim-onboarding.mjs signout
+//     S15: revokes every session of the newest profile (X7 on the next refresh);
+//     needs `bash scripts/verify/s14-sim.sh serve` running.
 //   SERVICE_KEY=... node scripts/verify/sim-onboarding.mjs redo
 //     Clears the name and photo of the newest profile (the Simulator account),
 //     so reloading the app opens "Set up your profile" again.
@@ -70,6 +75,36 @@ if (mode === 'avatar') {
   console.log(
     `Cleared ${row.first_name ?? 'the newest'} profile. Press r in Metro: the app opens "Set up your profile".`,
   );
+} else if (mode === 'overdue' || mode === 'signout') {
+  const rows = await (
+    await admin('profiles?select=id,first_name&order=created_at.desc&limit=1')
+  ).json();
+  const row = rows[0];
+  if (!row) {
+    console.log('FAIL  no profile found');
+    process.exit(1);
+  }
+  if (mode === 'overdue') {
+    const past = new Date(Date.now() - 2 * 86400000).toISOString().slice(0, 10);
+    await admin(`profiles?id=eq.${row.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ verified_until: past }),
+    });
+    console.log(
+      `${row.first_name}'s yearly check is now overdue. Press r in Metro: the app opens the re-verify screen.`,
+    );
+  } else {
+    const res = await fetch(`${url}/functions/v1/revoke-sessions`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${service}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ user_id: row.id }),
+    });
+    console.log(
+      res.ok
+        ? `${row.first_name} is signed out everywhere. Within an hour (or press r in Metro) the app asks for a code.`
+        : `revoke-sessions answered HTTP ${res.status}: is "bash scripts/verify/s14-sim.sh serve" running?`,
+    );
+  }
 } else if (mode === 'bump') {
   const cur =
     (await (await admin('app_config?select=value&key=eq.rules_version')).json())[0]?.value ?? '1';
@@ -84,6 +119,6 @@ if (mode === 'avatar') {
   await setConfig('rules_changes', []);
   console.log('rules_version back to 1 (what the seeded accounts accepted), no changes listed.');
 } else {
-  console.error('usage: sim-onboarding.mjs avatar | redo | bump | reset');
+  console.error('usage: sim-onboarding.mjs avatar | redo | overdue | signout | bump | reset');
   process.exit(2);
 }

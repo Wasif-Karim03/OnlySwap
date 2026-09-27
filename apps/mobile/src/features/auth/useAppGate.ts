@@ -7,7 +7,7 @@ import { Platform } from 'react-native';
 import { getStorage } from '@/lib/storage';
 
 import { authApi, type AuthApi } from './api';
-import { computeGate, type GateRoute } from './logic';
+import { computeGate, localDate, type GateRoute } from './logic';
 import { useSession, type SessionSource } from './useSession';
 
 /**
@@ -62,6 +62,7 @@ export function useAppGate(options: Options = {}): AppGate {
     session: session.status,
     profile: profileValue,
     notificationsAsked: (options.notificationsAsked ?? defaultNotificationsAsked)(),
+    today: localDate(),
   });
 
   return {

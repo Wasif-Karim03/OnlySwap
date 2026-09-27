@@ -98,6 +98,8 @@ export type GateProfile = {
   firstName: string | null;
   adultConfirmed: boolean;
   rulesVersion: string | null;
+  /** YYYY-MM-DD; the yearly student check is due after this day (X9). */
+  verifiedUntil?: string | null;
 };
 
 export type GateInput = {
@@ -109,6 +111,8 @@ export type GateInput = {
   /** `undefined` while loading; `null` when the signed-in user has no profile row. */
   profile: GateProfile | null | undefined;
   notificationsAsked: boolean;
+  /** Today as YYYY-MM-DD (device date; the server enforces the campus date). */
+  today?: string;
 };
 
 export type GateRoute =
@@ -168,6 +172,9 @@ export function computeGate(input: GateInput): GateRoute | null {
     return 'account-status';
   }
   if (profile.status === 'reverify') return 'reverify';
+  // Overdue before the nightly job flips the status: same screen.
+  if (profile.verifiedUntil && input.today && profile.verifiedUntil < input.today)
+    return 'reverify';
   if (!profile.adultConfirmed) return 'age';
   if (!profile.firstName) return 'profile-setup';
   if (profile.rulesVersion === null) return 'rules';
@@ -175,6 +182,12 @@ export function computeGate(input: GateInput): GateRoute | null {
   if (profile.status === 'waitlist') return 'waitlist';
   if (!input.notificationsAsked) return 'notifications';
   return 'home';
+}
+
+/** A local calendar date as YYYY-MM-DD. */
+export function localDate(d: Date = new Date()): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 /** Parses `get_app_config` output. Anything malformed falls back to safe defaults. */

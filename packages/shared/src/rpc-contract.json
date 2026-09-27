@@ -10,9 +10,29 @@
     ]
   },
   {
+    "name": "admin_change_email",
+    "args": "user_id uuid, new_email text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "block_user",
     "args": "user_id uuid",
     "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "complete_reverify",
+    "args": "",
+    "returns": "jsonb",
     "security": "definer",
     "grants": [
       "authenticated",

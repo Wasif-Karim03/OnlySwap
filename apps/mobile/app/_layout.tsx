@@ -10,7 +10,10 @@ import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { OfflineBanner } from '@/components/Banner';
 import { ToastHost } from '@/components/Toast';
 import { launchStartedAt } from '@/features/auth/launchTiming';
+import { SessionExpiredSheet } from '@/features/auth/SessionExpiredSheet';
+import { watchSessionExpiry } from '@/features/auth/sessionExpiry';
 import { getEnv } from '@/lib/env';
+import { getSupabase } from '@/lib/supabase';
 import { createQueryClient, wireQueryManagers } from '@/lib/queryClient';
 import { useKeepModeOnFontScale } from '@/theme/mode';
 
@@ -32,6 +35,7 @@ export default function RootLayout() {
   const [queryClient] = useState(createQueryClient);
   useKeepModeOnFontScale();
   useDevRouteLog();
+  useEffect(() => watchSessionExpiry(getSupabase().auth), []);
   useEffect(() => {
     const t = setTimeout(() => void SplashScreen.hideAsync().catch(() => {}), SPLASH_BACKSTOP_MS);
     return () => clearTimeout(t);
@@ -43,6 +47,7 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <ThemeProvider value={dark ? DarkTheme : DefaultTheme}>
             <Stack screenOptions={{ headerShown: false }} />
+            <SessionExpiredSheet />
             <OfflineBanner />
             <ToastHost />
             <StatusBar style={dark ? 'light' : 'dark'} />
