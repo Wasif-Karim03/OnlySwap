@@ -92,7 +92,7 @@ select is(pg_temp.as_with_amr(tests.uid('C'), pg_temp.otp_at('2027-03-05 11:59:0
 select ok(not has_function_privilege('anon', 'public.complete_reverify()', 'execute'), 'complete_reverify needs a session');
 
 -- P4-AUTH-18: revoke_sessions ------------------------------------------------------------------
-insert into auth.sessions (user_id) values (tests.uid('B')), (tests.uid('B')), (tests.uid('C'));
+insert into auth.sessions (id, user_id) values (gen_random_uuid(), tests.uid('B')), (gen_random_uuid(), tests.uid('B')), (gen_random_uuid(), tests.uid('C'));
 select is(private.revoke_sessions(tests.uid('B')), 2, 'every session of the user is removed');
 select is((select count(*)::int from auth.sessions where user_id = tests.uid('C')), 1, 'other users keep theirs');
 select ok(not has_function_privilege('authenticated', 'private.revoke_sessions(uuid)', 'execute'),
