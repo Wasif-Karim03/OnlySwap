@@ -1,10 +1,14 @@
 import { fireEvent, screen } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
+import { View } from 'react-native';
 
-import EmailRoute from '../app/(auth)/email';
 import WelcomeRoute from '../app/(auth)/welcome';
 import { welcome } from '../src/strings/en';
 
+// The email step is its own screen (signInScreens.test); a stub keeps this test about Welcome.
+function EmailRoute() {
+  return <View testID="screen-email" />;
+}
 const routes = { '(auth)/welcome': WelcomeRoute, '(auth)/email': EmailRoute };
 
 describe('P4-AUTH-04 S-A02 Welcome (board A2)', () => {

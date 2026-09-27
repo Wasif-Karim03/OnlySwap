@@ -55,7 +55,30 @@ export type SchoolLookup =
   | { kind: 'unknown' }
   | { kind: 'school'; school: School };
 
-type Deps = { auth: () => AuthClient; rpc: () => RpcClient; profile: ProfileQuery };
+/** Edge Function caller (supabase.functions.invoke adds the user's JWT). */
+export type FunctionsClient = {
+  invoke: (
+    name: string,
+    options: { body: Record<string, unknown> },
+  ) => PromiseLike<{ data: unknown; error: unknown }>;
+};
+
+type Deps = {
+  auth: () => AuthClient;
+  rpc: () => RpcClient;
+  profile: ProfileQuery;
+  functions?: () => FunctionsClient;
+};
+
+/**
+ * GoTrue answers 429 when codes are requested too often; the app shows the
+ * same "slow down" copy as a server RATE_LIMITED.
+ */
+function authError(error: unknown) {
+  const status = (error as { status?: unknown } | null)?.status;
+  if (status === 429) return toAppError({ code: 'P0001', message: 'RATE_LIMITED:otp' });
+  return toAppError(error);
+}
 
 export function createAuthApi(deps: Deps) {
   const rpc = createRpc(deps.rpc);
@@ -100,14 +123,14 @@ export function createAuthApi(deps: Deps) {
         email,
         options: { shouldCreateUser: true, ...(invite ? { data: { invite_code: invite } } : {}) },
       });
-      if (error) throw toAppError(error);
+      if (error) throw authError(error);
     },
 
     async verifyCode(input: string, code: string): Promise<Session> {
       const email = requireEmail(input);
       const token = code.replace(/\D/g, '');
       const { data, error } = await deps.auth().verifyOtp({ email, token, type: 'email' });
-      if (error) throw toAppError(error);
+      if (error) throw authError(error);
       if (!data?.session) throw toAppError({ message: 'no session' });
       return data.session;
     },
@@ -116,7 +139,7 @@ export function createAuthApi(deps: Deps) {
     async signInReviewer(input: string, password: string): Promise<Session> {
       const email = requireEmail(input);
       const { data, error } = await deps.auth().signInWithPassword({ email, password });
-      if (error) throw toAppError(error);
+      if (error) throw authError(error);
       if (!data?.session) throw toAppError({ message: 'no session' });
       return data.session;
     },
@@ -124,6 +147,36 @@ export function createAuthApi(deps: Deps) {
     /** `global` signs out every device (Settings, PM-03). */
     async signOut(scope: 'local' | 'global' = 'local'): Promise<void> {
       const { error } = await deps.auth().signOut({ scope });
+      if (error) throw toAppError(error);
+    },
+
+    /** 18+ check (A05). A birth date is sent once and never stored (T-INT-AUTH-04). */
+    async confirmAge(
+      input:
+        { method: 'os_signal'; isAdult: boolean } | { method: 'self_declared'; birthDate: string },
+    ): Promise<{ adult: boolean }> {
+      return rpc<{ adult: boolean }>(
+        'confirm_age',
+        input.method === 'os_signal'
+          ? { method: 'os_signal', is_adult: input.isAdult }
+          : { method: 'self_declared', birth_date: input.birthDate },
+      );
+    },
+
+    /** After confirm_age said minor: remove the account right away (F02, P4-DEL-01). */
+    async deleteUnderageAccount(): Promise<void> {
+      if (!deps.functions) throw toAppError({ message: 'functions unavailable' });
+      const { error } = await deps.functions().invoke('delete-account', {
+        body: { mode: 'underage' },
+      });
+      if (error) throw toAppError(error);
+    },
+
+    /** A school we don't support yet (A5). The Edge Function arrives with P4-AUTH-11. */
+    async joinWaitlist(input: string): Promise<void> {
+      const email = requireEmail(input);
+      if (!deps.functions) throw toAppError({ message: 'functions unavailable' });
+      const { error } = await deps.functions().invoke('waitlist-request', { body: { email } });
       if (error) throw toAppError(error);
     },
 
@@ -151,6 +204,7 @@ export type AuthApi = ReturnType<typeof createAuthApi>;
 export const authApi: AuthApi = createAuthApi({
   auth: () => getSupabase().auth,
   rpc: () => getSupabase() as unknown as RpcClient,
+  functions: () => getSupabase().functions as unknown as FunctionsClient,
   profile: (userId) =>
     getSupabase()
       .from('profiles')

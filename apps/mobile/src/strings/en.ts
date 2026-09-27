@@ -445,6 +445,61 @@ export const welcome = {
   ],
 } as const;
 
+/** S-A03 School email, S-A04 Verify code (boards A3, A4, A5, A6, X1, X2). */
+export const signIn = {
+  titleSignUp: "What's your school email?",
+  titleSignIn: 'Sign in with your school email',
+  body: "We'll send a 6-digit code to check you're a student.",
+  emailLabel: 'School email',
+  emailPlaceholder: 'you@school.edu',
+  checking: 'Checking your school',
+  reviewAccount: '{school} · review account',
+  sendCode: 'Send code',
+  signInReviewer: 'Sign in',
+  passwordLabel: 'Password',
+  personal: "That's a personal email. Use the one your school gave you, ending in .edu.",
+  invalid: 'Check the email. It should look like you@school.edu.',
+  alumniTitle: 'Graduated, or work at the school?',
+  alumniBody: "OnlySwap is only for current students, so alumni and staff emails can't join.",
+  unknownTitle: "We're not at {domain} yet",
+  unknownBody: "Join the waitlist and we'll email you when your school opens.",
+  joinWaitlist: 'Join the waitlist',
+  waitlistJoined: "You're on the list. We'll email you when your school opens.",
+  wrongPassword: "That email and password don't match.",
+  // Verify code
+  verifyTitle: 'Enter the code',
+  sentTo: 'Sent to {email}. It expires in 10 minutes.',
+  codeLabel: '6-digit code',
+  verifying: 'Checking the code',
+  wrongCode: "That code isn't right. {count} tries left.",
+  wrongCodeOne: "That code isn't right. 1 try left.",
+  expired: 'This code expired. We just sent you a new one.',
+  locked: 'Too many tries. Wait {time}, or get a new code.',
+  resendIn: 'Nothing yet? Check spam, or resend in {time}.',
+  resend: 'Resend code',
+  resent: 'New code sent.',
+  differentEmail: 'Use a different email',
+} as const;
+
+/** A05 Birthday and A8 Not eligible (boards A7, A8). */
+export const age = {
+  checking: 'Checking your age',
+  title: "When's your birthday?",
+  body: "We ask everyone. It's never shown on your profile.",
+  fieldLabel: 'Birthday',
+  fieldPlaceholder: 'Choose a date',
+  privacy: 'Used only to confirm you can use OnlySwap. Details in the Privacy Policy.',
+  continue: 'Continue',
+  invalidDate: 'Check the date and try again.',
+  step: '3 of 5',
+  blockedTitle: "OnlySwap isn't available to you yet",
+  blockedBody:
+    "You need to be 18 or older to use OnlySwap. We haven't kept your email or any details.",
+  blockedCardTitle: 'Selling something before then?',
+  blockedCardBody: "Ask a friend who's 18 or older to post it for you and meet together.",
+  close: 'Close',
+} as const;
+
 export const en = {
   permissions,
   tabs,
@@ -464,6 +519,8 @@ export const en = {
   statesFx,
   launch,
   welcome,
+  signIn,
+  age,
 } as const;
 
 export default en;

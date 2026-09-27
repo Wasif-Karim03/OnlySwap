@@ -104,8 +104,8 @@
 - [x] **P4-AUTH-02** `features/auth/api.ts` and hooks (sendCode, verifyCode, signInReviewer, signOut, useSession, useAppGate) · P1-LIB-01, AUTH-01 · unit tests green · M
 - [ ] **P4-AUTH-03** S-A01 Launch + splash handoff + gate routing · AUTH-02, P2-MOT-01 · cold start under 700 ms to first route on a mid Android device · M
 - [x] **P4-AUTH-04** S-A02 Welcome · P2 · matches A2 · S
-- [ ] **P4-AUTH-05** S-A03 School email with detect, not-found, personal-email and reviewer password states · AUTH-02 · all A3/A4/A5 states reachable · M
-- [ ] **P4-AUTH-06** S-A04 Verify code with autofill, errors, resend timer and lockout · AUTH-05 · wrong/expired/locked states tested · M
+- [x] **P4-AUTH-05** S-A03 School email with detect, not-found, personal-email and reviewer password states · AUTH-02 · all A3/A4/A5 states reachable · M
+- [x] **P4-AUTH-06** S-A04 Verify code with autofill, errors, resend timer and lockout · AUTH-05 · wrong/expired/locked states tested · M
 - [x] **P4-DEL-01** Edge Function `delete-account` (normal + underage mode; ratings anonymized; banned hash; R2 prefix deletion added in P5-MEDIA-04) · P3-AUTH-02 · T-INT-DEL-01 shows no rows left except retained reports · M
 - [ ] **P4-AUTH-07** ✎ A05 Age check: OS signal (`expo-age-range`) → native date picker fallback → Not eligible; underage path calls `delete-account` (underage) and signs out. · deps P4-AUTH-06, P1-SPIKE-03, P4-DEL-01 · done when the minor path deletes the auth user and blocks retry (T-INT-AUTH-04, E2E-02) · M
 - [ ] **P4-AUTH-08** S-A10 Profile setup, including avatar upload (depends on the media pipeline) · AUTH-07, P5-MEDIA-03 · the profile row is updated · M
