@@ -50,7 +50,9 @@ begin
   -- Start from an empty campus world: seed.sql data (local demo campuses and
   -- users) would collide with the fixtures. Each test file rolls this back.
   delete from auth.users;
+  set local client_min_messages = warning;  -- quiet the per-table cascade notices
   truncate public.campuses cascade;
+  set local client_min_messages = notice;
   perform tests.set_pepper();
 
   insert into public.campuses (id, slug, name, short_name, status, timezone) values
