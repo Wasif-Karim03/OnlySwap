@@ -45,13 +45,16 @@ functions_down() { [ -n "$FN_PID" ] && kill "$FN_PID" >/dev/null 2>&1; pkill -f 
 trap functions_down EXIT
 
 auth_smoke() { ANON_KEY="$(anon_key)" node scripts/verify/auth-smoke.mjs; }
-delete_smoke() { ANON_KEY="$(anon_key)" node scripts/verify/delete-smoke.mjs; }
+# On a failure, show what the functions logged (no user ids or emails are logged).
+fn_log_on_fail() { "$@" || { echo "--- last lines of the functions log ---"; tail -40 /tmp/onlyswap-functions.log; return 1; }; }
+delete_smoke() { fn_log_on_fail env ANON_KEY="$(anon_key)" node scripts/verify/delete-smoke.mjs; }
 underage_smoke() { ANON_KEY="$(anon_key)" node scripts/verify/underage-smoke.mjs; }
 
 status_var() { pnpm -s supabase status -o env 2>/dev/null | sed -n "s/^$1=\"\{0,1\}\([^\"]*\)\"\{0,1\}\$/\1/p" | head -1; }
 
-# Local Storage S3 stands in for R2. The functions reach it inside Docker
-# (kong:8000); the phone and scripts use 127.0.0.1:54321. Written to the
+# Local Storage S3 stands in for R2. The functions reach it from inside
+# Docker through host.docker.internal (same gateway path the phone uses);
+# the phone and scripts use 127.0.0.1:54321. Written to the
 # git-ignored supabase/functions/.env, which `functions serve` loads.
 write_functions_env() {
   local id secret region
@@ -64,7 +67,7 @@ write_functions_env() {
     return 1
   fi
   cat > supabase/functions/.env <<ENV
-R2_ENDPOINT=http://kong:8000/storage/v1/s3
+R2_ENDPOINT=http://host.docker.internal:54321/storage/v1/s3
 R2_PUBLIC_ENDPOINT=http://127.0.0.1:54321/storage/v1/s3
 R2_REGION=${region:-local}
 R2_ACCESS_KEY_ID=$id
@@ -76,7 +79,7 @@ ENV
 }
 
 media_smoke() {
-  ANON_KEY="$(anon_key)" SERVICE_KEY="$(status_var SERVICE_ROLE_KEY)" \
+  fn_log_on_fail env ANON_KEY="$(anon_key)" SERVICE_KEY="$(status_var SERVICE_ROLE_KEY)" \
     node --experimental-strip-types scripts/verify/media-smoke.mjs
 }
 

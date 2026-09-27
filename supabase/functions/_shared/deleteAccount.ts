@@ -104,8 +104,10 @@ export async function handleDeleteAccount(
     if (deps.deleteR2Prefix) {
       for (const prefix of prepared.r2_prefixes) await deps.deleteR2Prefix(prefix);
     }
-  } catch {
-    deps.log?.('delete_account.media_failed');
+  } catch (error) {
+    // Only the R2 method and status (e.g. "r2 GET 403"); never keys or ids.
+    const detail = error instanceof Error ? error.message.slice(0, 80) : 'unknown';
+    deps.log?.('delete_account.media_failed', { detail });
     return fail(500, 'UNKNOWN');
   }
 
