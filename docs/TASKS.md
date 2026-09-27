@@ -52,7 +52,7 @@
 - [ ] **P1-SPIKE-01** Spike: Edge Function sending mail over SMTP 465 via Gmail. If it's blocked, build the Worker `mailer` fallback. Record the outcome. · DB-01, P0-ACC-10 · a test email arrives from a staging function · M
 - [ ] **P1-SPIKE-03** Spike: `expo-age-range` returns a result or `unknown` on both OSes (with the entitlement `com.apple.developer.declared-age-range`). · SETUP-06 · logged result on devices · S
 - [ ] 🆕 **P1-SPIKE-04** Spike: New Architecture/Nitro modules (MMKV v4, Unistyles 3, keyboard-controller) build and run on both dev clients. · deps P1-SETUP-06 · done when a demo screen uses all three on iOS + Android · S
-- [ ] **P1-LIB-01** `lib/supabase.ts`, `lib/rpc.ts`, `lib/errors.ts` (initial codes), `lib/storage.ts`, `lib/queryClient.ts`. · ENV-01 · unit tests pass (T-UNIT-LIB-*) · M
+- [x] **P1-LIB-01** `lib/supabase.ts`, `lib/rpc.ts`, `lib/errors.ts` (initial codes), `lib/storage.ts`, `lib/queryClient.ts`. · ENV-01 · unit tests pass (T-UNIT-LIB-*) · M
 - [ ] **P1-LIB-02** `lib/sentry.ts` and `lib/analytics.ts` with the opt-in flag, plus the Sentry source-map upload set up through its EAS integration. · LIB-01, P0-ACC-08/09 · a test crash shows symbolicated in Sentry · M
 
 ## P2 · Design system and component kit

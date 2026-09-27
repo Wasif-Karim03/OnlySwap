@@ -97,7 +97,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Checks:**
 
-- [ ] `P1-LIB-01`: unit tests pass (T-UNIT-LIB-*)
+- [x] `P1-LIB-01`: unit tests pass (T-UNIT-LIB-*)
 - [ ] `P1-LIB-02`: a test crash shows symbolicated in Sentry
 - [ ] `P1-SPIKE-01`: a test email arrives from a staging function
 - [ ] `P1-SPIKE-03`: logged result on devices
