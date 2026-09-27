@@ -1,12 +1,6 @@
 import { Stack } from 'expo-router';
 
-import { shell } from '@/strings/en';
-
-// Tab roots use a large title; pushed screens use inline titles (DESIGN_SYSTEM UX-04).
+// The Sell steps draw their own "New listing" bar with the step count (board D1 to D5).
 export default function SellLayout() {
-  return (
-    <Stack>
-      <Stack.Screen name="index" options={{ title: shell.sellTitle, headerLargeTitle: true }} />
-    </Stack>
-  );
+  return <Stack screenOptions={{ headerShown: false }} />;
 }

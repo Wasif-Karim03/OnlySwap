@@ -308,9 +308,9 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Checks:**
 
-- [ ] `P5-SELL-01`: pgTAP incl. banned words, limits, T-INT-LIST-04 pass
-- [ ] `P5-SELL-02`: a draft survives an app kill
-- [ ] `P5-SELL-03`: all errors show at once
+- [x] `P5-SELL-01`: pgTAP incl. banned words, limits, T-INT-LIST-04 pass
+- [x] `P5-SELL-02`: a draft survives an app kill
+- [x] `P5-SELL-03`: all errors show at once
 
 **Gates:** G1, G2, G3, G5, G6, G4, G10, G11
 

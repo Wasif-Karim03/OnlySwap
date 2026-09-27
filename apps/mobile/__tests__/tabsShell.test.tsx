@@ -29,6 +29,17 @@ jest.mock('../src/features/auth/useAppGate', () => ({
   useAppGate: () => mockGate,
 }));
 
+// The Sell tab checks camera and photos access on mount (it never prompts).
+jest.mock('expo-image-picker', () => {
+  const granted = async () => ({ status: 'granted', canAskAgain: true });
+  return {
+    getCameraPermissionsAsync: granted,
+    requestCameraPermissionsAsync: granted,
+    getMediaLibraryPermissionsAsync: granted,
+    requestMediaLibraryPermissionsAsync: granted,
+  };
+});
+
 // Route map mirrors apps/mobile/app for the S1 shell (DESIGN_SYSTEM §10, D1).
 const routes = {
   _layout: RootLayout,
@@ -103,7 +114,7 @@ describe('P1-SETUP-02 tab shell (R1.0 tabs: Discover, Sell, Inbox, Profile)', ()
   });
 
   it.each([
-    ['/sell', 'screen-sell'],
+    ['/sell', 'screen-sell-photos'],
     ['/inbox', 'screen-inbox'],
     ['/profile', 'screen-profile'],
   ])('renders %s', async (url, testID) => {

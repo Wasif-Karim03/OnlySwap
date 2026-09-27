@@ -9,14 +9,15 @@ import { useReducedMotion } from '@/theme/reducedMotion';
 import { Icon } from './icons/Icon';
 import { Text } from './Text';
 
-export type BannerKind = 'offline' | 'info' | 'warning';
+export type BannerKind = 'offline' | 'info' | 'warning' | 'error';
 
-const ICON = { offline: 'wifi', info: 'info', warning: 'alert' } as const;
+const ICON = { offline: 'wifi', info: 'info', warning: 'alert', error: 'alert' } as const;
+const TONE = { offline: 'ink', info: 'ink', warning: 'amber', error: 'red' } as const;
 
 export function Banner({ kind, message }: { kind: BannerKind; message: string }) {
   return (
     <View style={styles.banner(kind)} accessibilityRole="alert" accessibilityLiveRegion="polite">
-      <Icon name={ICON[kind]} size={18} tone={kind === 'warning' ? 'amber' : 'ink'} />
+      <Icon name={ICON[kind]} size={18} tone={TONE[kind]} />
       <Text variant="label" style={styles.text}>
         {message}
       </Text>
@@ -58,7 +59,12 @@ const styles = StyleSheet.create((theme, rt) => ({
     gap: theme.space.sm,
     paddingHorizontal: theme.space.md,
     borderRadius: theme.radius.control,
-    backgroundColor: kind === 'warning' ? theme.colors.amberBg : theme.colors.bg2,
+    backgroundColor:
+      kind === 'warning'
+        ? theme.colors.amberBg
+        : kind === 'error'
+          ? theme.colors.redBg
+          : theme.colors.bg2,
   }),
   text: { flex: 1 },
 }));

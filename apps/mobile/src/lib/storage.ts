@@ -15,6 +15,8 @@ export type StorageSchema = {
   'privacy.crashOptOut': boolean;
   'onboarding.swipeCoachSeen': boolean;
   'onboarding.notificationsAsked': boolean;
+  /** The Sell draft; checked and versioned by features/sell/logic.ts (T-UNIT-SELL-01). */
+  'sell.draft': unknown;
 };
 
 export type StorageKey = keyof StorageSchema;
