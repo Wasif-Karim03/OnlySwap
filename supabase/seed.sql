@@ -7,9 +7,12 @@
 -- (http://127.0.0.1:54324). The reviewer account also has a local password:
 -- appreview@review.onlyswap.test / local-review-only
 
--- Local email_hash pepper (Vault). Staging and production set their own.
+-- Local Vault secrets: the email_hash pepper and the waitlist encryption key.
+-- Staging and production set their own.
 select vault.create_secret('local-dev-pepper-not-a-secret', 'email_hash_pepper')
 where not exists (select 1 from vault.decrypted_secrets where name = 'email_hash_pepper');
+select vault.create_secret('local-dev-waitlist-key-not-a-secret', 'waitlist_email_key')
+where not exists (select 1 from vault.decrypted_secrets where name = 'waitlist_email_key');
 
 -- Campuses: a live launch campus, the reviewer campus, and a waitlist campus.
 insert into public.campuses (id, slug, name, short_name, status, timezone, is_demo, unlock_threshold) values

@@ -62,7 +62,7 @@ select is(tests.try_text_as(tests.uid('MOD'), 'select count(*)::text from public
   'campus_domains: MOD at aal1 sees none');
 select is((select count(*)::int from public.campus_domains), 3, 'campus_domains has 3 fixture rows');
 select cmp_ok(tests.try_text_as(tests.uid('A'), 'select count(*)::text from public.categories')::int, '>=', 15, 'categories: everyone signed in');
-select is(tests.try_text_as(tests.uid('A'), 'select count(*)::text from public.app_config'), '6', 'app_config: the 6 public keys');
+select is(tests.try_text_as(tests.uid('A'), 'select count(*)::text from public.app_config'), '7', 'app_config: the 7 public keys');
 select is(tests.try_text_as(tests.uid('A'), 'select string_agg(name, '','') from public.safe_spots'),
   'Library lobby', 'safe_spots: active spots on own campus only');
 select is(tests.try_text_as(tests.uid('D'), 'select count(*)::text from public.safe_spots'), '0', 'safe_spots: other campus sees none');

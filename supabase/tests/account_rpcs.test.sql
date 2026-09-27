@@ -18,7 +18,7 @@ select ok(has_function_privilege('anon', 'public.lookup_school(text)', 'execute'
 select ok(not has_function_privilege('anon', 'public.confirm_age(text, boolean, date)', 'execute'), 'confirm_age needs a session');
 
 select is((select string_agg(k, ',' order by k) from jsonb_object_keys(public.get_app_config()) k),
-  'chat_photos_enabled,maintenance,min_version_android,min_version_ios,quad_enabled,rules_version',
+  'chat_photos_enabled,maintenance,min_version_android,min_version_ios,quad_enabled,rules_changes,rules_version',
   'get_app_config: the public keys only');
 select ok(has_function_privilege('anon', 'public.get_app_config()', 'execute'), 'get_app_config is public (anon)');
 
