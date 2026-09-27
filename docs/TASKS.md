@@ -112,12 +112,12 @@
 - [x] **P4-AUTH-09** S-A11 Community rules with the 18+ checkbox and legal links · AUTH-08 · can't continue unchecked · S
 - [x] **P4-AUTH-10** S-A12 Notifications primer (permission flow; registration completed in P9) · AUTH-09, P2-CMP-10 · the OS prompt fires only on the button · S
 - [x] **P4-AUTH-11** Edge Function `waitlist-request` + Turnstile helper · P3-DB-02 · a duplicate email is a silent success; IP limited · M
-- [ ] **P4-AUTH-14** Session expired modal (X7) and the re-verify gate (X9) with `complete_reverify` · AUTH-06 · forcing `verified_until` into the past shows X9; a new code restores it · M
+- [x] **P4-AUTH-14** Session expired modal (X7) and the re-verify gate (X9) with `complete_reverify` · AUTH-06 · forcing `verified_until` into the past shows X9; a new code restores it · M
 - [ ] **P4-AUTH-15** Reviewer accounts: `scripts/seed-review.ts` + `review_accounts` rows on staging · AUTH-05 · a reviewer logs in with a password on staging · S
 - [ ] **P4-AUTH-16** `demo_autoplay` cron (Demo University only): the bot accepts offers, replies, proposes and completes meetups for reviewers · AUTH-15, P8-MEET-01 · a reviewer completes a swap alone on staging · M
 - [ ] 🆕 **P4-AUTH-17** Rules re-accept gate: `require_active` checks `rules_version`; A07 "Updated rules" variant with a "What changed" list. · deps P4-AUTH-09 · done when T-UNIT-AUTH-06, E2E-22 · S
-- [ ] 🆕 **P4-AUTH-18** Sign out of all devices (`signOut({scope:"global"})`) + `revoke-sessions` Edge Function used on suspension/ban. · deps P4-AUTH-02 · done when T-INT-AUTH-05/06 · S
-- [ ] 🆕 **P4-AUTH-19** Email-access recovery: F20 Help form topic `cant_access_email` → `support-request`; `admin_change_email` + `admin-change-email` function; `on_auth_user_email_changed` trigger re-resolves campus. · deps P4-AUTH-11 · done when T-INT-AUTH-07 · M
+- [x] 🆕 **P4-AUTH-18** Sign out of all devices (`signOut({scope:"global"})`) + `revoke-sessions` Edge Function used on suspension/ban. · deps P4-AUTH-02 · done when T-INT-AUTH-05/06 · S
+- [x] 🆕 **P4-AUTH-19** Email-access recovery: F20 Help form topic `cant_access_email` → `support-request`; `admin_change_email` + `admin-change-email` function; `on_auth_user_email_changed` trigger re-resolves campus. · deps P4-AUTH-11 · done when T-INT-AUTH-07 · M
 
 ## P5 · Sell and media (D)
 

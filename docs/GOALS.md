@@ -292,10 +292,10 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Checks:**
 
-- [ ] `P4-AUTH-14`: forcing `verified_until` into the past shows X9; a new code restores it
+- [x] `P4-AUTH-14`: forcing `verified_until` into the past shows X9; a new code restores it
 - [ ] `P4-AUTH-15`: a reviewer logs in with a password on staging
-- [ ] `P4-AUTH-18`: T-INT-AUTH-05/06
-- [ ] `P4-AUTH-19`: T-INT-AUTH-07
+- [x] `P4-AUTH-18`: T-INT-AUTH-05/06
+- [x] `P4-AUTH-19`: T-INT-AUTH-07
 
 **Gates:** G1, G2, G3, G5, G6, G4, G10, G11
 
