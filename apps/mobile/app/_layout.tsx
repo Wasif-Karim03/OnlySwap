@@ -1,13 +1,15 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 import { OfflineBanner } from '@/components/Banner';
 import { ToastHost } from '@/components/Toast';
+import { launchStartedAt } from '@/features/auth/launchTiming';
 import { getEnv } from '@/lib/env';
 import { createQueryClient, wireQueryManagers } from '@/lib/queryClient';
 import { useKeepModeOnFontScale } from '@/theme/mode';
@@ -17,12 +19,22 @@ import { useKeepModeOnFontScale } from '@/theme/mode';
 getEnv();
 wireQueryManagers();
 
+// The native splash stays until the launch gate routes (A01). The timer below
+// is a backstop so a deep link that skips the Launch screen never hangs on it.
+launchStartedAt.ms = performance.now();
+void SplashScreen.preventAutoHideAsync().catch(() => {});
+const SPLASH_BACKSTOP_MS = 2500;
+
 export default function RootLayout() {
   // Navigation chrome and the status bar follow the Unistyles theme (P2-TOK-03).
   const { rt } = useUnistyles();
   const dark = rt.themeName === 'dark';
   const [queryClient] = useState(createQueryClient);
   useKeepModeOnFontScale();
+  useEffect(() => {
+    const t = setTimeout(() => void SplashScreen.hideAsync().catch(() => {}), SPLASH_BACKSTOP_MS);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
     <GestureHandlerRootView style={styles.root}>

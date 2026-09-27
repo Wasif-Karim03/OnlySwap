@@ -425,6 +425,26 @@ export const statesFx = {
   },
 } as const;
 
+/** Launch and Welcome (A01, A02). */
+export const launch = {
+  label: 'OnlySwap is starting',
+} as const;
+
+export const welcome = {
+  wordmark: 'onlyswap',
+  title: 'Buy and sell with students at your school.',
+  body: 'Dorm stuff, textbooks, tech. Meet between classes and pay in person.',
+  continue: 'Continue with school email',
+  signIn: 'I already have an account',
+  signInHint: 'Signs in with the code we email to your school address',
+  /** Floating sample listings on the hero photo (decorative, hidden from screen readers). */
+  samples: [
+    { title: 'Mini fridge', price: '$40', place: 'North dorms' },
+    { title: 'Chem textbooks', price: '$25', place: 'Main library' },
+    { title: '27 inch monitor', price: '$90', place: 'East hall' },
+  ],
+} as const;
+
 export const en = {
   permissions,
   tabs,
@@ -442,6 +462,8 @@ export const en = {
   kit,
   kit2,
   statesFx,
+  launch,
+  welcome,
 } as const;
 
 export default en;

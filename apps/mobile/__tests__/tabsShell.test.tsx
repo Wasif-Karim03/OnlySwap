@@ -11,13 +11,29 @@ import ProfileLayout from '../app/(tabs)/profile/_layout';
 import ProfileScreen from '../app/(tabs)/profile/index';
 import SellLayout from '../app/(tabs)/sell/_layout';
 import SellScreen from '../app/(tabs)/sell/index';
+import WelcomeRoute from '../app/(auth)/welcome';
 import Index from '../app/index';
-import { tabs } from '../src/strings/en';
+import type { AppGate } from '../src/features/auth/useAppGate';
+import { tabs, welcome } from '../src/strings/en';
+
+// The Launch screen asks the gate where to go; these tests pick the answer.
+const mockGate: AppGate = {
+  route: 'home',
+  userId: 'u1',
+  failed: false,
+  error: null,
+  retry: () => {},
+};
+jest.mock('../src/features/auth/useAppGate', () => ({
+  ...jest.requireActual('../src/features/auth/useAppGate'),
+  useAppGate: () => mockGate,
+}));
 
 // Route map mirrors apps/mobile/app for the S1 shell (DESIGN_SYSTEM §10, D1).
 const routes = {
   _layout: RootLayout,
   index: Index,
+  '(auth)/welcome': WelcomeRoute,
   '(tabs)/_layout': TabsLayout,
   '(tabs)/discover/_layout': DiscoverLayout,
   '(tabs)/discover/index': DiscoverScreen,
@@ -29,8 +45,36 @@ const routes = {
   '(tabs)/profile/index': ProfileScreen,
 };
 
+describe('P4-AUTH-03 Launch routes by the gate', () => {
+  afterEach(() => {
+    mockGate.route = 'home';
+    mockGate.failed = false;
+  });
+
+  it('signed out opens Welcome', async () => {
+    mockGate.route = 'welcome';
+    const router = renderRouter(routes, { initialUrl: '/' });
+    expect(await screen.findByTestId('screen-welcome')).toBeTruthy();
+    expect(router.getPathname()).toBe('/welcome');
+    expect(screen.getByRole('header', { name: welcome.title })).toBeTruthy();
+  });
+
+  it('stays on the launch view while the gate is deciding', async () => {
+    mockGate.route = null;
+    renderRouter(routes, { initialUrl: '/' });
+    expect(await screen.findByTestId('screen-launch')).toBeTruthy();
+  });
+
+  it('shows a retry when the profile could not load', async () => {
+    mockGate.route = null;
+    mockGate.failed = true;
+    renderRouter(routes, { initialUrl: '/' });
+    expect(await screen.findByTestId('screen-launch-error')).toBeTruthy();
+  });
+});
+
 describe('P1-SETUP-02 tab shell (R1.0 tabs: Discover, Sell, Inbox, Profile)', () => {
-  it('opens on Discover from the root URL', async () => {
+  it('opens on Discover from the root URL for a ready student', async () => {
     const router = renderRouter(routes, { initialUrl: '/' });
     expect(await screen.findByTestId('screen-discover')).toBeTruthy();
     expect(router.getPathname()).toBe('/discover');
