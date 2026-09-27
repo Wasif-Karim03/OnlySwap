@@ -489,6 +489,7 @@ export const signIn = {
   resend: 'Resend code',
   resent: 'New code sent.',
   differentEmail: 'Use a different email',
+  cantAccessEmail: "Can't get into your school email?",
 } as const;
 
 /** A05 Birthday and A8 Not eligible (boards A7, A8). */
@@ -601,6 +602,47 @@ export const notifyPrimer = {
   openSettings: 'Open Settings',
 } as const;
 
+/** X7 Session expired (board X7). */
+export const sessionExpired = {
+  title: "Quick check it's you",
+  body: "It's been a while. We sent a code to {email}.",
+  wrongCode: "That code isn't right. Check the latest email and try again.",
+  continue: 'Continue',
+  logOut: 'Log out instead',
+} as const;
+
+/** X9 Re-verify (board X9). */
+export const reverify = {
+  title: 'Still at {school}?',
+  titleNoSchool: 'Still a student?',
+  body: 'Once a year we check that everyone is a current student. It takes 20 seconds, same code as when you signed up.',
+  emailLabel: 'School email',
+  dueLabel: 'Due by',
+  sendCode: 'Send code',
+  logOut: 'Log out',
+  graduated:
+    'Graduated or no longer a student? OnlySwap is only for current students, so you can close your account from Settings.',
+} as const;
+
+/** F20 "I can't get into my school email" (D11). */
+export const emailAccess = {
+  title: "Can't get into your school email?",
+  body: "Tell us how to reach you. We'll check it's you and move your account to your new school email.",
+  contactLabel: 'Email we can reach you at',
+  contactPlaceholder: 'you@example.com',
+  contactInvalid: 'Check the email. We need it to reply.',
+  schoolLabel: 'School email on your account',
+  schoolPlaceholder: 'you@school.edu',
+  messageLabel: 'What happened',
+  messagePlaceholder: 'For example, your school moved you to a new address.',
+  messageEmpty: 'Add a short note so we can help.',
+  note: 'A real person reads this, usually within two days. We never ask for your password.',
+  send: 'Send',
+  sentTitle: 'We got your message',
+  sentBody: "We'll reply to {email}. Keep an eye on your spam folder too.",
+  done: 'Done',
+} as const;
+
 export const en = {
   permissions,
   tabs,
@@ -625,6 +667,9 @@ export const en = {
   profileSetup,
   rules,
   notifyPrimer,
+  sessionExpired,
+  reverify,
+  emailAccess,
 } as const;
 
 export default en;

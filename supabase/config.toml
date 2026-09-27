@@ -418,6 +418,17 @@ deno_version = 2
 [functions.waitlist-request]
 verify_jwt = false
 
+# P4-AUTH-19: anonymous help form (people who lost their school inbox can't sign in).
+[functions.support-request]
+verify_jwt = false
+
+# P4-AUTH-18/19: internal; the handler itself requires the service key.
+[functions.revoke-sessions]
+verify_jwt = false
+
+[functions.admin-change-email]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327

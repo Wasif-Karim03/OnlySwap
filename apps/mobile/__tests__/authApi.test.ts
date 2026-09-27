@@ -142,6 +142,7 @@ describe('auth/api codes and sessions', () => {
       firstName: 'Aisha',
       adultConfirmed: true,
       rulesVersion: '1',
+      verifiedUntil: null,
     });
     expect(profile).toHaveBeenCalledWith('u1');
   });

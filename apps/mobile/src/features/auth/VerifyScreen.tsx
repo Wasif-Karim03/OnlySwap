@@ -13,6 +13,7 @@ import { signIn as copy } from '@/strings/en';
 
 import { authApi, type AuthApi } from './api';
 import { AuthStep } from './AuthStep';
+import { useGateHandoff } from './useAppGate';
 import {
   formatCountdown,
   initialVerifyState,
@@ -45,7 +46,10 @@ export function VerifyScreen({
   now?: () => number;
 }) {
   const router = useRouter();
-  const { email = '' } = useLocalSearchParams<{ email: string }>();
+  const handoff = useGateHandoff();
+  // `mode=reverify`: the yearly student check (X9); the code renews it.
+  const { email = '', mode } = useLocalSearchParams<{ email: string; mode?: string }>();
+  const reverify = mode === 'reverify';
   const [state, setStateRaw] = useState<VerifyState>(
     () => verifyStore.get(email) ?? initialVerifyState(now()),
   );
@@ -101,9 +105,6 @@ export function VerifyScreen({
     try {
       await api.verifyCode(email, value);
       verifyStore.clear(email);
-      haptic('success');
-      // The launch gate decides the next step (age, profile, rules or the app).
-      router.replace('/');
     } catch (e) {
       const err = toAppError(e);
       if (err.code === 'ERR_OFFLINE' || err.code === 'RATE_LIMITED') {
@@ -122,9 +123,21 @@ export function VerifyScreen({
               : copy.wrongCode.replace('{count}', String(left)),
         });
       }
-    } finally {
       if (mounted.current) setBusy(false);
+      return;
     }
+    if (reverify) {
+      try {
+        await api.completeReverify();
+      } catch (e) {
+        setMessage({ tone: 'red', text: errorCopy(toAppError(e), { campusTimeZone: deviceTz() }) });
+        if (mounted.current) setBusy(false);
+        return;
+      }
+    }
+    haptic('success');
+    // The launch gate decides the next step (age, profile, rules or the app).
+    handoff();
   };
 
   const lockText = locked
@@ -194,15 +207,28 @@ export function VerifyScreen({
       ) : null}
 
       <View>
+        {!reverify ? (
+          <Tappable
+            accessibilityRole="button"
+            accessibilityLabel={copy.differentEmail}
+            onPress={() => router.back()}
+            style={styles.link}
+            testID="verify-different-email"
+          >
+            <Text variant="label" style={styles.underline}>
+              {copy.differentEmail}
+            </Text>
+          </Tappable>
+        ) : null}
         <Tappable
-          accessibilityRole="button"
-          accessibilityLabel={copy.differentEmail}
-          onPress={() => router.back()}
+          accessibilityRole="link"
+          accessibilityLabel={copy.cantAccessEmail}
+          onPress={() => router.push('/help/email-access')}
           style={styles.link}
-          testID="verify-different-email"
+          testID="verify-cant-access"
         >
           <Text variant="label" style={styles.underline}>
-            {copy.differentEmail}
+            {copy.cantAccessEmail}
           </Text>
         </Tappable>
       </View>
