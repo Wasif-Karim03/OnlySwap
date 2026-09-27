@@ -38,6 +38,8 @@ export function EmailAccessScreen({ api = authApi }: { api?: AuthApi }) {
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [sentTo, setSentTo] = useState<string | null>(null);
+  // Opened from a link (or after a reload) there is nothing to go back to.
+  const leave = () => (router.canGoBack() ? router.back() : router.replace('/'));
 
   const submit = async () => {
     const email = normalizeEmail(contact);
@@ -71,8 +73,8 @@ export function EmailAccessScreen({ api = authApi }: { api?: AuthApi }) {
         testID="screen-email-access-sent"
         title={copy.sentTitle}
         body={copy.sentBody.replace('{email}', sentTo)}
-        onBack={() => router.back()}
-        dock={<Button label={copy.done} onPress={() => router.back()} testID="email-access-done" />}
+        onBack={leave}
+        dock={<Button label={copy.done} onPress={leave} testID="email-access-done" />}
       >
         <GlyphTile icon="mail" tile="accent" />
       </AuthStep>
@@ -84,7 +86,7 @@ export function EmailAccessScreen({ api = authApi }: { api?: AuthApi }) {
       testID="screen-email-access"
       title={copy.title}
       body={copy.body}
-      onBack={() => router.back()}
+      onBack={leave}
       dock={
         <Button
           label={copy.send}

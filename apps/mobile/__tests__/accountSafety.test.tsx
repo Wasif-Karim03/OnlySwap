@@ -319,6 +319,22 @@ describe('P4-AUTH-19 F20 "I can\'t get into my school email"', () => {
     expect(api.sendSupportRequest).toHaveBeenCalledTimes(1);
   });
 
+  it('opened from a link with no history, Done goes to the start instead of failing', async () => {
+    const api = fakeApi();
+    const { router } = setup('/help/email-access', {
+      'help/email-access': () => <EmailAccessScreen api={api} />,
+    });
+    fireEvent.changeText(await screen.findByTestId('email-access-contact'), 'me@gmail.com');
+    fireEvent.changeText(screen.getByTestId('email-access-message'), 'Help');
+    fireEvent.press(screen.getByTestId('email-access-send'));
+    const done = await screen.findByTestId('email-access-done');
+    act(() => {
+      jest.advanceTimersByTime(600);
+    });
+    fireEvent.press(done);
+    await waitFor(() => expect(router.getPathname()).toBe('/'));
+  });
+
   it('composeMessage trims and caps at 2000 characters', () => {
     expect(composeMessage('  ', ' hi ')).toBe('hi');
     expect(composeMessage('a@b.edu', 'x'.repeat(3000))).toHaveLength(2000);

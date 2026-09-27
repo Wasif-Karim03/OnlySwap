@@ -50,7 +50,9 @@ async function pickProfile() {
     const users = (await res.json()).users ?? [];
     const user = users.find((u) => (u.email ?? '').toLowerCase() === emailArg);
     if (!user) return null;
-    return (await (await admin(`profiles?select=id,first_name&id=eq.${user.id}`)).json())[0] ?? null;
+    return (
+      (await (await admin(`profiles?select=id,first_name&id=eq.${user.id}`)).json())[0] ?? null
+    );
   }
   return (
     await (await admin('profiles?select=id,first_name&order=created_at.desc&limit=1')).json()
