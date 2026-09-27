@@ -26,18 +26,18 @@ select todo_end();
 
 -- ---------------------------------------------------------------------------
 -- T-INT-LIST-04 (BE-05): idempotent create_listing on a reserved id.
-select todo_start('P5-SELL-01: reserve_listing_id + create_listing');
+-- Live since S16 (P5-SELL-01); the full suite is listings.test.sql.
 select ok(tests.try_ok_as(tests.uid('A'), $$create temp table if not exists r as select public.reserve_listing_id() as id$$),
   'LIST-04: A reserves a listing id');
-select is(tests.try_text_as(tests.uid('A'), $$select (public.create_listing(id => (select id from r), kind => 'sale', title => 'Chair', price_cents => 1000)).id::text = (select id::text from r)::text from r$$),
+select is(tests.try_text_as(tests.uid('A'), format($$select (public.create_listing(id => r.id, kind => 'sale', title => 'Chair', category_id => 1::smallint, price_cents => 1000,
+    photos => jsonb_build_array(jsonb_build_object('path', 'c/%1$s/l/' || r.id || '/a_full.webp', 'thumb_path', 'c/%1$s/l/' || r.id || '/a_thumb.webp'))) ->> 'id') = r.id::text from r$$, tests.uid('OSU'))),
   'true', 'LIST-04: first create_listing returns the listing');
-select is(tests.try_text_as(tests.uid('A'), $$select (public.create_listing(id => (select id from r), kind => 'sale', title => 'Chair', price_cents => 1000)).id::text = (select id::text from r)::text from r$$),
+select is(tests.try_text_as(tests.uid('A'), $$select (public.create_listing(id => r.id, title => 'Chair') ->> 'id') = r.id::text from r$$),
   'true', 'LIST-04: second call returns the same row');
 select is(tests.try_text_as(tests.uid('A'), $$select count(*)::text from public.listings where id = (select id from r)$$),
   '1', 'LIST-04: one row');
 select is(tests.try_text_as(tests.uid('A'), $$select public.create_listing(id => gen_random_uuid(), kind => 'sale', title => 'Chair', price_cents => 1000)::text$$),
   'ERROR: FORBIDDEN', 'LIST-04: an unreserved id is FORBIDDEN');
-select todo_end();
 
 -- ---------------------------------------------------------------------------
 -- T-INT-DEL-02 (BE-01): schema part is live now (S7: set null + snapshot).

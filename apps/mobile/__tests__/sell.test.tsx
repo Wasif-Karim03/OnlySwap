@@ -233,7 +233,6 @@ function fakeApi(over: Partial<Record<keyof SellApi, jest.Mock>> = {}) {
           width: 1080,
           height: 810,
           blurhash: null,
-          uri: p.uri,
         };
       },
     ),
