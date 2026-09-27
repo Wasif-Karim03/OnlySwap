@@ -38,6 +38,32 @@ const setConfig = (key, value) =>
   admin(`app_config?key=eq.${key}`, { method: 'PATCH', body: JSON.stringify({ value }) });
 
 const mode = process.argv[2];
+const emailArg = (process.argv[3] ?? '').trim().toLowerCase();
+
+// The account to act on: the one with the given email, else the newest profile.
+// (After a db reset the newest profile is a seed account, so pass the email.)
+async function pickProfile() {
+  if (emailArg) {
+    const res = await fetch(`${url}/auth/v1/admin/users?per_page=1000`, {
+      headers: { apikey: service, authorization: `Bearer ${service}` },
+    });
+    const users = (await res.json()).users ?? [];
+    const user = users.find((u) => (u.email ?? '').toLowerCase() === emailArg);
+    if (!user) return null;
+    return (await (await admin(`profiles?select=id,first_name&id=eq.${user.id}`)).json())[0] ?? null;
+  }
+  return (
+    await (await admin('profiles?select=id,first_name&order=created_at.desc&limit=1')).json()
+  )[0];
+}
+const noProfile = () => {
+  console.log(
+    emailArg
+      ? `FAIL  no account for ${emailArg}: sign up in the Simulator with that address first`
+      : 'FAIL  no profile found',
+  );
+  process.exit(1);
+};
 
 if (mode === 'avatar') {
   const rows = await (
@@ -60,14 +86,8 @@ if (mode === 'avatar') {
   );
   process.exit(ok ? 0 : 1);
 } else if (mode === 'redo') {
-  const rows = await (
-    await admin('profiles?select=id,first_name&order=created_at.desc&limit=1')
-  ).json();
-  const row = rows[0];
-  if (!row) {
-    console.log('FAIL  no profile found');
-    process.exit(1);
-  }
+  const row = await pickProfile();
+  if (!row) noProfile();
   await admin(`profiles?id=eq.${row.id}`, {
     method: 'PATCH',
     body: JSON.stringify({ first_name: null, last_initial: null, avatar_path: null }),
@@ -76,14 +96,8 @@ if (mode === 'avatar') {
     `Cleared ${row.first_name ?? 'the newest'} profile. Press r in Metro: the app opens "Set up your profile".`,
   );
 } else if (mode === 'overdue' || mode === 'signout') {
-  const rows = await (
-    await admin('profiles?select=id,first_name&order=created_at.desc&limit=1')
-  ).json();
-  const row = rows[0];
-  if (!row) {
-    console.log('FAIL  no profile found');
-    process.exit(1);
-  }
+  const row = await pickProfile();
+  if (!row) noProfile();
   if (mode === 'overdue') {
     const past = new Date(Date.now() - 2 * 86400000).toISOString().slice(0, 10);
     await admin(`profiles?id=eq.${row.id}`, {

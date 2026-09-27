@@ -3,8 +3,9 @@
 #   bash scripts/verify/s14-sim.sh serve    keep open in its own terminal: Edge Functions for the app
 #   bash scripts/verify/s14-sim.sh redo     clears the newest profile's name and photo (redo Set up your profile)
 #   bash scripts/verify/s14-sim.sh avatar   checks the newest profile photo has no EXIF
-#   bash scripts/verify/s14-sim.sh overdue  S15: the yearly check is overdue (X9)
-#   bash scripts/verify/s14-sim.sh signout  S15: signs the Simulator account out everywhere (X7)
+#   bash scripts/verify/s14-sim.sh overdue [email]  S15: the yearly check is overdue (X9)
+#   bash scripts/verify/s14-sim.sh signout [email]  S15: signs the account out everywhere (X7)
+#   (pass the Simulator account's email; without it the newest profile is used)
 #   bash scripts/verify/s14-sim.sh bump     raises rules_version (then press r in Metro)
 #   bash scripts/verify/s14-sim.sh reset    puts rules_version back to 1
 set -u
@@ -22,7 +23,7 @@ case "${1:-}" in
     key="$(status_var SERVICE_ROLE_KEY)"
     [ -n "$key" ] || key="$(status_var SECRET_KEY)"
     [ -n "$key" ] || { echo "Local Supabase is not running: pnpm supabase start"; exit 1; }
-    SERVICE_KEY="$key" node --no-warnings --experimental-strip-types scripts/verify/sim-onboarding.mjs "$1"
+    SERVICE_KEY="$key" node --no-warnings --experimental-strip-types scripts/verify/sim-onboarding.mjs "$1" "${2:-}"
     ;;
   *)
     echo "usage: bash scripts/verify/s14-sim.sh serve | redo | avatar | overdue | signout | bump | reset"; exit 2 ;;
