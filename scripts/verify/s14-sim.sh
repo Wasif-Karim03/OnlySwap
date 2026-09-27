@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # S14 Simulator helpers (local Supabase must be running; run from anywhere).
 #   bash scripts/verify/s14-sim.sh serve    keep open in its own terminal: Edge Functions for the app
+#   bash scripts/verify/s14-sim.sh redo     clears the newest profile's name and photo (redo Set up your profile)
 #   bash scripts/verify/s14-sim.sh avatar   checks the newest profile photo has no EXIF
 #   bash scripts/verify/s14-sim.sh bump     raises rules_version (then press r in Metro)
 #   bash scripts/verify/s14-sim.sh reset    puts rules_version back to 1
@@ -15,12 +16,12 @@ case "${1:-}" in
     echo "Serving Edge Functions for the Simulator. Leave this open; Ctrl+C to stop."
     exec pnpm supabase functions serve
     ;;
-  avatar|bump|reset)
+  avatar|redo|bump|reset)
     key="$(status_var SERVICE_ROLE_KEY)"
     [ -n "$key" ] || key="$(status_var SECRET_KEY)"
     [ -n "$key" ] || { echo "Local Supabase is not running: pnpm supabase start"; exit 1; }
     SERVICE_KEY="$key" node --no-warnings --experimental-strip-types scripts/verify/sim-onboarding.mjs "$1"
     ;;
   *)
-    echo "usage: bash scripts/verify/s14-sim.sh serve | avatar | bump | reset"; exit 2 ;;
+    echo "usage: bash scripts/verify/s14-sim.sh serve | redo | avatar | bump | reset"; exit 2 ;;
 esac
