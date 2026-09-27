@@ -6,15 +6,28 @@
 // returns R2 prefixes) → delete R2 prefixes (wired in P5-MEDIA-04) →
 // auth.admin.deleteUser (cascades and set-nulls remove the rest).
 
-export type Prepared = { email: string | null; r2_prefixes: string[] };
+export type EvidenceItem = { report_id: string; key: string };
+export type EvidenceMove = { report_id: string; from: string; to: string };
+
+export type Prepared = { email: string | null; r2_prefixes: string[]; evidence?: EvidenceItem[] };
+
+/** Where a reported photo is kept: onlyswap-private/evidence/{report}/{file}. */
+export function evidenceKey(item: EvidenceItem): string {
+  const file = item.key.slice(item.key.lastIndexOf('/') + 1);
+  return `evidence/${item.report_id}/${file}`;
+}
 
 export type DeleteDeps = {
   /** Resolves the user id from a bearer token, or null when it isn't valid. */
   userIdFromToken: (token: string) => Promise<string | null>;
   prepare: (userId: string, underage: boolean) => Promise<Prepared>;
   deleteUser: (userId: string) => Promise<void>;
-  /** R2 cleanup; absent until the media Worker exists (P5-MEDIA-04). */
+  /** R2 cleanup (P5-MEDIA-04). */
   deleteR2Prefix?: (prefix: string) => Promise<void>;
+  /** Copies a media key into the private bucket (BE-02); false when the photo is already gone. */
+  copyToPrivate?: (fromKey: string, toKey: string) => Promise<boolean | void>;
+  /** Points the reports at the private copies (private.record_evidence_moves). */
+  recordMoves?: (moves: EvidenceMove[]) => Promise<void>;
   log?: (event: string, data?: Record<string, unknown>) => void;
 };
 
@@ -75,8 +88,25 @@ export async function handleDeleteAccount(
     return fail(500, 'UNKNOWN');
   }
 
-  if (deps.deleteR2Prefix) {
-    for (const prefix of prepared.r2_prefixes) await deps.deleteR2Prefix(prefix);
+  // Evidence first (BE-02): if a copy fails, nothing has been deleted yet and
+  // the person can try again.
+  try {
+    const items = prepared.evidence ?? [];
+    if (items.length && deps.copyToPrivate && deps.recordMoves) {
+      const moves: EvidenceMove[] = [];
+      for (const item of items) {
+        const to = evidenceKey(item);
+        const copied = await deps.copyToPrivate(item.key, to);
+        if (copied !== false) moves.push({ report_id: item.report_id, from: item.key, to });
+      }
+      if (moves.length) await deps.recordMoves(moves);
+    }
+    if (deps.deleteR2Prefix) {
+      for (const prefix of prepared.r2_prefixes) await deps.deleteR2Prefix(prefix);
+    }
+  } catch {
+    deps.log?.('delete_account.media_failed');
+    return fail(500, 'UNKNOWN');
   }
 
   try {

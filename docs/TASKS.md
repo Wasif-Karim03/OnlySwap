@@ -121,7 +121,7 @@
 
 ## P5 · Sell and media (D)
 
-- [ ] **P5-MEDIA-01** ✎ R2 media Worker (`workers/media`): prefix allowlist (`c/`, `share/`), immutable cache headers, `nosniff`, type by extension, best-effort per-IP limit. Signed chat-photo reads are R1.1. · deps P0-ACC-05 · done when GET of a public key → 200 + immutable header; unknown prefix → 404 · M
+- [x] **P5-MEDIA-01** ✎ R2 media Worker (`workers/media`): prefix allowlist (`c/`, `share/`), immutable cache headers, `nosniff`, type by extension, best-effort per-IP limit. Signed chat-photo reads are R1.1. · deps P0-ACC-05 · done when GET of a public key → 200 + immutable header; unknown prefix → 404 · M
 - [ ] **P5-MEDIA-02** ✎ Edge Function `upload-url` + `private.can_upload` + `_shared/r2.ts`; **signs content-length and content-type** (SEC-02); kinds listing/avatar/share. · deps P3-DB-10 · done when presigned PUT works; wrong owner → 403; oversize body → 403 (T-SEC-18) · M
 - [ ] **P5-MEDIA-03** `lib/media.ts`: pickPhotos, processPhoto (1080/400 WebP, EXIF stripped, blurhash), uploadPhotos (retry, progress) · MEDIA-02 · T-UNIT-MEDIA-01..05 pass; output has no GPS EXIF · M
 - [ ] **P5-MEDIA-04** ✎ Extend `delete-account`: move photo keys referenced by open reports to `onlyswap-private/evidence/` (BE-02), then delete the user's R2 prefixes (avatar, own listings, share cards). · deps P5-MEDIA-02, P4-DEL-01 · done when T-INT-DEL-03 passes; no other user objects remain · M

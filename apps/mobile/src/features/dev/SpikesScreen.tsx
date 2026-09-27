@@ -9,6 +9,7 @@ import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
 
 import { SuccessCheck } from '@/components/SuccessCheck';
 import { Text } from '@/components/Text';
+import { MediaCheck } from '@/features/dev/MediaCheck';
 import { THEME_MODES, useThemeModeStore, type ThemeMode } from '@/theme/mode';
 import { usePressFeedback } from '@/theme/motion';
 import { dev } from '@/strings/en';
@@ -164,6 +165,8 @@ export function SpikesScreen() {
           </Text>
           <DemoButton label={dev.ageButton} hint={dev.ageHint} onPress={askAge} />
         </View>
+
+        <MediaCheck />
 
         <View style={styles.card}>
           <Text variant="label" tone="ink2">

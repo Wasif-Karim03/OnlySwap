@@ -116,6 +116,18 @@ enabled = true
 # The maximum file size allowed (e.g. "5MB", "500KB").
 file_size_limit = "50MiB"
 
+# Local stand-ins for the R2 buckets (DATA_MODEL §6). In development the
+# Edge Functions reach them through the Storage S3 endpoint; staging and
+# production use Cloudflare R2 (R2_* secrets).
+[storage.buckets.onlyswap-media]
+public = true
+file_size_limit = "2MiB"
+allowed_mime_types = ["image/webp", "image/jpeg"]
+
+[storage.buckets.onlyswap-private]
+public = false
+file_size_limit = "10MiB"
+
 # Uncomment to configure local storage buckets
 # [storage.buckets.images]
 # public = false

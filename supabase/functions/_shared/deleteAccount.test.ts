@@ -105,3 +105,49 @@ test('without the R2 dependency (before P5-MEDIA-04) the account is still delete
   assert.equal(res.status, 200);
   assert.deepEqual(calls, ['prepare:false', 'deleteUser:u1']);
 });
+
+test('T-INT-DEL-03 (core): reported photos are copied to evidence before anything is deleted', async () => {
+  const calls: string[] = [];
+  const { d } = deps({
+    prepare: async () => ({
+      email: 'a@osu.edu',
+      r2_prefixes: ['c/x/u/u1/', 'c/x/l/L1/'],
+      evidence: [{ report_id: 'R1', key: 'c/x/l/L1/p_full.webp' }],
+    }),
+    copyToPrivate: async (from, to) => void calls.push(`copy:${from}->${to}`),
+    recordMoves: async (moves) => void calls.push(`record:${JSON.stringify(moves)}`),
+    deleteR2Prefix: async (p) => void calls.push(`r2:${p}`),
+    deleteUser: async (u) => void calls.push(`deleteUser:${u}`),
+  });
+  const res = await handleDeleteAccount(req({ confirm: 'DELETE' }), d);
+  assert.equal(res.status, 200);
+  assert.deepEqual(calls, [
+    'copy:c/x/l/L1/p_full.webp->evidence/R1/p_full.webp',
+    'record:[{"report_id":"R1","from":"c/x/l/L1/p_full.webp","to":"evidence/R1/p_full.webp"}]',
+    'r2:c/x/u/u1/',
+    'r2:c/x/l/L1/',
+    'deleteUser:u1',
+  ]);
+});
+
+test('a failed evidence copy stops before deleting any media or the account', async () => {
+  const calls: string[] = [];
+  const { d } = deps({
+    prepare: async () => ({
+      email: null,
+      r2_prefixes: ['c/x/u/u1/'],
+      evidence: [{ report_id: 'R1', key: 'c/x/l/L1/p_full.webp' }],
+    }),
+    copyToPrivate: async () => {
+      throw new Error('r2 PUT 500');
+    },
+    recordMoves: async () => void calls.push('record'),
+    deleteR2Prefix: async () => void calls.push('r2'),
+    deleteUser: async () => void calls.push('deleteUser'),
+  });
+  assert.deepEqual(await handleDeleteAccount(req({ confirm: 'DELETE' }), d), {
+    status: 500,
+    body: { error: 'UNKNOWN' },
+  });
+  assert.deepEqual(calls, []);
+});

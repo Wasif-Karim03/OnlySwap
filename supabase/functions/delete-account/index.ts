@@ -8,6 +8,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2.117.2';
 import postgres from 'npm:postgres@3.4.7';
 
 import { handleDeleteAccount, type Prepared } from '../_shared/deleteAccount.ts';
+import { createR2, r2FromEnv } from '../_shared/r2.ts';
 
 const admin = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -17,6 +18,15 @@ const admin = createClient(
   },
 );
 const sql = postgres(Deno.env.get('SUPABASE_DB_URL')!, { max: 1, prepare: false });
+// R2 is required in staging and production; without it the account is still
+// deleted but media stays behind, so the log says so loudly.
+let r2cfg: ReturnType<typeof r2FromEnv> | null = null;
+try {
+  r2cfg = r2FromEnv(Deno.env);
+} catch (e) {
+  console.error(JSON.stringify({ event: 'delete_account.r2_not_configured', detail: String(e) }));
+}
+const r2 = r2cfg ? createR2(r2cfg) : null;
 
 Deno.serve(async (req) => {
   let body: unknown = null;
@@ -38,6 +48,18 @@ Deno.serve(async (req) => {
           await sql`select private.prepare_account_deletion(${userId}::uuid, ${underage}) as r`;
         return rows[0].r as Prepared;
       },
+      ...(r2 && r2cfg
+        ? {
+            copyToPrivate: (fromKey: string, toKey: string) =>
+              r2.copy(r2cfg.mediaBucket, fromKey, r2cfg.privateBucket, toKey),
+            recordMoves: async (moves: unknown) => {
+              await sql`select private.record_evidence_moves(${sql.json(moves as never)})`;
+            },
+            deleteR2Prefix: async (prefix: string) => {
+              await r2.deletePrefix(r2cfg.mediaBucket, prefix);
+            },
+          }
+        : {}),
       deleteUser: async (userId) => {
         const { error } = await admin.auth.admin.deleteUser(userId);
         if (error) throw error;
