@@ -1,4 +1,5 @@
 // Helpers for the S14 Simulator checks (local Supabase only).
+//   bash scripts/verify/s14-sim.sh avatar   (sets SERVICE_KEY; or run this file directly)
 //   SERVICE_KEY=... node --experimental-strip-types scripts/verify/sim-onboarding.mjs avatar
 //     The newest profile photo saved from the app: downloads it from local
 //     storage and checks it has no EXIF at all (the phone re-encoded it;
