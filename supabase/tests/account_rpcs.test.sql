@@ -52,8 +52,8 @@ select is(tests.try_text_as(tests.uid('D'), $$select public.confirm_age('self_de
 select is(tests.try_text_as(pg_temp.f(),
   $$select public.update_profile('Zoë', 'k', 'junior', array[' Dorms ', 'dorms', 'North'], ' hi ', null) ->> 'display_name'$$),
   'Zoë K.', 'update_profile: unicode name, initial uppercased');
-select is((select areas::text || '|' || bio from public.profiles where id = pg_temp.f()), '{Dorms,North,dorms}|hi',
-  'update_profile: areas trimmed and de-duplicated, bio trimmed');
+select is((select areas::text || '|' || bio from public.profiles where id = pg_temp.f()), '{Dorms,North}|hi',
+  'update_profile: areas trimmed, de-duplicated ignoring case, order kept; bio trimmed');
 select is(tests.try_text_as(pg_temp.f(), $$select public.update_profile('O''Neil-Ray')::text$$) ~ '"first_name": "O''Neil-Ray"',
   true, 'update_profile: hyphen and apostrophe allowed');
 select is(tests.try_text_as(pg_temp.f(), $$select public.update_profile('R2D2')::text$$),

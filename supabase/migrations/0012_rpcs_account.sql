@@ -165,10 +165,15 @@ begin
     perform private.raise('BANNED_TERM', split_part(verdict, ':', 2));
   end if;
 
-  select coalesce(array_agg(distinct a order by a), '{}') into clean_areas
-  from unnest(coalesce(areas, '{}')) as u(raw)
-  cross join lateral (select nullif(btrim(u.raw), '') as a) t
-  where t.a is not null;
+  -- Trimmed, empties dropped, duplicates removed ignoring case (first one
+  -- wins), original order kept. Independent of the database collation.
+  select coalesce(array_agg(t.a order by t.ord), '{}') into clean_areas
+  from (
+    select distinct on (lower(btrim(u.raw))) btrim(u.raw) as a, u.ord
+    from unnest(coalesce(areas, '{}')) with ordinality as u(raw, ord)
+    where nullif(btrim(u.raw), '') is not null
+    order by lower(btrim(u.raw)), u.ord
+  ) t;
   if cardinality(clean_areas) > 5 or exists (select 1 from unnest(clean_areas) a where char_length(a) > 30) then
     perform private.raise('INVALID', 'areas');
   end if;

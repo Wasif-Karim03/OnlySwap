@@ -1586,8 +1586,14 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "block_user":
+            "accept_rules":
+{ Args: { "version": string }; Returns: undefined
+                           },
+"block_user":
 { Args: { "user_id": string }; Returns: undefined
+                           },
+"confirm_age":
+{ Args: { "birth_date"?: string,"is_adult"?: boolean,"method": string }; Returns: Json
                            },
 "create_appeal":
 { Args: { "body"?: string,"reason_choice"?: string,"subject_id": string,"subject_type": string }; Returns: Json
@@ -1595,11 +1601,26 @@ isOneToOne: false
 "create_report":
 { Args: { "details"?: string,"reason": string,"target_id": string,"target_type": string }; Returns: Json
                            },
+"get_app_config":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "get_my_report":
 { Args: { "id": string }; Returns: Json
                            },
+"lookup_school":
+{ Args: { "domain": string }; Returns: Json
+                           },
+"my_waitlist_position":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "unblock_user":
 { Args: { "user_id": string }; Returns: undefined
+                           },
+"update_profile":
+{ Args: { "areas"?: (string)[],"avatar_path"?: string,"bio"?: string,"first_name": string,"last_initial"?: string,"year"?: Database["public"]['Enums']["class_year"] }; Returns: Json
+                           },
+"update_profile_flags":
+{ Args: { "analytics_opt_in"?: boolean,"crash_reports_opt_in"?: boolean,"theme_mode"?: string }; Returns: undefined
                            }
           }
           Enums: {
