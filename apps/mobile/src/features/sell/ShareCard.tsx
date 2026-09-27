@@ -40,7 +40,7 @@ export const ShareCard = forwardRef<View, Props>(function ShareCard(
           {photo ? (
             <Image
               source={photo}
-            accessibilityIgnoresInvertColors
+              accessibilityIgnoresInvertColors
               style={styles.fill}
               contentFit="cover"
               onLoad={onReady}
