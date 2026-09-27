@@ -4,6 +4,8 @@ node_modules/
 !.env.example
 .expo/
 dist/
+# Generated design tokens are committed on purpose (P2-TOK-01).
+!packages/tokens/dist/
 ios/
 android/
 *.log

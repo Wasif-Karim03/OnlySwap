@@ -14,6 +14,7 @@ export type StorageSchema = {
   'privacy.analyticsOptOut': boolean;
   'privacy.crashOptOut': boolean;
   'onboarding.swipeCoachSeen': boolean;
+  'onboarding.notificationsAsked': boolean;
 };
 
 export type StorageKey = keyof StorageSchema;

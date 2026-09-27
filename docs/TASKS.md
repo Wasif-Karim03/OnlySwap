@@ -47,71 +47,71 @@
 - [x] **P1-ENV-02** Add gitleaks pre-commit and CI secret scan. · SETUP-01 · a commit containing a fake key is blocked · S
 - [x] **P1-CI-01** Add `.github/workflows/ci.yml` (Linux) with lint (eslint + prettier), typecheck, jest, pgTAP (later), and turbo-less pnpm filters. · SETUP-02 · green on a PR · M
 - [x] 🆕 **P1-CI-02** CI hardening: `eslint-plugin-react-native-a11y`, `pnpm audit --audit-level high`, bundle secret scan, Dependabot config, path filters (DB tests only on `supabase/**`). · deps P1-CI-01 · done when CI fails on a planted high-severity dep and on a planted secret · S
-- [ ] 🆕 **P1-CI-03** RPC contract snapshot: `scripts/rpc-contract.ts` generates `packages/shared/src/rpc-contract.json` from the DB; CI compares it (T-CONTRACT-01). · deps P1-CI-01, P3-DB-01 · done when changing a signature without `_v2` fails CI · M
+- [x] 🆕 **P1-CI-03** RPC contract snapshot: `scripts/rpc-contract.ts` generates `packages/shared/src/rpc-contract.json` from the DB; CI compares it (T-CONTRACT-01). · deps P1-CI-01, P3-DB-01 · done when changing a signature without `_v2` fails CI · M
 - [x] **P1-DB-01** Supabase CLI init; `supabase start` works locally; link staging. · P0-ACC-04 · local Studio opens · S
 - [ ] **P1-SPIKE-01** Spike: Edge Function sending mail over SMTP 465 via Gmail. If it's blocked, build the Worker `mailer` fallback. Record the outcome. · DB-01, P0-ACC-10 · a test email arrives from a staging function · M
-- [ ] **P1-SPIKE-03** Spike: `expo-age-range` returns a result or `unknown` on both OSes (with the entitlement `com.apple.developer.declared-age-range`). · SETUP-06 · logged result on devices · S
-- [ ] 🆕 **P1-SPIKE-04** Spike: New Architecture/Nitro modules (MMKV v4, Unistyles 3, keyboard-controller) build and run on both dev clients. · deps P1-SETUP-06 · done when a demo screen uses all three on iOS + Android · S
+- [x] **P1-SPIKE-03** Spike: `expo-age-range` returns a result or `unknown` on both OSes (with the entitlement `com.apple.developer.declared-age-range`). · SETUP-06 · logged result on devices · S
+- [x] 🆕 **P1-SPIKE-04** Spike: New Architecture/Nitro modules (MMKV v4, Unistyles 3, keyboard-controller) build and run on both dev clients. · deps P1-SETUP-06 · done when a demo screen uses all three on iOS + Android · S
 - [x] **P1-LIB-01** `lib/supabase.ts`, `lib/rpc.ts`, `lib/errors.ts` (initial codes), `lib/storage.ts`, `lib/queryClient.ts`. · ENV-01 · unit tests pass (T-UNIT-LIB-*) · M
 - [ ] **P1-LIB-02** `lib/sentry.ts` and `lib/analytics.ts` with the opt-in flag, plus the Sentry source-map upload set up through its EAS integration. · LIB-01, P0-ACC-08/09 · a test crash shows symbolicated in Sentry · M
 
 ## P2 · Design system and component kit
 
-- [ ] **P2-TOK-01** ✎ `packages/tokens`: `tokens.json` per DESIGN_SYSTEM §2–5 (light, dark, accent options, type, space, radius, motion) plus a generator producing `dist/unistyles.ts` and `dist/tokens.css`. · deps P1-SETUP-01 · done when generated files committed; values match DESIGN_SYSTEM tables · M
-- [ ] **P2-TOK-02** ✎ Contrast test T-UNIT-TOK-01 (light + dark × every accent option), including the rule that `accent` never appears as text on `bg`. · deps P2-TOK-01 · done when all required pairs pass · S
-- [ ] **P2-TOK-03** ✎ Unistyles themes: mode System/Light/Dark × one accent (from config), persisted in MMKV and `profiles.theme_mode`. · deps P2-TOK-01 · done when switching mode is instant with no flash · S
-- [ ] **P2-FONT-01** ✎ Type components on **system fonts** (SF Pro / Roboto) with the DESIGN_SYSTEM §3 scale, tabular numerals and `maxFontSizeMultiplier` rules. · deps P2-TOK-03 · done when every type row renders at 100% and 200% · S
-- [ ] **P2-CMP-01** Button (all variants, states, loading, haptic) · TOK-03 · kitchen-sink row matches H3 · S
-- [ ] **P2-CMP-02** Input, TextArea (counter), OTPInput · CMP-01 · states match H3 · M
-- [ ] **P2-CMP-03** Chip/ChipGroup, SegmentedControl, Toggle, Checkbox, OptionRow (radio), Stepper · CMP-01 · a11y roles set · M
-- [ ] **P2-CMP-04** Sheet + ActionSheet (Reanimated, pan to close, focus trap, Android back) · CMP-01 · works with keyboard open · L
+- [x] **P2-TOK-01** ✎ `packages/tokens`: `tokens.json` per DESIGN_SYSTEM §2–5 (light, dark, accent options, type, space, radius, motion) plus a generator producing `dist/unistyles.ts` and `dist/tokens.css`. · deps P1-SETUP-01 · done when generated files committed; values match DESIGN_SYSTEM tables · M
+- [x] **P2-TOK-02** ✎ Contrast test T-UNIT-TOK-01 (light + dark × every accent option), including the rule that `accent` never appears as text on `bg`. · deps P2-TOK-01 · done when all required pairs pass · S
+- [x] **P2-TOK-03** ✎ Unistyles themes: mode System/Light/Dark × one accent (from config), persisted in MMKV and `profiles.theme_mode`. · deps P2-TOK-01 · done when switching mode is instant with no flash · S
+- [x] **P2-FONT-01** ✎ Type components on **system fonts** (SF Pro / Roboto) with the DESIGN_SYSTEM §3 scale, tabular numerals and `maxFontSizeMultiplier` rules. · deps P2-TOK-03 · done when every type row renders at 100% and 200% · S
+- [x] **P2-CMP-01** Button (all variants, states, loading, haptic) · TOK-03 · kitchen-sink row matches H3 · S
+- [x] **P2-CMP-02** Input, TextArea (counter), OTPInput · CMP-01 · states match H3 · M
+- [x] **P2-CMP-03** Chip/ChipGroup, SegmentedControl, Toggle, Checkbox, OptionRow (radio), Stepper · CMP-01 · a11y roles set · M
+- [x] **P2-CMP-04** Sheet + ActionSheet (Reanimated, pan to close, focus trap, Android back) · CMP-01 · works with keyboard open · L
 - [ ] **P2-CMP-05** Toast, ToastUndo, Banner, OfflineBanner · CMP-01 · offline toggle shows the banner · S
-- [ ] **P2-CMP-06** Card, ListRow/GroupedList, Tag, Avatar, Mark (logo from the shared SVG) · CMP-01 · matches F10 styling · S
-- [ ] **P2-CMP-07** Photo (expo-image + blurhash), PhotoCarousel, ZoomableImage · CMP-01 · a 4-photo carousel works · M
-- [ ] **P2-CMP-08** EmptyState, ErrorState, Skeleton set · CMP-01 · matches X3/X36 · S
-- [ ] **P2-CMP-09** NavBar, TabBar (iOS style + Android pill variant), StepIndicator, ProgressBar · CMP-06 · N1 look on Android · M
-- [ ] **P2-CMP-10** ✎ PermissionPrimer for camera, photos and notifications (undetermined → primer → OS prompt; denied → Settings). · deps P2-CMP-01 · done when every OS status handled · M
-- [ ] **P2-CMP-11** ConfirmDialog, ReportSheet shell · CMP-04 · — · S
-- [ ] **P2-MOT-01** Motion primitives: press scale, spring presets, check-draw success, reduce-motion hook · CMP-01 · reduce motion swaps to fades · S
-- [ ] **P2-KIT-01** Kitchen-sink route `/dev/kit` (dev builds only) showing every component and state in every skin. · CMP-01..11 · visual pass against H3 in 8 skins · S
-- [ ] **P2-KIT-02** States gallery route `/dev/states` (dev builds only) rendering every X-section state with fixtures, used by manual QA · KIT-01 · every X frame is reachable · S
+- [x] **P2-CMP-06** Card, ListRow/GroupedList, Tag, Avatar, Mark (logo from the shared SVG) · CMP-01 · matches F10 styling · S
+- [x] **P2-CMP-07** Photo (expo-image + blurhash), PhotoCarousel, ZoomableImage · CMP-01 · a 4-photo carousel works · M
+- [x] **P2-CMP-08** EmptyState, ErrorState, Skeleton set · CMP-01 · matches X3/X36 · S
+- [x] **P2-CMP-09** NavBar, TabBar (iOS style + Android pill variant), StepIndicator, ProgressBar · CMP-06 · N1 look on Android · M
+- [x] **P2-CMP-10** ✎ PermissionPrimer for camera, photos and notifications (undetermined → primer → OS prompt; denied → Settings). · deps P2-CMP-01 · done when every OS status handled · M
+- [x] **P2-CMP-11** ConfirmDialog, ReportSheet shell · CMP-04 · — · S
+- [x] **P2-MOT-01** Motion primitives: press scale, spring presets, check-draw success, reduce-motion hook · CMP-01 · reduce motion swaps to fades · S
+- [x] **P2-KIT-01** Kitchen-sink route `/dev/kit` (dev builds only) showing every component and state in every skin. · CMP-01..11 · visual pass against H3 in 8 skins · S
+- [x] **P2-KIT-02** States gallery route `/dev/states` (dev builds only) rendering every X-section state with fixtures, used by manual QA · KIT-01 · every X frame is reachable · S
 
 ## P3 · Data model, RLS, auth hooks
 
-- [ ] **P3-DB-01** Migration `0001_extensions_enums.sql` · P1-DB-01 · `db reset` succeeds · S
-- [ ] **P3-DB-02** ✎ `0002_campus_identity.sql` per DATA_MODEL §2.1. · deps P3-DB-01 · done when `db reset` ok · M
-- [ ] **P3-DB-03** ✎ `0003_listings.sql` per DATA_MODEL §2.2 (soft delete, `wanted_ref`, reservations). · deps P3-DB-02 · done when — · M
-- [ ] **P3-DB-04** ✎ `0004_deals.sql` per DATA_MODEL §2.3 (`set null` FKs, chat snapshot, `meetups_one_active`, spot designation). · deps P3-DB-03 · done when — · M
-- [ ] **P3-DB-06** ✎ `0005_safety_ops.sql` + `0006_notifications.sql` per DATA_MODEL §2.4–2.5 (evidence, unlogged rate_counters, `dedupe_key`, claim states, email outbox). · deps P3-DB-02 · done when — · M
-- [ ] **P3-DB-07** `0007_helpers.sql`: `private.*` helpers (require_active, hit, hit_ip, check_text, pii_check, names_student, email_hash, is_blocked, queue_notification, new_invite_code, unaccent_immutable) · DB-06 · pgTAP helper tests pass · L
-- [ ] **P3-DB-08** ✎ `0008_rls_grants.sql`: RLS on every table per DATA_MODEL §3; `revoke all` from anon/authenticated; column grants on profiles; `realtime.messages` policies. · deps P3-DB-02..06 · done when T-INT-RLS-* and T-SEC-19 pass · L
-- [ ] **P3-DB-09** `0009_views.sql`: public_profiles, profile_stats (MV), ratings_visible, campus_progress, price_hints, campus_trending_terms, my_reports · DB-08 · — · M
-- [ ] 🆕 **P3-DB-10** `0007_helpers.sql` extras: `private.now()`, `queue_notification` (dedupe), `queue_email`, `snapshot_evidence`, `can_upload`, `unlock_campus`. · deps P3-DB-07 · done when pgTAP helper tests · M
-- [ ] 🆕 **P3-DB-11** `0100_ref_data.sql`: categories, banned words (≈150 + pets, gift cards, recalled items), `app_config` defaults (`rules_version`, min versions, flags). Idempotent upserts (BE-15). · deps P3-DB-02 · done when re-running the migration is a no-op · S
-- [ ] 🆕 **P3-DB-12** Integrity pgTAP suite: T-INT-DEL-02, T-INT-NOTIF-DEDUPE, T-INT-LIST-04, T-INT-MEET-02/03, T-INT-SAFE-03, T-INT-OFF-RACE-02, T-INT-SOLD-01, T-INT-TZ-01 (written now as failing tests, turned green by later phases). · deps P3-TEST-01 · done when tests exist and are tracked in CI (marked todo until their phase) · M
+- [x] **P3-DB-01** Migration `0001_extensions_enums.sql` · P1-DB-01 · `db reset` succeeds · S
+- [x] **P3-DB-02** ✎ `0002_campus_identity.sql` per DATA_MODEL §2.1. · deps P3-DB-01 · done when `db reset` ok · M
+- [x] **P3-DB-03** ✎ `0003_listings.sql` per DATA_MODEL §2.2 (soft delete, `wanted_ref`, reservations). · deps P3-DB-02 · done when — · M
+- [x] **P3-DB-04** ✎ `0004_deals.sql` per DATA_MODEL §2.3 (`set null` FKs, chat snapshot, `meetups_one_active`, spot designation). · deps P3-DB-03 · done when — · M
+- [x] **P3-DB-06** ✎ `0005_safety_ops.sql` + `0006_notifications.sql` per DATA_MODEL §2.4–2.5 (evidence, unlogged rate_counters, `dedupe_key`, claim states, email outbox). · deps P3-DB-02 · done when — · M
+- [x] **P3-DB-07** `0007_helpers.sql`: `private.*` helpers (require_active, hit, hit_ip, check_text, pii_check, names_student, email_hash, is_blocked, queue_notification, new_invite_code, unaccent_immutable) · DB-06 · pgTAP helper tests pass · L
+- [x] **P3-DB-08** ✎ `0008_rls_grants.sql`: RLS on every table per DATA_MODEL §3; `revoke all` from anon/authenticated; column grants on profiles; `realtime.messages` policies. · deps P3-DB-02..06 · done when T-INT-RLS-* and T-SEC-19 pass · L
+- [x] **P3-DB-09** `0009_views.sql`: public_profiles, profile_stats (MV), ratings_visible, campus_progress, price_hints, campus_trending_terms, my_reports · DB-08 · — · M
+- [x] 🆕 **P3-DB-10** `0007_helpers.sql` extras: `private.now()`, `queue_notification` (dedupe), `queue_email`, `snapshot_evidence`, `can_upload`, `unlock_campus`. · deps P3-DB-07 · done when pgTAP helper tests · M
+- [x] 🆕 **P3-DB-11** `0100_ref_data.sql`: categories, banned words (≈150 + pets, gift cards, recalled items), `app_config` defaults (`rules_version`, min versions, flags). Idempotent upserts (BE-15). · deps P3-DB-02 · done when re-running the migration is a no-op · S
+- [x] 🆕 **P3-DB-12** Integrity pgTAP suite: T-INT-DEL-02, T-INT-NOTIF-DEDUPE, T-INT-LIST-04, T-INT-MEET-02/03, T-INT-SAFE-03, T-INT-OFF-RACE-02, T-INT-SOLD-01, T-INT-TZ-01 (written now as failing tests, turned green by later phases). · deps P3-TEST-01 · done when tests exist and are tracked in CI (marked todo until their phase) · M
 - [ ] **P3-AUTH-01** Postgres auth hooks `hook_before_user_created` and `hook_custom_access_token`, enabled in config.toml and on staging/prod · DB-07 · signups from unknown domains are rejected; JWT has the claims · M
-- [ ] **P3-AUTH-02** Trigger `on_auth_user_created`: profile, prefs, waitlist status, invite link · AUTH-01 · a new user gets a profile row · S
+- [x] **P3-AUTH-02** Trigger `on_auth_user_created`: profile, prefs, waitlist status, invite link · AUTH-01 · a new user gets a profile row · S
 - [ ] **P3-AUTH-03** Auth config: email OTP length 6, expiry 600 s, custom SMTP (Gmail 465 or Resend), rate limits raised to 200/h, "Confirm email" ON, password provider on (reviewers), OTP template with the code in the subject (T3) · AUTH-01, P1-SPIKE-01 · a real .edu inbox receives the code · M
-- [ ] **P3-SEED-01** ✎ `supabase/seed.sql` (local only): Ohio State, Demo University, a waitlist campus, 40 demo listings, fixture users. Production reference data is in P3-DB-11. · deps P3-DB-09 · done when `db reset` gives a usable app · M
-- [ ] **P3-TYPES-01** `supabase gen types` script plus CI drift check · DB-09 · CI fails on drift · S
-- [ ] **P3-TEST-02** `private.now()` wrapper used by every time-based function and cron job, plus a staging-only `test_set_now(ts)` RPC (dropped in production migrations through `if current_setting('app.env')='prod'`). · DB-07 · pgTAP time-travel tests work · S
-- [ ] **P3-SAFE-01** RPCs `create_report`, `get_my_report`, `block_user`, `unblock_user`, `create_appeal`; auto-hide trigger; priority-1 alert email · P3-DB-07 · pgTAP · M
-- [ ] **P3-TEST-01** pgTAP harness `supabase/tests/` with fixtures (two campuses, users A/B/C, an admin, a moderator) · DB-08 · `supabase test db` runs in CI · M
+- [x] **P3-SEED-01** ✎ `supabase/seed.sql` (local only): Ohio State, Demo University, a waitlist campus, 40 demo listings, fixture users. Production reference data is in P3-DB-11. · deps P3-DB-09 · done when `db reset` gives a usable app · M
+- [x] **P3-TYPES-01** `supabase gen types` script plus CI drift check · DB-09 · CI fails on drift · S
+- [x] **P3-TEST-02** `private.now()` wrapper used by every time-based function and cron job, plus a staging-only `test_set_now(ts)` RPC (dropped in production migrations through `if current_setting('app.env')='prod'`). · DB-07 · pgTAP time-travel tests work · S
+- [x] **P3-SAFE-01** RPCs `create_report`, `get_my_report`, `block_user`, `unblock_user`, `create_appeal`; auto-hide trigger; priority-1 alert email · P3-DB-07 · pgTAP · M
+- [x] **P3-TEST-01** pgTAP harness `supabase/tests/` with fixtures (two campuses, users A/B/C, an admin, a moderator) · DB-08 · `supabase test db` runs in CI · M
 
 ## P4 · Auth and onboarding (A)
 
-- [ ] **P4-AUTH-01** RPCs `lookup_school`, `confirm_age`, `update_profile`, `accept_rules`, `my_waitlist_position`, `update_profile_flags` · P3-AUTH-02 · pgTAP green · M
-- [ ] **P4-AUTH-02** `features/auth/api.ts` and hooks (sendCode, verifyCode, signInReviewer, signOut, useSession, useAppGate) · P1-LIB-01, AUTH-01 · unit tests green · M
+- [x] **P4-AUTH-01** RPCs `lookup_school`, `confirm_age`, `update_profile`, `accept_rules`, `my_waitlist_position`, `update_profile_flags` · P3-AUTH-02 · pgTAP green · M
+- [x] **P4-AUTH-02** `features/auth/api.ts` and hooks (sendCode, verifyCode, signInReviewer, signOut, useSession, useAppGate) · P1-LIB-01, AUTH-01 · unit tests green · M
 - [ ] **P4-AUTH-03** S-A01 Launch + splash handoff + gate routing · AUTH-02, P2-MOT-01 · cold start under 700 ms to first route on a mid Android device · M
-- [ ] **P4-AUTH-04** S-A02 Welcome · P2 · matches A2 · S
-- [ ] **P4-AUTH-05** S-A03 School email with detect, not-found, personal-email and reviewer password states · AUTH-02 · all A3/A4/A5 states reachable · M
-- [ ] **P4-AUTH-06** S-A04 Verify code with autofill, errors, resend timer and lockout · AUTH-05 · wrong/expired/locked states tested · M
-- [ ] **P4-DEL-01** Edge Function `delete-account` (normal + underage mode; ratings anonymized; banned hash; R2 prefix deletion added in P5-MEDIA-04) · P3-AUTH-02 · T-INT-DEL-01 shows no rows left except retained reports · M
-- [ ] **P4-AUTH-07** ✎ A05 Age check: OS signal (`expo-age-range`) → native date picker fallback → Not eligible; underage path calls `delete-account` (underage) and signs out. · deps P4-AUTH-06, P1-SPIKE-03, P4-DEL-01 · done when the minor path deletes the auth user and blocks retry (T-INT-AUTH-04, E2E-02) · M
-- [ ] **P4-AUTH-08** S-A10 Profile setup, including avatar upload (depends on the media pipeline) · AUTH-07, P5-MEDIA-03 · the profile row is updated · M
-- [ ] **P4-AUTH-09** S-A11 Community rules with the 18+ checkbox and legal links · AUTH-08 · can't continue unchecked · S
-- [ ] **P4-AUTH-10** S-A12 Notifications primer (permission flow; registration completed in P9) · AUTH-09, P2-CMP-10 · the OS prompt fires only on the button · S
-- [ ] **P4-AUTH-11** Edge Function `waitlist-request` + Turnstile helper · P3-DB-02 · a duplicate email is a silent success; IP limited · M
+- [x] **P4-AUTH-04** S-A02 Welcome · P2 · matches A2 · S
+- [x] **P4-AUTH-05** S-A03 School email with detect, not-found, personal-email and reviewer password states · AUTH-02 · all A3/A4/A5 states reachable · M
+- [x] **P4-AUTH-06** S-A04 Verify code with autofill, errors, resend timer and lockout · AUTH-05 · wrong/expired/locked states tested · M
+- [x] **P4-DEL-01** Edge Function `delete-account` (normal + underage mode; ratings anonymized; banned hash; R2 prefix deletion added in P5-MEDIA-04) · P3-AUTH-02 · T-INT-DEL-01 shows no rows left except retained reports · M
+- [x] **P4-AUTH-07** ✎ A05 Age check: OS signal (`expo-age-range`) → native date picker fallback → Not eligible; underage path calls `delete-account` (underage) and signs out. · deps P4-AUTH-06, P1-SPIKE-03, P4-DEL-01 · done when the minor path deletes the auth user and blocks retry (T-INT-AUTH-04, E2E-02) · M
+- [x] **P4-AUTH-08** S-A10 Profile setup, including avatar upload (depends on the media pipeline) · AUTH-07, P5-MEDIA-03 · the profile row is updated · M
+- [x] **P4-AUTH-09** S-A11 Community rules with the 18+ checkbox and legal links · AUTH-08 · can't continue unchecked · S
+- [x] **P4-AUTH-10** S-A12 Notifications primer (permission flow; registration completed in P9) · AUTH-09, P2-CMP-10 · the OS prompt fires only on the button · S
+- [x] **P4-AUTH-11** Edge Function `waitlist-request` + Turnstile helper · P3-DB-02 · a duplicate email is a silent success; IP limited · M
 - [ ] **P4-AUTH-14** Session expired modal (X7) and the re-verify gate (X9) with `complete_reverify` · AUTH-06 · forcing `verified_until` into the past shows X9; a new code restores it · M
 - [ ] **P4-AUTH-15** Reviewer accounts: `scripts/seed-review.ts` + `review_accounts` rows on staging · AUTH-05 · a reviewer logs in with a password on staging · S
 - [ ] **P4-AUTH-16** `demo_autoplay` cron (Demo University only): the bot accepts offers, replies, proposes and completes meetups for reviewers · AUTH-15, P8-MEET-01 · a reviewer completes a swap alone on staging · M
@@ -121,10 +121,10 @@
 
 ## P5 · Sell and media (D)
 
-- [ ] **P5-MEDIA-01** ✎ R2 media Worker (`workers/media`): prefix allowlist (`c/`, `share/`), immutable cache headers, `nosniff`, type by extension, best-effort per-IP limit. Signed chat-photo reads are R1.1. · deps P0-ACC-05 · done when GET of a public key → 200 + immutable header; unknown prefix → 404 · M
-- [ ] **P5-MEDIA-02** ✎ Edge Function `upload-url` + `private.can_upload` + `_shared/r2.ts`; **signs content-length and content-type** (SEC-02); kinds listing/avatar/share. · deps P3-DB-10 · done when presigned PUT works; wrong owner → 403; oversize body → 403 (T-SEC-18) · M
-- [ ] **P5-MEDIA-03** `lib/media.ts`: pickPhotos, processPhoto (1080/400 WebP, EXIF stripped, blurhash), uploadPhotos (retry, progress) · MEDIA-02 · T-UNIT-MEDIA-01..05 pass; output has no GPS EXIF · M
-- [ ] **P5-MEDIA-04** ✎ Extend `delete-account`: move photo keys referenced by open reports to `onlyswap-private/evidence/` (BE-02), then delete the user's R2 prefixes (avatar, own listings, share cards). · deps P5-MEDIA-02, P4-DEL-01 · done when T-INT-DEL-03 passes; no other user objects remain · M
+- [x] **P5-MEDIA-01** ✎ R2 media Worker (`workers/media`): prefix allowlist (`c/`, `share/`), immutable cache headers, `nosniff`, type by extension, best-effort per-IP limit. Signed chat-photo reads are R1.1. · deps P0-ACC-05 · done when GET of a public key → 200 + immutable header; unknown prefix → 404 · M
+- [x] **P5-MEDIA-02** ✎ Edge Function `upload-url` + `private.can_upload` + `_shared/r2.ts`; **signs content-length and content-type** (SEC-02); kinds listing/avatar/share. · deps P3-DB-10 · done when presigned PUT works; wrong owner → 403; oversize body → 403 (T-SEC-18) · M
+- [x] **P5-MEDIA-03** `lib/media.ts`: pickPhotos, processPhoto (1080/400 WebP, EXIF stripped, blurhash), uploadPhotos (retry, progress) · MEDIA-02 · T-UNIT-MEDIA-01..05 pass; output has no GPS EXIF · M
+- [x] **P5-MEDIA-04** ✎ Extend `delete-account`: move photo keys referenced by open reports to `onlyswap-private/evidence/` (BE-02), then delete the user's R2 prefixes (avatar, own listings, share cards). · deps P5-MEDIA-02, P4-DEL-01 · done when T-INT-DEL-03 passes; no other user objects remain · M
 - [ ] **P5-SELL-01** ✎ RPCs `reserve_listing_id`, `create_listing` (idempotent), `update_listing`, `delete_listing` (soft), `relist_listing`, `mark_sold`, `check_text` (`price_hint` RPC is built too; its UI is R1.1) · deps P3-DB-10 · done when pgTAP incl. banned words, limits, T-INT-LIST-04 pass · L
 - [ ] **P5-SELL-02** `useDraft` + S-D01 Sell·photos (grid, reorder, camera/library, permission primer and denied states, X16) · MEDIA-03 · a draft survives an app kill · L
 - [ ] **P5-SELL-03** ✎ D02 Sell·details with every D3 error state and the give-away toggle (D4); no price hint UI in R1.0 · deps P5-SELL-01 · done when all errors show at once · M

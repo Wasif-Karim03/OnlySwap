@@ -8,18 +8,7 @@ import {
   type Migration,
 } from '../src/lib/storage';
 
-jest.mock('expo-secure-store', () => {
-  const store = new Map<string, string>();
-  return {
-    AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY: 0,
-    __store: store,
-    getItem: (k: string) => store.get(k) ?? null,
-    setItem: (k: string, v: string) => void store.set(k, v),
-    getItemAsync: async (k: string) => store.get(k) ?? null,
-    setItemAsync: async (k: string, v: string) => void store.set(k, v),
-    deleteItemAsync: async (k: string) => void store.delete(k),
-  };
-});
+// expo-secure-store is mocked in memory by jest.setup.ts.
 
 describe('T-UNIT-LIB-08 lib/storage', () => {
   it('stores and reads typed values', () => {

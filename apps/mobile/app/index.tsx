@@ -1,5 +1,3 @@
-import { Redirect } from 'expo-router';
+import { LaunchScreen } from '@/features/auth/LaunchScreen';
 
-export default function Index() {
-  return <Redirect href="/discover" />;
-}
+export default LaunchScreen;

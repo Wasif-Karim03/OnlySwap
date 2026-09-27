@@ -1,0 +1,18 @@
+# Media Worker (P5-MEDIA-01). Serves public images from R2 (DATA_MODEL §6).
+# Deploy: `npx wrangler deploy -c workers/media/wrangler.toml` (staging: `--env staging`).
+name = "onlyswap-media"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+workers_dev = true
+
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "onlyswap-media"
+preview_bucket_name = "onlyswap-media-staging"
+
+[env.staging]
+name = "onlyswap-media-staging"
+
+[[env.staging.r2_buckets]]
+binding = "MEDIA"
+bucket_name = "onlyswap-media-staging"

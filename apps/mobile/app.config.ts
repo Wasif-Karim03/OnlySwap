@@ -1,5 +1,7 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 
+import tokens from '@onlyswap/tokens/tokens.json';
+
 import permissions from './src/strings/permissions.json';
 
 /**
@@ -8,12 +10,11 @@ import permissions from './src/strings/permissions.json';
  * `scripts/verify/check-prebuild.mjs` (T-STORE). Change both when this changes.
  */
 
-// Launch colors mirror DESIGN_SYSTEM §2 (`accent` Pistachio, `bg`, `ink`).
-// Native config can't read Unistyles tokens; S4 (P2-TOK-01) keeps these in sync.
+// Launch colors come from the design tokens (DESIGN_SYSTEM §2, P2-TOK-01).
 const BRAND = {
-  accent: '#C8E27D',
-  bgLight: '#FFFFFF',
-  bgDark: '#0C0C0D',
+  accent: tokens.color.accents[tokens.color.defaultAccent as 'pistachio'].accent,
+  bgLight: tokens.color.light.bg,
+  bgDark: tokens.color.dark.bg,
 } as const;
 
 export const BUNDLE_ID = 'app.onlyswap';

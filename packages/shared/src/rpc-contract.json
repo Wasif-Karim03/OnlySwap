@@ -1,0 +1,124 @@
+[
+  {
+    "name": "accept_rules",
+    "args": "version text",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "block_user",
+    "args": "user_id uuid",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "confirm_age",
+    "args": "method text, is_adult boolean, birth_date date",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "create_appeal",
+    "args": "subject_type text, subject_id text, reason_choice text, body text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "create_report",
+    "args": "target_type text, target_id text, reason text, details text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "get_app_config",
+    "args": "",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "anon",
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "get_my_report",
+    "args": "id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "lookup_school",
+    "args": "domain text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "anon",
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "my_waitlist_position",
+    "args": "",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "unblock_user",
+    "args": "user_id uuid",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "update_profile",
+    "args": "first_name text, last_initial text, year class_year, areas text[], bio text, avatar_path text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "update_profile_flags",
+    "args": "analytics_opt_in boolean, crash_reports_opt_in boolean, theme_mode text",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  }
+]

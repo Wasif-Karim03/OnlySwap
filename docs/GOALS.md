@@ -100,8 +100,8 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 - [x] `P1-LIB-01`: unit tests pass (T-UNIT-LIB-*)
 - [ ] `P1-LIB-02`: a test crash shows symbolicated in Sentry
 - [ ] `P1-SPIKE-01`: a test email arrives from a staging function
-- [ ] `P1-SPIKE-03`: logged result on devices
-- [ ] `P1-SPIKE-04`: a demo screen uses all three on iOS + Android
+- [x] `P1-SPIKE-03`: logged result on devices
+- [x] `P1-SPIKE-04`: a demo screen uses all three on iOS + Android
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11
 
@@ -113,11 +113,11 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Checks:**
 
-- [ ] `P2-TOK-01`: generated files committed; values match DESIGN_SYSTEM tables
-- [ ] `P2-TOK-02`: all required pairs pass
-- [ ] `P2-TOK-03`: switching mode is instant with no flash
-- [ ] `P2-FONT-01`: every type row renders at 100% and 200%
-- [ ] `P2-MOT-01`: reduce motion swaps to fades
+- [x] `P2-TOK-01`: generated files committed; values match DESIGN_SYSTEM tables
+- [x] `P2-TOK-02`: all required pairs pass
+- [x] `P2-TOK-03`: switching mode is instant with no flash
+- [x] `P2-FONT-01`: every type row renders at 100% and 200%
+- [x] `P2-MOT-01`: reduce motion swaps to fades
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11
 
@@ -129,12 +129,12 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Checks:**
 
-- [ ] `P2-CMP-01`: kitchen-sink row matches H3
-- [ ] `P2-CMP-02`: states match H3
-- [ ] `P2-CMP-03`: a11y roles set
-- [ ] `P2-CMP-04`: works with keyboard open
+- [x] `P2-CMP-01`: kitchen-sink row matches H3
+- [x] `P2-CMP-02`: states match H3
+- [x] `P2-CMP-03`: a11y roles set
+- [x] `P2-CMP-04`: works with keyboard open
 - [ ] `P2-CMP-05`: offline toggle shows the banner
-- [ ] `P2-CMP-06`: matches F10 styling
+- [x] `P2-CMP-06`: matches F10 styling
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11
 
@@ -275,11 +275,11 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Checks:**
 
-- [ ] `P4-AUTH-08`: the profile row is updated
-- [ ] `P4-AUTH-09`: can't continue unchecked
-- [ ] `P4-AUTH-10`: the OS prompt fires only on the button
-- [ ] `P4-AUTH-11`: a duplicate email is a silent success; IP limited
-- [ ] `P4-AUTH-17`: T-UNIT-AUTH-06, E2E-22
+- [x] `P4-AUTH-08`: the profile row is updated
+- [x] `P4-AUTH-09`: can't continue unchecked
+- [x] `P4-AUTH-10`: the OS prompt fires only on the button
+- [x] `P4-AUTH-11`: a duplicate email is a silent success; IP limited
+- [x] `P4-AUTH-17`: T-UNIT-AUTH-06, E2E-22
 
 **Gates:** G1, G2, G3, G5, G6, G4, G10, G11
 

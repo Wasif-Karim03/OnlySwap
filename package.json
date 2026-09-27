@@ -9,12 +9,17 @@
     "lint": "pnpm -r --if-present lint && prettier --check .",
     "format": "prettier --write .",
     "typecheck": "pnpm -r --if-present typecheck",
-    "test": "pnpm -r --if-present test",
+    "test": "pnpm -r --if-present test && pnpm test:scripts",
     "doctor": "pnpm --filter mobile doctor",
     "verify:prebuild": "node scripts/verify/check-prebuild.mjs",
     "prepare": "simple-git-hooks",
     "secrets:scan": "gitleaks git --no-banner --redact .",
-    "scan:bundle": "node scripts/verify/scan-bundle.mjs"
+    "scan:bundle": "node scripts/verify/scan-bundle.mjs",
+    "test:scripts": "node --experimental-strip-types --test scripts/rpc-contract.test.ts supabase/functions/_shared/deleteAccount.test.ts supabase/functions/_shared/s3.test.ts supabase/functions/_shared/r2.test.ts supabase/functions/_shared/uploadUrl.test.ts supabase/functions/_shared/waitlist.test.ts workers/media/src/handler.test.ts && node scripts/verify/check-staging-migrations.mjs",
+    "rpc:contract": "node --experimental-strip-types scripts/rpc-contract.ts generate",
+    "rpc:check": "node --experimental-strip-types scripts/rpc-contract.ts check",
+    "db:types": "supabase gen types typescript --local --schema public > packages/shared/src/db.ts",
+    "db:types:check": "bash scripts/verify/check-db-types.sh"
   },
   "devDependencies": {
     "prettier": "3.9.9",

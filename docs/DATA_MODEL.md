@@ -159,7 +159,7 @@ create table admins (
   invited_by uuid, created_at timestamptz default now()
 );                                                         -- admin select; owner writes via RPC
 create table app_config (key text primary key, value jsonb not null, updated_at timestamptz default now());
--- RLS: anon/auth select keys in ('maintenance','min_version_ios','min_version_android','rules_version',
+-- RLS: anon/auth select keys in ('maintenance','min_version_ios','min_version_android','rules_version','rules_changes',
 --      'quad_enabled','chat_photos_enabled'); owner writes via admin_set_config.
 create table activity_days (user_id uuid, day date, primary key (user_id, day));   -- no access; purge 400 d
 create table common_first_names (name text primary key);                            -- no access (R1.1 Quad)
