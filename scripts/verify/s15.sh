@@ -17,6 +17,10 @@ step() {
 supabase_up() {
   command -v docker >/dev/null || { echo "Docker is not installed"; return 1; }
   docker info >/dev/null 2>&1 || { echo "Docker is not running: open Docker Desktop and wait until it says Running"; return 1; }
+  # A `functions serve` left running (e.g. s14-sim.sh serve) holds the edge
+  # runtime container and makes `supabase start` fail; clear it first.
+  pkill -f "supabase functions serve" >/dev/null 2>&1
+  docker rm -f supabase_edge_runtime_onlyswap >/dev/null 2>&1
   pnpm supabase stop >/dev/null 2>&1
   pnpm supabase start
 }
