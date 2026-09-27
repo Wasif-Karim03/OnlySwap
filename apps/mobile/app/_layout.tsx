@@ -1,5 +1,5 @@
 import { QueryClientProvider } from '@tanstack/react-query';
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
@@ -31,6 +31,7 @@ export default function RootLayout() {
   const dark = rt.themeName === 'dark';
   const [queryClient] = useState(createQueryClient);
   useKeepModeOnFontScale();
+  useDevRouteLog();
   useEffect(() => {
     const t = setTimeout(() => void SplashScreen.hideAsync().catch(() => {}), SPLASH_BACKSTOP_MS);
     return () => clearTimeout(t);
@@ -55,3 +56,14 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   root: { flex: 1 },
 });
+
+/** Dev only: prints each route change to the Metro log so Simulator checks can be read from it. */
+function useDevRouteLog() {
+  const pathname = usePathname();
+  useEffect(() => {
+    if (__DEV__ && process.env.NODE_ENV !== 'test') {
+      // eslint-disable-next-line no-console -- dev-only navigation trace, stripped from release
+      console.log(`[route] ${pathname}`);
+    }
+  }, [pathname]);
+}
