@@ -35,7 +35,7 @@ export function primerStep(permission: OsPermission): PrimerStep {
   return permission.canAskAgain ? 'primer' : 'settings';
 }
 
-type OsApi = {
+export type OsApi = {
   get: () => Promise<OsPermission>;
   request: () => Promise<OsPermission>;
 };

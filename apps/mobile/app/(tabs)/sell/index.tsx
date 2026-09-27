@@ -1,5 +1,5 @@
-import { ShellScreen } from '@/components/ShellScreen';
+import { SellPhotosScreen } from '@/features/sell/SellPhotosScreen';
 
 export default function SellScreen() {
-  return <ShellScreen testID="screen-sell" />;
+  return <SellPhotosScreen />;
 }
