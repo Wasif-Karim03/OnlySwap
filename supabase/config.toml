@@ -429,6 +429,9 @@ verify_jwt = false
 [functions.admin-change-email]
 verify_jwt = false
 
+[functions.cleanup-drafts]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327

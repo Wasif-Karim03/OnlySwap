@@ -134,6 +134,7 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 | `update_listing` | `id, …` | listing | seller; not sold/deleted; price change logged | 50/day |
 | `delete_listing` | `id` | void | **soft**: status `deleted`, `deleted_at`; auto-declines, closes chats | — |
 | `relist_listing` | `id, price_cents` | listing | expired or fell-through; bump once / 7 d | — |
+| `set_listing_share_image` | `id` | `{share_image_path}` | seller; not deleted; records `share/{id}.jpg` after the app uploads the share card (DEC 55) | 30/day |
 | `mark_sold` | `id, buyer_id?` | void | buyer must be a chat participant; closes other chats | — |
 | `listing_stats` / `listing_offers` | `id` | stats / offers | seller only | — |
 
@@ -232,6 +233,7 @@ Every admin RPC checks `require_admin(min)` (AAL2) and inserts exactly one `audi
 | `admin-change-email` | internal (service, called by the admin RPC via pg_net) | `{user_id, new_email}` | `auth.admin.updateUserById(email, email_confirm:false)` → user confirms with a code |
 | `waitlist-request` | POST, anon | `{email, turnstile_token?}` → `{ok}` | Turnstile on web; IP limit 5/h; uniform response (SEC-12) |
 | `support-request` | POST, anon | `{email, topic, body, turnstile_token}` → `{ok}` | Turnstile; 3/h/IP; emails owner |
+| `cleanup-drafts` | internal (service, called by the `prune` cron job via pg_net) | `{}` → `{ok, drafts, objects, failed}` | orphan reservations (never posted, > 24 h): delete `c/{campus}/l/{id}/` in R2, then `forget_reservations`; a failed delete keeps the row for the next run (P5-SELL-07) |
 | `campus-unlock` | internal | `{campus_id}` | queue pushes + `campus_open` emails (drip) |
 | `health` | GET, anon | → `{db:'ok'}` | UptimeRobot |
 | `test-inbox` | **staging only** | `?email=` → `{code}` | secret header; CI asserts absent in prod |

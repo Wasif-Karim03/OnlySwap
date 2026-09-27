@@ -1640,6 +1640,9 @@ isOneToOne: false
 "reserve_listing_id":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
+"set_listing_share_image":
+{ Args: { "id": string }; Returns: Json
+                           },
 "unblock_user":
 { Args: { "user_id": string }; Returns: undefined
                            },

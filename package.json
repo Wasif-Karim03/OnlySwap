@@ -15,7 +15,7 @@
     "prepare": "simple-git-hooks",
     "secrets:scan": "gitleaks git --no-banner --redact .",
     "scan:bundle": "node scripts/verify/scan-bundle.mjs",
-    "test:scripts": "node --experimental-strip-types --test scripts/rpc-contract.test.ts scripts/seed-review.test.ts supabase/functions/_shared/deleteAccount.test.ts supabase/functions/_shared/s3.test.ts supabase/functions/_shared/r2.test.ts supabase/functions/_shared/uploadUrl.test.ts supabase/functions/_shared/waitlist.test.ts supabase/functions/_shared/accountSafety.test.ts workers/media/src/handler.test.ts && node scripts/verify/check-staging-migrations.mjs",
+    "test:scripts": "node --experimental-strip-types --test scripts/rpc-contract.test.ts scripts/seed-review.test.ts supabase/functions/_shared/deleteAccount.test.ts supabase/functions/_shared/s3.test.ts supabase/functions/_shared/r2.test.ts supabase/functions/_shared/uploadUrl.test.ts supabase/functions/_shared/waitlist.test.ts supabase/functions/_shared/accountSafety.test.ts supabase/functions/_shared/cleanupDrafts.test.ts workers/media/src/handler.test.ts && node scripts/verify/check-staging-migrations.mjs",
     "rpc:contract": "node --experimental-strip-types scripts/rpc-contract.ts generate",
     "rpc:check": "node --experimental-strip-types scripts/rpc-contract.ts check",
     "db:types": "supabase gen types typescript --local --schema public > packages/shared/src/db.ts",
