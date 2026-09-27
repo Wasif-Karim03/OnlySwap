@@ -17,6 +17,17 @@ export const PRICE_MIN_CENTS = 100;
 export type ListingKind = 'sale' | 'free';
 export type Condition = 'new' | 'like_new' | 'good' | 'fair';
 export type PickupBy = 'tomorrow' | 'sunday' | 'week';
+export type Availability = 'weekdays' | 'weekends' | 'mornings' | 'afternoons' | 'evenings';
+export const AVAILABILITY: Availability[] = [
+  'weekdays',
+  'weekends',
+  'mornings',
+  'afternoons',
+  'evenings',
+];
+/** create_listing allows at most 5 meetup spots and a 60-character extra place. */
+export const MAX_SPOTS = 5;
+export const MEET_NOTE_MAX = 60;
 
 export type DraftPhoto = {
   /** Local id; stable across reorders. */
@@ -45,6 +56,10 @@ export type SellDraft = {
   openToOffers: boolean;
   pickupBy: PickupBy;
   description: string;
+  /** Step 3. null until the seller touches the list (then the campus default is used). */
+  spotIds: string[] | null;
+  meetNote: string;
+  availability: Availability[];
   startedAt: string;
   updatedAt: string;
 };
@@ -63,6 +78,9 @@ export function emptyDraft(now: Date = new Date()): SellDraft {
     openToOffers: true,
     pickupBy: 'week',
     description: '',
+    spotIds: null,
+    meetNote: '',
+    availability: [],
     startedAt: iso,
     updatedAt: iso,
   };
@@ -268,4 +286,120 @@ export function ago(then: Date, now: Date): Ago {
   if (days <= 0) return { key: 'today' };
   if (days === 1) return { key: 'yesterday' };
   return { key: 'days', n: days };
+}
+
+// ---------------------------------------------------------------------------
+// Step 3: meetup spots (D03). Police-designated first, then the campus order.
+
+export type Spot = {
+  id: string;
+  name: string;
+  description: string | null;
+  hours: string | null;
+  lat: number;
+  lng: number;
+  police: boolean;
+  isDefault: boolean;
+  sort: number;
+};
+
+export function sortSpots(spots: Spot[]): Spot[] {
+  return spots
+    .slice()
+    .sort(
+      (a, b) =>
+        Number(b.police) - Number(a.police) || a.sort - b.sort || a.name.localeCompare(b.name),
+    );
+}
+
+/** The chosen spots: the seller's picks, or the campus defaults before they touch the list. */
+export function chosenSpots(d: Pick<SellDraft, 'spotIds'>, spots: Spot[]): string[] {
+  if (d.spotIds !== null) return d.spotIds.filter((id) => spots.some((s) => s.id === id));
+  return spots
+    .filter((s) => s.isDefault)
+    .slice(0, MAX_SPOTS)
+    .map((s) => s.id);
+}
+
+/** Tapping a spot: toggles it; a sixth is refused (returns null). */
+export function toggleSpot(current: string[], id: string): string[] | null {
+  if (current.includes(id)) return current.filter((x) => x !== id);
+  if (current.length >= MAX_SPOTS) return null;
+  return [...current, id];
+}
+
+/** Apple Maps on iOS, a geo: link elsewhere (no location permission needed). */
+export function directionsUrl(spot: Pick<Spot, 'lat' | 'lng' | 'name'>, platform: string): string {
+  const q = encodeURIComponent(spot.name);
+  return platform === 'ios'
+    ? `https://maps.apple.com/?daddr=${spot.lat},${spot.lng}&q=${q}`
+    : `geo:${spot.lat},${spot.lng}?q=${spot.lat},${spot.lng}(${q})`;
+}
+
+// ---------------------------------------------------------------------------
+// Posting (create_listing arguments)
+
+export type CreateListingArgs = {
+  id: string;
+  kind: ListingKind;
+  title: string;
+  description: string | null;
+  category_id: number | null;
+  condition: Condition | null;
+  price_cents: number;
+  open_to_offers: boolean;
+  photos: {
+    path: string;
+    thumb_path: string;
+    width: number;
+    height: number;
+    blurhash: string | null;
+  }[];
+  meet_spot_ids: string[];
+  meet_note: string | null;
+  availability: string[];
+  pickup_by: string | null;
+};
+
+export function createArgs(
+  d: SellDraft,
+  spotIds: string[],
+  today: Date = new Date(),
+): CreateListingArgs {
+  if (!d.listingId) throw new Error('no reserved listing id');
+  return {
+    id: d.listingId,
+    kind: d.kind,
+    title: d.title.trim(),
+    description: d.description.trim() || null,
+    category_id: d.kind === 'sale' ? d.categoryId : null,
+    condition: d.condition,
+    price_cents: listingPriceCents(d),
+    open_to_offers: d.kind === 'sale' ? d.openToOffers : true,
+    photos: d.photos
+      .filter((p) => p.status === 'done' && p.path && p.thumbPath)
+      .map((p) => ({
+        path: p.path as string,
+        thumb_path: p.thumbPath as string,
+        width: p.width,
+        height: p.height,
+        blurhash: p.blurhash ?? null,
+      })),
+    meet_spot_ids: spotIds,
+    meet_note: d.meetNote.trim() || null,
+    availability: d.availability,
+    pickup_by: d.kind === 'free' ? pickupDate(d.pickupBy, today) : null,
+  };
+}
+
+/** "$60", "$12.50" or "Free". */
+export function priceLabel(kind: ListingKind, cents: number, free: string): string {
+  if (kind === 'free' || cents === 0) return free;
+  const dollars = cents / 100;
+  return `$${Number.isInteger(dollars) ? dollars.toLocaleString('en-US') : dollars.toFixed(2)}`;
+}
+
+/** {SITE}/l/{id} (E2E-18); the site serves the preview with the share card. */
+export function listingLink(site: string, id: string): string {
+  return `${site.replace(/\/+$/, '')}/l/${id}`;
 }

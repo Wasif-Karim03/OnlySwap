@@ -6,7 +6,10 @@ import { test } from 'node:test';
 import { handleCleanupDrafts, type CleanupDeps } from './cleanupDrafts.ts';
 
 const KEY = 'service-key-123';
-const post = (authorization: string | null = `Bearer ${KEY}`) => ({ method: 'POST', authorization });
+const post = (authorization: string | null = `Bearer ${KEY}`) => ({
+  method: 'POST',
+  authorization,
+});
 
 function deps(over: Partial<CleanupDeps> = {}) {
   const deleted: string[] = [];
@@ -66,7 +69,10 @@ test('T-SEC-14: only the service key; only POST; database errors are 500', async
     assert.equal((await handleCleanupDrafts(post(auth), d)).status, 401);
   }
   assert.equal(deleted.length, 0);
-  assert.equal((await handleCleanupDrafts({ method: 'GET', authorization: `Bearer ${KEY}` }, d)).status, 405);
+  assert.equal(
+    (await handleCleanupDrafts({ method: 'GET', authorization: `Bearer ${KEY}` }, d)).status,
+    405,
+  );
   const broken = deps({
     stale: async () => {
       throw new Error('db down');
