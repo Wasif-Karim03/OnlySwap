@@ -128,9 +128,9 @@
 - [x] **P5-SELL-01** ✎ RPCs `reserve_listing_id`, `create_listing` (idempotent), `update_listing`, `delete_listing` (soft), `relist_listing`, `mark_sold`, `check_text` (`price_hint` RPC is built too; its UI is R1.1) · deps P3-DB-10 · done when pgTAP incl. banned words, limits, T-INT-LIST-04 pass · L
 - [x] **P5-SELL-02** `useDraft` + S-D01 Sell·photos (grid, reorder, camera/library, permission primer and denied states, X16) · MEDIA-03 · a draft survives an app kill · L
 - [x] **P5-SELL-03** ✎ D02 Sell·details with every D3 error state and the give-away toggle (D4); no price hint UI in R1.0 · deps P5-SELL-01 · done when all errors show at once · M
-- [ ] **P5-SELL-04** ✎ D03 Sell step 3: meetup spot list (police-designated first), extra place text, availability chips. No map. · deps P5-SELL-03 · done when spots saved on the listing · S
-- [ ] **P5-SELL-05** S-D06 Posted + ShareCard generation (view-shot) + share sheet · SELL-04 · `share_image_path` is set and the OG image loads · M
-- [ ] **P5-SELL-07** Draft photo cleanup (cron + R2 list/delete) · MEDIA-02 · orphan drafts older than 24 h are removed on staging · S
+- [x] **P5-SELL-04** ✎ D03 Sell step 3: meetup spot list (police-designated first), extra place text, availability chips. No map. · deps P5-SELL-03 · done when spots saved on the listing · S
+- [x] **P5-SELL-05** S-D06 Posted + ShareCard generation (view-shot) + share sheet · SELL-04 · `share_image_path` is set and the OG image loads · M
+- [x] **P5-SELL-07** Draft photo cleanup (cron + R2 list/delete) · MEDIA-02 · orphan drafts older than 24 h are removed on staging · S
 
 ## P6 · Discover, listing, search (B, C)
 

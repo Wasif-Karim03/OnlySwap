@@ -323,8 +323,8 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Checks:**
 
-- [ ] `P5-SELL-04`: spots saved on the listing
-- [ ] `P5-SELL-05`: `share_image_path` is set and the OG image loads
+- [x] `P5-SELL-04`: spots saved on the listing
+- [x] `P5-SELL-05`: `share_image_path` is set and the OG image loads
 - [ ] `P5-SELL-07`: orphan drafts older than 24 h are removed on staging
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11
