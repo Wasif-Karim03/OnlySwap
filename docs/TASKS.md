@@ -140,10 +140,10 @@
 - [x] **P6-LIST-01** S-B05 Listing detail (buyer, owner, hold, gone, blocked) · FEED-01 · all B5–B7 and X13 states · L
 - [x] **P6-LIST-02** S-B08 Listing options + S-B09 Report listing (report RPC stub from P10 or build it early) · LIST-01, P3-SAFE-01 · report row created · M
 - [x] **P6-LIST-03** S-B09p Photo viewer · LIST-01 · pinch and swipe-down close · S
-- [ ] **P6-SRCH-01** RPCs `search_listings`, `search_suggest`, saved-search CRUD, `saved_search_new_counts`; MV `campus_trending_terms` · P3-DB-09 · "mini frig" finds "Mini fridge" · M
-- [ ] **P6-SRCH-02** S-B12 Search + suggestions + recent · SRCH-01 · B14/B15 states · M
-- [ ] **P6-SRCH-03** S-B16 Results + X5 no results + save search · SRCH-02 · — · M
-- [ ] **P6-SRCH-04** S-B15 Filters sheet · SRCH-03 · filters applied round trip · M
+- [x] **P6-SRCH-01** RPCs `search_listings`, `search_suggest`, saved-search CRUD, `saved_search_new_counts`; MV `campus_trending_terms` · P3-DB-09 · "mini frig" finds "Mini fridge" · M
+- [x] **P6-SRCH-02** S-B12 Search + suggestions + recent · SRCH-01 · B14/B15 states · M
+- [x] **P6-SRCH-03** S-B16 Results + X5 no results + save search · SRCH-02 · — · M
+- [x] **P6-SRCH-04** S-B15 Filters sheet · SRCH-03 · filters applied round trip · M
 - [ ] **P6-SAVE-01** S-B18 Saved (Items and Searches tabs, alerts toggles, X38) · SRCH-01, FEED-01 · — · M
 - [ ] **P6-USER-01** S-B17 Seller profile, reviews, new seller, blocked state · P3-DB-09 · B20–B22 · M
 

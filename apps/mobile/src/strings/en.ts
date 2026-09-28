@@ -845,6 +845,51 @@ export const feed = {
   closePhotos: 'Close photos',
 } as const;
 
+export const search = {
+  title: 'Search',
+  placeholder: 'Search your campus',
+  inputLabel: 'Search',
+  cancel: 'Cancel',
+  recent: 'Recent',
+  clearRecent: 'Clear',
+  trending: 'Popular right now',
+  suggestionsLabel: 'Suggestions',
+  savedLabel: 'Saved search',
+  categoryLabel: 'Category',
+  countLabel: '{n} listed',
+  resultsTitle: 'Results for "{q}"',
+  allTitle: 'All listings',
+  filters: 'Filters',
+  filtersActive: 'Filters, {n} on',
+  saveSearch: 'Save search',
+  searchSaved: "Search saved. We'll tell you about new matches.",
+  saveFailed: "Couldn't save the search. Try again.",
+  noResultsTitle: 'Nothing matches yet',
+  noResultsBody: 'Save this search and we will tell you when something shows up.',
+  noResultsClear: 'Clear filters',
+  // Filters sheet (B08)
+  category: 'Category',
+  price: 'Price',
+  minPrice: 'Min',
+  maxPrice: 'Max',
+  condition: 'Condition',
+  freeOnly: 'Free stuff only',
+  hideSwiped: 'Hide things I skipped',
+  sort: 'Sort',
+  sorts: {
+    relevance: 'Best match',
+    new: 'Newest',
+    price_asc: 'Lowest price',
+    price_desc: 'Highest price',
+  },
+  apply: 'Show results',
+  reset: 'Reset',
+  // Tiles
+  tileSold: 'Sold',
+  tileHold: 'On hold',
+  tileLabel: '{title}, {price}',
+} as const;
+
 export const en = {
   permissions,
   tabs,
@@ -874,6 +919,7 @@ export const en = {
   emailAccess,
   sell,
   feed,
+  search,
 } as const;
 
 export default en;

@@ -1613,7 +1613,13 @@ isOneToOne: false
 "create_report":
 { Args: { "details"?: string,"reason": string,"target_id": string,"target_type": string }; Returns: Json
                            },
+"create_saved_search":
+{ Args: { "alerts"?: boolean,"filters"?: Json,"query"?: string }; Returns: Json
+                           },
 "delete_listing":
+{ Args: { "id": string }; Returns: undefined
+                           },
+"delete_saved_search":
 { Args: { "id": string }; Returns: undefined
                            },
 "get_app_config":
@@ -1630,6 +1636,9 @@ isOneToOne: false
                            },
 "hide_listing":
 { Args: { "listing_id": string }; Returns: undefined
+                           },
+"list_saved_searches":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "lookup_school":
 { Args: { "domain": string }; Returns: Json
@@ -1658,6 +1667,15 @@ isOneToOne: false
 "save_listing":
 { Args: { "listing_id": string }; Returns: Json
                            },
+"saved_search_new_counts":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"search_listings":
+{ Args: { "cursor"?: Json,"filters"?: Json,"q"?: string }; Returns: Json
+                           },
+"search_suggest":
+{ Args: { "q"?: string }; Returns: Json
+                           },
 "set_listing_share_image":
 { Args: { "id": string }; Returns: Json
                            },
@@ -1678,6 +1696,9 @@ isOneToOne: false
                            },
 "update_profile_flags":
 { Args: { "analytics_opt_in"?: boolean,"crash_reports_opt_in"?: boolean,"theme_mode"?: string }; Returns: undefined
+                           },
+"update_saved_search":
+{ Args: { "alerts"?: boolean,"id": string,"seen"?: boolean }; Returns: Json
                            },
 "watch_listing":
 { Args: { "listing_id": string }; Returns: undefined

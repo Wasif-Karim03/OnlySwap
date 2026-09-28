@@ -367,10 +367,10 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Checks:**
 
-- [ ] `P6-SRCH-01`: "mini frig" finds "Mini fridge"
-- [ ] `P6-SRCH-02`: B14/B15 states
-- [ ] `P6-SRCH-03`: —
-- [ ] `P6-SRCH-04`: filters applied round trip
+- [x] `P6-SRCH-01`: "mini frig" finds "Mini fridge"
+- [x] `P6-SRCH-02`: B14/B15 states
+- [x] `P6-SRCH-03`: —
+- [x] `P6-SRCH-04`: filters applied round trip
 
 **Gates:** G1, G2, G3, G5, G6, G4, G10, G11
 

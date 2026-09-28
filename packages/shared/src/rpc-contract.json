@@ -90,7 +90,27 @@
     ]
   },
   {
+    "name": "create_saved_search",
+    "args": "query text, filters jsonb, alerts boolean",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "delete_listing",
+    "args": "id uuid",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "delete_saved_search",
     "args": "id uuid",
     "returns": "void",
     "security": "definer",
@@ -144,6 +164,16 @@
     "name": "hide_listing",
     "args": "listing_id uuid",
     "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "list_saved_searches",
+    "args": "",
+    "returns": "jsonb",
     "security": "definer",
     "grants": [
       "authenticated",
@@ -242,6 +272,36 @@
     ]
   },
   {
+    "name": "saved_search_new_counts",
+    "args": "",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "search_listings",
+    "args": "q text, filters jsonb, cursor jsonb",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "search_suggest",
+    "args": "q text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "set_listing_share_image",
     "args": "id uuid",
     "returns": "jsonb",
@@ -305,6 +365,16 @@
     "name": "update_profile_flags",
     "args": "analytics_opt_in boolean, crash_reports_opt_in boolean, theme_mode text",
     "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "update_saved_search",
+    "args": "id uuid, alerts boolean, seen boolean",
+    "returns": "jsonb",
     "security": "definer",
     "grants": [
       "authenticated",

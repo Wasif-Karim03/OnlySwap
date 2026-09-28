@@ -19,6 +19,8 @@ export type StorageSchema = {
   'sell.draft': unknown;
   /** Swipes not yet sent to record_swipes (features/feed/swipes.ts), newest 200. */
   'feed.swipeQueue': unknown;
+  /** Recent search text, newest first (features/search/logic.ts). */
+  'search.recent': unknown;
 };
 
 export type StorageKey = keyof StorageSchema;

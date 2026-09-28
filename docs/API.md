@@ -128,6 +128,7 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 | `search_suggest` | `q` (≥2) | `[{type, label, count}]` | — | 600/h |
 | `create_saved_search` / `update_saved_search` / `delete_saved_search` | … | row | max 20 | 30/day |
 | `saved_search_new_counts` | — | `[{id, new_count}]` | — | — |
+| `list_saved_searches` | — | `SavedSearch[]` | newest first (DEC 58) | — |
 | `price_hint` | `category_id` | `{p25,p50,p75}` or null | n≥5 | — |
 | `check_text` | `text, scope` | `{result, term}` | inline UX only | 600/h |
 | `reserve_listing_id` | — | `uuid` | — | 30/day |
