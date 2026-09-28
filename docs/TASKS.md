@@ -134,7 +134,7 @@
 
 ## P6 · Discover, listing, search (B, C)
 
-- [ ] **P6-FEED-01** RPCs `get_feed`, `record_swipes`, `undo_swipe`, `save_listing`, `unsave_listing`, `hide_listing`, `watch_listing`, `record_view` · P5-SELL-01 · pgTAP: excludes own, blocked, swiped · M
+- [x] **P6-FEED-01** RPCs `get_feed`, `record_swipes`, `undo_swipe`, `save_listing`, `unsave_listing`, `hide_listing`, `watch_listing`, `record_view` · P5-SELL-01 · pgTAP: excludes own, blocked, swiped · M
 - [ ] **P6-FEED-02** SwipeDeck + SwipeCard components (gesture, stamps, fly-out, programmatic swipe, undo, list mode for screen readers) · P2-MOT-01 · 60 fps on a mid Android device (Perf-02) · L
 - [ ] **P6-FEED-03** S-B01 Discover: feed hook, batching swipes, first-swipe coach, end of deck, undo toast, offline queue · FEED-01, FEED-02 · all B1–B4 and X24 states · L
 - [ ] **P6-LIST-01** S-B05 Listing detail (buyer, owner, hold, gone, blocked) · FEED-01 · all B5–B7 and X13 states · L

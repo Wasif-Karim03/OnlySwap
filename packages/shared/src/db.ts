@@ -1619,8 +1619,14 @@ isOneToOne: false
 "get_app_config":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"get_feed":
+{ Args: { "cursor"?: Json,"limit"?: number }; Returns: Json
+                           },
 "get_my_report":
 { Args: { "id": string }; Returns: Json
+                           },
+"hide_listing":
+{ Args: { "listing_id": string }; Returns: undefined
                            },
 "lookup_school":
 { Args: { "domain": string }; Returns: Json
@@ -1634,17 +1640,32 @@ isOneToOne: false
 "price_hint":
 { Args: { "category_id": number }; Returns: Json
                            },
+"record_swipes":
+{ Args: { "items": Json }; Returns: undefined
+                           },
+"record_view":
+{ Args: { "listing_id": string }; Returns: undefined
+                           },
 "relist_listing":
 { Args: { "id": string,"price_cents"?: number }; Returns: Json
                            },
 "reserve_listing_id":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
+"save_listing":
+{ Args: { "listing_id": string }; Returns: Json
+                           },
 "set_listing_share_image":
 { Args: { "id": string }; Returns: Json
                            },
 "unblock_user":
 { Args: { "user_id": string }; Returns: undefined
+                           },
+"undo_swipe":
+{ Args: { "listing_id": string }; Returns: undefined
+                           },
+"unsave_listing":
+{ Args: { "listing_id": string }; Returns: Json
                            },
 "update_listing":
 { Args: { "availability"?: (string)[],"category_id"?: number,"condition"?: Database["public"]['Enums']["item_condition"],"description"?: string,"id": string,"meet_note"?: string,"meet_spot_ids"?: (string)[],"open_to_offers"?: boolean,"photos"?: Json,"price_cents"?: number,"title"?: string }; Returns: Json
@@ -1654,6 +1675,9 @@ isOneToOne: false
                            },
 "update_profile_flags":
 { Args: { "analytics_opt_in"?: boolean,"crash_reports_opt_in"?: boolean,"theme_mode"?: string }; Returns: undefined
+                           },
+"watch_listing":
+{ Args: { "listing_id": string }; Returns: undefined
                            }
           }
           Enums: {

@@ -337,7 +337,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Checks:**
 
-- [ ] `P6-FEED-01`: pgTAP: excludes own, blocked, swiped
+- [x] `P6-FEED-01`: pgTAP: excludes own, blocked, swiped
 - [ ] `P6-FEED-02`: 60 fps on a mid Android device (Perf-02)
 
 **Gates:** G1, G2, G3, G5, G6, G4, G10, G11

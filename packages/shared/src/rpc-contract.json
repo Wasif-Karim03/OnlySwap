@@ -111,9 +111,29 @@
     ]
   },
   {
+    "name": "get_feed",
+    "args": "cursor jsonb, \"limit\" integer",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "get_my_report",
     "args": "id uuid",
     "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "hide_listing",
+    "args": "listing_id uuid",
+    "returns": "void",
     "security": "definer",
     "grants": [
       "authenticated",
@@ -162,6 +182,26 @@
     ]
   },
   {
+    "name": "record_swipes",
+    "args": "items jsonb",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "record_view",
+    "args": "listing_id uuid",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "relist_listing",
     "args": "id uuid, price_cents integer",
     "returns": "jsonb",
@@ -182,6 +222,16 @@
     ]
   },
   {
+    "name": "save_listing",
+    "args": "listing_id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "set_listing_share_image",
     "args": "id uuid",
     "returns": "jsonb",
@@ -195,6 +245,26 @@
     "name": "unblock_user",
     "args": "user_id uuid",
     "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "undo_swipe",
+    "args": "listing_id uuid",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "unsave_listing",
+    "args": "listing_id uuid",
+    "returns": "jsonb",
     "security": "definer",
     "grants": [
       "authenticated",
@@ -224,6 +294,16 @@
   {
     "name": "update_profile_flags",
     "args": "analytics_opt_in boolean, crash_reports_opt_in boolean, theme_mode text",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "watch_listing",
+    "args": "listing_id uuid",
     "returns": "void",
     "security": "definer",
     "grants": [
