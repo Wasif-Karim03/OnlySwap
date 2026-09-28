@@ -351,10 +351,10 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Checks:**
 
-- [ ] `P6-FEED-03`: all B1–B4 and X24 states
-- [ ] `P6-LIST-01`: all B5–B7 and X13 states
-- [ ] `P6-LIST-02`: report row created
-- [ ] `P6-LIST-03`: pinch and swipe-down close
+- [x] `P6-FEED-03`: all B1–B4 and X24 states
+- [x] `P6-LIST-01`: all B5–B7 and X13 states
+- [x] `P6-LIST-02`: report row created
+- [x] `P6-LIST-03`: pinch and swipe-down close
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11
 

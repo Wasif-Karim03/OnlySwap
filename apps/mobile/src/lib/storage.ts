@@ -17,6 +17,8 @@ export type StorageSchema = {
   'onboarding.notificationsAsked': boolean;
   /** The Sell draft; checked and versioned by features/sell/logic.ts (T-UNIT-SELL-01). */
   'sell.draft': unknown;
+  /** Swipes not yet sent to record_swipes (features/feed/swipes.ts), newest 200. */
+  'feed.swipeQueue': unknown;
 };
 
 export type StorageKey = keyof StorageSchema;

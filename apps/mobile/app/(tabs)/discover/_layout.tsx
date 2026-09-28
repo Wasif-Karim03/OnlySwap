@@ -1,12 +1,6 @@
 import { Stack } from 'expo-router';
 
-import { shell } from '@/strings/en';
-
-// Tab roots use a large title; pushed screens use inline titles (DESIGN_SYSTEM UX-04).
+// Discover draws its own large-title header with the Search button (B01).
 export default function DiscoverLayout() {
-  return (
-    <Stack>
-      <Stack.Screen name="index" options={{ title: shell.discoverTitle, headerLargeTitle: true }} />
-    </Stack>
-  );
+  return <Stack screenOptions={{ headerShown: false }} />;
 }

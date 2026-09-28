@@ -1,5 +1,5 @@
-import { ShellScreen } from '@/components/ShellScreen';
+import { DiscoverScreen } from '@/features/feed/DiscoverScreen';
 
-export default function DiscoverScreen() {
-  return <ShellScreen testID="screen-discover" />;
+export default function DiscoverRoute() {
+  return <DiscoverScreen />;
 }
