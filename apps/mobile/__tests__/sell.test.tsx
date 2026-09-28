@@ -104,6 +104,21 @@ describe('T-UNIT-SELL-01 useDraft', () => {
     expect(parseStoredDraft({ ...emptyDraft(NOW), photos: 'nope' })).toBeNull();
   });
 
+  it('a reservation older than 20 h is given up: photos go back to Retry (cleanup-drafts forgets it at 24 h)', () => {
+    const old = {
+      ...emptyDraft(new Date('2027-03-09T08:00:00')),
+      listingId: 'L-old',
+      reservedAt: '2027-03-09T08:00:00',
+      title: 'Lamp',
+      photos: [photo('a')],
+    };
+    const parsed = parseStoredDraft(old, NOW);
+    expect(parsed?.listingId).toBeNull();
+    expect(parsed?.photos.map((p) => [p.status, p.path])).toEqual([['failed', undefined]]);
+    const fresh = parseStoredDraft({ ...old, reservedAt: '2027-03-10T02:00:00' }, NOW);
+    expect(fresh?.listingId).toBe('L-old');
+  });
+
   it('Start over clears the stored draft; an empty draft is not kept', () => {
     const storage = memoryStorage();
     const store = createDraftStore(storage, { now: () => NOW });

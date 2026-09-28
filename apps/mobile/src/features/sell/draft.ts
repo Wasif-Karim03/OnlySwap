@@ -39,7 +39,7 @@ export function createDraftStore(
   storage: DraftStorage,
   { saveMs = DRAFT_SAVE_MS, now = () => new Date() }: { saveMs?: number; now?: () => Date } = {},
 ): StoreApi<DraftState> {
-  const stored = parseStoredDraft(storage.get());
+  const stored = parseStoredDraft(storage.get(), now());
   if (!stored) storage.remove();
   let timer: ReturnType<typeof setTimeout> | null = null;
 

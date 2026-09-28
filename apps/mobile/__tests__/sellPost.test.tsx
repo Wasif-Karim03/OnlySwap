@@ -315,6 +315,31 @@ describe('P5-SELL-04 D03 Sell · meetup', () => {
   });
 });
 
+describe('P5-SELL-04 the reserved id is gone', () => {
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => jest.useRealTimers());
+
+  it('FORBIDDEN on post (id forgotten): back to step 1 with the photos ready to upload again', async () => {
+    const api = fakeApi({
+      createListing: jest.fn().mockRejectedValue({ code: 'P0001', message: 'FORBIDDEN' }),
+    });
+    const store = storeWith(draftWith());
+    const router = setup('/sell/meetup', {
+      'sell/meetup': () => (
+        <SellMeetupScreen api={api} store={store} mediaBase={() => 'http://media.test'} />
+      ),
+      'sell/index': () => <Stub id="screen-sell-stub" />,
+    });
+    await screen.findByText('RPAC entrance');
+    fireEvent.press(screen.getByLabelText(sell.notBanned));
+    tap('sell-post');
+    await waitFor(() => expect(router.getPathname()).toBe('/sell'));
+    expect(store.getState().draft.listingId).toBeNull();
+    expect(store.getState().draft.photos.map((p) => p.status)).toEqual(['failed', 'failed']);
+    expect(store.getState().draft.title).toBe(' Desk lamp ');
+  });
+});
+
 describe('P5-SELL-05 D04 Posted + share card', () => {
   beforeEach(() => {
     jest.useFakeTimers();

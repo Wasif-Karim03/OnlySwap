@@ -46,6 +46,8 @@ export type SellDraft = {
   v: number;
   /** From reserve_listing_id; photos upload under it before the listing exists. */
   listingId: string | null;
+  /** When listingId was reserved (the server forgets it after 24 h unposted). */
+  reservedAt: string | null;
   kind: ListingKind;
   photos: DraftPhoto[];
   title: string;
@@ -69,6 +71,7 @@ export function emptyDraft(now: Date = new Date()): SellDraft {
   return {
     v: DRAFT_VERSION,
     listingId: null,
+    reservedAt: null,
     kind: 'sale',
     photos: [],
     title: '',
@@ -105,7 +108,26 @@ const isObj = (x: unknown): x is Record<string, unknown> =>
  * discarded (T-UNIT-SELL-01). Uploads cut off by an app kill become failed,
  * so the tile offers a retry instead of spinning forever.
  */
-export function parseStoredDraft(raw: unknown): SellDraft | null {
+/**
+ * A reserved id is forgotten, with its photos, once it is 24 h old and still
+ * not posted (cleanup-drafts, P5-SELL-07). A draft older than 20 h gives its
+ * id up early: the photos go back to Retry and upload again under a new id.
+ */
+export const RESERVATION_KEEP_MS = 20 * 3600 * 1000;
+
+export function releaseReservation(d: SellDraft): SellDraft {
+  return {
+    ...d,
+    listingId: null,
+    reservedAt: null,
+    photos: d.photos.map(({ path: _path, thumbPath: _thumb, ...p }) => ({
+      ...p,
+      status: 'failed' as const,
+    })),
+  };
+}
+
+export function parseStoredDraft(raw: unknown, now: Date = new Date()): SellDraft | null {
   if (!isObj(raw) || raw.v !== DRAFT_VERSION) return null;
   const base = emptyDraft();
   const d = { ...base, ...raw } as SellDraft;
@@ -124,7 +146,9 @@ export function parseStoredDraft(raw: unknown): SellDraft | null {
     )
     .slice(0, MAX_PHOTOS)
     .map((p) => (p.status === 'uploading' ? { ...p, status: 'failed' as const } : p));
-  return { ...d, photos };
+  const draft = { ...d, photos };
+  const age = now.getTime() - Date.parse(d.reservedAt ?? d.startedAt);
+  return d.listingId && age > RESERVATION_KEEP_MS ? releaseReservation(draft) : draft;
 }
 
 // ---------------------------------------------------------------------------

@@ -99,7 +99,7 @@ export function SellPhotosScreen({
       reserving.current = null;
     });
     const id = await reserving.current;
-    update({ listingId: id });
+    update({ listingId: id, reservedAt: now().toISOString() });
     return id;
   };
 

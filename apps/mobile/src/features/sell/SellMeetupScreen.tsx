@@ -31,6 +31,7 @@ import {
   mediaUrl,
   MEET_NOTE_MAX,
   priceLabel,
+  releaseReservation,
   sortSpots,
   toggleSpot,
   type Availability,
@@ -99,6 +100,13 @@ export function SellMeetupScreen({
       router.replace('/sell/posted');
     } catch (e) {
       const appError = toAppError(e);
+      if (appError.code === 'FORBIDDEN') {
+        // The reserved id is gone (a draft older than a day, or a reset
+        // server): upload the photos again under a new one (step 1 retries).
+        update(releaseReservation(store.getState().draft));
+        router.replace('/sell');
+        return;
+      }
       setError(
         appError.code === 'ERR_OFFLINE' || appError.code === 'UNKNOWN'
           ? copy.postFailed
