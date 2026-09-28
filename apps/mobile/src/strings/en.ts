@@ -768,6 +768,25 @@ export const sell = {
   },
 } as const;
 
+export const feed = {
+  stampOffer: 'Offer',
+  stampSkip: 'Skip',
+  stampSave: 'Saved',
+  skip: 'Skip',
+  save: 'Save',
+  saved: 'Saved',
+  offer: 'Make an offer',
+  open: 'See details',
+  /** Spoken card summary: title, price, condition, seller. */
+  cardLabel: '{title}, {price}',
+  cardHint: 'Swipe right to make an offer, left to skip. Actions menu has more.',
+  savedBy: '{n} people saved this',
+  savedByOne: '1 person saved this',
+  photoCount: 'Photo {n} of {total}',
+  listTitle: 'Listings',
+  metaSeparator: ' · ',
+} as const;
+
 export const en = {
   permissions,
   tabs,
@@ -796,6 +815,7 @@ export const en = {
   reverify,
   emailAccess,
   sell,
+  feed,
 } as const;
 
 export default en;
