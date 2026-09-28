@@ -144,8 +144,8 @@
 - [x] **P6-SRCH-02** S-B12 Search + suggestions + recent · SRCH-01 · B14/B15 states · M
 - [x] **P6-SRCH-03** S-B16 Results + X5 no results + save search · SRCH-02 · — · M
 - [x] **P6-SRCH-04** S-B15 Filters sheet · SRCH-03 · filters applied round trip · M
-- [ ] **P6-SAVE-01** S-B18 Saved (Items and Searches tabs, alerts toggles, X38) · SRCH-01, FEED-01 · — · M
-- [ ] **P6-USER-01** S-B17 Seller profile, reviews, new seller, blocked state · P3-DB-09 · B20–B22 · M
+- [x] **P6-SAVE-01** S-B18 Saved (Items and Searches tabs, alerts toggles, X38) · SRCH-01, FEED-01 · — · M
+- [x] **P6-USER-01** S-B17 Seller profile, reviews, new seller, blocked state · P3-DB-09 · B20–B22 · M
 
 ## P7 · Offers (E, part 1)
 

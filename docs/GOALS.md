@@ -383,8 +383,8 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Checks:**
 
-- [ ] `P6-SAVE-01`: —
-- [ ] `P6-USER-01`: B20–B22
+- [x] `P6-SAVE-01`: —
+- [x] `P6-USER-01`: B20–B22
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11
 

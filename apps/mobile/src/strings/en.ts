@@ -890,6 +890,70 @@ export const search = {
   tileLabel: '{title}, {price}',
 } as const;
 
+export const saved = {
+  title: 'Saved',
+  open: 'Saved items',
+  items: 'Items',
+  searches: 'Searches',
+  priceDropped: 'Price dropped',
+  unsave: 'Remove {title} from saved',
+  unsaveAction: 'Remove from saved',
+  emptyItemsTitle: 'Nothing saved yet',
+  emptyItemsBody: 'Tap the bookmark on anything you like and it shows up here.',
+  emptySearchesTitle: 'No saved searches',
+  emptySearchesBody: 'Save a search and we will tell you when something new matches.',
+  goDiscover: 'Start swiping',
+  goSearch: 'Search',
+  allListings: 'All listings',
+  newCount: '{n} new',
+  alerts: 'Alerts',
+  alertsFor: 'Alerts for {q}',
+  deleteSearch: 'Delete {q}',
+  deleteAction: 'Delete',
+  filtersOnly: 'Filtered search',
+} as const;
+
+export const profileView = {
+  memberSince: 'Joined {date}',
+  swaps: '{n} swaps',
+  swapsOne: '1 swap',
+  thumbs: '{pct}% thumbs up',
+  noRatings: 'No ratings yet',
+  replies: 'Usually replies in {time}',
+  minutes: '{n} min',
+  hours: '{n} h',
+  newSeller: 'New seller',
+  newSellerBody:
+    "They haven't finished a swap here yet. Meet at a Meetup spot and check the item first.",
+  founding: 'Founding seller',
+  listings: 'Listings',
+  noListings: 'Nothing listed right now.',
+  reviews: 'Reviews',
+  noReviews: 'No reviews yet.',
+  deletedUser: 'Deleted user',
+  thumbsUp: 'Thumbs up',
+  thumbsDown: 'Thumbs down',
+  report: 'Report {name}',
+  block: 'Block {name}',
+  blockTitle: 'Block {name}?',
+  blockBody: "They can't message you, make offers or see your listings. You won't see theirs.",
+  blockConfirm: 'Block',
+  blocked: 'You blocked {name}',
+  blockedBody: "You won't see each other's listings or messages.",
+  unblock: 'Unblock',
+  goneTitle: "This profile isn't available",
+  goneBody: 'The account may be gone or not on your campus.',
+  more: 'More options',
+  years: {
+    freshman: 'Freshman',
+    sophomore: 'Sophomore',
+    junior: 'Junior',
+    senior: 'Senior',
+    grad: 'Grad student',
+    other: 'Student',
+  },
+} as const;
+
 export const en = {
   permissions,
   tabs,
@@ -920,6 +984,8 @@ export const en = {
   sell,
   feed,
   search,
+  saved,
+  profileView,
 } as const;
 
 export default en;

@@ -14,7 +14,7 @@ import { Text } from '@/components/Text';
 import { useToastStore } from '@/components/Toast';
 import { getEnv } from '@/lib/env';
 import { getStorage } from '@/lib/storage';
-import { feed as copy } from '@/strings/en';
+import { feed as copy, saved as savedCopy } from '@/strings/en';
 
 import { feedApi, type FeedApi } from './api';
 import type { SwipeDir } from './deckMath';
@@ -168,12 +168,20 @@ export function DiscoverScreen({
       variant="large"
       title={copy.title}
       trailing={
-        <IconButton
-          icon="search"
-          accessibilityLabel={copy.search}
-          onPress={() => router.push('/search')}
-          testID="discover-search"
-        />
+        <View style={styles.row}>
+          <IconButton
+            icon="bookmark"
+            accessibilityLabel={savedCopy.open}
+            onPress={() => router.push('/saved')}
+            testID="discover-saved"
+          />
+          <IconButton
+            icon="search"
+            accessibilityLabel={copy.search}
+            onPress={() => router.push('/search')}
+            testID="discover-search"
+          />
+        </View>
       }
     />
   );
@@ -238,6 +246,7 @@ export function DiscoverScreen({
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   flex: { flex: 1 },
+  row: { flexDirection: 'row' },
   stage: { flex: 1, margin: theme.space.screen },
   coach: {
     position: 'absolute',

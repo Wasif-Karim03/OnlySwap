@@ -1634,6 +1634,12 @@ isOneToOne: false
 "get_my_report":
 { Args: { "id": string }; Returns: Json
                            },
+"get_profile":
+{ Args: { "user_id": string }; Returns: Json
+                           },
+"get_saved":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "hide_listing":
 { Args: { "listing_id": string }; Returns: undefined
                            },

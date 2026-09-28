@@ -161,6 +161,26 @@
     ]
   },
   {
+    "name": "get_profile",
+    "args": "user_id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "get_saved",
+    "args": "",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "hide_listing",
     "args": "listing_id uuid",
     "returns": "void",
