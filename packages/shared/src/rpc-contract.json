@@ -4,223 +4,321 @@
     "args": "version text",
     "returns": "void",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "admin_change_email",
     "args": "user_id uuid, new_email text",
     "returns": "jsonb",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "block_user",
     "args": "user_id uuid",
     "returns": "void",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "check_text",
     "args": "text text, scope text",
     "returns": "jsonb",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "complete_reverify",
     "args": "",
     "returns": "jsonb",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "confirm_age",
     "args": "method text, is_adult boolean, birth_date date",
     "returns": "jsonb",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "create_appeal",
     "args": "subject_type text, subject_id text, reason_choice text, body text",
     "returns": "jsonb",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "create_listing",
     "args": "id uuid, kind listing_kind, title text, description text, category_id smallint, condition item_condition, price_cents integer, open_to_offers boolean, photos jsonb, meet_spot_ids uuid[], meet_note text, availability text[], wanted_max_cents integer, wanted_ref uuid, food_minutes integer, pickup_by date",
     "returns": "jsonb",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "create_report",
     "args": "target_type text, target_id text, reason text, details text",
     "returns": "jsonb",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "delete_listing",
     "args": "id uuid",
     "returns": "void",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "get_app_config",
     "args": "",
     "returns": "jsonb",
     "security": "definer",
-    "grants": ["anon", "authenticated", "service_role"]
+    "grants": [
+      "anon",
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "get_feed",
     "args": "cursor jsonb, \"limit\" integer",
     "returns": "jsonb",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "get_listing",
     "args": "id uuid",
     "returns": "jsonb",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "get_my_report",
     "args": "id uuid",
     "returns": "jsonb",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "hide_listing",
     "args": "listing_id uuid",
     "returns": "void",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "lookup_school",
     "args": "domain text",
     "returns": "jsonb",
     "security": "definer",
-    "grants": ["anon", "authenticated", "service_role"]
+    "grants": [
+      "anon",
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "mark_sold",
     "args": "id uuid, buyer_id uuid",
     "returns": "void",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "my_waitlist_position",
     "args": "",
     "returns": "jsonb",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "price_hint",
     "args": "category_id smallint",
     "returns": "jsonb",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "record_swipes",
     "args": "items jsonb",
     "returns": "void",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "record_view",
     "args": "listing_id uuid",
     "returns": "void",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "relist_listing",
     "args": "id uuid, price_cents integer",
     "returns": "jsonb",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "reserve_listing_id",
     "args": "",
     "returns": "uuid",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "save_listing",
     "args": "listing_id uuid",
     "returns": "jsonb",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "set_listing_share_image",
     "args": "id uuid",
     "returns": "jsonb",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "unblock_user",
     "args": "user_id uuid",
     "returns": "void",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "undo_swipe",
     "args": "listing_id uuid",
     "returns": "void",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "unsave_listing",
     "args": "listing_id uuid",
     "returns": "jsonb",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "update_listing",
     "args": "id uuid, title text, description text, category_id smallint, condition item_condition, price_cents integer, open_to_offers boolean, photos jsonb, meet_spot_ids uuid[], meet_note text, availability text[]",
     "returns": "jsonb",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "update_profile",
     "args": "first_name text, last_initial text, year class_year, areas text[], bio text, avatar_path text",
     "returns": "jsonb",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "update_profile_flags",
     "args": "analytics_opt_in boolean, crash_reports_opt_in boolean, theme_mode text",
     "returns": "void",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   },
   {
     "name": "watch_listing",
     "args": "listing_id uuid",
     "returns": "void",
     "security": "definer",
-    "grants": ["authenticated", "service_role"]
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
   }
 ]
