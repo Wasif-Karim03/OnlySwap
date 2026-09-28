@@ -1589,6 +1589,9 @@ isOneToOne: false
             "accept_rules":
 { Args: { "version": string }; Returns: undefined
                            },
+"accept_offer":
+{ Args: { "offer_id": string }; Returns: Json
+                           },
 "admin_change_email":
 { Args: { "new_email": string,"user_id": string }; Returns: Json
                            },
@@ -1604,6 +1607,9 @@ isOneToOne: false
 "confirm_age":
 { Args: { "birth_date"?: string,"is_adult"?: boolean,"method": string }; Returns: Json
                            },
+"counter_offer":
+{ Args: { "amount_cents": number,"note"?: string,"offer_id": string }; Returns: Json
+                           },
 "create_appeal":
 { Args: { "body"?: string,"reason_choice"?: string,"subject_id": string,"subject_type": string }; Returns: Json
                            },
@@ -1615,6 +1621,9 @@ isOneToOne: false
                            },
 "create_saved_search":
 { Args: { "alerts"?: boolean,"filters"?: Json,"query"?: string }; Returns: Json
+                           },
+"decline_offer":
+{ Args: { "offer_id": string,"reason"?: string }; Returns: undefined
                            },
 "delete_listing":
 { Args: { "id": string }; Returns: undefined
@@ -1628,11 +1637,17 @@ isOneToOne: false
 "get_feed":
 { Args: { "cursor"?: Json,"limit"?: number }; Returns: Json
                            },
+"get_inbox":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "get_listing":
 { Args: { "id": string }; Returns: Json
                            },
 "get_my_report":
 { Args: { "id": string }; Returns: Json
+                           },
+"get_offer":
+{ Args: { "offer_id": string }; Returns: Json
                            },
 "get_profile":
 { Args: { "user_id": string }; Returns: Json
@@ -1646,8 +1661,14 @@ isOneToOne: false
 "list_saved_searches":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"listing_offers":
+{ Args: { "id": string }; Returns: Json
+                           },
 "lookup_school":
 { Args: { "domain": string }; Returns: Json
+                           },
+"make_offer":
+{ Args: { "amount_cents": number,"listing_id": string,"note"?: string,"quick_notes"?: (string)[] }; Returns: Json
                            },
 "mark_sold":
 { Args: { "buyer_id"?: string,"id": string }; Returns: undefined
@@ -1708,6 +1729,9 @@ isOneToOne: false
                            },
 "watch_listing":
 { Args: { "listing_id": string }; Returns: undefined
+                           },
+"withdraw_offer":
+{ Args: { "offer_id": string }; Returns: undefined
                            }
           }
           Enums: {

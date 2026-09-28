@@ -1,5 +1,15 @@
 [
   {
+    "name": "accept_offer",
+    "args": "offer_id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "accept_rules",
     "args": "version text",
     "returns": "void",
@@ -60,6 +70,16 @@
     ]
   },
   {
+    "name": "counter_offer",
+    "args": "offer_id uuid, amount_cents integer, note text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "create_appeal",
     "args": "subject_type text, subject_id text, reason_choice text, body text",
     "returns": "jsonb",
@@ -93,6 +113,16 @@
     "name": "create_saved_search",
     "args": "query text, filters jsonb, alerts boolean",
     "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "decline_offer",
+    "args": "offer_id uuid, reason text",
+    "returns": "void",
     "security": "definer",
     "grants": [
       "authenticated",
@@ -141,6 +171,16 @@
     ]
   },
   {
+    "name": "get_inbox",
+    "args": "",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "get_listing",
     "args": "id uuid",
     "returns": "jsonb",
@@ -153,6 +193,16 @@
   {
     "name": "get_my_report",
     "args": "id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "get_offer",
+    "args": "offer_id uuid",
     "returns": "jsonb",
     "security": "definer",
     "grants": [
@@ -201,12 +251,32 @@
     ]
   },
   {
+    "name": "listing_offers",
+    "args": "id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "lookup_school",
     "args": "domain text",
     "returns": "jsonb",
     "security": "definer",
     "grants": [
       "anon",
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "make_offer",
+    "args": "listing_id uuid, amount_cents integer, note text, quick_notes text[]",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
       "authenticated",
       "service_role"
     ]
@@ -404,6 +474,16 @@
   {
     "name": "watch_listing",
     "args": "listing_id uuid",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "withdraw_offer",
+    "args": "offer_id uuid",
     "returns": "void",
     "security": "definer",
     "grants": [

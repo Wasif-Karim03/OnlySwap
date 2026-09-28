@@ -11,3 +11,4 @@ Device checks (G8) are deferred to the testing phase at the end.
 | S19 Discover + listing | done (sandbox) | s19-done | get_listing (DEC 57) + pgTAP 12; Discover deck/queue/undo/coach/end/day-one; listing buyer/owner/hold/gone; options + report; photo viewer. Offer sheet route lands in S22 |
 | S20 Search | done (sandbox) | s20-done | search RPCs + saved searches + trending cron (DEC 58), pgTAP 24; Search, Results grid, Filters sheet |
 | S21 Saved + profiles | done (sandbox) | s21-done | get_saved, get_profile (DEC 59) pgTAP 14; Saved items/searches; seller profile with block/report |
+| S22 Offers backend | done (sandbox) | s22-done | offer RPCs + expire cron (DEC 60), pgTAP 51; offer-race.mjs for the Mac |

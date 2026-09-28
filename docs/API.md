@@ -152,6 +152,7 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 | `decline_offer` | `offer_id, reason` | void | — | — |
 | `withdraw_offer` | `offer_id` | void | buyer | — |
 | `get_inbox` | — | `{incoming[], outgoing[], chats[]}` | — | — |
+| `get_offer` | `offer_id` | offer (with listing, other party, chat_id) | participants only (DEC 60) | — |
 
 **Chat, meetups, deals**
 

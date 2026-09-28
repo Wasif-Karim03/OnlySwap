@@ -396,8 +396,8 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Checks:**
 
-- [ ] `P7-OFF-01`: state machine (DATA_MODEL §4.2) pgTAP green incl. T-INT-OFF-RACE and T-INT-OFF-RACE-02
-- [ ] `P7-OFF-06`: —
+- [x] `P7-OFF-01`: state machine (DATA_MODEL §4.2) pgTAP green incl. T-INT-OFF-RACE and T-INT-OFF-RACE-02
+- [x] `P7-OFF-06`: —
 
 **Gates:** G1, G2, G3, G5, G6, G4, G10, G11
 
