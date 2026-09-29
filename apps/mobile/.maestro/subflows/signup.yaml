@@ -1,0 +1,56 @@
+# Sign up a fresh adult e2e student up to Discover (E2E-01 steps). Needs TAG.
+appId: app.onlyswap
+---
+- runScript:
+    file: ../scripts/email.js
+    env:
+      TAG: ${TAG}
+- launchApp:
+    clearState: true
+- assertVisible:
+    id: screen-welcome
+- tapOn:
+    id: welcome-continue
+- tapOn:
+    id: email-input
+- inputText: ${output.email}
+- assertVisible:
+    id: email-school
+- tapOn:
+    id: email-send
+- assertVisible:
+    id: screen-verify
+- runScript:
+    file: ../scripts/otp.js
+    env:
+      EMAIL: ${output.email}
+- tapOn:
+    id: otp-input
+- inputText: ${output.code}
+- runFlow: age-adult.yaml
+- assertVisible:
+    id: screen-profile-setup
+- tapOn:
+    id: profile-first
+- inputText: Test
+- tapOn:
+    id: profile-last
+- inputText: E
+- tapOn: Junior
+- tapOn:
+    id: profile-continue
+- tapOn:
+    id: rules-checkbox
+- tapOn:
+    id: rules-agree
+- runFlow:
+    when:
+      visible:
+        id: screen-notifications
+    commands:
+      - tapOn:
+          id: notifications-not-now
+- extendedWaitUntil:
+    visible:
+      id: screen-discover
+    timeout: 15000

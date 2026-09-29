@@ -1,0 +1,19 @@
+# Sign in as the App Review account on Demo University (E2E-04). Needs REVIEW_PASSWORD.
+appId: app.onlyswap
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: welcome-sign-in
+- tapOn:
+    id: email-input
+- inputText: appreview@review.onlyswap.test
+- tapOn:
+    id: email-password
+- inputText: ${REVIEW_PASSWORD}
+- tapOn:
+    id: email-send
+- extendedWaitUntil:
+    visible:
+      id: screen-discover
+    timeout: 15000

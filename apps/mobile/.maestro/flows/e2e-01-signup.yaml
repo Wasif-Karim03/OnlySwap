@@ -1,0 +1,10 @@
+# E2E-01 Sign up (happy path)
+appId: app.onlyswap
+tags: [auth, smoke]
+---
+- runFlow:
+    file: ../subflows/signup.yaml
+    env:
+      TAG: e01
+- assertVisible:
+    id: screen-discover

@@ -1,0 +1,17 @@
+# E2E-03 Unknown school → waitlist
+appId: app.onlyswap
+tags: [auth, smoke]
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: welcome-continue
+- tapOn:
+    id: email-input
+- inputText: e2e-waitlist@unknown-school-e2e.edu
+- assertVisible:
+    id: email-unknown
+- tapOn:
+    id: email-waitlist
+- assertVisible:
+    id: toast

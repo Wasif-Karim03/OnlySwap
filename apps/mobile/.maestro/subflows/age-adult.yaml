@@ -1,0 +1,37 @@
+# Age step when the OS age signal is unknown: pick a birthday about 20 years
+# back. The picker is native, so this moves the year wheel (iOS spinner) or uses
+# the year header (Android calendar). Tune the swipe count on first run.
+appId: app.onlyswap
+---
+- runFlow:
+    when:
+      visible:
+        id: screen-age
+    commands:
+      - tapOn:
+          id: age-field
+      - runFlow:
+          when:
+            platform: iOS
+          commands:
+            - repeat:
+                times: 20
+                commands:
+                  - swipe:
+                      start: 85%, 80%
+                      end: 85%, 88%
+                      duration: 120
+      - runFlow:
+          when:
+            platform: Android
+          commands:
+            - tapOn:
+                text: '20[0-9][0-9]'
+                index: 0
+            - scrollUntilVisible:
+                element: '2005'
+                direction: UP
+            - tapOn: '2005'
+            - tapOn: OK
+      - tapOn:
+          id: age-continue

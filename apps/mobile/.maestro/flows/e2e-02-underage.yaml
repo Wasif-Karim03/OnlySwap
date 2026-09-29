@@ -1,0 +1,60 @@
+# E2E-02 Underage: a birthday under 18 ends at Not eligible; the same email is
+# then blocked at sign-up.
+appId: app.onlyswap
+tags: [auth]
+---
+- runScript:
+    file: ../scripts/email.js
+    env:
+      TAG: e02
+- launchApp:
+    clearState: true
+- tapOn:
+    id: welcome-continue
+- tapOn:
+    id: email-input
+- inputText: ${output.email}
+- tapOn:
+    id: email-send
+- runScript:
+    file: ../scripts/otp.js
+    env:
+      EMAIL: ${output.email}
+- tapOn:
+    id: otp-input
+- inputText: ${output.code}
+- extendedWaitUntil:
+    visible:
+      id: screen-age
+    timeout: 10000
+- tapOn:
+    id: age-field
+# Nudge the picker one day back from today: still under 18.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - swipe:
+          start: 50%, 80%
+          end: 50%, 84%
+          duration: 120
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn: OK
+- tapOn:
+    id: age-continue
+- assertVisible:
+    id: screen-age-blocked
+- tapOn:
+    id: age-close
+- tapOn:
+    id: welcome-continue
+- tapOn:
+    id: email-input
+- inputText: ${output.email}
+- tapOn:
+    id: email-send
+- assertVisible:
+    id: email-send-error

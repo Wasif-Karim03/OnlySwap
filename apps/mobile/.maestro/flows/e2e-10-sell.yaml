@@ -1,0 +1,71 @@
+# E2E-10 Sell a listing: photos, price error, fix, spot, post, share.
+appId: app.onlyswap
+tags: [sell]
+---
+- runFlow:
+    file: ../subflows/signup.yaml
+    env:
+      TAG: e10
+- addMedia:
+    - ../fixtures/item1.jpg
+    - ../fixtures/item2.jpg
+    - ../fixtures/item3.jpg
+- tapOn: Sell
+- assertVisible:
+    id: screen-sell-photos
+- tapOn:
+    id: sell-add-library
+- runFlow:
+    when:
+      visible: 'Allow.*|Continue'
+    commands:
+      - tapOn: 'Allow.*|Continue'
+# Pick the three newest photos in the system picker.
+- tapOn:
+    point: 15%, 30%
+- tapOn:
+    point: 50%, 30%
+- tapOn:
+    point: 85%, 30%
+- tapOn: 'Add|Done|Select'
+- extendedWaitUntil:
+    visible:
+      id: sell-photos-next
+    timeout: 60000
+- tapOn:
+    id: sell-photos-next
+- tapOn:
+    id: sell-title
+- inputText: E2E mini fridge
+- tapOn:
+    id: sell-category
+- tapOn:
+    id: 'sell-category-.*'
+    index: 0
+- tapOn:
+    id: sell-price
+- inputText: '4500'
+- tapOn:
+    id: sell-details-next
+- assertVisible:
+    id: sell-details-fix-banner
+- tapOn:
+    id: sell-price
+- eraseText: 6
+- inputText: '45'
+- tapOn:
+    id: sell-details-next
+- assertVisible:
+    id: screen-sell-meetup
+- tapOn:
+    id: 'sell-spot-.*'
+    index: 0
+- tapOn:
+    id: sell-post
+- extendedWaitUntil:
+    visible:
+      id: screen-sell-posted
+    timeout: 30000
+- tapOn:
+    id: sell-share
+- back

@@ -1,0 +1,9 @@
+# E2E-04 Reviewer login shows Demo University listings
+appId: app.onlyswap
+tags: [auth, smoke, reviewer]
+---
+- runFlow: ../subflows/reviewer.yaml
+- assertVisible:
+    id: screen-discover
+- assertNotVisible:
+    id: discover-error

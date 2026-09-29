@@ -1,0 +1,32 @@
+# E2E-08 Plan a meetup (the bot proposes one and checks in). The "Did it sell?"
+# step needs the staging time-travel RPC and is in the manual checklist.
+appId: app.onlyswap
+tags: [meetups, reviewer, two-party]
+---
+- runFlow: ../subflows/reviewer.yaml
+- tapOn: Inbox
+- tapOn:
+    id: 'inbox-chat-.*'
+    index: 0
+- extendedWaitUntil:
+    visible:
+      id: 'meetup-card-.*'
+    timeout: 120000
+- tapOn:
+    id: meetup-card-open
+- runFlow:
+    when:
+      visible:
+        id: meetup-accept
+    commands:
+      - tapOn:
+          id: meetup-accept
+- assertVisible:
+    id: 'screen-meetup-.*'
+- runFlow:
+    when:
+      visible:
+        id: meetup-here
+    commands:
+      - tapOn:
+          id: meetup-here

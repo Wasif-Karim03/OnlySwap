@@ -1,0 +1,24 @@
+# E2E-15 Delete account, then the same email starts fresh
+appId: app.onlyswap
+tags: [account]
+---
+- runFlow:
+    file: ../subflows/signup.yaml
+    env:
+      TAG: e15
+- tapOn: Profile
+- tapOn: Settings
+- scrollUntilVisible:
+    element: Delete account
+- tapOn: Delete account
+- assertVisible:
+    id: screen-delete-account
+- tapOn:
+    id: delete-confirm
+- inputText: DELETE
+- tapOn:
+    id: delete-button
+- extendedWaitUntil:
+    visible:
+      id: screen-welcome
+    timeout: 20000

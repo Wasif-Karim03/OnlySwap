@@ -1,0 +1,20 @@
+# E2E-17 Offline banner and queued swipes (Android: Maestro can toggle airplane mode)
+appId: app.onlyswap
+tags: [offline, reviewer, android-only]
+---
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - runFlow: ../subflows/reviewer.yaml
+      - setAirplaneMode: enabled
+      - assertVisible:
+          id: offline-banner
+      - swipe:
+          direction: LEFT
+          duration: 300
+      - setAirplaneMode: disabled
+      - extendedWaitUntil:
+          notVisible:
+            id: offline-banner
+          timeout: 20000

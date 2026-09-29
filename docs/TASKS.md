@@ -235,9 +235,9 @@
 - [x] **P14-KEEP-01** `keepalive.yml` pings staging daily until launch (private repo, so not auto-disabled) · P3 · staging never pauses · S
 - [ ] **P14-SEC-01** Security test suite (testing.md §5) run and fixed · P4–P13 · all T-SEC pass · L
 - [ ] **P14-PERF-01** Performance pass (testing.md §6) · P6, P8 · targets met · M
-- [ ] **P14-E2E-00** Staging-only E2E support: catch-all domain `e2e.onlyswap.test` on the test campus + `test-inbox` Edge Function returning the latest OTP for `e2e+*` addresses (never deployed to production; CI check) · P3-AUTH-03 · Maestro reads the codes · M
+- [x] **P14-E2E-00** Staging-only E2E support: catch-all domain `e2e.onlyswap.test` on the test campus + `test-inbox` Edge Function returning the latest OTP for `e2e+*` addresses (never deployed to production; CI check) · P3-AUTH-03 · Maestro reads the codes · M
 - [ ] **P14-E2E-01** Maestro flows (testing.md §3), run locally on both platforms · P4–P11 · all green · L
-- [ ] **P14-E2E-02** Playwright web and admin suites incl. axe a11y · P12, P13 · green · M
+- [x] **P14-E2E-02** Playwright web and admin suites incl. axe a11y · P12, P13 · green · M
 - [ ] **P14-LEGAL-01** ✎ Write the Terms, Privacy, Rules, Banned items, Safety, Cookies and Child safety text with every required section (RELEASE §6); version `2026-10`; bundle and publish; CI diff app vs site. · deps P13-WEB-03 · done when pages live; bundled copy matches · L
 - [ ] 🆕 **P14-OPS-01** Download and store the Android upload keystore backup after the first production build (OPS-02). · deps P11-BETA-01 · done when keystore in the password manager · S
 - [x] 🆕 **P14-OPS-03** `scripts/usage-report.ts` + `usage-report.yml` weekly email (moved from post-launch, ARC-10). · deps P3, P5-MEDIA-01 · done when first report received · M

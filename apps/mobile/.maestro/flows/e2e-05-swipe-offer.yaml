@@ -1,0 +1,32 @@
+# E2E-05 Swipe and offer (reviewer on Demo University)
+appId: app.onlyswap
+tags: [feed, offers, reviewer]
+---
+- runFlow: ../subflows/reviewer.yaml
+- runFlow:
+    when:
+      visible:
+        id: discover-coach
+    commands:
+      - tapOn:
+          id: discover-coach
+- swipe:
+    direction: LEFT
+    duration: 300
+- swipe:
+    direction: LEFT
+    duration: 300
+- tapOn: Undo
+- swipe:
+    direction: RIGHT
+    duration: 300
+- assertVisible:
+    id: screen-offer
+- tapOn: '.*10% less'
+- tapOn:
+    id: offer-send
+- assertVisible:
+    id: offer-sent
+- tapOn: Done
+- tapOn: Inbox
+- assertVisible: Offers you made

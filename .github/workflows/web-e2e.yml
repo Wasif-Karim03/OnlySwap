@@ -1,0 +1,42 @@
+# Playwright suites for the site and admin (P14-E2E-02). Manual run against
+# staging (or a Pages preview) so it doesn't spend Actions minutes on every PR.
+#
+# Variables: STAGING_SITE_URL, STAGING_ADMIN_URL, STAGING_FUNCTIONS_URL
+# Secrets (optional; tests skip without them): E2E_SECRET, E2E_ADMIN_EMAIL,
+#   E2E_MOD_EMAIL, E2E_MOD_TOTP_SECRET
+name: Web E2E
+
+on:
+  workflow_dispatch:
+    inputs:
+      listing_id:
+        description: A shared, active staging listing id (for E2E-W02)
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  playwright:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter e2e-web
+      - run: pnpm --filter e2e-web exec playwright install --with-deps chromium
+      - name: Playwright
+        env:
+          SITE_URL: ${{ vars.STAGING_SITE_URL }}
+          ADMIN_URL: ${{ vars.STAGING_ADMIN_URL }}
+          FUNCTIONS_URL: ${{ vars.STAGING_FUNCTIONS_URL }}
+          E2E_SECRET: ${{ secrets.E2E_SECRET }}
+          ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+          MOD_EMAIL: ${{ secrets.E2E_MOD_EMAIL }}
+          MOD_TOTP_SECRET: ${{ secrets.E2E_MOD_TOTP_SECRET }}
+          LISTING_ID: ${{ inputs.listing_id }}
+        run: pnpm --filter e2e-web e2e

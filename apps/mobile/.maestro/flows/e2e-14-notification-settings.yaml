@@ -1,0 +1,19 @@
+# E2E-14 Notification settings: tips off by default, then on; previews toggle
+appId: app.onlyswap
+tags: [settings]
+---
+- runFlow:
+    file: ../subflows/signup.yaml
+    env:
+      TAG: e14
+- tapOn: Profile
+- tapOn: Settings
+- tapOn: Notifications
+- assertVisible:
+    id: screen-notification-settings
+- tapOn: 'Selling tips.*'
+- tapOn: 'Message previews.*'
+- back
+- tapOn: Notifications
+- assertVisible:
+    id: screen-notification-settings

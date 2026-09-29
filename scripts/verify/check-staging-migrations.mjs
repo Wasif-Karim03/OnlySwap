@@ -28,6 +28,28 @@ for (const f of staging) {
     problems.push(`supabase/migrations_staging/${f} is missing the app.env = 'prod' guard`);
   }
 }
+// 3. The staging-only test-inbox function (P14-E2E-00) is never deployed by a
+//    production workflow: those must name their functions, and not that one.
+const wfDir = join(root, '.github/workflows');
+let workflows = [];
+try {
+  workflows = readdirSync(wfDir).filter((f) => /\.ya?ml$/.test(f));
+} catch {
+  workflows = [];
+}
+for (const f of workflows) {
+  if (!/release|prod/i.test(f)) continue;
+  for (const line of readFileSync(join(wfDir, f), 'utf8').split('\n')) {
+    if (!/supabase\s+functions\s+deploy/.test(line)) continue;
+    if (/test-inbox/.test(line)) problems.push(`.github/workflows/${f} deploys test-inbox`);
+    else if (/functions\s+deploy\s*(--|$)/.test(line.trim())) {
+      problems.push(
+        `.github/workflows/${f} deploys every function; name them (test-inbox is staging only)`,
+      );
+    }
+  }
+}
+
 for (const p of problems) console.error(`staging-migrations: ${p}`);
 if (problems.length) process.exit(1);
 console.log(

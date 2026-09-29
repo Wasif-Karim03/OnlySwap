@@ -1,0 +1,25 @@
+# E2E-11 Search, typo tolerance and saved search
+appId: app.onlyswap
+tags: [search, reviewer]
+---
+- runFlow: ../subflows/reviewer.yaml
+- tapOn:
+    id: discover-search
+- tapOn:
+    id: search-input
+- inputText: mini frig
+- pressKey: Enter
+- assertVisible:
+    id: screen-results
+- assertNotVisible:
+    id: results-empty
+- tapOn:
+    id: results-save
+- assertVisible:
+    id: toast
+- back
+- back
+- tapOn:
+    id: discover-saved
+- assertVisible:
+    id: 'search-row-.*'

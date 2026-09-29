@@ -1,0 +1,15 @@
+# E2E-18 Deep links: a malformed id shows the link error screen. The happy
+# path needs a live listing id: pass -e LISTING_ID=<uuid> to also check it.
+appId: app.onlyswap
+tags: [deeplinks, reviewer]
+---
+- runFlow: ../subflows/reviewer.yaml
+- openLink: ${SITE_URL}/l/not-a-listing
+- assertVisible: '.*link.*'
+- runFlow:
+    when:
+      true: ${LISTING_ID != null && LISTING_ID != ''}
+    commands:
+      - openLink: ${SITE_URL}/l/${LISTING_ID}
+      - assertVisible:
+          id: 'screen-listing.*'

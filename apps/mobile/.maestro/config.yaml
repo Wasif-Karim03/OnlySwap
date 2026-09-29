@@ -1,0 +1,12 @@
+# Maestro workspace (P14-E2E-01, TESTING §3). Run on the Mac against staging:
+#   maestro test apps/mobile/.maestro \
+#     -e FUNCTIONS_URL=https://<staging-ref>.supabase.co/functions/v1 \
+#     -e E2E_SECRET=<the staging-only E2E secret> \
+#     -e REVIEW_PASSWORD=<reviewer password from seed-review> \
+#     -e SITE_URL=https://onlyswap.pages.dev
+# Flows tagged `two-party` use the Demo University bot (demo_autoplay cron) as
+# the other person, so they sign in as the reviewer.
+flows:
+  - flows/*
+executionOrder:
+  continueOnFailure: true

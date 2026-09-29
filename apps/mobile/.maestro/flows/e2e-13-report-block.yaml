@@ -1,0 +1,20 @@
+# E2E-13 Report with Also block from a chat
+appId: app.onlyswap
+tags: [safety, reviewer, two-party]
+---
+- runFlow: ../subflows/reviewer.yaml
+- tapOn: Inbox
+- tapOn:
+    id: 'inbox-chat-.*'
+    index: 0
+- tapOn:
+    id: chat-details
+- tapOn: 'Report.*'
+- tapOn: 'Harassment.*'
+- tapOn: 'Also block.*'
+- tapOn: Send report
+- assertVisible: Report sent
+- tapOn: Done
+- back
+- assertVisible:
+    id: chat-read-only
