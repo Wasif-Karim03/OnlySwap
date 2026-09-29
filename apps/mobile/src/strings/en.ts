@@ -855,6 +855,7 @@ export const search = {
   recent: 'Recent',
   clearRecent: 'Clear',
   trending: 'Popular right now',
+  searchFor: 'Search for "{q}"',
   suggestionsLabel: 'Suggestions',
   savedLabel: 'Saved search',
   categoryLabel: 'Category',

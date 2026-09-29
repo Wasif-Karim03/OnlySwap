@@ -86,6 +86,14 @@ export function SearchScreen({
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.body}>
         {typing ? (
           <GroupedList header={copy.suggestionsLabel}>
+            {/* Always offer the typed text, so the list is never an empty header. */}
+            {list.some((s) => s.label.toLowerCase() === text.trim().toLowerCase()) ? null : (
+              <ListRow
+                label={fill(copy.searchFor, { q: text.trim() })}
+                icon="search"
+                onPress={() => go(text)}
+              />
+            )}
             {list.map((s) => (
               <ListRow
                 key={`${s.type}-${s.label}`}
