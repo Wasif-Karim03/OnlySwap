@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Linking, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 import { track } from '@/lib/analytics';
@@ -11,7 +11,6 @@ import { Icon } from '@/components/icons/Icon';
 import type { IconName } from '@/components/icons/Icon';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
-import { getEnv } from '@/lib/env';
 import { errorCopy, toAppError } from '@/lib/errors';
 import { haptic } from '@/lib/haptics';
 import { rules as copy, states } from '@/strings/en';
@@ -24,10 +23,6 @@ const deviceTz = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 type LegalPage = 'rules' | 'terms' | 'privacy';
 
-function defaultOpenLegal(page: LegalPage): void {
-  void Linking.openURL(`${getEnv().EXPO_PUBLIC_SITE_URL.replace(/\/+$/, '')}/${page}`);
-}
-
 /**
  * A07 Community rules (P4-AUTH-09, board A11) and the D10 Updated rules
  * variant (P4-AUTH-17, PM-04) at `/rules?updated=1`. Agreeing records the
@@ -35,12 +30,15 @@ function defaultOpenLegal(page: LegalPage): void {
  */
 export function RulesScreen({
   api = authApi,
-  openLegal = defaultOpenLegal,
+  openLegal,
 }: {
   api?: AuthApi;
   openLegal?: (page: LegalPage) => void;
 }) {
   const { theme } = useUnistyles();
+  const router = useRouter();
+  // The bundled copies (app/legal/[doc]), so the links work offline and before launch.
+  const open = openLegal ?? ((page: LegalPage) => router.push(`/legal/${page}`));
   const handoff = useGateHandoff();
   const { updated } = useLocalSearchParams<{ updated?: string }>();
   const isUpdate = updated === '1';
@@ -92,7 +90,7 @@ export function RulesScreen({
       accessibilityRole="link"
       accessibilityLabel={label}
       accessibilityHint={copy.openLink.replace('{page}', label)}
-      onPress={() => openLegal(page)}
+      onPress={() => open(page)}
       style={styles.linkHit}
       testID={`rules-link-${page}`}
     >
