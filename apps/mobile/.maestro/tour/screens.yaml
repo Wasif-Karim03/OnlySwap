@@ -1,0 +1,48 @@
+# Screenshot tour of the main screens on the local stack (testing phase).
+# Saves PNGs to sim-shots/ at the repo root. Run by scripts/verify/run-sim-tests.command.
+appId: app.onlyswap
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: screen-welcome
+    timeout: 30000
+- takeScreenshot: ../../../../sim-shots/01-welcome
+- runFlow: ../subflows/reviewer.yaml
+- takeScreenshot: ../../../../sim-shots/02-discover
+- runFlow:
+    when:
+      visible:
+        id: discover-coach
+    commands:
+      - tapOn:
+          id: discover-coach
+- tapOn:
+    id: 'deck-card-.*'
+    index: 0
+    optional: true
+- takeScreenshot: ../../../../sim-shots/03-listing
+- back
+- swipe:
+    direction: RIGHT
+    duration: 300
+- takeScreenshot: ../../../../sim-shots/04-offer-sheet
+- back
+- tapOn: Inbox
+- takeScreenshot: ../../../../sim-shots/05-inbox
+- tapOn: Sell
+- takeScreenshot: ../../../../sim-shots/06-sell
+- tapOn: Profile
+- takeScreenshot: ../../../../sim-shots/07-profile
+- tapOn: Settings
+- takeScreenshot: ../../../../sim-shots/08-settings
+- back
+- tapOn: Discover
+- tapOn:
+    id: discover-search
+- tapOn:
+    id: search-input
+- inputText: lamp
+- pressKey: Enter
+- takeScreenshot: ../../../../sim-shots/09-search-results

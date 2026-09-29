@@ -20,3 +20,5 @@ apps/mobile/dist/
 store-assets/
 verify-output.log
 ios-run.log
+sim-tests.log
+sim-shots/
