@@ -22,3 +22,4 @@ ios-run.log
 verify-output.log
 sim-tests.log
 sim-shots
+diag.log
