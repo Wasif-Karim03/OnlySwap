@@ -741,7 +741,7 @@ export const sell = {
   preview: 'Preview',
   free: 'Free',
   notBanned: "This isn't on the banned items list",
-  confirmBanned: 'Confirm it is allowed to post.',
+  confirmBanned: 'Tick the box at the bottom to confirm it is allowed.',
   post: 'Post listing',
   postFailed: "We couldn't post it. Your draft is saved, try again in a moment.",
   // Step 4: posted (board D6)

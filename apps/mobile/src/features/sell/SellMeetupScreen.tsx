@@ -139,12 +139,31 @@ export function SellMeetupScreen({
       title={copy.meetupTitle}
       body={copy.meetupBody}
       dock={
-        <Button
-          label={copy.post}
-          onPress={() => void post()}
-          loading={posting}
-          testID="sell-post"
-        />
+        <>
+          {/* The confirm hint and post errors sit with the button: the checkbox
+              is below the fold, so a message in the list would go unseen. */}
+          {confirmHint ? (
+            <Text
+              variant="meta"
+              tone="red"
+              accessibilityLiveRegion="polite"
+              testID="sell-confirm-hint"
+            >
+              {copy.confirmBanned}
+            </Text>
+          ) : null}
+          {error ? (
+            <View testID="sell-post-error">
+              <Banner kind="error" message={error} />
+            </View>
+          ) : null}
+          <Button
+            label={copy.post}
+            onPress={() => void post()}
+            loading={posting}
+            testID="sell-post"
+          />
+        </>
       }
     >
       {spotsQuery.isPending ? (
@@ -286,16 +305,6 @@ export function SellMeetupScreen({
           setConfirmHint(false);
         }}
       />
-      {confirmHint ? (
-        <Text variant="meta" tone="red" accessibilityLiveRegion="polite" testID="sell-confirm-hint">
-          {copy.confirmBanned}
-        </Text>
-      ) : null}
-      {error ? (
-        <View testID="sell-post-error">
-          <Banner kind="error" message={error} />
-        </View>
-      ) : null}
     </SellStep>
   );
 }
