@@ -26,3 +26,4 @@ diag.log
 query.log
 realtime.log
 migrate.log
+push.log
