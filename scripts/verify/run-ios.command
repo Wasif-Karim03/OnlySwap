@@ -4,6 +4,7 @@
 cd "$(dirname "$0")/../.." || exit 1
 export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.local/bin:$PATH"
 export CI=1 EXPO_NO_TELEMETRY=1
+git push -u origin build/s17-onward --tags >/dev/null 2>&1
 cd apps/mobile
 DEVICE="$(xcrun simctl list devices booted | sed -n 's/^ *\(iPhone[^(]*\) (.*Booted.*/\1/p' | head -1 | sed 's/ *$//')"
 echo "booted: ${DEVICE:-none}" | tee ../../ios-run.log

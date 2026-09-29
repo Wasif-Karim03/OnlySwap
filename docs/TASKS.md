@@ -233,7 +233,7 @@
 - [x] **P14-BAK-01** `backup.yml`: nightly `supabase db dump` (schema + data) → `age` encrypt → R2 `onlyswap-backups`; 30-day lifecycle · P3 · file present each morning · M
 - [ ] **P14-BAK-02** Restore drill to a local Docker instance, documented in `docs/runbooks/restore.md` · BAK-01 · restored row counts match · M
 - [x] **P14-KEEP-01** `keepalive.yml` pings staging daily until launch (private repo, so not auto-disabled) · P3 · staging never pauses · S
-- [ ] **P14-SEC-01** Security test suite (testing.md §5) run and fixed · P4–P13 · all T-SEC pass · L
+- [x] **P14-SEC-01** Security test suite (testing.md §5) run and fixed · P4–P13 · all T-SEC pass · L
 - [ ] **P14-PERF-01** Performance pass (testing.md §6) · P6, P8 · targets met · M
 - [x] **P14-E2E-00** Staging-only E2E support: catch-all domain `e2e.onlyswap.test` on the test campus + `test-inbox` Edge Function returning the latest OTP for `e2e+*` addresses (never deployed to production; CI check) · P3-AUTH-03 · Maestro reads the codes · M
 - [ ] **P14-E2E-01** Maestro flows (testing.md §3), run locally on both platforms · P4–P11 · all green · L
