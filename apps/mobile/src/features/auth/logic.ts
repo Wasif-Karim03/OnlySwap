@@ -141,7 +141,8 @@ export const GATE_HREF = {
   rules: '/rules',
   'rules-updated': '/rules?updated=1',
   waitlist: '/waitlist',
-  notifications: '/notifications',
+  // Not /notifications: that path is the notification list (F09).
+  notifications: '/allow-notifications',
   home: '/discover',
 } as const satisfies Record<GateRoute, string>;
 

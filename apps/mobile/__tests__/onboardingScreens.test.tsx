@@ -304,8 +304,8 @@ describe('P4-AUTH-10 A08 notifications primer', () => {
   it('the OS prompt fires only on the button', async () => {
     const api = os(perm('undetermined'));
     const markAsked = jest.fn();
-    const { router } = setup('/notifications', {
-      notifications: () => <NotificationsScreen os={api} markAsked={markAsked} />,
+    const { router } = setup('/allow-notifications', {
+      'allow-notifications': () => <NotificationsScreen os={api} markAsked={markAsked} />,
     });
     expect(await screen.findByTestId('screen-notifications')).toBeTruthy();
     expect(screen.getByText(primer.notifications.title)).toBeTruthy();
@@ -319,8 +319,8 @@ describe('P4-AUTH-10 A08 notifications primer', () => {
   it('Not now never prompts and does not ask again', async () => {
     const api = os(perm('undetermined'));
     const markAsked = jest.fn();
-    const { router } = setup('/notifications', {
-      notifications: () => <NotificationsScreen os={api} markAsked={markAsked} />,
+    const { router } = setup('/allow-notifications', {
+      'allow-notifications': () => <NotificationsScreen os={api} markAsked={markAsked} />,
     });
     fireEvent.press(await screen.findByTestId('notifications-not-now'));
     await waitFor(() => expect(router.getPathname()).toBe('/'));
@@ -330,8 +330,8 @@ describe('P4-AUTH-10 A08 notifications primer', () => {
 
   it('a refusal at the OS prompt still moves on', async () => {
     const api = os(perm('undetermined'), perm('denied', false));
-    const { router } = setup('/notifications', {
-      notifications: () => <NotificationsScreen os={api} markAsked={jest.fn()} />,
+    const { router } = setup('/allow-notifications', {
+      'allow-notifications': () => <NotificationsScreen os={api} markAsked={jest.fn()} />,
     });
     fireEvent.press(await screen.findByTestId('notifications-turn-on'));
     await waitFor(() => expect(router.getPathname()).toBe('/'));
@@ -340,8 +340,8 @@ describe('P4-AUTH-10 A08 notifications primer', () => {
   it('already granted skips the screen', async () => {
     const api = os(perm('granted'));
     const markAsked = jest.fn();
-    const { router } = setup('/notifications', {
-      notifications: () => <NotificationsScreen os={api} markAsked={markAsked} />,
+    const { router } = setup('/allow-notifications', {
+      'allow-notifications': () => <NotificationsScreen os={api} markAsked={markAsked} />,
     });
     await waitFor(() => expect(router.getPathname()).toBe('/'));
     expect(markAsked).toHaveBeenCalledTimes(1);
@@ -350,8 +350,8 @@ describe('P4-AUTH-10 A08 notifications primer', () => {
 
   it('denied for good offers Settings, and Not now continues', async () => {
     const api = os(perm('denied', false));
-    const { router } = setup('/notifications', {
-      notifications: () => <NotificationsScreen os={api} markAsked={jest.fn()} />,
+    const { router } = setup('/allow-notifications', {
+      'allow-notifications': () => <NotificationsScreen os={api} markAsked={jest.fn()} />,
     });
     expect(await screen.findByTestId('screen-notifications-denied')).toBeTruthy();
     expect(screen.getByText(primer.openSettings)).toBeTruthy();
