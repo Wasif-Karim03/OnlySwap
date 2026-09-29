@@ -13,12 +13,24 @@ export const supabaseRealtime: RealtimeSource = {
   userId: async () => (await getSupabase().auth.getSession()).data.session?.user.id ?? null,
   subscribe: (topic, event, onEvent) => {
     const sb = getSupabase();
-    const channel = sb
-      .channel(topic, { config: { private: true } })
-      .on('broadcast', { event }, (msg) => onEvent(msg.payload))
-      .subscribe();
+    let channel: ReturnType<typeof sb.channel> | null = null;
+    let stopped = false;
+    // Private channels are authorized with the user's JWT. Hand Realtime the
+    // current session token first: after a cold start the socket can connect
+    // before the stored session loads and would join as anon (found on the
+    // Simulator: the inbox never heard about an accepted offer).
+    void (async () => {
+      const token = (await sb.auth.getSession()).data.session?.access_token;
+      if (token) await sb.realtime.setAuth(token);
+      if (stopped) return;
+      channel = sb
+        .channel(topic, { config: { private: true } })
+        .on('broadcast', { event }, (msg) => onEvent(msg.payload))
+        .subscribe();
+    })();
     return () => {
-      void sb.removeChannel(channel);
+      stopped = true;
+      if (channel) void sb.removeChannel(channel);
     };
   },
 };

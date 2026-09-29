@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
@@ -39,6 +39,13 @@ export function InboxScreen({
   const [tab, setTab] = useState<Tab>('offers');
   const query = useQuery({ queryKey: inboxKey, queryFn: () => api.inbox() });
   useUserChannel('inbox', () => void query.refetch(), realtime);
+  // Also refresh whenever the tab comes back into view, in case a ping was missed.
+  const refetchInbox = query.refetch;
+  useFocusEffect(
+    useCallback(() => {
+      void refetchInbox();
+    }, [refetchInbox]),
+  );
   const base = mediaBase();
 
   const offerRow = (o: Offer) => {
