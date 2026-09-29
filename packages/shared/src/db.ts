@@ -1586,11 +1586,11 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "accept_rules":
-{ Args: { "version": string }; Returns: undefined
-                           },
-"accept_offer":
+            "accept_offer":
 { Args: { "offer_id": string }; Returns: Json
+                           },
+"accept_rules":
+{ Args: { "version": string }; Returns: undefined
                            },
 "admin_change_email":
 { Args: { "new_email": string,"user_id": string }; Returns: Json

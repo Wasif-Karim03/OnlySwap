@@ -24,13 +24,15 @@ for (let round = 0; round < 5; round += 1) {
 }
 
 for (let round = 0; round < 5; round += 1) {
+  // A fresh buyer each round: new accounts get 5 offers a day.
+  const buyer = await student(`race-d${round}-${stamp}@osu.edu`, 'Dee');
   const id = await listing(seller, campus, { title: `Race desk ${round}` });
   const [offer] = await Promise.all([
-    rpc('make_offer', { listing_id: id, amount_cents: 1500 }, b1.token),
+    rpc('make_offer', { listing_id: id, amount_cents: 1500 }, buyer.token),
     rpc('mark_sold', { id }, seller.token),
   ]);
   if (offer.status === 200) {
-    const again = await rpc('get_offer', { offer_id: offer.body.id }, b1.token);
+    const again = await rpc('get_offer', { offer_id: offer.body.id }, buyer.token);
     check(
       again.body.status !== 'pending',
       `RACE-02 round ${round}: never pending on a sold listing`,

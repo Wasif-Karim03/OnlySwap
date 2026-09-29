@@ -126,17 +126,24 @@ const bListing = await listing(b, campus, { title: 'Security test bike' });
     a.token,
   );
   check(svg.status === 400, 'T-SEC-08 SVG refused', `status ${svg.status}`);
-  const trav = await fetch(`${MEDIA}/c/../../etc/passwd`).catch(() => null);
-  check(
-    !trav || trav.status === 404 || trav.status === 400,
-    'T-SEC-08 media Worker refuses traversal',
-    `status ${trav?.status}`,
-  );
-  const other404 = await fetch(`${MEDIA}/exports/x.json`).catch(() => null);
-  check(
-    !other404 || other404.status === 404,
-    'T-SEC-08 media Worker serves allow-listed prefixes only',
-  );
+  // The media Worker checks need `wrangler dev` running; set MEDIA_URL to include them.
+  if (process.env.MEDIA_URL) {
+    const trav = await fetch(`${MEDIA}/c/../../etc/passwd`).catch(() => null);
+    check(
+      !trav || trav.status === 404 || trav.status === 400,
+      'T-SEC-08 media Worker refuses traversal',
+      `status ${trav?.status}`,
+    );
+    const other404 = await fetch(`${MEDIA}/exports/x.json`).catch(() => null);
+    check(
+      !other404 || other404.status === 404,
+      'T-SEC-08 media Worker serves allow-listed prefixes only',
+    );
+  } else {
+    console.log(
+      'SKIP  T-SEC-08 media Worker (set MEDIA_URL with wrangler dev running; unit tests cover the handler)',
+    );
+  }
 }
 
 // T-SEC-10 rate limits: the 11th offer in an hour.

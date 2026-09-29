@@ -119,25 +119,6 @@ media_smoke() {
     node --experimental-strip-types scripts/verify/media-smoke.mjs
 }
 
-step "install" pnpm install --frozen-lockfile
-step "G1 lint" pnpm lint
-step "G2 typecheck" pnpm typecheck
-step "G3 unit tests (meetup step, posted + share card, cleanup-drafts)" pnpm test
-step "local Supabase restarted (new function config)" supabase_up
-step "db reset: migrations 0001-0017, 0100, seed and local buckets" pnpm supabase db reset
-step "G7 pgTAP (all suites)" pnpm supabase test db
-step "G4 RPC contract matches the snapshot" pnpm rpc:check
-step "P3-TYPES-01 drift check" pnpm db:types:check
-step "Auth smoke still passes (S10)" auth_smoke
-step "functions env (local storage as R2, Turnstile test secret)" write_functions_env
-step "Edge Functions served locally" functions_up
-step "delete-account live still passes (S11)" delete_smoke
-step "E2E-02 API half still passes (S12)" underage_smoke
-step "Media live still passes (S13)" media_smoke
-step "Onboarding live still passes (S14)" onboarding_smoke
-step "Account safety live still passes (S15)" account_smoke
-step "P4-AUTH-15 reviewers still sign in (S15)" review_smoke
-step "Sell live still passes (S16)" sell_smoke
 offer_race() { ANON_KEY="$(anon_key)" SERVICE_KEY="$(status_var SERVICE_ROLE_KEY)" node scripts/verify/offer-race.mjs; }
 security_live() { fn_log_on_fail env ANON_KEY="$(anon_key)" SERVICE_KEY="$(status_var SERVICE_ROLE_KEY)" node scripts/verify/security.mjs; }
 fire_all() { ANON_KEY="$(anon_key)" SERVICE_KEY="$(status_var SERVICE_ROLE_KEY)" node --experimental-strip-types scripts/fire-all-notifications.ts; }
@@ -146,7 +127,7 @@ load_feed() {
   else docker exec -i supabase_db_onlyswap psql -U postgres -d postgres < scripts/load/feed.sql; fi
 }
 site_build() {
-  PUBLIC_SUPABASE_URL=http://127.0.0.1:54321 PUBLIC_SUPABASE_ANON_KEY="$(anon_key)" SITE_URL=http://localhost:4321 \
+  PUBLIC_SUPABASE_URL=http://127.0.0.1:54321 PUBLIC_SUPABASE_ANON_KEY="$(anon_key)" SITE_URL=http://localhost:4417 \
     pnpm --filter site build
 }
 admin_build() {
@@ -154,10 +135,11 @@ admin_build() {
 }
 web_e2e() {
   pnpm --filter e2e-web exec playwright install chromium >/dev/null || return 1
-  (cd apps/site && npx astro preview --force --port 4321 >/tmp/onlyswap-site.log 2>&1 &)
-  (cd apps/admin && npx vite preview --port 5173 >/tmp/onlyswap-admin.log 2>&1 &)
-  sleep 5
-  SITE_URL=http://localhost:4321 ADMIN_URL=http://localhost:5173 pnpm --filter e2e-web e2e
+  # Odd ports so another dev server on 4321/5173 can't answer instead.
+  (cd apps/site && npx astro preview --force --port 4417 >/tmp/onlyswap-site.log 2>&1 &)
+  (cd apps/admin && npx vite preview --strictPort --port 5517 >/tmp/onlyswap-admin.log 2>&1 &)
+  for _ in $(seq 1 30); do curl -fs http://localhost:4417/terms >/dev/null && curl -fs http://localhost:5517/ >/dev/null && break; sleep 1; done
+  SITE_URL=http://localhost:4417 ADMIN_URL=http://localhost:5517 pnpm --filter e2e-web e2e
   local rc=$?
   pkill -f "astro preview" >/dev/null 2>&1; pkill -f "vite preview" >/dev/null 2>&1
   return $rc
@@ -172,7 +154,7 @@ step "G1 lint" pnpm lint
 step "G2 typecheck (mobile, admin, site, e2e)" pnpm typecheck
 step "G3 unit tests (Jest, node tests, legal copy check)" pnpm test
 step "local Supabase restarted" supabase_up
-step "db reset: migrations 0001-0032, 0100, seed" pnpm supabase db reset
+step "db reset: migrations 0001-0033, 0100, seed" pnpm supabase db reset
 step "G7 pgTAP (all suites, incl. admin, public_site, security)" pnpm supabase test db
 step "G4 RPC contract matches the snapshot" pnpm rpc:check
 step "P3-TYPES-01 drift check" pnpm db:types:check

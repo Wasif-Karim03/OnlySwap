@@ -16,7 +16,15 @@ module.exports = defineConfig([
   expoConfig,
   prettierConfig,
   {
-    ignores: ['dist/*', '.expo/*', 'ios/*', 'android/*', 'coverage/*', 'expo-env.d.ts'],
+    ignores: [
+      'dist/*',
+      '.expo/*',
+      'ios/*',
+      'android/*',
+      'coverage/*',
+      'expo-env.d.ts',
+      '.maestro/*',
+    ],
   },
   {
     files: ['**/*.{ts,tsx}'],
