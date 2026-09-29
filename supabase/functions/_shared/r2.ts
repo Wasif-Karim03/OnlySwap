@@ -85,6 +85,11 @@ export function createR2(cfg: R2Env, doFetch: Fetch = fetch) {
       return keys;
     },
 
+    /** Server-side write of a small object (chat archives, exports). */
+    async put(bucket: string, key: string, body: string, type = 'application/json'): Promise<void> {
+      await call('PUT', objectUrl(cfg, bucket, key), { 'content-type': type }, body);
+    },
+
     async delete(bucket: string, key: string): Promise<void> {
       await call('DELETE', objectUrl(cfg, bucket, key));
     },

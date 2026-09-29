@@ -438,6 +438,12 @@ verify_jwt = false
 [functions.push-receipts]
 verify_jwt = false
 
+[functions.send-email]
+verify_jwt = false
+
+[functions.archive-chats]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327

@@ -505,13 +505,13 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Checks:**
 
-- [ ] `P9-PUSH-04`: each type fires once in `scripts/fire-all-notifications.ts` on staging (T-INT-NOTIF-DEDUPE green)
-- [ ] `P9-NOTIF-01`: —
-- [ ] `P9-NOTIF-02`: toggling `tips` off stops stale nudges (test)
-- [ ] `P9-MAIL-01`: snapshot tests of rendered templates
-- [ ] `P9-MAIL-02`: 500 queued emails drain over 2 days on staging (simulated clock)
-- [ ] `P9-CRON-01`: `select * from cron.job` lists all of them; each tested with pgTAP time travel (`set local` now override via `private.now()` wrapper)
-- [ ] `P4-AUTH-16`: a reviewer completes a swap alone on staging
+- [x] `P9-PUSH-04`: each type fires once in `scripts/fire-all-notifications.ts` on staging (T-INT-NOTIF-DEDUPE green)
+- [x] `P9-NOTIF-01`: —
+- [x] `P9-NOTIF-02`: toggling `tips` off stops stale nudges (test)
+- [x] `P9-MAIL-01`: snapshot tests of rendered templates
+- [x] `P9-MAIL-02`: 500 queued emails drain over 2 days on staging (simulated clock)
+- [x] `P9-CRON-01`: `select * from cron.job` lists all of them; each tested with pgTAP time travel (`set local` now override via `private.now()` wrapper)
+- [x] `P4-AUTH-16`: a reviewer completes a swap alone on staging
 
 **Gates:** G1, G2, G3, G5, G6, G4, G10, G11
 

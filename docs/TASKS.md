@@ -114,7 +114,7 @@
 - [x] **P4-AUTH-11** Edge Function `waitlist-request` + Turnstile helper · P3-DB-02 · a duplicate email is a silent success; IP limited · M
 - [x] **P4-AUTH-14** Session expired modal (X7) and the re-verify gate (X9) with `complete_reverify` · AUTH-06 · forcing `verified_until` into the past shows X9; a new code restores it · M
 - [ ] **P4-AUTH-15** Reviewer accounts: `scripts/seed-review.ts` + `review_accounts` rows on staging · AUTH-05 · a reviewer logs in with a password on staging · S
-- [ ] **P4-AUTH-16** `demo_autoplay` cron (Demo University only): the bot accepts offers, replies, proposes and completes meetups for reviewers · AUTH-15, P8-MEET-01 · a reviewer completes a swap alone on staging · M
+- [x] **P4-AUTH-16** `demo_autoplay` cron (Demo University only): the bot accepts offers, replies, proposes and completes meetups for reviewers · AUTH-15, P8-MEET-01 · a reviewer completes a swap alone on staging · M
 - [ ] 🆕 **P4-AUTH-17** Rules re-accept gate: `require_active` checks `rules_version`; A07 "Updated rules" variant with a "What changed" list. · deps P4-AUTH-09 · done when T-UNIT-AUTH-06, E2E-22 · S
 - [x] 🆕 **P4-AUTH-18** Sign out of all devices (`signOut({scope:"global"})`) + `revoke-sessions` Edge Function used on suspension/ban. · deps P4-AUTH-02 · done when T-INT-AUTH-05/06 · S
 - [x] 🆕 **P4-AUTH-19** Email-access recovery: F20 Help form topic `cant_access_email` → `support-request`; `admin_change_email` + `admin-change-email` function; `on_auth_user_email_changed` trigger re-resolves campus. · deps P4-AUTH-11 · done when T-INT-AUTH-07 · M
@@ -178,12 +178,12 @@
 - [ ] **P9-PUSH-01** APNs key via `eas credentials` (iOS); upload the FCM v1 JSON to EAS (Android) · P1-SETUP-05, P0-ACC-07 · `eas credentials` shows both · S
 - [x] **P9-PUSH-02** `lib/push.ts`: Android channels, permission, token register/refresh, tap handling (cold and warm), badge · PUSH-01 · a test push opens the right screen on both OSes · M
 - [x] **P9-PUSH-03** Edge Function `send-push` (prefs, quiet hours, cap, collapse, time-sensitive, tickets) + `push-receipts` + cron jobs · P3-DB-06 · T-INT-PUSH-* pass; a bad token gets disabled · L
-- [ ] **P9-PUSH-04** ✎ All 23 R1.0 notification triggers from API §7, with dedupe keys and preview-safe text. · deps P9-PUSH-03, P7, P8 · done when each type fires once in `scripts/fire-all-notifications.ts` on staging (T-INT-NOTIF-DEDUPE green) · L
-- [ ] **P9-NOTIF-01** S-F09 Notifications list + X36 empty + unread badge · PUSH-04 · — · M
-- [ ] **P9-NOTIF-02** S-F11 Notification settings (prefs, tips opt-in with consent line, previews, quiet hours, OS-off banner) · PUSH-03 · toggling `tips` off stops stale nudges (test) · M
-- [ ] **P9-MAIL-01** `_shared/mailer.ts` + templates (campus_open, account_paused, reverify_due, account_deleted, data_export, admin_reveal_receipt, support_request) · P1-SPIKE-01 · snapshot tests of rendered templates · M
-- [ ] **P9-MAIL-02** `send-email` drain function + `email_drain` cron + 400/day cap · MAIL-01 · 500 queued emails drain over 2 days on staging (simulated clock) · S
-- [ ] **P9-CRON-01** Remaining cron jobs: stale_listings, listings_expire, expire_food, reverify_reminders/enforce, pause_lift, refresh_stats/hints, prune, archive_chats, strike_expiry · P3-DB-09 · `select * from cron.job` lists all of them; each tested with pgTAP time travel (`set local` now override via `private.now()` wrapper) · L
+- [x] **P9-PUSH-04** ✎ All 23 R1.0 notification triggers from API §7, with dedupe keys and preview-safe text. · deps P9-PUSH-03, P7, P8 · done when each type fires once in `scripts/fire-all-notifications.ts` on staging (T-INT-NOTIF-DEDUPE green) · L
+- [x] **P9-NOTIF-01** S-F09 Notifications list + X36 empty + unread badge · PUSH-04 · — · M
+- [x] **P9-NOTIF-02** S-F11 Notification settings (prefs, tips opt-in with consent line, previews, quiet hours, OS-off banner) · PUSH-03 · toggling `tips` off stops stale nudges (test) · M
+- [x] **P9-MAIL-01** `_shared/mailer.ts` + templates (campus_open, account_paused, reverify_due, account_deleted, data_export, admin_reveal_receipt, support_request) · P1-SPIKE-01 · snapshot tests of rendered templates · M
+- [x] **P9-MAIL-02** `send-email` drain function + `email_drain` cron + 400/day cap · MAIL-01 · 500 queued emails drain over 2 days on staging (simulated clock) · S
+- [x] **P9-CRON-01** Remaining cron jobs: stale_listings, listings_expire, expire_food, reverify_reminders/enforce, pause_lift, refresh_stats/hints, prune, archive_chats, strike_expiry · P3-DB-09 · `select * from cron.job` lists all of them; each tested with pgTAP time travel (`set local` now override via `private.now()` wrapper) · L
 - [x] 🆕 **P9-FIX-01** Outbox hardening: `for update skip locked` claims in `send-push`/`send-email`, `reset_stuck_sends` cron, exists-guards on the minute crons. · deps P9-PUSH-03, P9-MAIL-02 · done when T-FN-07 passes · S
 
 ## P10 · Quad (Q)

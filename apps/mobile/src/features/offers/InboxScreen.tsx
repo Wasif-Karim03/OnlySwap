@@ -6,6 +6,7 @@ import { StyleSheet } from 'react-native-unistyles';
 
 import { Avatar } from '@/components/Avatar';
 import { EmptyState } from '@/components/EmptyState';
+import { IconButton } from '@/components/IconButton';
 import { ErrorState } from '@/components/ErrorState';
 import { NavBar } from '@/components/NavBar';
 import { SegmentedControl } from '@/components/SegmentedControl';
@@ -14,7 +15,7 @@ import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { getEnv } from '@/lib/env';
 import { useUserChannel, type RealtimeSource } from '@/lib/realtime';
-import { offers as copy } from '@/strings/en';
+import { notificationsScreen as notifCopy, offers as copy } from '@/strings/en';
 
 import { mediaUrl } from '../sell/logic';
 import { offersApi, type OffersApi } from './api';
@@ -161,7 +162,18 @@ export function InboxScreen({
 
   return (
     <View style={styles.root} testID="screen-inbox">
-      <NavBar variant="large" title={copy.inboxTitle} />
+      <NavBar
+        variant="large"
+        title={copy.inboxTitle}
+        trailing={
+          <IconButton
+            icon="bell"
+            accessibilityLabel={notifCopy.open}
+            onPress={() => router.push('/notifications')}
+            testID="inbox-notifications"
+          />
+        }
+      />
       <View style={styles.tabs}>
         <SegmentedControl
           label={copy.inboxTitle}

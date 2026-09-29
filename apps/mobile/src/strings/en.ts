@@ -1174,6 +1174,43 @@ export const deal = {
   done_: 'Done',
 } as const;
 
+export const notificationsScreen = {
+  title: 'Notifications',
+  open: 'Notifications',
+  openUnread: 'Notifications, {n} unread',
+  markAll: 'Mark all read',
+  today: 'Today',
+  yesterday: 'Yesterday',
+  earlier: 'Earlier',
+  emptyTitle: 'No notifications yet',
+  emptyBody: 'Offers, messages and meetup updates show up here.',
+  unread: 'Unread',
+  // Settings (F11)
+  settingsTitle: 'Notifications',
+  osOff: 'Notifications are off for OnlySwap in your phone settings.',
+  openSettings: 'Open settings',
+  offers: 'Offers',
+  offersBody: 'New offers, counters and answers',
+  messages: 'Messages',
+  messagesBody: 'New chat messages',
+  meetups: 'Meetups',
+  meetupsBody: 'Suggestions, reminders and changes',
+  savedSearch: 'Saved searches',
+  savedSearchBody: 'New matches and items back from hold',
+  priceDrop: 'Price drops',
+  priceDropBody: 'When something you saved gets cheaper',
+  tips: 'Selling tips',
+  tipsBody:
+    'Occasional nudges, like when a listing gets no offers. These are promotional and off unless you turn them on.',
+  previews: 'Show message text',
+  previewsBody: 'Off by default. When on, a push can show what someone wrote.',
+  quiet: 'Quiet hours',
+  quietBody: 'No pushes from {start} to {end}, except meetup reminders and time-sensitive updates.',
+  quietStart: 'Start',
+  quietEnd: 'End',
+  saveFailed: "Couldn't save that. Try again.",
+} as const;
+
 export const en = {
   permissions,
   tabs,
@@ -1210,6 +1247,7 @@ export const en = {
   chat,
   meetup,
   deal,
+  notificationsScreen,
 } as const;
 
 export default en;
