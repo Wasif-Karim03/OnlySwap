@@ -25,3 +25,4 @@ sim-shots/
 diag.log
 query.log
 realtime.log
+migrate.log
