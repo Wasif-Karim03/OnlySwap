@@ -128,13 +128,15 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: theme.radius.chip,
     backgroundColor: theme.colors.overlay,
   },
+  // A soft fade into the text (found on the Simulator: a flat block cut the
+  // photo in half). RN's native gradients, no extra package.
   scrim: {
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
-    height: '45%',
-    backgroundColor: theme.colors.overlay,
+    height: '55%',
+    experimental_backgroundImage: `linear-gradient(to bottom, transparent 0%, ${theme.colors.overlay} 45%, ${theme.colors.photoBg} 100%)`,
   },
   body: {
     position: 'absolute',
