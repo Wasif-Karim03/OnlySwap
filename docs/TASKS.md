@@ -163,10 +163,10 @@
 - [x] **P8-CHAT-02** `useChat` (focus subscribe, dedupe, reconnect, offline queue) · CHAT-01 · T-UNIT-CHAT-* · L
 - [x] **P8-CHAT-03** S-E09 Chat UI (bubbles, system rows, deal bar, safety tip, failed/pending, blocked X18, closed read-only) · CHAT-02 · — · L
 - [x] **P8-CHAT-05** S-X17 Chat details (mute, report, block, hide) · CHAT-03 · — · S
-- [ ] **P8-MEET-01** ✎ Meetup RPCs `propose_meetup` (cancels previous), `confirm_meetup`, `checkin_meetup`, `running_late`, `cancel_meetup`, `create_meetup_share`, `report_noshow` (reporter must be checked in), `get_meetup_share`; crons `meetup_reminders`, `noshow_autoconfirm`. · deps P8-CHAT-01 · done when T-INT-MEET-01/02/03 and T-INT-TZ-01 pass · L
-- [ ] **P8-MEET-02** ✎ E05 Plan the pickup: spot list with designation tags + **Directions** deep link (Apple/Google Maps), custom place, day/time picker, counter-proposal. No map, no location permission. · deps P8-MEET-01 · done when works end to end on both OSes (E2E-08) · M
-- [ ] **P8-MEET-03** S-E12 Meetup day (countdown, I'm here, late, cancel, reschedule E15, no-show E14, share E13) · MEET-01 · every state reachable via fixtures · L
-- [ ] **P8-MEET-04** MeetupCard component in chat with inline accept/suggest another · MEET-01 · — · M
+- [x] **P8-MEET-01** ✎ Meetup RPCs `propose_meetup` (cancels previous), `confirm_meetup`, `checkin_meetup`, `running_late`, `cancel_meetup`, `create_meetup_share`, `report_noshow` (reporter must be checked in), `get_meetup_share`; crons `meetup_reminders`, `noshow_autoconfirm`. · deps P8-CHAT-01 · done when T-INT-MEET-01/02/03 and T-INT-TZ-01 pass · L
+- [x] **P8-MEET-02** ✎ E05 Plan the pickup: spot list with designation tags + **Directions** deep link (Apple/Google Maps), custom place, day/time picker, counter-proposal. No map, no location permission. · deps P8-MEET-01 · done when works end to end on both OSes (E2E-08) · M
+- [x] **P8-MEET-03** S-E12 Meetup day (countdown, I'm here, late, cancel, reschedule E15, no-show E14, share E13) · MEET-01 · every state reachable via fixtures · L
+- [x] **P8-MEET-04** MeetupCard component in chat with inline accept/suggest another · MEET-01 · — · M
 - [ ] **P8-DEAL-01** RPCs `confirm_deal`, `mark_sold`, `submit_rating`; cron jobs `deal_checks` and `rating_reveal`; view `ratings_visible` · MEET-01 · the double-blind reveal is correct at 7 days · M
 - [ ] **P8-DEAL-02** S-E16 Did it sell?, S-F07 Mark sold (pick buyer), S-E17 Rate the swap + E18 reveal · DEAL-01 · — · M
 - [ ] **P8-DEAL-03** `maybeAskForReview()` (X26) · DEAL-02 · shown only when conditions hold · S

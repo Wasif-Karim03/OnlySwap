@@ -98,11 +98,23 @@ function render(routes: Record<string, () => ReactNode>, initialUrl: string) {
   );
 }
 
+const noMeetups = {
+  propose: jest.fn(),
+  confirm: jest.fn(),
+  checkIn: jest.fn(),
+  late: jest.fn(),
+  cancel: jest.fn(),
+  get: jest.fn(),
+  forChat: jest.fn(async () => null),
+  share: jest.fn(),
+  noShow: jest.fn(),
+};
+
 const chatRoute = (api: ChatApi) => {
   const store = createChatStore('c1', { api, me: () => 'me' });
   return {
     'chat/[id]/index': () => (
-      <ChatScreen id="c1" me="me" api={api} realtime={realtime} store={store} />
+      <ChatScreen id="c1" me="me" api={api} meetups={noMeetups} realtime={realtime} store={store} />
     ),
     'chat/[id]/details': () => <Stub id="screen-details" />,
   };

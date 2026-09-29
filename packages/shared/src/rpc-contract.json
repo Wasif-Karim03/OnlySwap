@@ -40,9 +40,29 @@
     ]
   },
   {
+    "name": "cancel_meetup",
+    "args": "meetup_id uuid, reason text",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "check_text",
     "args": "text text, scope text",
     "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "checkin_meetup",
+    "args": "meetup_id uuid",
+    "returns": "void",
     "security": "definer",
     "grants": [
       "authenticated",
@@ -63,6 +83,16 @@
     "name": "confirm_age",
     "args": "method text, is_adult boolean, birth_date date",
     "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "confirm_meetup",
+    "args": "meetup_id uuid",
+    "returns": "void",
     "security": "definer",
     "grants": [
       "authenticated",
@@ -92,6 +122,16 @@
   {
     "name": "create_listing",
     "args": "id uuid, kind listing_kind, title text, description text, category_id smallint, condition item_condition, price_cents integer, open_to_offers boolean, photos jsonb, meet_spot_ids uuid[], meet_note text, availability text[], wanted_max_cents integer, wanted_ref uuid, food_minutes integer, pickup_by date",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "create_meetup_share",
+    "args": "meetup_id uuid",
     "returns": "jsonb",
     "security": "definer",
     "grants": [
@@ -171,6 +211,16 @@
     ]
   },
   {
+    "name": "get_chat_meetup",
+    "args": "chat_id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "get_feed",
     "args": "cursor jsonb, \"limit\" integer",
     "returns": "jsonb",
@@ -196,6 +246,27 @@
     "returns": "jsonb",
     "security": "definer",
     "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "get_meetup",
+    "args": "meetup_id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "get_meetup_share",
+    "args": "token text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "anon",
       "authenticated",
       "service_role"
     ]
@@ -352,6 +423,16 @@
     ]
   },
   {
+    "name": "propose_meetup",
+    "args": "chat_id uuid, starts_at timestamp with time zone, spot_id uuid, custom_place text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "record_swipes",
     "args": "items jsonb",
     "returns": "void",
@@ -382,9 +463,29 @@
     ]
   },
   {
+    "name": "report_noshow",
+    "args": "meetup_id uuid, note text",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "reserve_listing_id",
     "args": "",
     "returns": "uuid",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "running_late",
+    "args": "meetup_id uuid, minutes integer",
+    "returns": "void",
     "security": "definer",
     "grants": [
       "authenticated",

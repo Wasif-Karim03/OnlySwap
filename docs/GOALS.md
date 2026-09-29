@@ -455,10 +455,10 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Checks:**
 
-- [ ] `P8-MEET-01`: T-INT-MEET-01/02/03 and T-INT-TZ-01 pass
-- [ ] `P8-MEET-04`: —
-- [ ] `P8-MEET-02`: works end to end on both OSes (E2E-08)
-- [ ] `P8-MEET-03`: every state reachable via fixtures
+- [x] `P8-MEET-01`: T-INT-MEET-01/02/03 and T-INT-TZ-01 pass
+- [x] `P8-MEET-04`: —
+- [x] `P8-MEET-02`: works end to end on both OSes (E2E-08)
+- [x] `P8-MEET-03`: every state reachable via fixtures
 
 **Gates:** G1, G2, G3, G5, G6, G4, G10, G11
 

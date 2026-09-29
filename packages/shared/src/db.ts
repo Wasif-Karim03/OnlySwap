@@ -1598,14 +1598,23 @@ isOneToOne: false
 "block_user":
 { Args: { "user_id": string }; Returns: undefined
                            },
+"cancel_meetup":
+{ Args: { "meetup_id": string,"reason"?: string }; Returns: undefined
+                           },
 "check_text":
 { Args: { "scope": string,"text": string }; Returns: Json
+                           },
+"checkin_meetup":
+{ Args: { "meetup_id": string }; Returns: undefined
                            },
 "complete_reverify":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
 "confirm_age":
 { Args: { "birth_date"?: string,"is_adult"?: boolean,"method": string }; Returns: Json
+                           },
+"confirm_meetup":
+{ Args: { "meetup_id": string }; Returns: undefined
                            },
 "counter_offer":
 { Args: { "amount_cents": number,"note"?: string,"offer_id": string }; Returns: Json
@@ -1615,6 +1624,9 @@ isOneToOne: false
                            },
 "create_listing":
 { Args: { "availability"?: (string)[],"category_id"?: number,"condition"?: Database["public"]['Enums']["item_condition"],"description"?: string,"food_minutes"?: number,"id": string,"kind"?: Database["public"]['Enums']["listing_kind"],"meet_note"?: string,"meet_spot_ids"?: (string)[],"open_to_offers"?: boolean,"photos"?: Json,"pickup_by"?: string,"price_cents"?: number,"title"?: string,"wanted_max_cents"?: number,"wanted_ref"?: string }; Returns: Json
+                           },
+"create_meetup_share":
+{ Args: { "meetup_id": string }; Returns: Json
                            },
 "create_report":
 { Args: { "details"?: string,"reason": string,"target_id": string,"target_type": string }; Returns: Json
@@ -1637,6 +1649,9 @@ isOneToOne: false
 "get_chat":
 { Args: { "chat_id": string }; Returns: Json
                            },
+"get_chat_meetup":
+{ Args: { "chat_id": string }; Returns: Json
+                           },
 "get_feed":
 { Args: { "cursor"?: Json,"limit"?: number }; Returns: Json
                            },
@@ -1645,6 +1660,12 @@ isOneToOne: false
                            },
 "get_listing":
 { Args: { "id": string }; Returns: Json
+                           },
+"get_meetup":
+{ Args: { "meetup_id": string }; Returns: Json
+                           },
+"get_meetup_share":
+{ Args: { "token": string }; Returns: Json
                            },
 "get_messages":
 { Args: { "after"?: number,"before"?: number,"chat_id": string,"limit"?: number }; Returns: Json
@@ -1691,6 +1712,9 @@ isOneToOne: false
 "price_hint":
 { Args: { "category_id": number }; Returns: Json
                            },
+"propose_meetup":
+{ Args: { "chat_id": string,"custom_place"?: string,"spot_id"?: string,"starts_at": string }; Returns: Json
+                           },
 "record_swipes":
 { Args: { "items": Json }; Returns: undefined
                            },
@@ -1700,8 +1724,14 @@ isOneToOne: false
 "relist_listing":
 { Args: { "id": string,"price_cents"?: number }; Returns: Json
                            },
+"report_noshow":
+{ Args: { "meetup_id": string,"note"?: string }; Returns: undefined
+                           },
 "reserve_listing_id":
 { Args: Record<PropertyKey, never>; Returns: string
+                           },
+"running_late":
+{ Args: { "meetup_id": string,"minutes": number }; Returns: undefined
                            },
 "save_listing":
 { Args: { "listing_id": string }; Returns: Json

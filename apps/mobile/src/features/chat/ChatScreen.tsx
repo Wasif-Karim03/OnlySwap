@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { FlatList, TextInput, View } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import type { StoreApi } from 'zustand';
 
 import { Banner } from '@/components/Banner';
+import { Button } from '@/components/Button';
 import { ErrorState } from '@/components/ErrorState';
 import { IconButton } from '@/components/IconButton';
 import { MessageBubble } from '@/components/MessageBubble';
@@ -20,6 +21,8 @@ import type { RealtimeSource } from '@/lib/realtime';
 import { chat as copy } from '@/strings/en';
 
 import { useSession } from '../auth/useSession';
+import { meetupsApi, type MeetupsApi } from '../meetups/api';
+import { MeetupCard } from '../meetups/MeetupCard';
 import { money } from '../offers/logic';
 import { mediaUrl } from '../sell/logic';
 import { chatApi, type ChatApi } from './api';
@@ -36,6 +39,7 @@ export function ChatScreen({
   id,
   me: meProp,
   api = chatApi,
+  meetups = meetupsApi,
   realtime,
   store,
   mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
@@ -44,6 +48,7 @@ export function ChatScreen({
   id: string;
   me?: string | null;
   api?: ChatApi;
+  meetups?: MeetupsApi;
   realtime?: RealtimeSource;
   store?: StoreApi<ChatState>;
   mediaBase?: () => string;
@@ -60,6 +65,13 @@ export function ChatScreen({
   const [text, setText] = useState('');
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/inbox'));
   const data = useMemo(() => [...state.items].reverse(), [state.items]);
+  const meetupQ = useQuery({ queryKey: ['chat-meetup', id], queryFn: () => meetups.forChat(id) });
+  // Every meetup change posts a `meetup` row; refetch the card when one arrives.
+  const meetupRows = state.items.filter((m) => m.kind === 'meetup').length;
+  const refetchMeetup = meetupQ.refetch;
+  useEffect(() => {
+    if (meetupRows > 0) void refetchMeetup();
+  }, [meetupRows, refetchMeetup]);
 
   if (info.isPending || (state.loading && state.items.length === 0)) {
     return (
@@ -138,8 +150,26 @@ export function ChatScreen({
             {fill(copy.agreed, { amount: money(c.agreed_cents) })}
           </Text>
         </View>
+        {!readOnly && !meetupQ.data ? (
+          <Button
+            label={copy.planMeetup}
+            size="S"
+            variant="dark"
+            onPress={() => router.push({ pathname: '/chat/[id]/meetup', params: { id } })}
+            testID="chat-plan-meetup"
+          />
+        ) : null}
         {!readOnly && extraActions ? extraActions({ role: c.role, listingId: c.listing_id }) : null}
       </View>
+      {meetupQ.data ? (
+        <MeetupCard
+          meetup={meetupQ.data}
+          chatId={id}
+          otherName={name}
+          api={meetups}
+          onChanged={() => void meetupQ.refetch()}
+        />
+      ) : null}
       <KeyboardAvoidingView behavior="padding" style={styles.flex}>
         <FlatList
           inverted
