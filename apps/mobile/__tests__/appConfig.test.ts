@@ -89,9 +89,11 @@ describe('T-STORE (TESTING §7) app.config.ts matches the locked native config (
     expect(blocked).toEqual([...BLOCKED_ANDROID_PERMISSIONS]);
   });
 
-  it('pins Android SDK levels (min 26, target and compile 36)', () => {
+  it('pins Android SDK levels (min 26, target and compile 36) and adopts iOS scenes', () => {
     expect(pluginOptions(cfg, 'expo-build-properties')).toEqual({
       android: { minSdkVersion: 26, compileSdkVersion: 36, targetSdkVersion: 36 },
+      // iOS 27 asserts at launch without the UIScene life cycle.
+      ios: { enableSceneSupport: true },
     });
   });
 
