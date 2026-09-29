@@ -196,8 +196,8 @@
 - [x] **P11-SAFE-04** S-F13 Blocked accounts · P3-SAFE-01 · — · S
 - [x] **P11-SAFE-05** ✎ F19 Safety center (spot list + Directions, tips, 911), X10 Banned items (expanded, D17), F20 Help (bundled FAQ JSON). · deps P2 · done when — · M
 - [x] **P11-ACC-01** S-F16 Delete account (type DELETE) · P4-DEL-01 · end-to-end delete works · S
-- [ ] **P11-SET-01** S-F01 Profile, S-F02 Edit profile, S-F03 My listings (+X37), S-F04 Listing stats, S-F06 Edit listing (price-drop trigger), S-F08 Relist · P6 · — · L
-- [ ] **P11-SET-02** ✎ F10 Settings (+ Sign out of all devices), F12 Privacy settings (analytics/crash toggles), F14 Appearance (System/Light/Dark), F15 Change school, F18 About (licenses). · deps P9-NOTIF-02 · done when — · L
+- [x] **P11-SET-01** S-F01 Profile, S-F02 Edit profile, S-F03 My listings (+X37), S-F04 Listing stats, S-F06 Edit listing (price-drop trigger), S-F08 Relist · P6 · — · L
+- [x] **P11-SET-02** ✎ F10 Settings (+ Sign out of all devices), F12 Privacy settings (analytics/crash toggles), F14 Appearance (System/Light/Dark), F15 Change school, F18 About (licenses). · deps P9-NOTIF-02 · done when — · L
 - [ ] **P11-STATE-01** Global states: OfflineBanner wiring, X11 Update required, X12 Maintenance, X14 Under review, X30/X31 deep-link errors, X25 Share listing · P4-AUTH-03 · toggling `app_config` values shows X11/X12 · M
 - [ ] **P11-STATE-02** Deep links: `lib/deeplinks.ts`, universal links (AASA) and App Links (assetlinks) with `EXPO_PUBLIC_SITE_URL` · P13-WEB-01 · tapping `https://…/l/{id}` in Notes opens the app on both OSes · M
 - [ ] **P11-A11Y-01** Accessibility pass: labels, roles, font scale 200% (X32), VoiceOver list mode for the deck (X33), focus order, reduce motion · all P4–P11 screens · T-QA-A11Y checklist passes · L

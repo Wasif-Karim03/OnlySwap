@@ -1341,6 +1341,126 @@ export const safety = {
   deleteFailed: "We couldn't delete your account. Try again or contact support.",
 } as const;
 
+export const me = {
+  // F01 Profile tab
+  title: 'Profile',
+  verifiedAt: 'Verified at {campus}',
+  statsActive: '{n} listed',
+  statsSold: '{n} sold',
+  statsSwaps: '{n} swaps',
+  sellNudgeTitle: 'Got something to sell?',
+  sellNudgeBody: 'It takes a minute. Most things get an offer the same week.',
+  sellNudge: 'List something',
+  viewProfile: 'View my public profile',
+  myListings: 'My listings',
+  saved: 'Saved',
+  notifications: 'Notifications',
+  settings: 'Settings',
+  safety: 'Safety',
+  help: 'Help',
+  edit: 'Edit profile',
+  // F02 Edit profile
+  editTitle: 'Edit profile',
+  firstName: 'First name',
+  lastInitial: 'Last initial',
+  year: 'Year',
+  bio: 'About you (optional)',
+  bioPlaceholder: 'Example: junior, lives on north campus',
+  changePhoto: 'Change photo',
+  uploading: 'Uploading photo',
+  save: 'Save',
+  saved_: 'Saved',
+  // F03 My listings
+  listingsTitle: 'My listings',
+  tabs: { active: 'Active', sold: 'Sold', other: 'Other' },
+  listingsEmptyTitle: 'Nothing listed yet',
+  listingsEmptyBody: 'Your listings show up here.',
+  statusLabels: {
+    active: 'Active',
+    hold: 'On hold',
+    sold: 'Sold',
+    expired: 'Expired',
+    held_review: 'In review',
+    removed: 'Removed',
+  },
+  relist: 'Relist',
+  stats: 'Stats',
+  // F04 Listing stats
+  statsTitle: 'Listing stats',
+  views: 'Views',
+  saves: 'Saves',
+  offers: 'Offers',
+  openOffers: 'Open offers',
+  bestOffer: 'Best open offer',
+  listed: 'Listed {date}',
+  expires: 'Expires {date}',
+  priceHistory: 'Price changes',
+  noPriceChanges: 'No price changes yet',
+  // F06 Edit listing
+  editListingTitle: 'Edit listing',
+  titleLabel: 'Title',
+  descriptionLabel: 'Description',
+  priceLabel: 'Price',
+  openToOffers: 'Open to offers',
+  saveChanges: 'Save changes',
+  deleteListing: 'Delete listing',
+  deleteTitle: 'Delete this listing?',
+  deleteBody: 'It disappears for everyone. Open offers are declined and chats close.',
+  deleteConfirm: 'Delete listing',
+  // F08 Relist
+  relistTitle: 'Relist',
+  relistBody: 'Your listing goes back to the top of the deck for 60 days.',
+  relistPrice: 'New price (optional)',
+  relistButton: 'Relist',
+  relisted: 'Relisted',
+} as const;
+
+export const settings = {
+  title: 'Settings',
+  account: 'Account',
+  notifications: 'Notifications',
+  privacy: 'Privacy',
+  appearance: 'Appearance',
+  school: 'Change school email',
+  blocked: 'Blocked accounts',
+  data: 'Download my data',
+  about: 'About',
+  signOut: 'Sign out',
+  signOutAll: 'Sign out of all devices',
+  signOutAllTitle: 'Sign out everywhere?',
+  signOutAllBody: 'Every phone signed in to this account signs out, including this one.',
+  signOutAllConfirm: 'Sign out everywhere',
+  deleteAccount: 'Delete account',
+  // F12 privacy
+  privacyTitle: 'Privacy',
+  analytics: 'Share usage stats',
+  analyticsBody:
+    'Anonymous counts that help us fix what is confusing. Never your messages or listings.',
+  crash: 'Send crash reports',
+  crashBody: 'When the app crashes, send a report without your name or email.',
+  // F14 appearance
+  appearanceTitle: 'Appearance',
+  modes: { system: 'Match phone', light: 'Light', dark: 'Dark' },
+  // F15 change school
+  schoolTitle: 'Change school email',
+  schoolBody:
+    "Moving to a new school email? We'll send a code to the new address. Your account and listings stay.",
+  schoolEmail: 'New school email',
+  schoolSend: 'Send code',
+  schoolSent: 'Check {email} for a link or code to confirm the change.',
+  // F18 about
+  aboutTitle: 'About',
+  version: 'Version {version}',
+  terms: 'Terms',
+  privacyPolicy: 'Privacy Policy',
+  rules: 'Community Rules',
+  licenses: 'Open source licenses',
+  licensesBody:
+    'OnlySwap is built with open source software including React Native, Expo, Supabase and others, each under its own license.',
+  contact: 'Contact us',
+  dataBody: 'Ask for a copy of your data and we will email it within 30 days.',
+} as const;
+
 export const en = {
   permissions,
   tabs,
@@ -1379,6 +1499,8 @@ export const en = {
   deal,
   notificationsScreen,
   safety,
+  me,
+  settings,
 } as const;
 
 export default en;

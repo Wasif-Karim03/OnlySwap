@@ -541,8 +541,8 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Checks:**
 
-- [ ] `P11-SET-01`: —
-- [ ] `P11-SET-02`: —
+- [x] `P11-SET-01`: —
+- [x] `P11-SET-02`: —
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11
 

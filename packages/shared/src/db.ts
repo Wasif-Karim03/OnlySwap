@@ -1670,6 +1670,9 @@ isOneToOne: false
 "get_listing":
 { Args: { "id": string }; Returns: Json
                            },
+"get_me":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "get_meetup":
 { Args: { "meetup_id": string }; Returns: Json
                            },
@@ -1715,6 +1718,9 @@ isOneToOne: false
 "listing_offers":
 { Args: { "id": string }; Returns: Json
                            },
+"listing_stats":
+{ Args: { "id": string }; Returns: Json
+                           },
 "lookup_school":
 { Args: { "domain": string }; Returns: Json
                            },
@@ -1729,6 +1735,9 @@ isOneToOne: false
                            },
 "mark_sold":
 { Args: { "buyer_id"?: string,"id": string }; Returns: undefined
+                           },
+"my_listings":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "my_waitlist_position":
 { Args: Record<PropertyKey, never>; Returns: Json

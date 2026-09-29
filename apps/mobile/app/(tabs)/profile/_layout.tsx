@@ -1,12 +1,6 @@
 import { Stack } from 'expo-router';
 
-import { shell } from '@/strings/en';
-
-// Tab roots use a large title; pushed screens use inline titles (DESIGN_SYSTEM UX-04).
+// Profile draws its own large-title header (F01).
 export default function ProfileLayout() {
-  return (
-    <Stack>
-      <Stack.Screen name="index" options={{ title: shell.profileTitle, headerLargeTitle: true }} />
-    </Stack>
-  );
+  return <Stack screenOptions={{ headerShown: false }} />;
 }

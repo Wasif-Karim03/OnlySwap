@@ -281,6 +281,16 @@
     ]
   },
   {
+    "name": "get_me",
+    "args": "",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "get_meetup",
     "args": "meetup_id uuid",
     "returns": "jsonb",
@@ -432,6 +442,16 @@
     ]
   },
   {
+    "name": "listing_stats",
+    "args": "id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "lookup_school",
     "args": "domain text",
     "returns": "jsonb",
@@ -476,6 +496,16 @@
     "name": "mark_sold",
     "args": "id uuid, buyer_id uuid",
     "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "my_listings",
+    "args": "",
+    "returns": "jsonb",
     "security": "definer",
     "grants": [
       "authenticated",
