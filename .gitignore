@@ -18,3 +18,4 @@ supabase/.temp/
 supabase/.branches/
 apps/mobile/dist/
 store-assets/
+verify-output.log
