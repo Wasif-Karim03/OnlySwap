@@ -30,6 +30,20 @@ export const envSchema = z.object({
   EXPO_PUBLIC_SUPABASE_ANON_KEY: supabaseKey,
   EXPO_PUBLIC_MEDIA_URL: httpsOrLocalUrl,
   EXPO_PUBLIC_SITE_URL: httpsOrLocalUrl,
+  // Optional: telemetry is off when these are empty (local builds, tests).
+  EXPO_PUBLIC_SENTRY_DSN: z
+    .url()
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
+  EXPO_PUBLIC_POSTHOG_KEY: z
+    .string()
+    .regex(/^phc_[A-Za-z0-9]+$/, 'must be a PostHog project key (phc_...)')
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
+  EXPO_PUBLIC_POSTHOG_HOST: z
+    .url()
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -64,6 +78,9 @@ function readRaw(): Record<string, string | undefined> {
     EXPO_PUBLIC_SUPABASE_ANON_KEY: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
     EXPO_PUBLIC_MEDIA_URL: process.env.EXPO_PUBLIC_MEDIA_URL,
     EXPO_PUBLIC_SITE_URL: process.env.EXPO_PUBLIC_SITE_URL,
+    EXPO_PUBLIC_SENTRY_DSN: process.env.EXPO_PUBLIC_SENTRY_DSN,
+    EXPO_PUBLIC_POSTHOG_KEY: process.env.EXPO_PUBLIC_POSTHOG_KEY,
+    EXPO_PUBLIC_POSTHOG_HOST: process.env.EXPO_PUBLIC_POSTHOG_HOST,
   };
 }
 

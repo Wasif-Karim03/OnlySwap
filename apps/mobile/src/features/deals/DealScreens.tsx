@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { track } from '@/lib/analytics';
 import { Banner } from '@/components/Banner';
 import { Button } from '@/components/Button';
 import { Chip } from '@/components/Chip';
@@ -54,6 +55,7 @@ export function DidItSellScreen({
     setError(null);
     try {
       await api.confirm(chatId, outcome);
+      track('deal_confirmed', { outcome });
       void qc.invalidateQueries({ queryKey: chatKey(chatId) });
       void qc.invalidateQueries({ queryKey: ['inbox'] });
       if (info.data?.listing_id)
@@ -257,6 +259,7 @@ export function RateScreen({
     setError(null);
     try {
       await api.rate(chatId, thumbs, tags, comment);
+      track('rating_submitted');
       await qc.invalidateQueries({ queryKey: ['rating', chatId] });
       const me = session.status === 'signedIn' ? session.session.user.id : null;
       if (me && thumbs) {

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { track } from '@/lib/analytics';
 import { Button } from '@/components/Button';
 import { Icon } from '@/components/icons/Icon';
 import { Input } from '@/components/Input';
@@ -45,6 +46,7 @@ export function EmailScreen({ api = authApi }: { api?: AuthApi }) {
         return { normalized, reviewer: true };
       }
       await api.sendCode(normalized);
+      track('signup_started');
       return { normalized, reviewer: false };
     },
     onSuccess: ({ normalized, reviewer: isReviewer }) => {

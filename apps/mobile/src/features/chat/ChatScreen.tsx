@@ -6,6 +6,7 @@ import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import type { StoreApi } from 'zustand';
 
+import { track } from '@/lib/analytics';
 import { Banner } from '@/components/Banner';
 import { Button } from '@/components/Button';
 import { ErrorState } from '@/components/ErrorState';
@@ -67,6 +68,7 @@ export function ChatScreen({
   const data = useMemo(() => [...state.items].reverse(), [state.items]);
   const meetupQ = useQuery({ queryKey: ['chat-meetup', id], queryFn: () => meetups.forChat(id) });
   // Every meetup change posts a `meetup` row; refetch the card when one arrives.
+  useEffect(() => track('chat_opened'), []);
   const meetupRows = state.items.filter((m) => m.kind === 'meetup').length;
   const refetchMeetup = meetupQ.refetch;
   useEffect(() => {

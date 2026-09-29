@@ -1,9 +1,10 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FlatList, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { countBucket, track } from '@/lib/analytics';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
@@ -55,6 +56,16 @@ export function ResultsScreen({
       ) ?? undefined,
   });
 
+  // search_performed once per query, with a bucketed result count (no query text).
+  const firstCount = results.data?.pages[0]?.length;
+  const searchKey = JSON.stringify([q, filters]);
+  const tracked = useRef<string | null>(null);
+  useEffect(() => {
+    if (firstCount === undefined || tracked.current === searchKey) return;
+    tracked.current = searchKey;
+    track('search_performed', { results_bucket: countBucket(firstCount) });
+  }, [searchKey, firstCount]);
+
   // Opening a saved search resets its "new" count.
   useEffect(() => {
     if (savedId) api.updateSaved(savedId, { seen: true }).catch(() => {});
@@ -64,6 +75,7 @@ export function ResultsScreen({
     setSaving(true);
     try {
       await api.saveSearch(q, filters);
+      track('search_saved');
       useToastStore.getState().show('success', copy.searchSaved);
     } catch {
       useToastStore.getState().show('error', copy.saveFailed);

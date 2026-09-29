@@ -15,12 +15,14 @@ import { watchSessionExpiry } from '@/features/auth/sessionExpiry';
 import { getEnv } from '@/lib/env';
 import { getSupabase } from '@/lib/supabase';
 import { createQueryClient, wireQueryManagers } from '@/lib/queryClient';
+import { startTelemetry, useTelemetry } from '@/lib/telemetry';
 import { useKeepModeOnFontScale } from '@/theme/mode';
 
 // Fail fast: a missing or invalid EXPO_PUBLIC_* value stops the app at launch
 // with a message naming each variable (P1-ENV-01).
 getEnv();
 wireQueryManagers();
+startTelemetry();
 
 // The native splash stays until the launch gate routes (A01). The timer below
 // is a backstop so a deep link that skips the Launch screen never hangs on it.
@@ -35,6 +37,7 @@ export default function RootLayout() {
   const [queryClient] = useState(createQueryClient);
   useKeepModeOnFontScale();
   useDevRouteLog();
+  useTelemetry();
   useEffect(() => watchSessionExpiry(getSupabase().auth), []);
   useEffect(() => {
     const t = setTimeout(() => void SplashScreen.hideAsync().catch(() => {}), SPLASH_BACKSTOP_MS);

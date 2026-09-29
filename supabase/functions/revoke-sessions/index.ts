@@ -6,29 +6,36 @@
 import postgres from 'npm:postgres@3.4.7';
 
 import { handleRevokeSessions } from '../_shared/internal.ts';
+import { withMonitoring } from '../_shared/monitor.ts';
 
 const sql = postgres(Deno.env.get('SUPABASE_DB_URL')!, { max: 1, prepare: false });
 const keys = [Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'), Deno.env.get('INTERNAL_FUNCTION_KEY')];
 
-Deno.serve(async (req) => {
-  let body: unknown = null;
-  try {
-    body = await req.json();
-  } catch {
-    body = null;
-  }
-  const res = await handleRevokeSessions(
-    { method: req.method, authorization: req.headers.get('authorization'), body },
-    {
-      keys,
-      revoke: async (userId) => {
-        const rows = await sql`select private.revoke_sessions(${userId}::uuid) as n`;
-        return Number(rows[0]?.n ?? 0);
-      },
+Deno.serve(
+  withMonitoring(
+    'revoke-sessions',
+    async (req) => {
+      let body: unknown = null;
+      try {
+        body = await req.json();
+      } catch {
+        body = null;
+      }
+      const res = await handleRevokeSessions(
+        { method: req.method, authorization: req.headers.get('authorization'), body },
+        {
+          keys,
+          revoke: async (userId) => {
+            const rows = await sql`select private.revoke_sessions(${userId}::uuid) as n`;
+            return Number(rows[0]?.n ?? 0);
+          },
+        },
+      );
+      return new Response(JSON.stringify(res.body), {
+        status: res.status,
+        headers: { 'content-type': 'application/json' },
+      });
     },
-  );
-  return new Response(JSON.stringify(res.body), {
-    status: res.status,
-    headers: { 'content-type': 'application/json' },
-  });
-});
+    Deno.env,
+  ),
+);

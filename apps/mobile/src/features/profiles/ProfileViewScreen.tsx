@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { track } from '@/lib/analytics';
 import { Avatar } from '@/components/Avatar';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { EmptyState } from '@/components/EmptyState';
@@ -234,6 +235,7 @@ export function ProfileViewScreen({
         name={name}
         onSubmit={async ({ reason, details, block }) => {
           await api.reportUser(id, reason, details);
+          track('report_submitted', { target_type: 'user' });
           if (block) {
             await api.block(id);
             await refresh();

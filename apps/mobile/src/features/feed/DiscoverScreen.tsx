@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import type { StoreApi } from 'zustand';
 
+import { track } from '@/lib/analytics';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
@@ -141,6 +142,7 @@ export function DiscoverScreen({
       lastDir.current = dir;
       setItems((prev) => prev.filter((p) => p.id !== card.id));
       store.getState().swipe(card.id, dir);
+      track('card_swiped', { dir });
       if (showCoach) {
         setShowCoach(false);
         coach.markSeen();

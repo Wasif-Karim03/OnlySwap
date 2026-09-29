@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Linking, Platform, Pressable, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { track } from '@/lib/analytics';
 import { Banner } from '@/components/Banner';
 import { Button } from '@/components/Button';
 import { ChipGroup } from '@/components/Chip';
@@ -95,6 +96,7 @@ export function SellMeetupScreen({
     setPosting(true);
     try {
       const listing = await api.createListing(createArgs(draft, chosen));
+      track('listing_posted', { photos_count: draft.photos.length });
       usePostedStore.getState().set(listing, draft.photos[0]?.uri ?? null);
       reset();
       router.replace('/sell/posted');

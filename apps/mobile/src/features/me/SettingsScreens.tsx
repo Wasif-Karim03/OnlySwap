@@ -16,10 +16,12 @@ import { OptionRow } from '@/components/OptionRow';
 import { SkeletonList } from '@/components/Skeleton';
 import { Text } from '@/components/Text';
 import { Toggle } from '@/components/Toggle';
+import { setAnalyticsOptOut } from '@/lib/analytics';
 import { getEnv } from '@/lib/env';
 import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
 import { unregisterPush } from '@/lib/push';
+import { setCrashOptOut } from '@/lib/sentry';
 import { getSupabase } from '@/lib/supabase';
 import { settings as copy } from '@/strings/en';
 import { THEME_MODES, useThemeModeStore, type ThemeMode } from '@/theme/mode';
@@ -113,6 +115,9 @@ export function PrivacyScreen({ api = meApi }: { api?: MeApi }) {
   const q = useQuery({ queryKey: meKey, queryFn: () => api.me() });
   const setFlag = async (patch: Partial<Pick<Me, 'analytics_opt_in' | 'crash_reports_opt_in'>>) => {
     qc.setQueryData<Me>(meKey, (old) => (old ? { ...old, ...patch } : old));
+    // The device switch applies right away, before the server answers.
+    if (patch.analytics_opt_in !== undefined) void setAnalyticsOptOut(!patch.analytics_opt_in);
+    if (patch.crash_reports_opt_in !== undefined) setCrashOptOut(!patch.crash_reports_opt_in);
     try {
       await api.updateFlags(patch);
     } catch {

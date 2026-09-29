@@ -178,6 +178,16 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         },
       ],
       ['./plugins/withReleaseHardening', { variant }],
+      // Source maps and native symbols upload during EAS builds (P14-MON-01). Needs
+      // SENTRY_ORG / SENTRY_PROJECT (build env) and SENTRY_AUTH_TOKEN (EAS secret).
+      ...(process.env.SENTRY_ORG && process.env.SENTRY_PROJECT
+        ? [
+            [
+              '@sentry/react-native/expo',
+              { organization: process.env.SENTRY_ORG, project: process.env.SENTRY_PROJECT },
+            ] as [string, Record<string, string>],
+          ]
+        : []),
     ],
     experiments: {
       typedRoutes: true,

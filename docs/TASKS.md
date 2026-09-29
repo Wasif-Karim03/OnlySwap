@@ -53,7 +53,7 @@
 - [x] **P1-SPIKE-03** Spike: `expo-age-range` returns a result or `unknown` on both OSes (with the entitlement `com.apple.developer.declared-age-range`). · SETUP-06 · logged result on devices · S
 - [x] 🆕 **P1-SPIKE-04** Spike: New Architecture/Nitro modules (MMKV v4, Unistyles 3, keyboard-controller) build and run on both dev clients. · deps P1-SETUP-06 · done when a demo screen uses all three on iOS + Android · S
 - [x] **P1-LIB-01** `lib/supabase.ts`, `lib/rpc.ts`, `lib/errors.ts` (initial codes), `lib/storage.ts`, `lib/queryClient.ts`. · ENV-01 · unit tests pass (T-UNIT-LIB-*) · M
-- [ ] **P1-LIB-02** `lib/sentry.ts` and `lib/analytics.ts` with the opt-in flag, plus the Sentry source-map upload set up through its EAS integration. · LIB-01, P0-ACC-08/09 · a test crash shows symbolicated in Sentry · M
+- [x] **P1-LIB-02** `lib/sentry.ts` and `lib/analytics.ts` with the opt-in flag, plus the Sentry source-map upload set up through its EAS integration. · LIB-01, P0-ACC-08/09 · a test crash shows symbolicated in Sentry · M
 
 ## P2 · Design system and component kit
 
@@ -227,12 +227,12 @@
 
 ## P14 · Hardening, monitoring, backups
 
-- [ ] **P14-MON-01** Sentry: release and dist tagging per EAS build, source maps, alert rules (new issue, spike more than 20 in 1 h), functions instrumented with `@sentry/deno` · P1-LIB-02 · a test error alerts email · M
-- [ ] **P14-MON-02** ✎ PostHog: the 18 behavior events (PRD §5.3), privacy settings (identified_only, no autocapture, no replay, no GeoIP/IP), funnels dashboard. · deps P1-LIB-02 · done when T-DATA-01 passes · M
-- [ ] **P14-MON-03** UptimeRobot monitors: `health` function, media Worker, web, admin, `/privacy`, `/delete` · P13 · alert email on downtime · S
-- [ ] **P14-BAK-01** `backup.yml`: nightly `supabase db dump` (schema + data) → `age` encrypt → R2 `onlyswap-backups`; 30-day lifecycle · P3 · file present each morning · M
+- [x] **P14-MON-01** Sentry: release and dist tagging per EAS build, source maps, alert rules (new issue, spike more than 20 in 1 h), functions instrumented with `@sentry/deno` · P1-LIB-02 · a test error alerts email · M
+- [x] **P14-MON-02** ✎ PostHog: the 18 behavior events (PRD §5.3), privacy settings (identified_only, no autocapture, no replay, no GeoIP/IP), funnels dashboard. · deps P1-LIB-02 · done when T-DATA-01 passes · M
+- [x] **P14-MON-03** UptimeRobot monitors: `health` function, media Worker, web, admin, `/privacy`, `/delete` · P13 · alert email on downtime · S
+- [x] **P14-BAK-01** `backup.yml`: nightly `supabase db dump` (schema + data) → `age` encrypt → R2 `onlyswap-backups`; 30-day lifecycle · P3 · file present each morning · M
 - [ ] **P14-BAK-02** Restore drill to a local Docker instance, documented in `docs/runbooks/restore.md` · BAK-01 · restored row counts match · M
-- [ ] **P14-KEEP-01** `keepalive.yml` pings staging daily until launch (private repo, so not auto-disabled) · P3 · staging never pauses · S
+- [x] **P14-KEEP-01** `keepalive.yml` pings staging daily until launch (private repo, so not auto-disabled) · P3 · staging never pauses · S
 - [ ] **P14-SEC-01** Security test suite (testing.md §5) run and fixed · P4–P13 · all T-SEC pass · L
 - [ ] **P14-PERF-01** Performance pass (testing.md §6) · P6, P8 · targets met · M
 - [ ] **P14-E2E-00** Staging-only E2E support: catch-all domain `e2e.onlyswap.test` on the test campus + `test-inbox` Edge Function returning the latest OTP for `e2e+*` addresses (never deployed to production; CI check) · P3-AUTH-03 · Maestro reads the codes · M
@@ -240,7 +240,7 @@
 - [ ] **P14-E2E-02** Playwright web and admin suites incl. axe a11y · P12, P13 · green · M
 - [ ] **P14-LEGAL-01** ✎ Write the Terms, Privacy, Rules, Banned items, Safety, Cookies and Child safety text with every required section (RELEASE §6); version `2026-10`; bundle and publish; CI diff app vs site. · deps P13-WEB-03 · done when pages live; bundled copy matches · L
 - [ ] 🆕 **P14-OPS-01** Download and store the Android upload keystore backup after the first production build (OPS-02). · deps P11-BETA-01 · done when keystore in the password manager · S
-- [ ] 🆕 **P14-OPS-03** `scripts/usage-report.ts` + `usage-report.yml` weekly email (moved from post-launch, ARC-10). · deps P3, P5-MEDIA-01 · done when first report received · M
+- [x] 🆕 **P14-OPS-03** `scripts/usage-report.ts` + `usage-report.yml` weekly email (moved from post-launch, ARC-10). · deps P3, P5-MEDIA-01 · done when first report received · M
 
 ## P15 · Beta
 

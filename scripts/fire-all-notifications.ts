@@ -32,9 +32,19 @@ await rpc('counter_offer', { offer_id: o1, amount_cents: 1800 }, seller.token);
 const chat = (await rpc('accept_offer', { offer_id: o1 }, buyer.token)).body.chat_id;
 
 // message_new, meetup_proposed, meetup_confirmed, meetup_status, meetup_changed
-await rpc('send_message', { chat_id: chat, body: 'Hi, still on for today?', client_id: crypto.randomUUID() }, buyer.token);
+await rpc(
+  'send_message',
+  { chat_id: chat, body: 'Hi, still on for today?', client_id: crypto.randomUUID() },
+  buyer.token,
+);
 const soon = new Date(Date.now() + 40 * 60_000).toISOString();
-const m = (await rpc('propose_meetup', { chat_id: chat, starts_at: soon, custom_place: 'Library steps' }, seller.token)).body.id;
+const m = (
+  await rpc(
+    'propose_meetup',
+    { chat_id: chat, starts_at: soon, custom_place: 'Library steps' },
+    seller.token,
+  )
+).body.id;
 await rpc('confirm_meetup', { meetup_id: m }, buyer.token);
 await rpc('checkin_meetup', { meetup_id: m }, buyer.token);
 await rpc('running_late', { meetup_id: m, minutes: 10 }, seller.token);
@@ -49,7 +59,8 @@ const res = await fetch(
 );
 const rows = (await res.json()) as { user_id: string; type: string; title: string; body: string }[];
 const name = (id: string) => (id === seller.id ? 'Sam' : id === buyer.id ? 'Bea' : 'Cal');
-for (const r of rows) console.log(`${name(r.user_id).padEnd(4)} ${r.type.padEnd(20)} ${r.title} | ${r.body}`);
+for (const r of rows)
+  console.log(`${name(r.user_id).padEnd(4)} ${r.type.padEnd(20)} ${r.title} | ${r.body}`);
 
 const types = new Set(rows.map((r) => r.type));
 for (const t of [
@@ -68,7 +79,13 @@ for (const t of [
   check(types.has(t), `${t} fired`);
 }
 // Dedupe: each (user, type, key) once; the counter round notified once.
-check(rows.filter((r) => r.type === 'offer_countered').length === 1, 'offer_countered once (dedupe)');
+check(
+  rows.filter((r) => r.type === 'offer_countered').length === 1,
+  'offer_countered once (dedupe)',
+);
 // Preview-safe: message text is hidden unless the recipient turned previews on.
-check(rows.some((r) => r.type === 'message_new' && r.body.startsWith('New message from')), 'message_new hides the text by default');
+check(
+  rows.some((r) => r.type === 'message_new' && r.body.startsWith('New message from')),
+  'message_new hides the text by default',
+);
 done();

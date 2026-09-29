@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Linking, View } from 'react-native';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
+import { track } from '@/lib/analytics';
 import { Button } from '@/components/Button';
 import { ErrorState } from '@/components/ErrorState';
 import { Icon } from '@/components/icons/Icon';
@@ -54,6 +55,7 @@ export function RulesScreen({
     setError(null);
     try {
       await api.acceptRules(config.data.rulesVersion);
+      if (!isUpdate) track('onboarding_completed');
       handoff();
     } catch (e) {
       const err = toAppError(e);

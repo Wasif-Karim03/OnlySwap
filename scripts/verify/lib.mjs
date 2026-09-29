@@ -51,12 +51,16 @@ export async function codeSignIn(email) {
   let code;
   for (let i = 0; i < 20 && !code; i += 1) {
     await sleep(500);
-    const res = await fetch(`${mailpit}/api/v1/search?query=${encodeURIComponent(`to:"${email}"`)}`);
+    const res = await fetch(
+      `${mailpit}/api/v1/search?query=${encodeURIComponent(`to:"${email}"`)}`,
+    );
     if (!res.ok) continue;
     const msg = (await res.json()).messages?.find((m) => Date.parse(m.Created) >= before - 2000);
     code = msg?.Subject?.match(/\b(\d{6})\b/)?.[1];
   }
-  const v = code ? await json(await post('/auth/v1/verify', { type: 'email', email, token: code })) : {};
+  const v = code
+    ? await json(await post('/auth/v1/verify', { type: 'email', email, token: code }))
+    : {};
   if (!v.access_token) throw new Error(`sign-in failed for ${email}`);
   return { token: v.access_token, id: v.user.id };
 }

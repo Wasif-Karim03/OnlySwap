@@ -1,9 +1,10 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { pctBucket, track } from '@/lib/analytics';
 import { Banner } from '@/components/Banner';
 import { Button } from '@/components/Button';
 import { Chip } from '@/components/Chip';
@@ -53,6 +54,7 @@ export function OfferSheetScreen({
   const [blocked, setBlocked] = useState<'paused' | 'unavailable' | null>(null);
   const [sent, setSent] = useState(false);
   const close = () => (router.canGoBack() ? router.back() : router.replace('/discover'));
+  useEffect(() => track('offer_sheet_opened'), []);
 
   if (query.isPending) {
     return (
@@ -126,6 +128,7 @@ export function OfferSheetScreen({
         notes.map((n) => copy.quickNotes[n as keyof typeof copy.quickNotes]),
       );
       haptic('success'); // Budget: "offer sent" (DESIGN_SYSTEM §5).
+      track('offer_sent', { pct_of_ask_bucket: pctBucket(cents, ask) });
       void qc.invalidateQueries({ queryKey: ['inbox'] });
       setSent(true);
     } catch (e) {

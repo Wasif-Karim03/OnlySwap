@@ -31,9 +31,17 @@ for (let round = 0; round < 5; round += 1) {
   ]);
   if (offer.status === 200) {
     const again = await rpc('get_offer', { offer_id: offer.body.id }, b1.token);
-    check(again.body.status !== 'pending', `RACE-02 round ${round}: never pending on a sold listing`, again.body.status);
+    check(
+      again.body.status !== 'pending',
+      `RACE-02 round ${round}: never pending on a sold listing`,
+      again.body.status,
+    );
   } else {
-    check(String(offer.body.message ?? '').startsWith('LISTING_UNAVAILABLE'), `RACE-02 round ${round}: refused`, offer.body.message);
+    check(
+      String(offer.body.message ?? '').startsWith('LISTING_UNAVAILABLE'),
+      `RACE-02 round ${round}: refused`,
+      offer.body.message,
+    );
   }
 }
 done();

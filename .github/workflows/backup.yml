@@ -1,0 +1,76 @@
+# Nightly encrypted database backup (P14-BAK-01, RELEASE §3). $0: GitHub Actions
+# minutes + R2 free tier. The R2 bucket `onlyswap-backups` has a 30-day lifecycle
+# rule, so old files delete themselves.
+#
+# Secrets (repository → Settings → Secrets and variables → Actions):
+#   BACKUP_DB_URL          Postgres connection string of the project to back up
+#   BACKUP_AGE_RECIPIENT   age public key (age1...); the private key stays offline
+#   R2_ACCOUNT_ID, R2_BACKUP_ACCESS_KEY_ID, R2_BACKUP_SECRET_ACCESS_KEY
+#                          an R2 API token limited to the backups bucket (write only)
+name: Backup
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      BACKUP_DB_URL:
+        required: true
+      BACKUP_AGE_RECIPIENT:
+        required: true
+      R2_ACCOUNT_ID:
+        required: true
+      R2_BACKUP_ACCESS_KEY_ID:
+        required: true
+      R2_BACKUP_SECRET_ACCESS_KEY:
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: supabase/setup-cli@v3
+        with:
+          version: 2.118.0
+      - name: Install age
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq age
+      - name: Dump roles, schema and data
+        env:
+          DB_URL: ${{ secrets.BACKUP_DB_URL }}
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          supabase db dump --db-url "$DB_URL" --role-only -f out/roles.sql
+          supabase db dump --db-url "$DB_URL" -f out/schema.sql
+          supabase db dump --db-url "$DB_URL" --data-only --use-copy -f out/data.sql
+          # A tiny row-count manifest for the restore drill (P14-BAK-02).
+          psql "$DB_URL" -At -c "select json_object_agg(relname, n_live_tup) from pg_stat_user_tables where schemaname = 'public'" > out/counts.json
+          ls -la out
+      - name: Encrypt
+        env:
+          RECIPIENT: ${{ secrets.BACKUP_AGE_RECIPIENT }}
+        run: |
+          set -euo pipefail
+          name="db/$(date -u +%Y-%m-%d).tar.age"
+          echo "NAME=$name" >> "$GITHUB_ENV"
+          tar -C out -czf - . | age -r "$RECIPIENT" -o backup.tar.age
+          rm -rf out
+      - name: Upload to R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_BACKUP_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_BACKUP_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          aws s3 cp backup.tar.age "s3://onlyswap-backups/${NAME}" \
+            --endpoint-url "https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com" --only-show-errors
+          echo "Uploaded ${NAME} ($(stat -c %s backup.tar.age) bytes)" >> "$GITHUB_STEP_SUMMARY"

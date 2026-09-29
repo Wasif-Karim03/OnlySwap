@@ -4,6 +4,7 @@ import { Platform, Share, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { captureRef } from 'react-native-view-shot';
 
+import { track } from '@/lib/analytics';
 import { Button } from '@/components/Button';
 import { NavBar } from '@/components/NavBar';
 import { Photo } from '@/components/Photo';
@@ -117,6 +118,7 @@ export function SellPostedScreen({
     const url = listingLink(site(), listing.id);
     const text = fill(copy.shareMessage, { title: listing.title, price });
     // iOS attaches the url itself (and shows the link preview); Android only sends the message.
+    track('share_tapped', { surface: 'posted' });
     await share(Platform.OS === 'ios' ? { message: text, url } : { message: `${text} ${url}` });
   };
 

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Platform, ScrollView, Share, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { track } from '@/lib/analytics';
 import { Avatar } from '@/components/Avatar';
 import { Banner } from '@/components/Banner';
 import { Button } from '@/components/Button';
@@ -77,6 +78,7 @@ export function ListingScreen({
     if (data?.access === 'buyer' && !viewed.current) {
       viewed.current = true;
       api.recordView(id).catch(() => {});
+      track('listing_viewed', { source: 'other' });
     }
   }, [data, api, id]);
 
@@ -137,6 +139,7 @@ export function ListingScreen({
   const onShare = async () => {
     const url = listingLink(site(), id);
     const text = fill(copy.shareMessage, { title: item.title, price });
+    track('share_tapped', { surface: 'listing' });
     await share(Platform.OS === 'ios' ? { message: text, url } : { message: `${text} ${url}` });
   };
 
@@ -390,7 +393,10 @@ export function ListingScreen({
         visible={reporting}
         onClose={() => setReporting(false)}
         target="listing"
-        onSubmit={({ reason, details }) => api.reportListing(id, reason, details)}
+        onSubmit={async ({ reason, details }) => {
+          await api.reportListing(id, reason, details);
+          track('report_submitted', { target_type: 'listing' });
+        }}
         testID="listing-report"
       />
     </View>

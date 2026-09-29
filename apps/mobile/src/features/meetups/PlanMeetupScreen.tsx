@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Linking, Platform, ScrollView, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { track } from '@/lib/analytics';
 import { Banner } from '@/components/Banner';
 import { Button } from '@/components/Button';
 import { Chip } from '@/components/Chip';
@@ -70,6 +71,14 @@ export function PlanMeetupScreen({
     setError(null);
     try {
       await api.propose(chatId, chosenTime, place === CUSTOM ? { custom } : { spotId: place! });
+      track('meetup_planned', {
+        spot_type:
+          place === CUSTOM
+            ? 'custom'
+            : spotsQ.data?.find((s) => s.id === place)?.police
+              ? 'police'
+              : 'meetup_spot',
+      });
       void qc.invalidateQueries({ queryKey: ['chat-meetup', chatId] });
       close();
     } catch (e) {

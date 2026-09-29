@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Linking, Platform, ScrollView, Share, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { track } from '@/lib/analytics';
 import { Banner } from '@/components/Banner';
 import { Button } from '@/components/Button';
 import { Chip } from '@/components/Chip';
@@ -111,6 +112,7 @@ export function MeetupDayScreen({
       const { token } = await api.share(m.id);
       const url = shareUrl(site(), token);
       const message = fill(copy.shareMessage, { url });
+      track('share_tapped', { surface: 'meetup' });
       await share(Platform.OS === 'ios' ? { message, url } : { message });
     });
   };

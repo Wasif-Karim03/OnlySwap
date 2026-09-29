@@ -7,6 +7,7 @@ import nodemailer from 'npm:nodemailer@6.9.16';
 import postgres from 'npm:postgres@3.4.7';
 
 import { handleSendEmail, resendSender, type OutboxRow, type Rendered } from '../_shared/mailer.ts';
+import { withMonitoring } from '../_shared/monitor.ts';
 
 const sql = postgres(Deno.env.get('SUPABASE_DB_URL')!, { max: 1, prepare: false });
 const keys = [Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'), Deno.env.get('INTERNAL_FUNCTION_KEY')];
@@ -39,26 +40,32 @@ function gmailSender() {
 const send =
   provider === 'resend' ? resendSender(Deno.env.get('RESEND_API_KEY') ?? '', from) : gmailSender();
 
-Deno.serve(async (req) => {
-  const res = await handleSendEmail(
-    { method: req.method, authorization: req.headers.get('authorization') },
-    {
-      keys,
-      site,
-      claim: async (limit) => {
-        const rows = await sql`select private.claim_emails(${limit}) as j`;
-        return (rows[0]?.j ?? []) as OutboxRow[];
-      },
-      finish: async (results) => {
-        await sql`select private.finish_emails(${sql.json(results)}::jsonb)`;
-      },
-      send,
-      // Counts only; no addresses in logs (SECURITY §6).
-      log: (event, counts) => console.log(JSON.stringify({ event, ...counts })),
+Deno.serve(
+  withMonitoring(
+    'send-email',
+    async (req) => {
+      const res = await handleSendEmail(
+        { method: req.method, authorization: req.headers.get('authorization') },
+        {
+          keys,
+          site,
+          claim: async (limit) => {
+            const rows = await sql`select private.claim_emails(${limit}) as j`;
+            return (rows[0]?.j ?? []) as OutboxRow[];
+          },
+          finish: async (results) => {
+            await sql`select private.finish_emails(${sql.json(results)}::jsonb)`;
+          },
+          send,
+          // Counts only; no addresses in logs (SECURITY §6).
+          log: (event, counts) => console.log(JSON.stringify({ event, ...counts })),
+        },
+      );
+      return new Response(JSON.stringify(res.body), {
+        status: res.status,
+        headers: { 'content-type': 'application/json' },
+      });
     },
-  );
-  return new Response(JSON.stringify(res.body), {
-    status: res.status,
-    headers: { 'content-type': 'application/json' },
-  });
-});
+    Deno.env,
+  ),
+);

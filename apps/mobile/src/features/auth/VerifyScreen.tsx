@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { track } from '@/lib/analytics';
 import { Button } from '@/components/Button';
 import { OTPInput } from '@/components/OTPInput';
 import { Tappable } from '@/components/Tappable';
@@ -104,6 +105,7 @@ export function VerifyScreen({
     setMessage(null);
     try {
       await api.verifyCode(email, value);
+      track('email_verified');
       verifyStore.clear(email);
     } catch (e) {
       const err = toAppError(e);

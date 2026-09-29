@@ -1,0 +1,53 @@
+# Weekly free-tier usage report (P14-OPS-03, ARCHITECTURE §6). The report goes to
+# the job summary; the run fails (and GitHub emails you) when a figure is at or
+# past its alert line.
+#
+# Secrets: USAGE_DB_URL (read access is enough), R2_ACCOUNT_ID,
+#          R2_USAGE_ACCESS_KEY_ID / R2_USAGE_SECRET_ACCESS_KEY (read-only token).
+name: Usage report
+
+on:
+  schedule:
+    - cron: '0 14 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - name: Database figures
+        env:
+          DB_URL: ${{ secrets.USAGE_DB_URL }}
+        run: |
+          set -euo pipefail
+          psql "$DB_URL" -At -c "
+            select json_build_object(
+              'db_bytes', pg_database_size(current_database()),
+              'mau', (select count(distinct user_id) from public.activity_days where day > current_date - 30),
+              'emails_24h', (select count(*) from public.email_outbox where sent_at > now() - interval '24 hours'),
+              'pushes_7d', (select count(*) from public.notifications where push_state = 'sent' and created_at > now() - interval '7 days'))" > db.json
+      - name: R2 figures
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_USAGE_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_USAGE_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          set -euo pipefail
+          size() {
+            aws s3 ls "s3://$1" --recursive --summarize \
+              --endpoint-url "https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com" \
+              | awk '/Total Size/ {print $3}'
+          }
+          echo "{\"r2_media_bytes\": $(size onlyswap-media || echo 0), \"r2_private_bytes\": $(size onlyswap-private || echo 0), \"r2_backups_bytes\": $(size onlyswap-backups || echo 0)}" > r2.json
+      - name: Report
+        run: |
+          node -e "const a=require('./db.json'),b=require('./r2.json');require('fs').writeFileSync('metrics.json',JSON.stringify({...a,...b}))"
+          node --experimental-strip-types scripts/usage-report.ts metrics.json | tee -a "$GITHUB_STEP_SUMMARY"
