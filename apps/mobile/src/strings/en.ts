@@ -1461,6 +1461,27 @@ export const settings = {
   dataBody: 'Ask for a copy of your data and we will email it within 30 days.',
 } as const;
 
+export const system = {
+  // X11 update required
+  updateTitle: 'Time to update',
+  updateBody: 'This version of OnlySwap is too old to keep working. Update to keep swapping.',
+  updateButton: 'Update OnlySwap',
+  // X12 maintenance
+  maintenanceTitle: "We'll be right back",
+  maintenanceBody: 'OnlySwap is getting some work done.',
+  maintenanceUntil: 'Back around {time}.',
+  tryAgain: 'Try again',
+  // X31 link errors
+  linkErrorTitle: "That link didn't work",
+  linkErrorBody: 'It may be old or copied wrong. The listing might also be gone.',
+  notFoundTitle: 'Nothing here',
+  notFoundBody: "We couldn't find that page in the app.",
+  goHome: 'Go to Discover',
+  // X14 under review
+  underReview:
+    'Your listing is being checked by a moderator. It shows to others once it is approved.',
+} as const;
+
 export const en = {
   permissions,
   tabs,
@@ -1501,6 +1522,7 @@ export const en = {
   safety,
   me,
   settings,
+  system,
 } as const;
 
 export default en;

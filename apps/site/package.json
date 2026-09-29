@@ -1,0 +1,16 @@
+{
+  "name": "site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "prebuild": "node scripts/well-known.mjs",
+    "build": "astro build",
+    "preview": "astro preview",
+    "test": "node --experimental-strip-types --test test/*.test.ts"
+  },
+  "dependencies": {
+    "@onlyswap/tokens": "workspace:*",
+    "astro": "7.3.5"
+  }
+}

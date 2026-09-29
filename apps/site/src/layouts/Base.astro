@@ -1,0 +1,44 @@
+---
+import '@onlyswap/tokens/tokens.css';
+import '../styles/site.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  noindex?: boolean;
+}
+const { title, description = 'Buy and sell with verified students at your school. Meet on campus, pay in person.', noindex = false } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <header class="top">
+      <a href="/" class="brand">OnlySwap</a>
+      <nav aria-label="Main">
+        <a href="/safety">Safety</a>
+        <a href="/help">Help</a>
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer class="foot">
+      <a href="/terms">Terms</a>
+      <a href="/privacy">Privacy</a>
+      <a href="/rules">Community Rules</a>
+      <a href="/banned">Banned items</a>
+      <a href="/delete">Delete account</a>
+    </footer>
+  </body>
+</html>

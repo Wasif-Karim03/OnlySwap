@@ -555,9 +555,9 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Checks:**
 
-- [ ] `P13-WEB-01`: AASA validator passes; Android App Links verified
-- [ ] `P11-STATE-01`: toggling `app_config` values shows X11/X12
-- [ ] `P11-STATE-02`: tapping `https://…/l/{id}` in Notes opens the app on both OSes
+- [x] `P13-WEB-01`: AASA validator passes; Android App Links verified
+- [x] `P11-STATE-01`: toggling `app_config` values shows X11/X12
+- [x] `P11-STATE-02`: tapping `https://…/l/{id}` in Notes opens the app on both OSes
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11
 

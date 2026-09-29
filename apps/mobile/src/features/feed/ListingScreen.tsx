@@ -5,6 +5,7 @@ import { Platform, ScrollView, Share, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { Avatar } from '@/components/Avatar';
+import { Banner } from '@/components/Banner';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
@@ -21,7 +22,12 @@ import { Text } from '@/components/Text';
 import { useToastStore } from '@/components/Toast';
 import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
-import { deal as dealCopy, feed as copy, sell as sellCopy } from '@/strings/en';
+import {
+  deal as dealCopy,
+  feed as copy,
+  sell as sellCopy,
+  system as systemCopy,
+} from '@/strings/en';
 
 import { sellApi } from '../sell/api';
 import {
@@ -194,6 +200,9 @@ export function ListingScreen({
             </Text>
           ) : null}
 
+          {owner && item.status === 'held_review' ? (
+            <Banner kind="info" message={systemCopy.underReview} />
+          ) : null}
           {owner ? (
             <View style={styles.stats} testID="listing-owner-stats">
               <Text variant="label">{fill(copy.statViews, { n: item.view_count })}</Text>

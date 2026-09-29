@@ -21,3 +21,4 @@ Device checks (G8) are deferred to the testing phase at the end.
 | S29 Notifications + email + cron | done (sandbox) | s29-done | listing triggers, all §6 crons, email outbox + send-email + archive-chats functions, demo bot (DEC 65) pgTAP 32; F09/F11 screens; fire-all-notifications.ts |
 | S30 Safety screens | done (sandbox) | s30-done | get_account_status, list_blocked (DEC 66) pgTAP 7; account status + appeal, report timeline, blocked, safety center, help, delete account |
 | S31 Profile + settings | done (sandbox) | s31-done | get_me, my_listings, listing_stats (DEC 67) pgTAP 9; F01-F08, F10, F12, F14, F15, F18 |
+| S32 Site foundation + deep links | done (sandbox) | s32-done | apps/site Astro skeleton + well-known generator (node tests), App Links intent filter, +native-intent rewrite, X11/X12/X14/X31 (DEC 68); AASA/App Links verification is OWNER_TODO 11 |

@@ -123,6 +123,15 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       },
       predictiveBackGestureEnabled: false,
       blockedPermissions: [...BLOCKED_ANDROID_PERMISSIONS],
+      // App Links for listing share links (P11-STATE-02); verified by assetlinks.json on the site.
+      intentFilters: [
+        {
+          action: 'VIEW',
+          autoVerify: true,
+          data: [{ scheme: 'https', host: WEB_HOST, pathPrefix: '/l/' }],
+          category: ['BROWSABLE', 'DEFAULT'],
+        },
+      ],
     },
     plugins: [
       'expo-router',
