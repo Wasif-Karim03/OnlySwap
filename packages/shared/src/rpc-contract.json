@@ -210,6 +210,16 @@
     ]
   },
   {
+    "name": "get_account_status",
+    "args": "",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "get_app_config",
     "args": "",
     "returns": "jsonb",
@@ -385,6 +395,16 @@
     "name": "hide_listing",
     "args": "listing_id uuid",
     "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "list_blocked",
+    "args": "",
+    "returns": "jsonb",
     "security": "definer",
     "grants": [
       "authenticated",

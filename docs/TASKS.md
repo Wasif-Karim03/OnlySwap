@@ -191,11 +191,11 @@
 
 ## P11 · Safety, account, settings, states — **start the Play closed test here**
 
-- [ ] **P11-SAFE-02** S-E19 Report & block sheet, S-E20 Report sent, S-E21 Report update · P3-SAFE-01 · — · M
-- [ ] **P11-SAFE-03** S-X10 Suspended/paused/banned gate + S-X10a Appeal · P3-SAFE-01 · — · M
-- [ ] **P11-SAFE-04** S-F13 Blocked accounts · P3-SAFE-01 · — · S
-- [ ] **P11-SAFE-05** ✎ F19 Safety center (spot list + Directions, tips, 911), X10 Banned items (expanded, D17), F20 Help (bundled FAQ JSON). · deps P2 · done when — · M
-- [ ] **P11-ACC-01** S-F16 Delete account (type DELETE) · P4-DEL-01 · end-to-end delete works · S
+- [x] **P11-SAFE-02** S-E19 Report & block sheet, S-E20 Report sent, S-E21 Report update · P3-SAFE-01 · — · M
+- [x] **P11-SAFE-03** S-X10 Suspended/paused/banned gate + S-X10a Appeal · P3-SAFE-01 · — · M
+- [x] **P11-SAFE-04** S-F13 Blocked accounts · P3-SAFE-01 · — · S
+- [x] **P11-SAFE-05** ✎ F19 Safety center (spot list + Directions, tips, 911), X10 Banned items (expanded, D17), F20 Help (bundled FAQ JSON). · deps P2 · done when — · M
+- [x] **P11-ACC-01** S-F16 Delete account (type DELETE) · P4-DEL-01 · end-to-end delete works · S
 - [ ] **P11-SET-01** S-F01 Profile, S-F02 Edit profile, S-F03 My listings (+X37), S-F04 Listing stats, S-F06 Edit listing (price-drop trigger), S-F08 Relist · P6 · — · L
 - [ ] **P11-SET-02** ✎ F10 Settings (+ Sign out of all devices), F12 Privacy settings (analytics/crash toggles), F14 Appearance (System/Light/Dark), F15 Change school, F18 About (licenses). · deps P9-NOTIF-02 · done when — · L
 - [ ] **P11-STATE-01** Global states: OfflineBanner wiring, X11 Update required, X12 Maintenance, X14 Under review, X30/X31 deep-link errors, X25 Share listing · P4-AUTH-03 · toggling `app_config` values shows X11/X12 · M

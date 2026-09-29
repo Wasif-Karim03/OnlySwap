@@ -19,3 +19,4 @@ Device checks (G8) are deferred to the testing phase at the end.
 | S27 Deals | done (sandbox) | s27-done | confirm_deal, submit_rating, get_my_rating, deal_checks, wind-down notifications, account-deletion chat close (DEC 63) pgTAP 27; Did it sell, Mark sold, Rate, store review |
 | S28 Push | done (sandbox) | s28-done | push SQL (claim/finish/receipts/quiet/cap, DEC 64) pgTAP 29; send-push + push-receipts functions (node tests); lib/push.ts; P9-PUSH-01 is OWNER_TODO 10 |
 | S29 Notifications + email + cron | done (sandbox) | s29-done | listing triggers, all §6 crons, email outbox + send-email + archive-chats functions, demo bot (DEC 65) pgTAP 32; F09/F11 screens; fire-all-notifications.ts |
+| S30 Safety screens | done (sandbox) | s30-done | get_account_status, list_blocked (DEC 66) pgTAP 7; account status + appeal, report timeline, blocked, safety center, help, delete account |

@@ -1649,6 +1649,9 @@ isOneToOne: false
 "disable_push_token":
 { Args: { "token": string }; Returns: undefined
                            },
+"get_account_status":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "get_app_config":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
@@ -1702,6 +1705,9 @@ isOneToOne: false
                            },
 "hide_listing":
 { Args: { "listing_id": string }; Returns: undefined
+                           },
+"list_blocked":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "list_saved_searches":
 { Args: Record<PropertyKey, never>; Returns: Json

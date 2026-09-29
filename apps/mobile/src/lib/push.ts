@@ -46,8 +46,10 @@ export function routeForNotification(
   if (s('chat_id')) return { pathname: '/chat/[id]', params: { id: s('chat_id')! } };
   if (s('offer_id')) return { pathname: '/offer/[id]', params: { id: s('offer_id')! } };
   if (s('listing_id')) return { pathname: '/listing/[id]', params: { id: s('listing_id')! } };
-  if (type === 'report_update' || type === 'appeal_decided' || type === 'account_notice')
-    return '/notifications';
+  if (type === 'report_update' && s('report_id')) {
+    return { pathname: '/report/[id]', params: { id: s('report_id')! } };
+  }
+  if (type === 'appeal_decided' || type === 'account_notice') return '/account-status';
   return '/notifications';
 }
 

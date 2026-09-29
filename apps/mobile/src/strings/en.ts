@@ -1211,6 +1211,136 @@ export const notificationsScreen = {
   saveFailed: "Couldn't save that. Try again.",
 } as const;
 
+export const safety = {
+  // X10 account status
+  statusTitle: {
+    paused: 'Your account is paused',
+    suspended: 'Your account is suspended',
+    banned: 'Your account is closed',
+  },
+  statusBody: {
+    paused:
+      'You can still read and finish your open chats. Offers and new listings are off until {until}.',
+    pausedNoDate:
+      'You can still read and finish your open chats. Offers and new listings are off for now.',
+    suspended:
+      'A moderator suspended your account after a report. You can appeal once and a person reviews it.',
+    banned: 'This account broke the rules in a way that ends access to OnlySwap.',
+  },
+  reasons: {
+    noshow: 'Missed meetups',
+    strike: 'A rule was broken',
+    report: 'A report was upheld',
+  },
+  strikesTitle: 'Strikes',
+  noshowsTitle: 'No-shows',
+  openChats: 'Open my chats',
+  appeal: 'Appeal',
+  appealed: 'Appeal sent. A person will review it.',
+  appealDecided: {
+    upheld: 'Your appeal was reviewed. The decision stays.',
+    overturned: 'Your appeal was accepted.',
+  },
+  signOut: 'Sign out',
+  contact: 'Contact support',
+  // X10a appeal sheet
+  appealTitle: 'Appeal',
+  appealReasons: {
+    mistake: "I didn't do this",
+    context: "There's more to the story",
+    other: 'Something else',
+  },
+  appealBody: 'Tell us what happened',
+  appealPlaceholder: 'Stick to the facts. A person reads every appeal.',
+  appealSend: 'Send appeal',
+  // E21 report update
+  reportTitle: 'Your report',
+  reportReceived: 'Received',
+  reportReviewed: 'Reviewed',
+  reportReceivedBody: 'We got your report. A person looks at it, usually within a day.',
+  reportReviewedBody:
+    "We reviewed your report and took the action we thought was right. We don't share details to protect everyone's privacy.",
+  // F13 blocked
+  blockedTitle: 'Blocked accounts',
+  blockedEmptyTitle: "You haven't blocked anyone",
+  blockedEmptyBody: 'People you block show up here. You can unblock them anytime.',
+  unblock: 'Unblock',
+  unblockName: 'Unblock {name}',
+  // F19 safety center
+  centerTitle: 'Safety',
+  spotsTitle: 'Meetup spots',
+  spotsBody: 'Public places on campus. Police-designated spots are marked.',
+  police: 'Police-designated',
+  directions: 'Directions to {name}',
+  tipsTitle: 'Before you meet',
+  tips: [
+    'Meet at a Meetup spot in daylight.',
+    'Tell a friend where you are going. You can share your meetup from the app.',
+    'Check the item before you pay.',
+    'Pay in person. Never pay before you meet, and never send a deposit.',
+    'If something feels off, leave. You can cancel anytime.',
+  ],
+  emergency: 'Call 911',
+  emergencyBody: 'If you are in danger, call 911 right away.',
+  bannedTitle: 'Banned items',
+  bannedIntro: "These can't be listed on OnlySwap:",
+  banned: [
+    'Alcohol, vapes, nicotine and weed',
+    'Medication, supplements and drugs',
+    'Weapons, including pepper spray and knives',
+    'Fake IDs, fakes and counterfeits',
+    'Tickets, meal swipes and parking passes',
+    'Coursework, exams and essays',
+    'Pets and animals',
+    'Gift cards and money transfers',
+    'Recalled or unsafe items',
+    'Stolen items',
+  ],
+  // F20 help
+  helpTitle: 'Help',
+  faqTitle: 'Common questions',
+  faq: [
+    {
+      q: 'How do I pay?',
+      a: 'In person, when you meet. Cash or any app you both agree on. OnlySwap never handles money.',
+    },
+    {
+      q: 'Who can see my listings?',
+      a: 'Only verified students at your school. People you block and people who block you cannot.',
+    },
+    {
+      q: 'What if someone does not show up?',
+      a: 'Open the meetup and report a no-show after 20 minutes. You must have checked in.',
+    },
+    {
+      q: 'How do I delete my account?',
+      a: 'Settings, then Delete account. Your listings and profile are removed right away.',
+    },
+    {
+      q: 'Why do I need to confirm my school email again?',
+      a: 'Once a year we check you are still a student so everyone here is.',
+    },
+    {
+      q: 'Someone is making me uncomfortable. What do I do?',
+      a: 'Block them from their profile or the chat and report them. A real person reviews every report.',
+    },
+  ],
+  contactTitle: 'Contact us',
+  contactTopic: 'Topic',
+  topics: { general: 'Question', safety: 'Safety', bug: 'Something is broken', other: 'Other' },
+  contactEmail: 'Your email',
+  contactBody: 'Message',
+  contactSend: 'Send',
+  contactSent: "Thanks. We'll reply by email.",
+  // F16 delete account
+  deleteTitle: 'Delete account',
+  deleteBody:
+    'This removes your profile, listings and saved items for good. People you chatted with will see a deleted user. This cannot be undone.',
+  deleteType: 'Type DELETE to confirm',
+  deleteButton: 'Delete my account',
+  deleteFailed: "We couldn't delete your account. Try again or contact support.",
+} as const;
+
 export const en = {
   permissions,
   tabs,
@@ -1248,6 +1378,7 @@ export const en = {
   meetup,
   deal,
   notificationsScreen,
+  safety,
 } as const;
 
 export default en;

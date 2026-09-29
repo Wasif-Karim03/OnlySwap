@@ -524,11 +524,11 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Checks:**
 
-- [ ] `P11-SAFE-02`: —
-- [ ] `P11-SAFE-03`: —
-- [ ] `P11-SAFE-04`: —
-- [ ] `P11-SAFE-05`: —
-- [ ] `P11-ACC-01`: end-to-end delete works
+- [x] `P11-SAFE-02`: —
+- [x] `P11-SAFE-03`: —
+- [x] `P11-SAFE-04`: —
+- [x] `P11-SAFE-05`: —
+- [x] `P11-ACC-01`: end-to-end delete works
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11
 

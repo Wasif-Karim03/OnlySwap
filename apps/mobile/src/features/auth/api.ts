@@ -218,6 +218,15 @@ export function createAuthApi(deps: Deps) {
       return { email: user.email, verifiedUntil: row?.verified_until ?? null };
     },
 
+    /** F16 Delete account: the server checks the typed confirmation too (P11-ACC-01). */
+    async deleteAccount(): Promise<void> {
+      if (!deps.functions) throw toAppError({ message: 'functions unavailable' });
+      const { error } = await deps
+        .functions()
+        .invoke('delete-account', { body: { confirm: 'DELETE' } });
+      if (error) throw toAppError(error);
+    },
+
     /** F20 Help form (P4-AUTH-19). Works signed out: people who lost their inbox can't sign in. */
     async sendSupportRequest(input: {
       email: string;

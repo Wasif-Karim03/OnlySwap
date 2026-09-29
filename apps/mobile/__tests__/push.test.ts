@@ -26,7 +26,12 @@ describe('P9-PUSH-02 tap routing', () => {
       { type: 'price_drop', listing_id: 'l1' },
       { pathname: '/listing/[id]', params: { id: 'l1' } },
     ],
-    [{ type: 'account_notice' }, '/notifications'],
+    [{ type: 'account_notice' }, '/account-status'],
+    [
+      { type: 'report_update', report_id: 'r1' },
+      { pathname: '/report/[id]', params: { id: 'r1' } },
+    ],
+    [{ type: 'mystery' }, '/notifications'],
   ])('%o', (data, href) => {
     expect(routeForNotification(data)).toEqual(href);
   });
