@@ -1634,6 +1634,9 @@ isOneToOne: false
 "get_app_config":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"get_chat":
+{ Args: { "chat_id": string }; Returns: Json
+                           },
 "get_feed":
 { Args: { "cursor"?: Json,"limit"?: number }; Returns: Json
                            },
@@ -1642,6 +1645,9 @@ isOneToOne: false
                            },
 "get_listing":
 { Args: { "id": string }; Returns: Json
+                           },
+"get_messages":
+{ Args: { "after"?: number,"before"?: number,"chat_id": string,"limit"?: number }; Returns: Json
                            },
 "get_my_report":
 { Args: { "id": string }; Returns: Json
@@ -1654,6 +1660,9 @@ isOneToOne: false
                            },
 "get_saved":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"hide_chat":
+{ Args: { "chat_id": string }; Returns: undefined
                            },
 "hide_listing":
 { Args: { "listing_id": string }; Returns: undefined
@@ -1669,6 +1678,9 @@ isOneToOne: false
                            },
 "make_offer":
 { Args: { "amount_cents": number,"listing_id": string,"note"?: string,"quick_notes"?: (string)[] }; Returns: Json
+                           },
+"mark_chat_read":
+{ Args: { "chat_id": string }; Returns: undefined
                            },
 "mark_sold":
 { Args: { "buyer_id"?: string,"id": string }; Returns: undefined
@@ -1702,6 +1714,12 @@ isOneToOne: false
                            },
 "search_suggest":
 { Args: { "q"?: string }; Returns: Json
+                           },
+"send_message":
+{ Args: { "body": string,"chat_id": string,"client_id": string,"kind"?: string }; Returns: Json
+                           },
+"set_chat_mute":
+{ Args: { "chat_id": string,"muted": boolean }; Returns: undefined
                            },
 "set_listing_share_image":
 { Args: { "id": string }; Returns: Json

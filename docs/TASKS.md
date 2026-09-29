@@ -159,8 +159,8 @@
 
 ## P8 · Chat, meetups, deals (E, part 2)
 
-- [ ] **P8-CHAT-01** RPCs `get_messages`, `send_message` (idempotent), `mark_chat_read`, `set_chat_mute`, `hide_chat`; broadcast trigger; `realtime.messages` policies · P7-OFF-01 · T-INT-RT-01: a non-participant can't subscribe · L
-- [ ] **P8-CHAT-02** `useChat` (focus subscribe, dedupe, reconnect, offline queue) · CHAT-01 · T-UNIT-CHAT-* · L
+- [x] **P8-CHAT-01** RPCs `get_messages`, `send_message` (idempotent), `mark_chat_read`, `set_chat_mute`, `hide_chat`; broadcast trigger; `realtime.messages` policies · P7-OFF-01 · T-INT-RT-01: a non-participant can't subscribe · L
+- [x] **P8-CHAT-02** `useChat` (focus subscribe, dedupe, reconnect, offline queue) · CHAT-01 · T-UNIT-CHAT-* · L
 - [ ] **P8-CHAT-03** S-E09 Chat UI (bubbles, system rows, deal bar, safety tip, failed/pending, blocked X18, closed read-only) · CHAT-02 · — · L
 - [ ] **P8-CHAT-05** S-X17 Chat details (mute, report, block, hide) · CHAT-03 · — · S
 - [ ] **P8-MEET-01** ✎ Meetup RPCs `propose_meetup` (cancels previous), `confirm_meetup`, `checkin_meetup`, `running_late`, `cancel_meetup`, `create_meetup_share`, `report_noshow` (reporter must be checked in), `get_meetup_share`; crons `meetup_reminders`, `noshow_autoconfirm`. · deps P8-CHAT-01 · done when T-INT-MEET-01/02/03 and T-INT-TZ-01 pass · L

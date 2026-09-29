@@ -158,7 +158,8 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 
 | RPC | Args | Returns | Errors / rules | Limit |
 |---|---|---|---|---|
-| `get_messages` | `chat_id, before bigint?, limit=50` | messages | participant | — |
+| `get_messages` | `chat_id, before bigint?, limit=50, after bigint?` | messages | participant; `after` for reconnect (DEC 61) | — |
+| `get_chat` | `chat_id` | chat summary + state | participant (DEC 61) | — |
 | `send_message` | `chat_id, kind='text', body, client_id` | message | participant; open; not blocked; **idempotent on client_id**; `kind='photo'` → `FEATURE_OFF` in R1.0 | 60/min, 1000/day |
 | `mark_chat_read` / `set_chat_mute` / `hide_chat` | `chat_id, …` | void | — | — |
 | `propose_meetup` | `chat_id, spot_id?, custom_place?, starts_at` | meetup | now+15 min ≤ starts_at ≤ now+14 d; cancels previous active in the same tx | 20/day |

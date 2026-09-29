@@ -161,6 +161,16 @@
     ]
   },
   {
+    "name": "get_chat",
+    "args": "chat_id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "get_feed",
     "args": "cursor jsonb, \"limit\" integer",
     "returns": "jsonb",
@@ -183,6 +193,16 @@
   {
     "name": "get_listing",
     "args": "id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "get_messages",
+    "args": "chat_id uuid, before bigint, \"limit\" integer, after bigint",
     "returns": "jsonb",
     "security": "definer",
     "grants": [
@@ -224,6 +244,16 @@
     "name": "get_saved",
     "args": "",
     "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "hide_chat",
+    "args": "chat_id uuid",
+    "returns": "void",
     "security": "definer",
     "grants": [
       "authenticated",
@@ -275,6 +305,16 @@
     "name": "make_offer",
     "args": "listing_id uuid, amount_cents integer, note text, quick_notes text[]",
     "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "mark_chat_read",
+    "args": "chat_id uuid",
+    "returns": "void",
     "security": "definer",
     "grants": [
       "authenticated",
@@ -385,6 +425,26 @@
     "name": "search_suggest",
     "args": "q text",
     "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "send_message",
+    "args": "chat_id uuid, body text, client_id uuid, kind text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "set_chat_mute",
+    "args": "chat_id uuid, muted boolean",
+    "returns": "void",
     "security": "definer",
     "grants": [
       "authenticated",
