@@ -155,6 +155,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
             compileSdkVersion: 36,
             targetSdkVersion: 36,
           },
+          // iOS 27 asserts at launch unless the app adopts the UIScene life
+          // cycle (crash found on the iOS 27 Simulator). SDK 57's opt-in; SDK 58
+          // does this in the template.
+          ios: { enableSceneSupport: true },
         },
       ],
       [

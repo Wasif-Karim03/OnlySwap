@@ -10,10 +10,13 @@ cd apps/mobile
 {
   xcrun simctl list devices booted | grep -q Booted || xcrun simctl boot "iPhone 18 Pro"
   open -a Simulator 2>/dev/null
-  if ! xcrun simctl get_app_container booted app.onlyswap >/dev/null 2>&1; then
-    npx expo run:ios --no-bundler
+  # Rebuild when app.config.ts or native deps changed since the last build.
+  stamp=ios/.onlyswap-build-stamp
+  want="$(cat app.config.ts package.json | shasum | cut -c1-12)"
+  if [ "$(cat "$stamp" 2>/dev/null)" != "$want" ] || ! xcrun simctl get_app_container booted app.onlyswap >/dev/null 2>&1; then
+    npx expo prebuild -p ios --clean && (npx expo run:ios --no-bundler || true) && echo "$want" > "$stamp"
   fi
-  npx expo start --dev-client --port 8081 &
+  curl -fs http://localhost:8081/status >/dev/null || (npx expo start --dev-client --port 8081 &)
   for _ in $(seq 1 60); do curl -fs http://localhost:8081/status >/dev/null && break; sleep 1; done
   xcrun simctl terminate booted app.onlyswap >/dev/null 2>&1
   xcrun simctl openurl booted "exp+onlyswap://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
