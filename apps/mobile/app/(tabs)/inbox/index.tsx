@@ -1,5 +1,5 @@
-import { ShellScreen } from '@/components/ShellScreen';
+import { InboxScreen } from '@/features/offers/InboxScreen';
 
-export default function InboxScreen() {
-  return <ShellScreen testID="screen-inbox" />;
+export default function InboxRoute() {
+  return <InboxScreen />;
 }

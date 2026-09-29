@@ -222,6 +222,7 @@ function render(routes: Record<string, () => ReactNode>, initialUrl: string) {
     {
       index: () => <Stub id="screen-index" />,
       'listing/[id]/index': () => <Stub id="screen-listing-stub" />,
+      'listing/[id]/offer': () => <Stub id="screen-offer-stub" />,
       search: () => <Stub id="screen-search" />,
       sell: () => <Stub id="screen-sell" />,
       ...routes,
@@ -287,7 +288,7 @@ describe('B01 Discover', () => {
     discover(api);
     await screen.findByTestId('deck-card-' + page[0]!.id);
     fireEvent.press(screen.getByTestId('deck-offer'));
-    expect(await screen.findByTestId('screen-listing-stub')).toBeTruthy();
+    expect(await screen.findByTestId('screen-offer-stub')).toBeTruthy();
   });
 
   it('fetches the next page when few cards are left', async () => {

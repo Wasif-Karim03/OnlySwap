@@ -150,12 +150,12 @@
 ## P7 · Offers (E, part 1)
 
 - [x] **P7-OFF-01** ✎ Offer RPCs `make_offer` (FOR SHARE), `accept_offer` (FOR UPDATE, chat + snapshot, auto-decline), `counter_offer`, `decline_offer`, `withdraw_offer`, `get_inbox`, `listing_offers`, and the `expire_offers` cron. · deps P6-FEED-01 · done when state machine (DATA_MODEL §4.2) pgTAP green incl. T-INT-OFF-RACE and T-INT-OFF-RACE-02 · L
-- [ ] **P7-OFF-02** S-B09 Make an offer sheet (quick chips, notes, low-offer warning, B12 limit, B13 success) · OFF-01 · — · M
-- [ ] **P7-OFF-03** S-E01 Inbox (Offers and Chats tabs, sections, empty X6, realtime `user:` channel) · OFF-01 · a new offer appears without refresh while the screen is focused · M
-- [ ] **P7-OFF-04** S-E03 Offer detail covering all roles and statuses (E3–E8) · OFF-01 · every state reachable via fixtures · L
-- [ ] **P7-OFF-05** S-F05 Offers on this listing (seller history) · OFF-01 · — · S
+- [x] **P7-OFF-02** S-B09 Make an offer sheet (quick chips, notes, low-offer warning, B12 limit, B13 success) · OFF-01 · — · M
+- [x] **P7-OFF-03** S-E01 Inbox (Offers and Chats tabs, sections, empty X6, realtime `user:` channel) · OFF-01 · a new offer appears without refresh while the screen is focused · M
+- [x] **P7-OFF-04** S-E03 Offer detail covering all roles and statuses (E3–E8) · OFF-01 · every state reachable via fixtures · L
+- [x] **P7-OFF-05** S-F05 Offers on this listing (seller history) · OFF-01 · — · S
 - [x] **P7-OFF-06** New-account and paused-offer limits wired to copy (OFFERS_PAUSED) · OFF-01 · — · S
-- [ ] 🆕 **P7-OFF-07** Free items: offers at $0 with "Ask for it" copy; seller sees requests in arrival order. · deps P7-OFF-02 · done when E2E free-item step passes · S
+- [x] 🆕 **P7-OFF-07** Free items: offers at $0 with "Ask for it" copy; seller sees requests in arrival order. · deps P7-OFF-02 · done when E2E free-item step passes · S
 
 ## P8 · Chat, meetups, deals (E, part 2)
 

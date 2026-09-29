@@ -152,7 +152,7 @@ export function DiscoverScreen({
       } else if (dir === 'left') {
         toast.showUndo(copy.undoSkipped, () => void undo());
       } else {
-        router.push({ pathname: '/listing/[id]', params: { id: card.id, offer: '1' } });
+        router.push({ pathname: '/listing/[id]/offer', params: { id: card.id } });
       }
     },
     [items, store, showCoach, coach, api, router, undo],

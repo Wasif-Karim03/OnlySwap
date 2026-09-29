@@ -151,3 +151,11 @@ export function errorCopy(error: AppError, options: CopyOptions): string {
   }
   return errorStrings[error.code];
 }
+
+/** The device zone, until the campus zone is loaded with the profile. */
+export const deviceTz = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+/** Shortcut: user-facing copy for any thrown value. */
+export function errorText(error: unknown, campusTimeZone: string = deviceTz()): string {
+  return errorCopy(toAppError(error), { campusTimeZone });
+}

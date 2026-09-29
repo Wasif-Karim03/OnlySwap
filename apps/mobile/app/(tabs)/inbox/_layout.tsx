@@ -1,12 +1,6 @@
 import { Stack } from 'expo-router';
 
-import { shell } from '@/strings/en';
-
-// Tab roots use a large title; pushed screens use inline titles (DESIGN_SYSTEM UX-04).
+// Inbox draws its own large-title header (E01).
 export default function InboxLayout() {
-  return (
-    <Stack>
-      <Stack.Screen name="index" options={{ title: shell.inboxTitle, headerLargeTitle: true }} />
-    </Stack>
-  );
+  return <Stack screenOptions={{ headerShown: false }} />;
 }

@@ -410,11 +410,11 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Checks:**
 
-- [ ] `P7-OFF-02`: —
-- [ ] `P7-OFF-03`: a new offer appears without refresh while the screen is focused
-- [ ] `P7-OFF-04`: every state reachable via fixtures
-- [ ] `P7-OFF-05`: —
-- [ ] `P7-OFF-07`: E2E free-item step passes
+- [x] `P7-OFF-02`: —
+- [x] `P7-OFF-03`: a new offer appears without refresh while the screen is focused
+- [x] `P7-OFF-04`: every state reachable via fixtures
+- [x] `P7-OFF-05`: —
+- [x] `P7-OFF-07`: E2E free-item step passes
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11
 
