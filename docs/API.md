@@ -221,6 +221,9 @@ Every admin RPC checks `require_admin(min)` (AAL2) and inserts exactly one `audi
 | `admin_upsert_safe_spot(...)` | owner | designation requires `designated_on` for police | R1.0 |
 | `admin_set_config(key, value)` | owner | flags, min versions, `rules_version`, maintenance | R1.0 |
 | `admin_list_audit(filters, cursor)` | moderator | — | R1.0 |
+| `admin_list_appeals(filters, cursor)` | moderator | open appeals queue (DEC 69) | R1.0 |
+| `admin_list_campuses()` / `admin_get_config()` | moderator | campus setup and flags, read-only for moderators (DEC 69) | R1.0 |
+| `admin_whoami()` | any signed-in user | `{admin, role, campus_id, aal, name}` for the console gate (DEC 69) | R1.0 |
 | `admin_metrics_funnel` / `_retention` / `_liquidity` / `_safety` | moderator | — | R1.1 (UI); views in R1.0 |
 | `admin_invite_admin(email, role, campus)` / `admin_remove_admin` | owner | — | R1.1 |
 | `admin_create_announcement(...)` | owner | max 1 per 7 d per campus | R1.1 |

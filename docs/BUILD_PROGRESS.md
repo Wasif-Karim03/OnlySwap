@@ -23,3 +23,6 @@ Device checks (G8) are deferred to the testing phase at the end.
 | S31 Profile + settings | done (sandbox) | s31-done | get_me, my_listings, listing_stats (DEC 67) pgTAP 9; F01-F08, F10, F12, F14, F15, F18 |
 | S32 Site foundation + deep links | done (sandbox) | s32-done | apps/site Astro skeleton + well-known generator (node tests), App Links intent filter, +native-intent rewrite, X11/X12/X14/X31 (DEC 68); AASA/App Links verification is OWNER_TODO 11 |
 | S33 A11y + beta start | done (sandbox) | s33-done | automated a11y audit over main screens (role + name on every control, list mode); manual VoiceOver/TalkBack walk and P11-BETA-01 (OWNER_TODO 12) in the testing phase |
+| S34 Admin 1 | done (sandbox) | s34-done | 0031_admin: 24 admin RPCs with require_admin + one audit row each (DEC 69) pgTAP 34 (T-INT-ADMIN-01/02/04); apps/admin Vite + React + TanStack Router, email code + TOTP gate, 8 h session, node tests 5; Pages deploy is OWNER_TODO 13 |
+| S35 Admin 2 | done (sandbox) | s35-done | overview, reports queue + detail + actions, appeals, users + user detail (pause, suspend, ban, re-verify, clear strike, change email) |
+| S36 Admin 3 | done (sandbox) | s36-done | listings (held queue, remove, restore), report-gated chat reading, campuses (status, dials, domains, meetup spots with police date), flags/config, audit log + CSV |

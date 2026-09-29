@@ -9,7 +9,6 @@ import { screen, waitFor } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 import type { ReactNode } from 'react';
 import { AccessibilityInfo, Text } from 'react-native';
-import type { ReactTestRendererJSON } from 'react-test-renderer';
 
 import type { ChatApi, ChatInfo } from '../src/features/chat/api';
 import { ChatScreen } from '../src/features/chat/ChatScreen';
@@ -34,7 +33,8 @@ jest.mock('expo-haptics', () => ({
   NotificationFeedbackType: { Success: 'success', Warning: 'warning', Error: 'error' },
 }));
 
-type Node = ReactTestRendererJSON;
+// The shape of `toJSON()` nodes (react-test-renderer ships no types).
+type Node = { type: string; props: Record<string, unknown>; children: (Node | string)[] | null };
 
 function textOf(n: Node | string | null): string {
   if (n === null) return '';

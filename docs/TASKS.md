@@ -205,14 +205,14 @@
 
 ## P12 · Admin panel (G)
 
-- [ ] **P12-ADM-01** Scaffold `apps/admin` (Vite + React + TanStack Router/Table + tokens CSS) and deploy it to Pages `onlyswap-admin` · P2-TOK-01 · a preview URL loads · M
-- [ ] **P12-ADM-02** G-LOGIN: email OTP + TOTP enroll/challenge + `requireAdmin` guard + 8 h session · ADM-01, P3-AUTH-01 · a non-admin is blocked; AAL1 is prompted for MFA · M
-- [ ] **P12-ADM-03** ✎ Admin RPCs `public.admin_*` for R1.0 (API §4) with `require_admin` and one audit row each; `revoke-sessions` + `admin-change-email` functions. · deps P3-DB-08 · done when T-INT-ADMIN-01/02 pass · L
-- [ ] **P12-ADM-04** ✎ G02 Overview (open reports, today counts). The metrics UI is R1.1. · deps P12-ADM-03 · done when — · M
-- [ ] **P12-ADM-05** G-REPORTS Reports queue + detail + actions; G-APPEALS · ADM-03 · — · L
-- [ ] **P12-ADM-06** G-USERS, G-USER detail · ADM-03 · — · M
-- [ ] **P12-ADM-07** ✎ G02 Listings (held queue, remove/restore) and Chats (metadata; report-gated reading). The Quad queue is R1.1. · deps P12-ADM-03 · done when every action logged · M
-- [ ] **P12-ADM-08** ✎ G02 Campus setup (domains incl. aliases/blocked, meetup spots with designation + date, status live/paused, dials), Flags/config (maintenance, min versions, rules_version), Audit log (CSV). · deps P12-ADM-03 · done when flipping `rules_version` triggers the app gate (E2E-22) · L
+- [x] **P12-ADM-01** Scaffold `apps/admin` (Vite + React + TanStack Router/Table + tokens CSS) and deploy it to Pages `onlyswap-admin` · P2-TOK-01 · a preview URL loads · M
+- [x] **P12-ADM-02** G-LOGIN: email OTP + TOTP enroll/challenge + `requireAdmin` guard + 8 h session · ADM-01, P3-AUTH-01 · a non-admin is blocked; AAL1 is prompted for MFA · M
+- [x] **P12-ADM-03** ✎ Admin RPCs `public.admin_*` for R1.0 (API §4) with `require_admin` and one audit row each; `revoke-sessions` + `admin-change-email` functions. · deps P3-DB-08 · done when T-INT-ADMIN-01/02 pass · L
+- [x] **P12-ADM-04** ✎ G02 Overview (open reports, today counts). The metrics UI is R1.1. · deps P12-ADM-03 · done when — · M
+- [x] **P12-ADM-05** G-REPORTS Reports queue + detail + actions; G-APPEALS · ADM-03 · — · L
+- [x] **P12-ADM-06** G-USERS, G-USER detail · ADM-03 · — · M
+- [x] **P12-ADM-07** ✎ G02 Listings (held queue, remove/restore) and Chats (metadata; report-gated reading). The Quad queue is R1.1. · deps P12-ADM-03 · done when every action logged · M
+- [x] **P12-ADM-08** ✎ G02 Campus setup (domains incl. aliases/blocked, meetup spots with designation + date, status live/paused, dials), Flags/config (maintenance, min versions, rules_version), Audit log (CSV). · deps P12-ADM-03 · done when flipping `rules_version` triggers the app gate (E2E-22) · L
 
 ## P13 · Web surfaces (W)
 

@@ -1595,6 +1595,75 @@ isOneToOne: false
 "admin_change_email":
 { Args: { "new_email": string,"user_id": string }; Returns: Json
                            },
+"admin_clear_strike":
+{ Args: { "id": string,"reason": string }; Returns: undefined
+                           },
+"admin_decide_appeal":
+{ Args: { "decision": string,"id": string,"note": string }; Returns: undefined
+                           },
+"admin_delete_domain":
+{ Args: { "domain": string,"reason": string }; Returns: undefined
+                           },
+"admin_force_reverify":
+{ Args: { "reason": string,"user_id": string }; Returns: undefined
+                           },
+"admin_get_config":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"admin_list_appeals":
+{ Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
+                           },
+"admin_list_audit":
+{ Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
+                           },
+"admin_list_campuses":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"admin_list_listings":
+{ Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
+                           },
+"admin_list_reports":
+{ Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
+                           },
+"admin_list_users":
+{ Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
+                           },
+"admin_overview":
+{ Args: { "campus_id"?: string }; Returns: Json
+                           },
+"admin_read_reported_chat":
+{ Args: { "report_id": string }; Returns: Json
+                           },
+"admin_report_detail":
+{ Args: { "id": string }; Returns: Json
+                           },
+"admin_resolve_report":
+{ Args: { "action": string,"id": string,"note": string,"suspend_days"?: number }; Returns: undefined
+                           },
+"admin_set_config":
+{ Args: { "key": string,"reason": string,"value": Json }; Returns: undefined
+                           },
+"admin_set_listing_status":
+{ Args: { "id": string,"reason": string,"status": string }; Returns: undefined
+                           },
+"admin_set_user_status":
+{ Args: { "reason": string,"status": string,"until": string,"user_id": string }; Returns: undefined
+                           },
+"admin_update_campus":
+{ Args: { "id": string,"patch": Json,"reason": string }; Returns: undefined
+                           },
+"admin_upsert_domain":
+{ Args: { "campus_id": string,"domain": string,"kind": string,"reason": string }; Returns: undefined
+                           },
+"admin_upsert_safe_spot":
+{ Args: { "reason": string,"spot": Json }; Returns: Json
+                           },
+"admin_user_detail":
+{ Args: { "id": string }; Returns: Json
+                           },
+"admin_whoami":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "block_user":
 { Args: { "user_id": string }; Returns: undefined
                            },
