@@ -1,5 +1,4 @@
 import NetInfo from '@react-native-community/netinfo';
-import * as Crypto from 'expo-crypto';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo } from 'react';
 import { useStore } from 'zustand';
@@ -7,6 +6,7 @@ import { createStore, type StoreApi } from 'zustand/vanilla';
 
 import { toAppError } from '@/lib/errors';
 import { supabaseRealtime, type RealtimeSource } from '@/lib/realtime';
+import { uuid as newUuid } from '@/lib/uuid';
 
 import { chatApi, type ChatApi } from './api';
 import { firstSentId, lastSentId, mergeMessages, type ChatItem, type Message } from './logic';
@@ -38,7 +38,7 @@ type Deps = {
 
 /** The chat store (P8-CHAT-02; T-UNIT-CHAT-01/02). One per open chat. */
 export function createChatStore(chatId: string, deps: Deps): StoreApi<ChatState> {
-  const uuid = deps.uuid ?? (() => Crypto.randomUUID());
+  const uuid = deps.uuid ?? newUuid;
   const now = deps.now ?? (() => new Date());
   let flushing: Promise<void> | null = null;
 

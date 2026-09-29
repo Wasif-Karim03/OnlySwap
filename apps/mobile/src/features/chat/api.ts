@@ -25,6 +25,7 @@ export type ChatApi = {
   markRead: (chatId: string) => Promise<void>;
   mute: (chatId: string, muted: boolean) => Promise<void>;
   hide: (chatId: string) => Promise<void>;
+  report: (chatId: string, reason: string, details: string) => Promise<void>;
 };
 
 const rpc = createRpc(() => getSupabase() as unknown as RpcClient);
@@ -48,5 +49,13 @@ export const chatApi: ChatApi = {
   },
   hide: async (chatId) => {
     await rpc('hide_chat', { chat_id: chatId });
+  },
+  report: async (chatId, reason, details) => {
+    await rpc('create_report', {
+      target_type: 'chat',
+      target_id: chatId,
+      reason,
+      details: details || null,
+    });
   },
 };

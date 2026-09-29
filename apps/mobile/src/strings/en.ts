@@ -1035,6 +1035,43 @@ export const offers = {
   noOffersBody: 'Offers show up here in the order they came in.',
 } as const;
 
+export const chat = {
+  composerLabel: 'Message',
+  composerPlaceholder: 'Message',
+  send: 'Send',
+  sending: 'Sending',
+  failed: "Didn't send. Tap to retry.",
+  retry: 'Retry',
+  safetyTitle: 'Stay safe',
+  safetyBody:
+    'Meet at a Meetup spot in daylight, check the item, and pay in person. Never pay before you meet.',
+  scamHint: {
+    payment: 'Never pay before you meet. OnlySwap deals are paid in person.',
+    link: 'Be careful with links. Keep the deal in this chat.',
+    phone: 'Keep the deal in this chat until you meet.',
+  },
+  agreed: 'Agreed {amount}',
+  planMeetup: 'Plan meetup',
+  markSold: 'Mark sold',
+  didItSell: 'Did it sell?',
+  details: 'Chat details',
+  closed: 'This chat is closed.',
+  blocked: "You can't message each other.",
+  youBlocked: 'You blocked {name}.',
+  deletedUser: 'Deleted user',
+  loadOlder: 'Load earlier messages',
+  empty: 'Say hi and plan the pickup.',
+  // Details (E04)
+  detailsTitle: 'Chat details',
+  mute: 'Mute notifications',
+  viewListing: 'View listing',
+  viewProfile: 'View profile',
+  report: 'Report {name}',
+  block: 'Block {name}',
+  hide: 'Hide chat',
+  hideDone: 'Chat hidden. It comes back if they message you.',
+} as const;
+
 export const en = {
   permissions,
   tabs,
@@ -1068,6 +1105,7 @@ export const en = {
   saved,
   profileView,
   offers,
+  chat,
 } as const;
 
 export default en;
