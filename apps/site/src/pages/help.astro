@@ -1,0 +1,117 @@
+---
+import Turnstile from '../components/Turnstile.astro';
+import Base from '../layouts/Base.astro';
+
+// W03 Help (P13-WEB-04): FAQ, the support form (Turnstile + support-request
+// function, which emails the owner), and the safety call to action.
+const faq = [
+  {
+    q: "I can't get into my school email anymore",
+    a: 'Pick "I can\'t access my school email" below and tell us your old and new email. We check it by hand and move your account.',
+  },
+  {
+    q: 'Does OnlySwap handle payments?',
+    a: 'No. You pay the seller in person, with cash or an app you both agree on. Never pay before you meet, and never send a deposit.',
+  },
+  {
+    q: 'Someone made me uncomfortable',
+    a: 'Report them from the chat or their profile. A real person reviews every report. If you are in danger, call 911.',
+  },
+  {
+    q: 'Why was my listing held or removed?',
+    a: 'Some listings get a quick human check first. Items on the banned list are removed. You can appeal from the app.',
+  },
+  {
+    q: 'How do I delete my account?',
+    a: 'In the app: Profile, Settings, Delete account. Or on the web at the delete account page.',
+  },
+];
+---
+
+<Base title="Help | OnlySwap" description="Answers to common questions and a way to reach the OnlySwap team.">
+  <h1>Help</h1>
+  <div class="card">
+    <p><strong>If you are in danger, call 911 right away.</strong></p>
+    <p class="muted">Then read the <a href="/safety">safety tips</a> and report the account in the app.</p>
+  </div>
+
+  <h2>Common questions</h2>
+  {
+    faq.map((f) => (
+      <details class="card">
+        <summary>
+          <strong>{f.q}</strong>
+        </summary>
+        <p class="muted">{f.a}</p>
+      </details>
+    ))
+  }
+
+  <h2>Contact us</h2>
+  <form id="support" novalidate>
+    <label>
+      Your email
+      <input type="email" name="email" autocomplete="email" required />
+    </label>
+    <label>
+      Topic
+      <select name="topic">
+        <option value="general">General question</option>
+        <option value="cant_access_email">I can't access my school email</option>
+        <option value="safety">Safety</option>
+        <option value="bug">Something isn't working</option>
+        <option value="other">Other</option>
+      </select>
+    </label>
+    <label>
+      What happened
+      <textarea name="body" rows="6" maxlength="2000" required></textarea>
+    </label>
+    <Turnstile />
+    <button type="submit">Send</button>
+    <p id="support-msg" role="status"></p>
+  </form>
+</Base>
+
+<script>
+  import { friendly, sendSupport, type Topic } from '../lib/client';
+
+  const env = {
+    url: import.meta.env.PUBLIC_SUPABASE_URL as string,
+    key: import.meta.env.PUBLIC_SUPABASE_ANON_KEY as string,
+  };
+  const form = document.getElementById('support') as HTMLFormElement;
+  const msg = document.getElementById('support-msg')!;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = new FormData(form);
+    const email = String(data.get('email') ?? '');
+    const body = String(data.get('body') ?? '');
+    msg.className = 'error';
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) {
+      msg.textContent = 'Check the email address.';
+      return;
+    }
+    if (body.trim().length < 10) {
+      msg.textContent = 'Add a few more words about what happened.';
+      return;
+    }
+    const button = form.querySelector('button')!;
+    button.disabled = true;
+    try {
+      await sendSupport(env, {
+        email,
+        topic: String(data.get('topic')) as Topic,
+        body,
+        turnstileToken: String(data.get('turnstile') ?? ''),
+      });
+      msg.className = 'ok';
+      msg.textContent = "Sent. We'll reply by email, usually within two days.";
+      form.reset();
+    } catch (err) {
+      msg.textContent = friendly(err);
+    } finally {
+      button.disabled = false;
+    }
+  });
+</script>

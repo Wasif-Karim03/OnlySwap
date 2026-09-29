@@ -4,13 +4,19 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "prebuild": "node scripts/well-known.mjs",
+    "prebuild": "node scripts/well-known.mjs && node scripts/copy-tokens.mjs",
     "build": "astro build",
     "preview": "astro preview",
-    "test": "node --experimental-strip-types --test test/*.test.ts"
+    "test": "node --experimental-strip-types --test test/*.test.ts",
+    "predev": "node scripts/copy-tokens.mjs",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@onlyswap/tokens": "workspace:*",
     "astro": "7.3.5"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.0",
+    "typescript": "~6.0.3"
   }
 }

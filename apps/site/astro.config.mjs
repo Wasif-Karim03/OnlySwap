@@ -8,4 +8,6 @@ export default defineConfig({
   output: 'static',
   trailingSlash: 'never',
   build: { format: 'file' },
+  // Scripts ship as files so the CSP can stay script-src 'self' (P13-WEB-09).
+  vite: { build: { assetsInlineLimit: 0 } },
 });

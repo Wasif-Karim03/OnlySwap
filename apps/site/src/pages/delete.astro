@@ -1,0 +1,116 @@
+---
+import Base from '../layouts/Base.astro';
+
+// W04 web deletion (P13-WEB-05, store requirement): email code → confirm →
+// the same delete-account function as the app. The access token lives only in
+// this page's memory.
+---
+
+<Base
+  title="Delete your account | OnlySwap"
+  description="Delete your OnlySwap account and its data from the web."
+>
+  <h1>Delete your account</h1>
+  <p class="muted">
+    This deletes your profile, listings, photos and saves, and signs you out everywhere. Chats you were
+    in close, and the other person keeps their copy without your name. Reports stay for 180 days for safety, and backups roll off within 30 days. See the <a
+      href="/privacy">Privacy Policy</a
+    >.
+  </p>
+
+  <form id="step-email" novalidate>
+    <label>
+      Your school email
+      <input type="email" name="email" autocomplete="email" required />
+    </label>
+    <button type="submit">Email me a code</button>
+  </form>
+
+  <form id="step-code" novalidate hidden>
+    <label>
+      6-digit code
+      <input name="code" inputmode="numeric" autocomplete="one-time-code" required />
+    </label>
+    <button type="submit">Continue</button>
+  </form>
+
+  <form id="step-confirm" novalidate hidden>
+    <p><strong>This can't be undone.</strong> Type DELETE to confirm.</p>
+    <label>
+      Confirm
+      <input name="confirm" autocomplete="off" required />
+    </label>
+    <button type="submit" class="danger">Delete my account</button>
+  </form>
+
+  <p id="delete-msg" role="status"></p>
+</Base>
+
+<script>
+  import { deleteAccount, friendly, sendCode, verifyCode } from '../lib/client';
+
+  const env = {
+    url: import.meta.env.PUBLIC_SUPABASE_URL as string,
+    key: import.meta.env.PUBLIC_SUPABASE_ANON_KEY as string,
+  };
+  const msg = document.getElementById('delete-msg')!;
+  const stepEmail = document.getElementById('step-email') as HTMLFormElement;
+  const stepCode = document.getElementById('step-code') as HTMLFormElement;
+  const stepConfirm = document.getElementById('step-confirm') as HTMLFormElement;
+  let email = '';
+  let token = '';
+
+  async function run(form: HTMLFormElement, work: () => Promise<void>) {
+    const button = form.querySelector('button')!;
+    button.disabled = true;
+    msg.className = 'error';
+    msg.textContent = '';
+    try {
+      await work();
+    } catch (err) {
+      msg.textContent = friendly(err);
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  stepEmail.addEventListener('submit', (e) => {
+    e.preventDefault();
+    email = String(new FormData(stepEmail).get('email') ?? '').trim();
+    void run(stepEmail, async () => {
+      await sendCode(env, email);
+      stepEmail.hidden = true;
+      stepCode.hidden = false;
+      msg.className = 'meta';
+      msg.textContent = `We sent a code to ${email}.`;
+      (stepCode.querySelector('input') as HTMLInputElement).focus();
+    });
+  });
+
+  stepCode.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const code = String(new FormData(stepCode).get('code') ?? '');
+    void run(stepCode, async () => {
+      token = await verifyCode(env, email, code);
+      stepCode.hidden = true;
+      stepConfirm.hidden = false;
+      (stepConfirm.querySelector('input') as HTMLInputElement).focus();
+    });
+  });
+
+  stepConfirm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (String(new FormData(stepConfirm).get('confirm') ?? '').trim() !== 'DELETE') {
+      msg.className = 'error';
+      msg.textContent = 'Type DELETE in capital letters to confirm.';
+      return;
+    }
+    void run(stepConfirm, async () => {
+      await deleteAccount(env, token);
+      token = '';
+      stepConfirm.hidden = true;
+      msg.className = 'ok';
+      msg.textContent = 'Your account is deleted. Thanks for using OnlySwap.';
+    });
+  });
+</script>

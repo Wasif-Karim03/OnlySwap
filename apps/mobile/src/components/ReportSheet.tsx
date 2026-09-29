@@ -29,6 +29,7 @@ export type ReportReason =
   | 'hate'
   | 'sexual'
   | 'no_show'
+  | 'minor_safety'
   | 'other';
 
 export const REPORT_DETAILS_MAX = 500;
@@ -37,9 +38,10 @@ const REASONS: Record<ReportTarget, ReportReason[]> = {
   // Board B9: matches the banned items list and the scams that happen.
   listing: ['scam', 'not_allowed', 'stolen', 'counterfeit', 'misleading', 'other'],
   // Board E19 (+ threats, which go to the priority queue).
-  user: ['scam', 'harassment', 'threat', 'not_allowed', 'no_show', 'other'],
-  chat: ['scam', 'harassment', 'threat', 'not_allowed', 'no_show', 'other'],
-  message: ['scam', 'harassment', 'threat', 'hate', 'sexual', 'other'],
+  // minor_safety: the Play child safety standard needs an in-app way to report it.
+  user: ['scam', 'harassment', 'threat', 'not_allowed', 'no_show', 'minor_safety', 'other'],
+  chat: ['scam', 'harassment', 'threat', 'not_allowed', 'no_show', 'minor_safety', 'other'],
+  message: ['scam', 'harassment', 'threat', 'hate', 'sexual', 'minor_safety', 'other'],
 };
 
 export function reportReasons(target: ReportTarget): ReportReason[] {

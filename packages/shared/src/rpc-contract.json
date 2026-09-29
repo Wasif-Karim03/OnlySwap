@@ -511,6 +511,17 @@
     ]
   },
   {
+    "name": "get_listing_public_card",
+    "args": "id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "anon",
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "get_me",
     "args": "",
     "returns": "jsonb",
@@ -768,6 +779,28 @@
     "returns": "jsonb",
     "security": "definer",
     "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "public_campus_progress",
+    "args": "",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "anon",
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "public_safe_spots",
+    "args": "slug text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "anon",
       "authenticated",
       "service_role"
     ]

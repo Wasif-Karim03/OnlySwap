@@ -1,0 +1,17 @@
+---
+// Cloudflare Turnstile widget (free). The site key is public; the secret stays in
+// Supabase function secrets (TURNSTILE_SECRET_KEY). Without a site key the form
+// shows a note instead, so local builds still work.
+const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | undefined;
+---
+
+{
+  siteKey ? (
+    <>
+      <div class="cf-turnstile" data-sitekey={siteKey} data-response-field-name="turnstile" />
+      <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
+    </>
+  ) : (
+    <p class="meta">The form check isn't set up on this build.</p>
+  )
+}

@@ -1,0 +1,44 @@
+---
+import Base from '../layouts/Base.astro';
+
+// W02 legal pages (P13-WEB-03): one template, markdown in src/content/legal,
+// versioned, with a sidebar. The owner finalizes the text (P14-LEGAL-01); the
+// app bundles the same files and CI diffs them.
+type Legal = {
+  frontmatter: { title: string; description: string; version: string; order: number };
+  Content: (props: Record<string, never>) => unknown;
+};
+const files = import.meta.glob<Legal>('../content/legal/*.md', { eager: true });
+const pages = Object.entries(files)
+  .map(([path, mod]) => ({ slug: path.split('/').pop()!.replace(/\.md$/, ''), mod }))
+  .sort((a, b) => a.mod.frontmatter.order - b.mod.frontmatter.order);
+
+export function getStaticPaths() {
+  const all = import.meta.glob<Legal>('../content/legal/*.md', { eager: true });
+  return Object.keys(all).map((path) => ({ params: { legal: path.split('/').pop()!.replace(/\.md$/, '') } }));
+}
+
+const { legal } = Astro.params;
+const page = pages.find((p) => p.slug === legal)!;
+const { title, description, version } = page.mod.frontmatter;
+const Content = page.mod.Content;
+---
+
+<Base title={`${title} | OnlySwap`} description={description}>
+  <div class="legal">
+    <nav aria-label="Policies">
+      {
+        pages.map((p) => (
+          <a href={`/${p.slug}`} aria-current={p.slug === legal ? 'page' : undefined}>
+            {p.mod.frontmatter.title}
+          </a>
+        ))
+      }
+    </nav>
+    <article>
+      <h1>{title}</h1>
+      <p class="meta">Version {version}</p>
+      <Content />
+    </article>
+  </div>
+</Base>

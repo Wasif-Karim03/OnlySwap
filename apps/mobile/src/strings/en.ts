@@ -143,6 +143,7 @@ export const report = {
       hate: 'Hate or slurs',
       sexual: 'Sexual content',
       no_show: "Didn't show up",
+      minor_safety: 'Involves someone under 18',
       other: 'Something else',
     },
     person: {
@@ -156,6 +157,7 @@ export const report = {
       hate: 'Hate or slurs',
       sexual: 'Sexual content',
       no_show: "Didn't show up",
+      minor_safety: 'Involves someone under 18',
       other: 'Something else',
     },
   },

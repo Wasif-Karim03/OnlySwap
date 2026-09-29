@@ -1,8 +1,131 @@
 ---
+import Turnstile from '../components/Turnstile.astro';
 import Base from '../layouts/Base.astro';
+
+// W01 landing (P13-WEB-02). Store links come from the build (set once the store
+// pages exist); until then the buttons point at /download.
+const appStore = (import.meta.env.PUBLIC_APP_STORE_URL as string | undefined) || '/download';
+const playStore = (import.meta.env.PUBLIC_PLAY_STORE_URL as string | undefined) || '/download';
 ---
-<Base title="OnlySwap: buy and sell on campus">
-  <h1>Buy and sell with students at your school</h1>
-  <p class="muted">Swipe through what people nearby are selling, make an offer, and meet at a Meetup spot on campus. Pay in person.</p>
-  <p><a class="btn" href="/download">Get the app</a></p>
+
+<Base title="OnlySwap: buy and sell with students at your school">
+  <section class="hero">
+    <h1>Buy and sell with students at your school.</h1>
+    <p class="muted">
+      Swipe through what people on campus are selling, make an offer, and meet at a Meetup spot. Pay in
+      person. Only verified students 18 and older can join.
+    </p>
+    <div class="row">
+      <a class="btn" href={appStore}>Get it on the App Store</a>
+      <a class="btn secondary" href={playStore}>Get it on Google Play</a>
+    </div>
+  </section>
+
+  <section aria-labelledby="how">
+    <h2 id="how">How it works</h2>
+    <div class="steps">
+      <div class="card">
+        <h3>Swipe</h3>
+        <p class="muted">Right to make an offer, left to skip, save anything you want to watch.</p>
+      </div>
+      <div class="card">
+        <h3>Offer</h3>
+        <p class="muted">Chat opens once the seller accepts. No spam, no strangers.</p>
+      </div>
+      <div class="card">
+        <h3>Meet and pay</h3>
+        <p class="muted">Pick a Meetup spot on campus, check the item, pay in person.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="schools">
+    <h2 id="schools">Schools</h2>
+    <div id="progress" aria-live="polite"><p class="meta">Loading schools…</p></div>
+  </section>
+
+  <section aria-labelledby="check" class="card">
+    <h2 id="check">Is your school on OnlySwap?</h2>
+    <p class="muted">
+      Enter your school email. If your school isn't open yet, we'll email you once when it is. Nothing
+      else.
+    </p>
+    <form id="waitlist" novalidate>
+      <label>
+        School email
+        <input type="email" name="email" autocomplete="email" required />
+      </label>
+      <Turnstile />
+      <button type="submit">Check my school</button>
+      <p id="waitlist-msg" role="status"></p>
+    </form>
+  </section>
 </Base>
+
+<script>
+  import { campusProgress, friendly, joinWaitlist, progressLine, schoolEmailProblem } from '../lib/client';
+
+  const env = {
+    url: import.meta.env.PUBLIC_SUPABASE_URL as string,
+    key: import.meta.env.PUBLIC_SUPABASE_ANON_KEY as string,
+  };
+  const box = document.getElementById('progress')!;
+  if (!env.url || !env.key) {
+    box.innerHTML = '';
+  } else {
+    campusProgress(env)
+      .then((rows) => {
+        box.replaceChildren(
+          ...rows.map((c) => {
+            const { text, percent } = progressLine(c);
+            const el = document.createElement('div');
+            el.className = 'card';
+            const p = document.createElement('p');
+            p.textContent = text;
+            const bar = document.createElement('div');
+            bar.className = 'bar';
+            bar.setAttribute('role', 'progressbar');
+            bar.setAttribute('aria-valuenow', String(percent));
+            bar.setAttribute('aria-valuemin', '0');
+            bar.setAttribute('aria-valuemax', '100');
+            bar.setAttribute('aria-label', text);
+            const fill = document.createElement('span');
+            fill.style.width = `${percent}%`;
+            bar.append(fill);
+            el.append(p, bar);
+            return el;
+          }),
+        );
+        if (!rows.length) box.innerHTML = '<p class="meta">Schools are coming soon.</p>';
+      })
+      .catch(() => {
+        box.innerHTML = '<p class="meta">We couldn’t load schools right now.</p>';
+      });
+  }
+
+  const form = document.getElementById('waitlist') as HTMLFormElement;
+  const msg = document.getElementById('waitlist-msg')!;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = new FormData(form);
+    const email = String(data.get('email') ?? '');
+    const problem = schoolEmailProblem(email);
+    msg.className = 'error';
+    if (problem) {
+      msg.textContent = problem;
+      return;
+    }
+    const button = form.querySelector('button')!;
+    button.disabled = true;
+    try {
+      await joinWaitlist(env, email, String(data.get('turnstile') ?? ''));
+      msg.className = 'ok';
+      msg.textContent = "Thanks. If your school is open, get the app and sign in. If not, we'll email you when it opens.";
+      form.reset();
+    } catch (err) {
+      msg.textContent = friendly(err);
+    } finally {
+      button.disabled = false;
+    }
+  });
+</script>

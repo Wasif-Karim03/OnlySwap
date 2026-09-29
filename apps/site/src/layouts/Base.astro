@@ -6,9 +6,17 @@ interface Props {
   title: string;
   description?: string;
   noindex?: boolean;
+  path?: string;
 }
-const { title, description = 'Buy and sell with verified students at your school. Meet on campus, pay in person.', noindex = false } = Astro.props;
+const {
+  title,
+  description = 'Buy and sell with verified students at your school. Meet on campus, pay in person.',
+  noindex = false,
+  path = Astro.url.pathname,
+} = Astro.props;
+const canonical = new URL(path, Astro.site).toString();
 ---
+
 <!doctype html>
 <html lang="en">
   <head>
@@ -16,13 +24,17 @@ const { title, description = 'Buy and sell with verified students at your school
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary" />
     {noindex && <meta name="robots" content="noindex" />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   </head>
   <body>
+    <a class="skip" href="#main">Skip to content</a>
     <header class="top">
       <a href="/" class="brand">OnlySwap</a>
       <nav aria-label="Main">
@@ -30,15 +42,20 @@ const { title, description = 'Buy and sell with verified students at your school
         <a href="/help">Help</a>
       </nav>
     </header>
-    <main>
+    <main id="main">
       <slot />
     </main>
     <footer class="foot">
-      <a href="/terms">Terms</a>
-      <a href="/privacy">Privacy</a>
-      <a href="/rules">Community Rules</a>
-      <a href="/banned">Banned items</a>
-      <a href="/delete">Delete account</a>
+      <nav aria-label="Legal">
+        <a href="/terms">Terms</a>
+        <a href="/privacy">Privacy</a>
+        <a href="/rules">Community Rules</a>
+        <a href="/banned-items">Banned items</a>
+        <a href="/cookies">Cookies</a>
+        <a href="/child-safety">Child safety</a>
+        <a href="/delete">Delete account</a>
+      </nav>
+      <span>OnlySwap is not affiliated with any school.</span>
     </footer>
   </body>
 </html>

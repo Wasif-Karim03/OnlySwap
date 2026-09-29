@@ -1739,6 +1739,9 @@ isOneToOne: false
 "get_listing":
 { Args: { "id": string }; Returns: Json
                            },
+"get_listing_public_card":
+{ Args: { "id": string }; Returns: Json
+                           },
 "get_me":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
@@ -1816,6 +1819,12 @@ isOneToOne: false
                            },
 "propose_meetup":
 { Args: { "chat_id": string,"custom_place"?: string,"spot_id"?: string,"starts_at": string }; Returns: Json
+                           },
+"public_campus_progress":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"public_safe_spots":
+{ Args: { "slug": string }; Returns: Json
                            },
 "record_swipes":
 { Args: { "items": Json }; Returns: undefined

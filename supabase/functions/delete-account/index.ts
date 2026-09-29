@@ -9,6 +9,7 @@ import postgres from 'npm:postgres@3.4.7';
 
 import { handleDeleteAccount, type Prepared } from '../_shared/deleteAccount.ts';
 import { createR2, r2FromEnv } from '../_shared/r2.ts';
+import { CORS_HEADERS } from '../_shared/waitlist.ts';
 
 const admin = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -29,6 +30,9 @@ try {
 const r2 = r2cfg ? createR2(r2cfg) : null;
 
 Deno.serve(async (req) => {
+  // The web deletion page (W04, P13-WEB-05) calls this from the browser with the
+  // user's own token; no cookies are involved, so any origin is fine.
+  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS_HEADERS });
   let body: unknown = null;
   try {
     body = await req.json();
@@ -71,6 +75,6 @@ Deno.serve(async (req) => {
 
   return new Response(JSON.stringify(res.body), {
     status: res.status,
-    headers: { 'content-type': 'application/json' },
+    headers: { 'content-type': 'application/json', ...CORS_HEADERS },
   });
 });

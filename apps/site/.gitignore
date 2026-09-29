@@ -1,3 +1,4 @@
 public/.well-known/
 dist/
 .astro/
+public/_tokens.css

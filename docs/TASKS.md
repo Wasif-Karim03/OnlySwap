@@ -217,13 +217,13 @@
 ## P13 · Web surfaces (W)
 
 - [x] **P13-WEB-01** ✎ `apps/site` with Astro on Pages project `onlyswap-site`; tokens CSS; `.well-known` AASA + assetlinks (Play App Signing SHA-256); `_redirects`. · deps P1-SETUP-01 · done when AASA validator passes; Android App Links verified · M
-- [ ] **P13-WEB-02** W-LAND landing (desktop + phone), campus progress, store badges · WEB-01 · Lighthouse ≥ 90 performance and accessibility · L
-- [ ] **P13-WEB-03** Legal template + W-PRIV, W-TERMS, W-RULES, W-BANNED, W-SAFETY, W-COOKIES, W-CHILD (final legal text written by you; layouts from the design) · WEB-01 · all URLs live · M
-- [ ] **P13-WEB-04** W-HELP support page + `support-request` function + Turnstile · WEB-03 · the form emails you · M
-- [ ] **P13-WEB-05** W-DELETE web deletion (OTP login + confirm) · P4-DEL-01 · deletes a test account · M
-- [ ] **P13-WEB-06** ✎ Pages Functions `/l/[id]` (OG) and `/m/[token]` (meetup share). `/i/[code]` moves to R1.1 with the waitlist. · deps P5-SELL-05, P8-MEET-01 · done when the iMessage preview shows the card and an expired meetup token shows expiry · M
-- [ ] **P13-WEB-08** ✎ W06 404 page (`/joined` moves to R1.1). · deps P13-WEB-02 · done when unknown paths show the 404 · S
-- [ ] 🆕 **P13-WEB-09** `_headers` (CSP, XFO, nosniff, referrer, permissions) for site + admin; `robots.txt`, `sitemap.xml`, meta/OG per page; admin `X-Robots-Tag: noindex`. · deps P13-WEB-01, P12-ADM-01 · done when E2E-W08 passes; Lighthouse ≥ 90 · S
+- [x] **P13-WEB-02** W-LAND landing (desktop + phone), campus progress, store badges · WEB-01 · Lighthouse ≥ 90 performance and accessibility · L
+- [x] **P13-WEB-03** Legal template + W-PRIV, W-TERMS, W-RULES, W-BANNED, W-SAFETY, W-COOKIES, W-CHILD (final legal text written by you; layouts from the design) · WEB-01 · all URLs live · M
+- [x] **P13-WEB-04** W-HELP support page + `support-request` function + Turnstile · WEB-03 · the form emails you · M
+- [x] **P13-WEB-05** W-DELETE web deletion (OTP login + confirm) · P4-DEL-01 · deletes a test account · M
+- [x] **P13-WEB-06** ✎ Pages Functions `/l/[id]` (OG) and `/m/[token]` (meetup share). `/i/[code]` moves to R1.1 with the waitlist. · deps P5-SELL-05, P8-MEET-01 · done when the iMessage preview shows the card and an expired meetup token shows expiry · M
+- [x] **P13-WEB-08** ✎ W06 404 page (`/joined` moves to R1.1). · deps P13-WEB-02 · done when unknown paths show the 404 · S
+- [x] 🆕 **P13-WEB-09** `_headers` (CSP, XFO, nosniff, referrer, permissions) for site + admin; `robots.txt`, `sitemap.xml`, meta/OG per page; admin `X-Robots-Tag: noindex`. · deps P13-WEB-01, P12-ADM-01 · done when E2E-W08 passes; Lighthouse ≥ 90 · S
 
 ## P14 · Hardening, monitoring, backups
 
