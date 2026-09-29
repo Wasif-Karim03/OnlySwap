@@ -17,3 +17,4 @@ expo-env.d.ts
 supabase/.temp/
 supabase/.branches/
 apps/mobile/dist/
+store-assets/

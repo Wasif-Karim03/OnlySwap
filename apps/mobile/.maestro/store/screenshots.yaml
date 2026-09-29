@@ -1,0 +1,41 @@
+# Raw store screenshots from the real app (P16-STORE-01). Run once per platform
+# on a 6.9" iPhone simulator (iPhone 17 Pro Max) and a 1080 px Android emulator,
+# signed in as the reviewer on Demo University (a fictional school):
+#   maestro test apps/mobile/.maestro/store/screenshots.yaml -e PLATFORM=ios -e REVIEW_PASSWORD=...
+# Then: node --experimental-strip-types scripts/export-store-assets.ts
+# (Not under flows/, so the E2E run skips it.)
+appId: app.onlyswap
+tags: [store]
+---
+- launchApp:
+    clearState: true
+- takeScreenshot: ../../../../store-assets/raw/${PLATFORM}-4
+- runFlow: ../subflows/reviewer.yaml
+- runFlow:
+    when:
+      visible:
+        id: discover-coach
+    commands:
+      - tapOn:
+          id: discover-coach
+- takeScreenshot: ../../../../store-assets/raw/${PLATFORM}-1
+- swipe:
+    direction: RIGHT
+    duration: 300
+- assertVisible:
+    id: screen-offer
+- takeScreenshot: ../../../../store-assets/raw/${PLATFORM}-2
+- back
+- tapOn: Inbox
+- runFlow:
+    when:
+      visible:
+        id: 'inbox-chat-.*'
+    commands:
+      - tapOn:
+          id: 'inbox-chat-.*'
+          index: 0
+      - takeScreenshot: ../../../../store-assets/raw/${PLATFORM}-3
+      - back
+- tapOn: Sell
+- takeScreenshot: ../../../../store-assets/raw/${PLATFORM}-5
