@@ -69,4 +69,16 @@ for (const f of list) {
 console.log(
   `T-SEC-12 bundle scan: ${jsFiles.length} bundle(s), ${list.length} file(s), ${hits} finding(s)`,
 );
+
+// Perf-07 (P14-PERF-01): each platform bundle stays under 6 MB. Plain JS is a
+// little larger than Hermes bytecode, so this is a conservative check.
+const LIMIT = 6 * 1024 * 1024;
+for (const f of jsFiles.filter((x) => /_expo\/static\/js\//.test(x))) {
+  const size = statSync(f).size;
+  const mb = (size / 1024 / 1024).toFixed(2);
+  if (size > LIMIT) {
+    hits++;
+    console.log(`FAIL  Perf-07 ${f} is ${mb} MB (limit 6 MB)`);
+  } else console.log(`Perf-07 ${f.split('/').pop()}: ${mb} MB`);
+}
 process.exit(hits ? 1 : 0);

@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Linking, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { Banner } from '@/components/Banner';
@@ -17,7 +17,6 @@ import { SkeletonList } from '@/components/Skeleton';
 import { Text } from '@/components/Text';
 import { Toggle } from '@/components/Toggle';
 import { setAnalyticsOptOut } from '@/lib/analytics';
-import { getEnv } from '@/lib/env';
 import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
 import { unregisterPush } from '@/lib/push';
@@ -236,14 +235,9 @@ export function ChangeSchoolScreen({
 }
 
 /** F18 About: version, legal pages, licenses, contact. */
-export function AboutScreen({
-  openUrl = (u: string) => Linking.openURL(u),
-}: {
-  openUrl?: (u: string) => Promise<unknown>;
-}) {
+export function AboutScreen() {
   const router = useRouter();
   const leave = useLeave('/settings');
-  const site = getEnv().EXPO_PUBLIC_SITE_URL.replace(/\/+$/, '');
   const [licenses, setLicenses] = useState(false);
   return (
     <View style={styles.root} testID="screen-about">
@@ -253,9 +247,10 @@ export function AboutScreen({
           {fill(copy.version, { version: Constants.expoConfig?.version ?? '1.0.0' })}
         </Text>
         <GroupedList>
-          <ListRow label={copy.terms} onPress={() => void openUrl(`${site}/terms`)} />
-          <ListRow label={copy.privacyPolicy} onPress={() => void openUrl(`${site}/privacy`)} />
-          <ListRow label={copy.rules} onPress={() => void openUrl(`${site}/rules`)} />
+          {/* Bundled copies, readable offline (P14-LEGAL-01). */}
+          <ListRow label={copy.terms} onPress={() => router.push('/legal/terms')} />
+          <ListRow label={copy.privacyPolicy} onPress={() => router.push('/legal/privacy')} />
+          <ListRow label={copy.rules} onPress={() => router.push('/legal/rules')} />
           <ListRow label={copy.licenses} onPress={() => setLicenses((v) => !v)} />
           <ListRow label={copy.contact} onPress={() => router.push('/help')} />
         </GroupedList>

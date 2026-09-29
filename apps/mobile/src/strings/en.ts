@@ -1417,6 +1417,13 @@ export const me = {
   relisted: 'Relisted',
 } as const;
 
+/** Bundled legal pages (P14-LEGAL-01). */
+export const legal = {
+  version: 'Version {version}',
+  missing: "We couldn't find that page",
+  back: 'Go back',
+} as const;
+
 export const settings = {
   title: 'Settings',
   account: 'Account',
@@ -1524,6 +1531,7 @@ export const en = {
   safety,
   me,
   settings,
+  legal,
   system,
 } as const;
 

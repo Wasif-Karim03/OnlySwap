@@ -4,6 +4,7 @@ import { renderRouter } from 'expo-router/testing-library';
 import type { ReactNode } from 'react';
 import { Text } from 'react-native';
 
+import LegalRoute from '../app/legal/[doc]';
 import type { ListingResult } from '../src/features/feed/logic';
 import { listingTab, type Me, type MeApi, type MyListing } from '../src/features/me/api';
 import {
@@ -268,10 +269,17 @@ describe('F10-F18 settings', () => {
 
   it('F18: about shows licenses', async () => {
     render(
-      { 'settings/about': () => <AboutScreen openUrl={jest.fn(async () => {})} /> },
+      {
+        'settings/about': () => <AboutScreen />,
+        'legal/[doc]': () => <LegalRoute />,
+      },
       '/settings/about',
     );
     fireEvent.press(await screen.findByText(settings.licenses));
     expect(screen.getByTestId('about-licenses')).toBeTruthy();
+    // P14-LEGAL-01: the terms open from the bundled copy, offline.
+    fireEvent.press(screen.getByText(settings.terms));
+    expect(await screen.findByTestId('screen-legal-terms')).toBeTruthy();
+    expect(screen.getByText('Version 2026-10')).toBeTruthy();
   });
 });
