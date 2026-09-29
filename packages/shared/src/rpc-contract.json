@@ -200,6 +200,16 @@
     ]
   },
   {
+    "name": "disable_push_token",
+    "args": "token text",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "get_app_config",
     "args": "",
     "returns": "jsonb",
@@ -312,6 +322,26 @@
     ]
   },
   {
+    "name": "get_notification_prefs",
+    "args": "",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "get_notifications",
+    "args": "cursor bigint, \"limit\" integer",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "get_offer",
     "args": "offer_id uuid",
     "returns": "jsonb",
@@ -413,6 +443,16 @@
     ]
   },
   {
+    "name": "mark_notifications_read",
+    "args": "ids bigint[]",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "mark_sold",
     "args": "id uuid, buyer_id uuid",
     "returns": "void",
@@ -465,6 +505,16 @@
   {
     "name": "record_view",
     "args": "listing_id uuid",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "register_push_token",
+    "args": "token text, platform text, app_version text",
     "returns": "void",
     "security": "definer",
     "grants": [
@@ -625,6 +675,16 @@
   {
     "name": "update_listing",
     "args": "id uuid, title text, description text, category_id smallint, condition item_condition, price_cents integer, open_to_offers boolean, photos jsonb, meet_spot_ids uuid[], meet_note text, availability text[]",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "update_notification_prefs",
+    "args": "prefs jsonb",
     "returns": "jsonb",
     "security": "definer",
     "grants": [

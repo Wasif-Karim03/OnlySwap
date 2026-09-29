@@ -1646,6 +1646,9 @@ isOneToOne: false
 "delete_saved_search":
 { Args: { "id": string }; Returns: undefined
                            },
+"disable_push_token":
+{ Args: { "token": string }; Returns: undefined
+                           },
 "get_app_config":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
@@ -1679,6 +1682,12 @@ isOneToOne: false
 "get_my_report":
 { Args: { "id": string }; Returns: Json
                            },
+"get_notification_prefs":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"get_notifications":
+{ Args: { "cursor"?: number,"limit"?: number }; Returns: Json
+                           },
 "get_offer":
 { Args: { "offer_id": string }; Returns: Json
                            },
@@ -1709,6 +1718,9 @@ isOneToOne: false
 "mark_chat_read":
 { Args: { "chat_id": string }; Returns: undefined
                            },
+"mark_notifications_read":
+{ Args: { "ids"?: (number)[] }; Returns: undefined
+                           },
 "mark_sold":
 { Args: { "buyer_id"?: string,"id": string }; Returns: undefined
                            },
@@ -1726,6 +1738,9 @@ isOneToOne: false
                            },
 "record_view":
 { Args: { "listing_id": string }; Returns: undefined
+                           },
+"register_push_token":
+{ Args: { "app_version"?: string,"platform": string,"token": string }; Returns: undefined
                            },
 "relist_listing":
 { Args: { "id": string,"price_cents"?: number }; Returns: Json
@@ -1774,6 +1789,9 @@ isOneToOne: false
                            },
 "update_listing":
 { Args: { "availability"?: (string)[],"category_id"?: number,"condition"?: Database["public"]['Enums']["item_condition"],"description"?: string,"id": string,"meet_note"?: string,"meet_spot_ids"?: (string)[],"open_to_offers"?: boolean,"photos"?: Json,"price_cents"?: number,"title"?: string }; Returns: Json
+                           },
+"update_notification_prefs":
+{ Args: { "prefs": Json }; Returns: Json
                            },
 "update_profile":
 { Args: { "areas"?: (string)[],"avatar_path"?: string,"bio"?: string,"first_name": string,"last_initial"?: string,"year"?: Database["public"]['Enums']["class_year"] }; Returns: Json

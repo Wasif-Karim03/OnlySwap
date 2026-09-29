@@ -17,3 +17,4 @@ Device checks (G8) are deferred to the testing phase at the end.
 | S25 Chat UI | done (sandbox) | s25-done | chat screen (deal bar, safety tip, scam hint, pending/failed, blocked/closed/deleted), chat details (mute, report, block, hide) |
 | S26 Meetups | done (sandbox) | s26-done | meetup RPCs + reminders/no-show crons (DEC 62) pgTAP 34; plan sheet, MeetupCard in chat, meetup day screen |
 | S27 Deals | done (sandbox) | s27-done | confirm_deal, submit_rating, get_my_rating, deal_checks, wind-down notifications, account-deletion chat close (DEC 63) pgTAP 27; Did it sell, Mark sold, Rate, store review |
+| S28 Push | done (sandbox) | s28-done | push SQL (claim/finish/receipts/quiet/cap, DEC 64) pgTAP 29; send-push + push-receipts functions (node tests); lib/push.ts; P9-PUSH-01 is OWNER_TODO 10 |

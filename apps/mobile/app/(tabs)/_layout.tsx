@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router';
 import type { ComponentProps } from 'react';
 
 import { TabBar, type TabItem } from '@/components/TabBar';
+import { usePushHandling } from '@/lib/push';
 import { tabs } from '@/strings/en';
 
 type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>>[0];
@@ -36,6 +37,8 @@ function AppTabBar({ state, navigation }: TabBarProps) {
 }
 
 export default function TabsLayout() {
+  // Signed-in area: pushes open the right screen and the token stays registered (P9-PUSH-02).
+  usePushHandling(true);
   return (
     <Tabs
       initialRouteName="discover"

@@ -489,9 +489,9 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 **Checks:**
 
 - [ ] `P9-PUSH-01`: `eas credentials` shows both
-- [ ] `P9-PUSH-02`: a test push opens the right screen on both OSes
-- [ ] `P9-PUSH-03`: T-INT-PUSH-* pass; a bad token gets disabled
-- [ ] `P9-FIX-01`: T-FN-07 passes
+- [x] `P9-PUSH-02`: a test push opens the right screen on both OSes
+- [x] `P9-PUSH-03`: T-INT-PUSH-* pass; a bad token gets disabled
+- [x] `P9-FIX-01`: T-FN-07 passes
 
 **Gates:** G1, G2, G3, G5, G6, G4, G10, G11
 

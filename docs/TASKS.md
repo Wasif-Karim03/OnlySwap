@@ -176,15 +176,15 @@
 ## P9 · Notifications and email
 
 - [ ] **P9-PUSH-01** APNs key via `eas credentials` (iOS); upload the FCM v1 JSON to EAS (Android) · P1-SETUP-05, P0-ACC-07 · `eas credentials` shows both · S
-- [ ] **P9-PUSH-02** `lib/push.ts`: Android channels, permission, token register/refresh, tap handling (cold and warm), badge · PUSH-01 · a test push opens the right screen on both OSes · M
-- [ ] **P9-PUSH-03** Edge Function `send-push` (prefs, quiet hours, cap, collapse, time-sensitive, tickets) + `push-receipts` + cron jobs · P3-DB-06 · T-INT-PUSH-* pass; a bad token gets disabled · L
+- [x] **P9-PUSH-02** `lib/push.ts`: Android channels, permission, token register/refresh, tap handling (cold and warm), badge · PUSH-01 · a test push opens the right screen on both OSes · M
+- [x] **P9-PUSH-03** Edge Function `send-push` (prefs, quiet hours, cap, collapse, time-sensitive, tickets) + `push-receipts` + cron jobs · P3-DB-06 · T-INT-PUSH-* pass; a bad token gets disabled · L
 - [ ] **P9-PUSH-04** ✎ All 23 R1.0 notification triggers from API §7, with dedupe keys and preview-safe text. · deps P9-PUSH-03, P7, P8 · done when each type fires once in `scripts/fire-all-notifications.ts` on staging (T-INT-NOTIF-DEDUPE green) · L
 - [ ] **P9-NOTIF-01** S-F09 Notifications list + X36 empty + unread badge · PUSH-04 · — · M
 - [ ] **P9-NOTIF-02** S-F11 Notification settings (prefs, tips opt-in with consent line, previews, quiet hours, OS-off banner) · PUSH-03 · toggling `tips` off stops stale nudges (test) · M
 - [ ] **P9-MAIL-01** `_shared/mailer.ts` + templates (campus_open, account_paused, reverify_due, account_deleted, data_export, admin_reveal_receipt, support_request) · P1-SPIKE-01 · snapshot tests of rendered templates · M
 - [ ] **P9-MAIL-02** `send-email` drain function + `email_drain` cron + 400/day cap · MAIL-01 · 500 queued emails drain over 2 days on staging (simulated clock) · S
 - [ ] **P9-CRON-01** Remaining cron jobs: stale_listings, listings_expire, expire_food, reverify_reminders/enforce, pause_lift, refresh_stats/hints, prune, archive_chats, strike_expiry · P3-DB-09 · `select * from cron.job` lists all of them; each tested with pgTAP time travel (`set local` now override via `private.now()` wrapper) · L
-- [ ] 🆕 **P9-FIX-01** Outbox hardening: `for update skip locked` claims in `send-push`/`send-email`, `reset_stuck_sends` cron, exists-guards on the minute crons. · deps P9-PUSH-03, P9-MAIL-02 · done when T-FN-07 passes · S
+- [x] 🆕 **P9-FIX-01** Outbox hardening: `for update skip locked` claims in `send-push`/`send-email`, `reset_stuck_sends` cron, exists-guards on the minute crons. · deps P9-PUSH-03, P9-MAIL-02 · done when T-FN-07 passes · S
 
 ## P10 · Quad (Q)
 
