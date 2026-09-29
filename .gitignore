@@ -19,3 +19,4 @@ supabase/.branches/
 apps/mobile/dist/
 store-assets/
 verify-output.log
+ios-run.log

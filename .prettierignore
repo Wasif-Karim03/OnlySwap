@@ -18,3 +18,5 @@ apps/site/public/.well-known
 e2e/web/test-results
 e2e/web/playwright-report
 store-assets
+ios-run.log
+verify-output.log
