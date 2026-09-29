@@ -119,6 +119,7 @@ media_smoke() {
     node --experimental-strip-types scripts/verify/media-smoke.mjs
 }
 
+realtime_smoke() { ANON_KEY="$(anon_key)" SERVICE_KEY="$(status_var SERVICE_ROLE_KEY)" node scripts/verify/realtime-smoke.mjs; }
 offer_race() { ANON_KEY="$(anon_key)" SERVICE_KEY="$(status_var SERVICE_ROLE_KEY)" node scripts/verify/offer-race.mjs; }
 security_live() { fn_log_on_fail env ANON_KEY="$(anon_key)" SERVICE_KEY="$(status_var SERVICE_ROLE_KEY)" node scripts/verify/security.mjs; }
 fire_all() { ANON_KEY="$(anon_key)" SERVICE_KEY="$(status_var SERVICE_ROLE_KEY)" node --experimental-strip-types scripts/fire-all-notifications.ts; }
@@ -170,6 +171,7 @@ step "Reviewers sign in (S15)" review_smoke
 step "Sell live (S16)" sell_smoke
 step "Post live (S17)" post_smoke
 step "Offer race: one accept wins (S22)" offer_race
+step "Realtime: private user channel delivers, others blocked (S23)" realtime_smoke
 step "Every notification type fires (S28, S29)" fire_all
 step "Security suite, live half (S41 T-SEC)" security_live
 step "Load: feed and search p95 at 10k listings (S41 Perf-06/08)" load_feed
