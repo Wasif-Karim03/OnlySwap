@@ -200,7 +200,7 @@
 - [x] **P11-SET-02** ✎ F10 Settings (+ Sign out of all devices), F12 Privacy settings (analytics/crash toggles), F14 Appearance (System/Light/Dark), F15 Change school, F18 About (licenses). · deps P9-NOTIF-02 · done when — · L
 - [x] **P11-STATE-01** Global states: OfflineBanner wiring, X11 Update required, X12 Maintenance, X14 Under review, X30/X31 deep-link errors, X25 Share listing · P4-AUTH-03 · toggling `app_config` values shows X11/X12 · M
 - [x] **P11-STATE-02** Deep links: `lib/deeplinks.ts`, universal links (AASA) and App Links (assetlinks) with `EXPO_PUBLIC_SITE_URL` · P13-WEB-01 · tapping `https://…/l/{id}` in Notes opens the app on both OSes · M
-- [ ] **P11-A11Y-01** Accessibility pass: labels, roles, font scale 200% (X32), VoiceOver list mode for the deck (X33), focus order, reduce motion · all P4–P11 screens · T-QA-A11Y checklist passes · L
+- [x] **P11-A11Y-01** Accessibility pass: labels, roles, font scale 200% (X32), VoiceOver list mode for the deck (X33), focus order, reduce motion · all P4–P11 screens · T-QA-A11Y checklist passes · L
 - [ ] **P11-BETA-01** First production-profile build → Play **closed testing** track with the testers group. **The 14-day clock starts.** · P11 features · 12+ testers opted in on the Play Console · S
 
 ## P12 · Admin panel (G)

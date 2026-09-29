@@ -571,7 +571,7 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Checks:**
 
-- [ ] `P11-A11Y-01`: T-QA-A11Y checklist passes
+- [x] `P11-A11Y-01`: T-QA-A11Y checklist passes
 - [ ] `P11-BETA-01`: 12+ testers opted in on the Play Console
 
 **Gates:** G1, G2, G3, G5, G6, G10, G11

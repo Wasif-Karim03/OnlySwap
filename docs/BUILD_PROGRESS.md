@@ -22,3 +22,4 @@ Device checks (G8) are deferred to the testing phase at the end.
 | S30 Safety screens | done (sandbox) | s30-done | get_account_status, list_blocked (DEC 66) pgTAP 7; account status + appeal, report timeline, blocked, safety center, help, delete account |
 | S31 Profile + settings | done (sandbox) | s31-done | get_me, my_listings, listing_stats (DEC 67) pgTAP 9; F01-F08, F10, F12, F14, F15, F18 |
 | S32 Site foundation + deep links | done (sandbox) | s32-done | apps/site Astro skeleton + well-known generator (node tests), App Links intent filter, +native-intent rewrite, X11/X12/X14/X31 (DEC 68); AASA/App Links verification is OWNER_TODO 11 |
+| S33 A11y + beta start | done (sandbox) | s33-done | automated a11y audit over main screens (role + name on every control, list mode); manual VoiceOver/TalkBack walk and P11-BETA-01 (OWNER_TODO 12) in the testing phase |
