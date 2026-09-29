@@ -1132,6 +1132,48 @@ export const meetup = {
   rescheduledFrom: 'Moved from {when}',
 } as const;
 
+export const deal = {
+  // Did it sell? (E07)
+  didItSellTitle: 'Did it sell?',
+  didYouGetItTitle: 'Did you get it?',
+  done: 'Yes, all done',
+  notYet: 'Not yet',
+  fellThrough: 'It fell through',
+  fellThroughTitle: 'Close this deal?',
+  fellThroughBody: 'The chat closes and the listing goes back up.',
+  fellThroughConfirm: 'Close deal',
+  // Mark sold (F07)
+  markSoldTitle: 'Who bought it?',
+  markSoldBody: 'Pick the buyer so you can rate each other. Other chats close.',
+  someoneElse: 'Someone not on OnlySwap',
+  markSold: 'Mark sold',
+  // Rate (E08)
+  rateTitle: 'Rate the swap',
+  rateQuestion: 'How was swapping with {name}?',
+  thumbsUp: 'Good',
+  thumbsDown: 'Not great',
+  tagsLabel: 'What stood out? (optional)',
+  tags: {
+    on_time: 'On time',
+    as_described: 'As described',
+    friendly: 'Friendly',
+    easy: 'Easy to deal with',
+    late: 'Late',
+    not_as_described: 'Not as described',
+    rude: 'Rude',
+    no_show: "Didn't show",
+  },
+  commentLabel: 'Add a comment (optional)',
+  commentPlaceholder: 'Example: quick and easy pickup',
+  submit: 'Send rating',
+  waitingTitle: 'Thanks for rating',
+  waitingBody: 'Their rating shows up when they rate too, or after 7 days.',
+  revealedTitle: 'Your ratings',
+  theirRating: '{name} said',
+  youSaid: 'You said',
+  done_: 'Done',
+} as const;
+
 export const en = {
   permissions,
   tabs,
@@ -1167,6 +1209,7 @@ export const en = {
   offers,
   chat,
   meetup,
+  deal,
 } as const;
 
 export default en;

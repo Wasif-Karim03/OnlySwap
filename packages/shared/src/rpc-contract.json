@@ -90,6 +90,16 @@
     ]
   },
   {
+    "name": "confirm_deal",
+    "args": "chat_id uuid, outcome text",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "confirm_meetup",
     "args": "meetup_id uuid",
     "returns": "void",
@@ -274,6 +284,16 @@
   {
     "name": "get_messages",
     "args": "chat_id uuid, before bigint, \"limit\" integer, after bigint",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "get_my_rating",
+    "args": "chat_id uuid",
     "returns": "jsonb",
     "security": "definer",
     "grants": [
@@ -556,6 +576,16 @@
     "name": "set_listing_share_image",
     "args": "id uuid",
     "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "submit_rating",
+    "args": "chat_id uuid, thumbs_up boolean, tags text[], comment text",
+    "returns": "void",
     "security": "definer",
     "grants": [
       "authenticated",

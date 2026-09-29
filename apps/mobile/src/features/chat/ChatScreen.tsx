@@ -159,6 +159,18 @@ export function ChatScreen({
             testID="chat-plan-meetup"
           />
         ) : null}
+        {!readOnly &&
+        meetupQ.data &&
+        (meetupQ.data.status === 'confirmed' || meetupQ.data.status === 'completed') &&
+        !(c.role === 'seller' ? c.seller_outcome : c.buyer_outcome) ? (
+          <Button
+            label={copy.didItSell}
+            size="S"
+            variant="dark"
+            onPress={() => router.push({ pathname: '/chat/[id]/deal', params: { id } })}
+            testID="chat-did-it-sell"
+          />
+        ) : null}
         {!readOnly && extraActions ? extraActions({ role: c.role, listingId: c.listing_id }) : null}
       </View>
       {meetupQ.data ? (

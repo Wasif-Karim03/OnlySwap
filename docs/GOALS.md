@@ -471,10 +471,10 @@ The **Goal** is the one sentence that must be true at the end. **Checks** are th
 
 **Checks:**
 
-- [ ] `P8-DEAL-01`: the double-blind reveal is correct at 7 days
-- [ ] `P8-DEAL-02`: —
-- [ ] `P8-DEAL-03`: shown only when conditions hold
-- [ ] `P8-DEAL-04`: T-INT-SOLD-01, T-INT-DEL-02, E2E-21 green
+- [x] `P8-DEAL-01`: the double-blind reveal is correct at 7 days
+- [x] `P8-DEAL-02`: —
+- [x] `P8-DEAL-03`: shown only when conditions hold
+- [x] `P8-DEAL-04`: T-INT-SOLD-01, T-INT-DEL-02, E2E-21 green
 
 **Gates:** G1, G2, G3, G5, G6, G4, G10, G11
 

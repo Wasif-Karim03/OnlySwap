@@ -171,6 +171,7 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 | `get_meetup` / `get_chat_meetup` | `meetup_id` / `chat_id` | meetup (or null) | participants (DEC 62) | — |
 | `report_noshow` | `meetup_id, note` | void | reporter checked in; ≥ start+20 min; other not checked in → else `MEETUP_WINDOW` | — |
 | `confirm_deal` | `chat_id, outcome` | void | `done` / `not_yet` / `fell_through` (listing back to active) | — |
+| `get_my_rating` | `chat_id` | `{mine, theirs, theirs_waiting}` | theirs only once revealed (DEC 63) | — |
 | `submit_rating` | `chat_id, thumbs_up, tags, comment` | void | participant; outcome done or ≥24 h after meetup; `check_text` | — |
 
 **Safety**

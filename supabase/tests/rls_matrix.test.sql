@@ -121,7 +121,7 @@ select is(tests.try_text_as(tests.uid('A'), 'select count(*)::text from public.a
 select is(tests.try_text_as(tests.uid('NOMFA'), 'select count(*)::text from public.admins'), '0', 'admins: owner at aal1 sees none');
 
 -- notifications ------------------------------------------------------------------
-select is(tests.try_text_as(tests.uid('A'), 'select count(*)::text from public.notifications'), '1', 'notifications: own');
+select is(tests.try_text_as(tests.uid('A'), 'select count(*)::text from public.notifications'), '2', 'notifications: own (the fixture tip + message_new from trg_messages_ai, S24)');
 select is(tests.try_text_as(tests.uid('B'), 'select count(*)::text from public.notification_prefs'), '1', 'notification_prefs: own row only (made at signup)');
 
 -- anon ---------------------------------------------------------------------------

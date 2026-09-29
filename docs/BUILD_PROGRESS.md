@@ -16,3 +16,4 @@ Device checks (G8) are deferred to the testing phase at the end.
 | S24 Chat core | done (sandbox) | s24-done | chat RPCs + trg_messages_ai (DEC 61) pgTAP 26; useChat store (merge, catch-up, ordered offline queue); two-device realtime in testing phase |
 | S25 Chat UI | done (sandbox) | s25-done | chat screen (deal bar, safety tip, scam hint, pending/failed, blocked/closed/deleted), chat details (mute, report, block, hide) |
 | S26 Meetups | done (sandbox) | s26-done | meetup RPCs + reminders/no-show crons (DEC 62) pgTAP 34; plan sheet, MeetupCard in chat, meetup day screen |
+| S27 Deals | done (sandbox) | s27-done | confirm_deal, submit_rating, get_my_rating, deal_checks, wind-down notifications, account-deletion chat close (DEC 63) pgTAP 27; Did it sell, Mark sold, Rate, store review |

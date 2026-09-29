@@ -167,11 +167,11 @@
 - [x] **P8-MEET-02** ✎ E05 Plan the pickup: spot list with designation tags + **Directions** deep link (Apple/Google Maps), custom place, day/time picker, counter-proposal. No map, no location permission. · deps P8-MEET-01 · done when works end to end on both OSes (E2E-08) · M
 - [x] **P8-MEET-03** S-E12 Meetup day (countdown, I'm here, late, cancel, reschedule E15, no-show E14, share E13) · MEET-01 · every state reachable via fixtures · L
 - [x] **P8-MEET-04** MeetupCard component in chat with inline accept/suggest another · MEET-01 · — · M
-- [ ] **P8-DEAL-01** RPCs `confirm_deal`, `mark_sold`, `submit_rating`; cron jobs `deal_checks` and `rating_reveal`; view `ratings_visible` · MEET-01 · the double-blind reveal is correct at 7 days · M
-- [ ] **P8-DEAL-02** S-E16 Did it sell?, S-F07 Mark sold (pick buyer), S-E17 Rate the swap + E18 reveal · DEAL-01 · — · M
-- [ ] **P8-DEAL-03** `maybeAskForReview()` (X26) · DEAL-02 · shown only when conditions hold · S
+- [x] **P8-DEAL-01** RPCs `confirm_deal`, `mark_sold`, `submit_rating`; cron jobs `deal_checks` and `rating_reveal`; view `ratings_visible` · MEET-01 · the double-blind reveal is correct at 7 days · M
+- [x] **P8-DEAL-02** S-E16 Did it sell?, S-F07 Mark sold (pick buyer), S-E17 Rate the swap + E18 reveal · DEAL-01 · — · M
+- [x] **P8-DEAL-03** `maybeAskForReview()` (X26) · DEAL-02 · shown only when conditions hold · S
 - [x] 🆕 **P8-CHAT-06** Scam hint row under incoming messages with URLs, phone numbers or payment words (client-side only). · deps P8-CHAT-03 · done when T-UNIT-CHAT-04 · S
-- [ ] 🆕 **P8-DEAL-04** Sold elsewhere / listing deleted / account deleted: other chats close read-only with a system message; "Deleted user" rendering with snapshot. · deps P8-DEAL-01 · done when T-INT-SOLD-01, T-INT-DEL-02, E2E-21 green · M
+- [x] 🆕 **P8-DEAL-04** Sold elsewhere / listing deleted / account deleted: other chats close read-only with a system message; "Deleted user" rendering with snapshot. · deps P8-DEAL-01 · done when T-INT-SOLD-01, T-INT-DEL-02, E2E-21 green · M
 
 ## P9 · Notifications and email
 

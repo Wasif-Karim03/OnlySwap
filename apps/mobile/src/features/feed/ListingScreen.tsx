@@ -21,7 +21,7 @@ import { Text } from '@/components/Text';
 import { useToastStore } from '@/components/Toast';
 import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
-import { feed as copy, sell as sellCopy } from '@/strings/en';
+import { deal as dealCopy, feed as copy, sell as sellCopy } from '@/strings/en';
 
 import { sellApi } from '../sell/api';
 import {
@@ -308,6 +308,16 @@ export function ListingScreen({
                 onPress={() => router.push({ pathname: '/listing/[id]/edit', params: { id } })}
               />
             </View>
+            {item.status === 'active' || item.status === 'hold' ? (
+              <View style={styles.flex}>
+                <Button
+                  label={dealCopy.markSold}
+                  variant="secondary"
+                  onPress={() => router.push({ pathname: '/listing/[id]/sold', params: { id } })}
+                  testID="listing-mark-sold"
+                />
+              </View>
+            ) : null}
             <View style={styles.flex}>
               <Button
                 label={copy.seeOffers}

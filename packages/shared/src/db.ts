@@ -1613,6 +1613,9 @@ isOneToOne: false
 "confirm_age":
 { Args: { "birth_date"?: string,"is_adult"?: boolean,"method": string }; Returns: Json
                            },
+"confirm_deal":
+{ Args: { "chat_id": string,"outcome": string }; Returns: undefined
+                           },
 "confirm_meetup":
 { Args: { "meetup_id": string }; Returns: undefined
                            },
@@ -1669,6 +1672,9 @@ isOneToOne: false
                            },
 "get_messages":
 { Args: { "after"?: number,"before"?: number,"chat_id": string,"limit"?: number }; Returns: Json
+                           },
+"get_my_rating":
+{ Args: { "chat_id": string }; Returns: Json
                            },
 "get_my_report":
 { Args: { "id": string }; Returns: Json
@@ -1753,6 +1759,9 @@ isOneToOne: false
                            },
 "set_listing_share_image":
 { Args: { "id": string }; Returns: Json
+                           },
+"submit_rating":
+{ Args: { "chat_id": string,"comment"?: string,"tags"?: (string)[],"thumbs_up": boolean }; Returns: undefined
                            },
 "unblock_user":
 { Args: { "user_id": string }; Returns: undefined

@@ -126,8 +126,8 @@ select is(
   null::uuid, 'chat survives a deleted buyer'
 );
 select is(
-  (select count(*)::int from public.messages where chat_id = '00000000-0000-4000-8000-0000000003a1' and sender_id is null),
-  1, 'their messages stay, sender cleared'
+  (select count(*)::int from public.messages where chat_id = '00000000-0000-4000-8000-0000000003a1' and sender_id is null and kind <> 'system'),
+  1, 'their messages stay, sender cleared (plus the closing system row, S27)'
 );
 
 select * from finish();
