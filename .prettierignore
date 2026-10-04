@@ -30,3 +30,5 @@ push.log
 sim-env.log
 mail-code.log
 android-check.log
+android-build.log
+android-lan.log
