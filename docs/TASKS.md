@@ -363,3 +363,20 @@ Each session ends runnable and with its tests green. **P0 tasks are yours** (man
 | S42 | Beta | P15-BETA-01, P15-BETA-02, P15-BETA-03, P15-BETA-04, P15-BETA-05 | TestFlight external, spots verified |
 | S43 | Store | P16-STORE-01, P16-STORE-02, P16-STORE-03, P16-STORE-04, P16-STORE-05, P16-STORE-06, P16-STORE-07 | live |
 | S44 | Post-launch ops | P17-OPS-01, P17-OPS-02, P17-FEAT-04 | routines set |
+
+## Build order (R1.1 + R2, DEC 76): before the first store submission
+
+| # | Session | Tasks | Runnable result |
+|---|---|---|---|
+| S45 | Quad backend | P3-DB-05, P10-QUAD-01, P10-QUAD-02, R11-NOTIF-01 (quad types) | Quad RPCs + anonymity tests green |
+| S46 | Quad app | P10-QUAD-03, P10-QUAD-04, P10-QUAD-05, P10-QUAD-06, P10-QUAD-07 | Quad tab behind the flag |
+| S47 | Quad admin + chat photos | R11-ADM-03, P8-CHAT-04, R11-PHOTO-GATE | moderation queue, reveal, chat photos behind the flag |
+| S48 | Around campus | P5-SELL-06, P5-SELL-08, P6-CAMP-01, R11-NOTIF-01 (free_food, wanted_match) | free food, Wanted, campus feed |
+| S49 | Waitlist, unlock, invites | P4-AUTH-12, P4-AUTH-13, R11-INVITE-01 | waitlist screen, unlock, /i and /joined |
+| S50 | Map + price hint | P1-SPIKE-02, R11-MAP-01, R11-HINT-01 | map of spots, price hint |
+| S51 | Data export + admin extras | P11-ACC-02, R11-ADM-01, R11-ADM-02, R11-NOTIF-01 (rest) | export email, metrics, team, announcements, banned words |
+| S52 | R1.1 release prep | R11-REL-01 | privacy/legal sections, store answers |
+| S53 | Student web app | P13-WEB-07 | browse, inbox, sell on the web |
+| S54 | iPad + Spanish | P17-FEAT-02, P17-FEAT-03 | iPad layouts, es strings |
+| S55 | Widgets + Live Activity + icons | P17-FEAT-01, R2-ICON-01 | meetup widget, alternate icons |
+| S56 | Quad check-ins + full verify | R2-QUAD-CHECKIN | everything green on the Mac and devices |
