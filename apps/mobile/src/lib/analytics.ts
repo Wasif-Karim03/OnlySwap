@@ -29,7 +29,9 @@ export type AnalyticsEvents = {
   meetup_planned: { spot_type: 'meetup_spot' | 'police' | 'custom' };
   deal_confirmed: { outcome: 'done' | 'not_yet' | 'fell_through' };
   rating_submitted: Record<string, never>;
-  report_submitted: { target_type: 'listing' | 'user' | 'chat' | 'message' };
+  report_submitted: {
+    target_type: 'listing' | 'user' | 'chat' | 'message' | 'quad_post' | 'quad_reply';
+  };
   share_tapped: { surface: 'posted' | 'listing' | 'meetup' };
 };
 export type EventName = keyof AnalyticsEvents;

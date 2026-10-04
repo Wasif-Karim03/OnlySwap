@@ -14,8 +14,8 @@ import { Text } from './Text';
 import { TextArea } from './TextArea';
 import { Toggle } from './Toggle';
 
-/** DATA_MODEL reports.target_type (R1.0 subset; Quad targets are R1.1). */
-export type ReportTarget = 'listing' | 'user' | 'chat' | 'message';
+/** DATA_MODEL reports.target_type (Quad targets are R1.1). */
+export type ReportTarget = 'listing' | 'user' | 'chat' | 'message' | 'quad_post' | 'quad_reply';
 
 /** DATA_MODEL reports.reason values offered in the app. */
 export type ReportReason =
@@ -30,9 +30,23 @@ export type ReportReason =
   | 'sexual'
   | 'no_show'
   | 'minor_safety'
+  | 'calls_out_student'
+  | 'spam'
+  | 'self_harm'
   | 'other';
 
 export const REPORT_DETAILS_MAX = 500;
+
+const QUAD_REASONS: ReportReason[] = [
+  'calls_out_student',
+  'harassment',
+  'threat',
+  'hate',
+  'sexual',
+  'spam',
+  'self_harm',
+  'other',
+];
 
 const REASONS: Record<ReportTarget, ReportReason[]> = {
   // Board B9: matches the banned items list and the scams that happen.
@@ -42,15 +56,30 @@ const REASONS: Record<ReportTarget, ReportReason[]> = {
   user: ['scam', 'harassment', 'threat', 'not_allowed', 'no_show', 'minor_safety', 'other'],
   chat: ['scam', 'harassment', 'threat', 'not_allowed', 'no_show', 'minor_safety', 'other'],
   message: ['scam', 'harassment', 'threat', 'hate', 'sexual', 'minor_safety', 'other'],
+  // Board Q11 (Q09): the Quad rules; threats and self-harm jump the queue.
+  quad_post: QUAD_REASONS,
+  quad_reply: QUAD_REASONS,
 };
 
 export function reportReasons(target: ReportTarget): ReportReason[] {
   return REASONS[target];
 }
 
-/** Listings can't be blocked; people, chats and messages can. */
+export function isQuadTarget(target: ReportTarget): target is 'quad_post' | 'quad_reply' {
+  return target === 'quad_post' || target === 'quad_reply';
+}
+
+/**
+ * Listings can't be blocked; people, chats and messages can. Quad authors
+ * are anonymous, so there is nobody to name in a block (hide them instead).
+ */
 export function canBlock(target: ReportTarget): boolean {
-  return target !== 'listing';
+  return target !== 'listing' && !isQuadTarget(target);
+}
+
+function reasonGroup(target: ReportTarget): 'listing' | 'person' | 'quad' {
+  if (isQuadTarget(target)) return 'quad';
+  return target === 'listing' ? 'listing' : 'person';
 }
 
 /**
@@ -120,12 +149,17 @@ export function ReportSheet({
   }
 
   const who = name ?? reportCopy.them;
+  const quadTarget = isQuadTarget(target);
   const title =
     target === 'listing'
       ? reportCopy.titleListing
       : target === 'message'
         ? reportCopy.titleMessage
-        : fill(reportCopy.titlePerson, { name: who });
+        : target === 'quad_post'
+          ? reportCopy.titleQuadPost
+          : target === 'quad_reply'
+            ? reportCopy.titleQuadReply
+            : fill(reportCopy.titlePerson, { name: who });
 
   const pickReason = (next: ReportReason) => {
     setReason(next);
@@ -179,28 +213,40 @@ export function ReportSheet({
         keyboardShouldPersistTaps="handled"
       >
         <Text variant="label" tone="ink2">
-          {fill(reportCopy.private, {
-            name: target === 'listing' && !name ? reportCopy.seller : who,
-          })}
+          {quadTarget
+            ? reportCopy.privateQuad
+            : fill(reportCopy.private, {
+                name: target === 'listing' && !name ? reportCopy.seller : who,
+              })}
         </Text>
         <View accessibilityRole="radiogroup" accessibilityLabel={reportCopy.reasonLabel}>
           {reportReasons(target).map((r) => (
             <OptionRow
               key={r}
               kind="radio"
-              label={reportCopy.reasons[target === 'listing' ? 'listing' : 'person'][r]}
+              label={reportCopy.reasons[reasonGroup(target)][r]}
               selected={reason === r}
               disabled={busy}
               onPress={() => pickReason(r)}
             />
           ))}
         </View>
+        {reason === 'self_harm' ? (
+          <View style={styles.crisis} testID="report-crisis">
+            <Text variant="bodyStrong">{reportCopy.crisisTitle}</Text>
+            <Text variant="body" tone="ink2">
+              {reportCopy.crisisBody}
+            </Text>
+          </View>
+        ) : null}
         <TextArea
           label={reportCopy.detailsLabel}
           placeholder={
             target === 'listing'
               ? reportCopy.detailsPlaceholderListing
-              : reportCopy.detailsPlaceholderPerson
+              : quadTarget
+                ? reportCopy.detailsPlaceholderQuad
+                : reportCopy.detailsPlaceholderPerson
           }
           maxLength={REPORT_DETAILS_MAX}
           value={details}
@@ -242,4 +288,10 @@ const styles = StyleSheet.create((theme) => ({
   form: { gap: theme.space.md },
   done: { alignItems: 'center', gap: theme.space.md, paddingVertical: theme.space.lg },
   center: { textAlign: 'center' },
+  crisis: {
+    gap: theme.space.xs,
+    padding: theme.space.lg,
+    borderRadius: theme.radius.card,
+    backgroundColor: theme.colors.bg2,
+  },
 }));

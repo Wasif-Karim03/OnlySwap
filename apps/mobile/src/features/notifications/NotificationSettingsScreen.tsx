@@ -17,6 +17,9 @@ import { fill } from '@/lib/format';
 import { osPermissions, type OsApi } from '@/lib/permissions';
 import { notificationsScreen as copy } from '@/strings/en';
 
+import { quadApi, type QuadApi } from '../quad/api';
+import { useQuadStatus } from '../quad/cache';
+
 import {
   clockLabel,
   notificationsApi,
@@ -27,7 +30,7 @@ import {
 
 const prefsKey = ['notification-prefs'] as const;
 
-type Switch = Exclude<keyof NotificationPrefs, 'quiet_start' | 'quiet_end'>;
+type Switch = Exclude<keyof NotificationPrefs, 'quiet_start' | 'quiet_end' | 'quad_replies'>;
 const SWITCHES: { key: Switch; label: string; body: string }[] = [
   { key: 'offers', label: copy.offers, body: copy.offersBody },
   { key: 'messages', label: copy.messages, body: copy.messagesBody },
@@ -43,14 +46,17 @@ export function NotificationSettingsScreen({
   api = notificationsApi,
   os = osPermissions.notifications,
   openSettings = () => Linking.openSettings(),
+  quad = quadApi,
 }: {
   api?: NotificationsApi;
   os?: OsApi;
   openSettings?: () => Promise<unknown>;
+  quad?: Pick<QuadApi, 'status'>;
 }) {
   const router = useRouter();
   const qc = useQueryClient();
   const q = useQuery({ queryKey: prefsKey, queryFn: () => api.prefs() });
+  const quadOn = useQuadStatus(quad).data?.enabled === true;
   const [osOff, setOsOff] = useState(false);
   const [editing, setEditing] = useState<'quiet_start' | 'quiet_end' | null>(null);
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/profile'));
@@ -103,6 +109,14 @@ export function NotificationSettingsScreen({
             onChange={(v) => void save({ [s.key]: v })}
           />
         ))}
+        {quadOn && typeof p.quad_replies === 'boolean' ? (
+          <Toggle
+            label={copy.quadReplies}
+            description={copy.quadRepliesBody}
+            value={p.quad_replies}
+            onChange={(v) => void save({ quad_replies: v })}
+          />
+        ) : null}
         <View style={styles.gap}>
           <Text variant="heading" accessibilityRole="header">
             {copy.quiet}

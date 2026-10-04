@@ -2,7 +2,7 @@ import { toAppError } from './errors';
 import type { UploadFile, UploadTarget } from './media';
 import { getSupabase } from './supabase';
 
-export type UploadKind = 'listing' | 'avatar' | 'share';
+export type UploadKind = 'listing' | 'avatar' | 'share' | 'quad';
 
 type Invoke = (
   name: string,

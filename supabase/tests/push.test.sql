@@ -1,7 +1,7 @@
 -- S28: push tokens, claim/finish (BE-03, T-FN-07 SQL half), prefs, quiet hours, cap,
 -- receipts, reset_stuck_sends, and the notification list (P9-PUSH-03, P9-FIX-01, P9-NOTIF-01/02).
 begin;
-select plan(29);
+select plan(30);
 select tests.create_fixtures();
 select tests.set_now('2027-03-10 12:00:00-05');   -- noon on campus (America/New_York)
 
@@ -76,6 +76,15 @@ select private.queue_notification(tests.uid('A'), 'listing_stale', 'selling', 'N
 select is(tests.try_text_as(tests.uid('A'), $$select public.update_notification_prefs('{"tips": false, "quiet_start": "22:00"}') ->> 'quiet_start'$$),
   '22:00', 'prefs update');
 select is((select push_state::text from public.notifications where dedupe_key = 'k7'), 'skipped', 'turning tips off drops a waiting tip');
+
+-- R1.1 preferences (0201): Quad replies and free food, both off until turned on.
+select is(
+  concat_ws('|',
+    tests.try_text_as(tests.uid('C'), $$select (public.get_notification_prefs() ->> 'quad_replies') || ',' || (public.get_notification_prefs() ->> 'free_food')$$),
+    tests.try_text_as(tests.uid('C'), $$select (public.update_notification_prefs('{"quad_replies": true}') ->> 'quad_replies')$$),
+    tests.try_text_as(tests.uid('C'), $$select private.push_pref('quad_reply')$$)),
+  'false,false|true|ERROR: permission denied for function push_pref',
+  'R11-NOTIF-01: quad_replies and free_food are readable and writable; quad pushes follow quad_replies');
 
 select * from finish();
 rollback;

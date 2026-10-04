@@ -37,6 +37,8 @@ export function routeForNotification(
   if (!data) return null;
   const s = (k: string) => (typeof data[k] === 'string' ? (data[k] as string) : null);
   const type = s('type') ?? '';
+  if ((type === 'quad_reply' || type === 'quad_milestone') && s('post_id'))
+    return { pathname: '/quad/[id]', params: { id: s('post_id')! } };
   if (s('meetup_id') && type.startsWith('meetup_'))
     return { pathname: '/meetup/[id]', params: { id: s('meetup_id')! } };
   if (type === 'rate_prompt' && s('chat_id'))

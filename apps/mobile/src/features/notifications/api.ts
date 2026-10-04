@@ -20,6 +20,8 @@ export type NotificationPrefs = {
   price_drop: boolean;
   tips: boolean;
   message_previews: boolean;
+  /** Quad replies and milestones (R1.1). Off by default; present once the server returns it. */
+  quad_replies?: boolean;
   quiet_start: string;
   quiet_end: string;
 };

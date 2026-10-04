@@ -287,12 +287,12 @@
 - [x] **P3-DB-05** `0005_quad.sql`: quad tables · DB-02 · — · S
 - [ ] **P8-CHAT-04** Photos in chat behind `chat_photos_enabled` (upload kind chat, signed media URLs, blur until tapped for new contacts) · CHAT-03, P5-MEDIA-03 · the flag hides the camera button · M
 - [x] **P10-QUAD-01** RPCs `get_quad_feed`, `get_quad_thread`, `create_quad_post`, `create_quad_reply`, `vote_quad`, `vote_poll`, `hide_quad_author`, `unhide_quad`, `get_my_quad_hides`, `set_quad_replies`, `delete_quad_post`, `get_my_quad`, `mute_keyword`/`unmute_keyword`, `accept_quad_rules`; vote and score triggers; hot_rank · P3-DB-05, P3-DB-07 · T-INT-QUAD-ANON: no RPC ever returns `author_id` · L
-- [ ] **P10-QUAD-02** Remote flag `quad_enabled` hides the tab · QUAD-01 · flipping the flag in admin removes the tab on the next launch · S
-- [ ] **P10-QUAD-03** S-Q01 Welcome to the Quad (disclosure + agree) · QUAD-01 · — · S
-- [ ] **P10-QUAD-04** S-Q02 Quad feed (sorts, votes, pinned announcement, day one Q4, new-posts pill) · QUAD-01 · — · L
-- [ ] **P10-QUAD-05** S-Q05 Thread (replies with aliases, OP badge, options sheet Q7, photo viewer Q5) · QUAD-04 · — · L
-- [ ] **P10-QUAD-06** S-Q07 New post (text, photo, poll, check-in; blocked Q9, held Q10, rate limits) · QUAD-01, P5-MEDIA-03 · PII and names-student cases route correctly · L
-- [ ] **P10-QUAD-07** S-Q09 Report post, S-Q12 Your Quad, S-Q13 Quad activity, S-Q14 Muted, S-Q15 Check-in · QUAD-05 · — · M
+- [x] **P10-QUAD-02** Remote flag `quad_enabled` hides the tab · QUAD-01 · flipping the flag in admin removes the tab on the next launch · S
+- [x] **P10-QUAD-03** S-Q01 Welcome to the Quad (disclosure + agree) · QUAD-01 · — · S
+- [x] **P10-QUAD-04** S-Q02 Quad feed (sorts, votes, pinned announcement, day one Q4, new-posts pill) · QUAD-01 · — · L
+- [x] **P10-QUAD-05** S-Q05 Thread (replies with aliases, OP badge, options sheet Q7, photo viewer Q5) · QUAD-04 · — · L
+- [x] **P10-QUAD-06** S-Q07 New post (text, photo, poll, check-in; blocked Q9, held Q10, rate limits) · QUAD-01, P5-MEDIA-03 · PII and names-student cases route correctly · L
+- [x] **P10-QUAD-07** S-Q09 Report post, S-Q12 Your Quad, S-Q13 Quad activity, S-Q14 Muted, S-Q15 Check-in · QUAD-05 · — · M
 - [ ] 🆕 **R11-MAP-01** MapLibre + OpenFreeMap map on Plan the pickup and Safety center (spots only, no location permission). · deps P1-SPIKE-02 · done when the map renders with the designation pins · M
 - [ ] 🆕 **R11-ADM-01** Admin metrics UI (funnel, retention, liquidity, safety views). · deps P12-ADM-03 · done when it matches T-DATA-02 · L
 - [ ] 🆕 **R11-ADM-02** Admin team (invite moderator), announcements (1/week), banned-words UI. · deps P12-ADM-03 · done when every action is logged · L
@@ -308,7 +308,7 @@
 - [ ] **P17-FEAT-02** iPad layout (N5/N6), then `supportsTablet=true` and 13" iPad screenshots · P16 · — · L
 - [ ] **P17-FEAT-03** Spanish (`es.ts`, screenshots per locale) · P16 · — · L
 - [ ] 🆕 **R2-ICON-01** Alternate app icons (config plugin). · — · done when both OSes switch the icon · M
-- [ ] 🆕 **R2-QUAD-CHECKIN** Quad check-ins (Q15). · deps R1.1 Quad · — · M
+- [x] 🆕 **R2-QUAD-CHECKIN** Quad check-ins (Q15). · deps R1.1 Quad · — · M
 - [ ] 🆕 **R-DES-01** (optional, any time) Re-render the design board to reflect DESIGN_SYSTEM §9 deltas. · — · done when the board matches the locked spec · M
 
 ---
