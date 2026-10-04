@@ -16,6 +16,7 @@ import { age as copy } from '@/strings/en';
 import { requestAgeSignal, toIsoDate, type AgeRangeModule, type Device } from './age';
 import { authApi, type AuthApi } from './api';
 import { AuthStep } from './AuthStep';
+import { hadLoginIntent } from './loginIntent';
 import { useGateHandoff } from './useAppGate';
 
 type Phase = 'checking' | 'form' | 'saving' | 'blocked';
@@ -161,7 +162,7 @@ export function AgeScreen({
     <AuthStep
       testID="screen-age"
       title={copy.title}
-      body={copy.body}
+      body={hadLoginIntent() ? `${copy.newFromSignIn} ${copy.body}` : copy.body}
       leading="none"
       trailing={
         <Text variant="meta" tone="ink2">

@@ -499,6 +499,7 @@ export const age = {
   checking: 'Checking your age',
   title: "When's your birthday?",
   body: "We ask everyone. It's never shown on your profile.",
+  newFromSignIn: "That email didn't have an account yet, so we're setting one up.",
   fieldLabel: 'Birthday',
   fieldPlaceholder: 'Choose a date',
   privacy: 'Used only to confirm you can use OnlySwap. Details in the Privacy Policy.',

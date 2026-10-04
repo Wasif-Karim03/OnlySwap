@@ -17,6 +17,7 @@ import { authApi, type AuthApi } from './api';
 import { AuthStep } from './AuthStep';
 import { emailDomain, normalizeEmail } from './logic';
 import { useSchoolLookup } from './useSchoolLookup';
+import { setLoginIntent } from './loginIntent';
 import { initialVerifyState, verifyStore } from './verifyLogic';
 
 const deviceTz = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -46,6 +47,7 @@ export function EmailScreen({ api = authApi }: { api?: AuthApi }) {
         return { normalized, reviewer: true };
       }
       await api.sendCode(normalized);
+      setLoginIntent(params.mode === 'login');
       track('signup_started');
       return { normalized, reviewer: false };
     },

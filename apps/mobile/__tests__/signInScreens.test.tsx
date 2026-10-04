@@ -8,6 +8,7 @@ import type { AuthApi } from '../src/features/auth/api';
 import { AgeScreen } from '../src/features/auth/AgeScreen';
 import { EmailScreen } from '../src/features/auth/EmailScreen';
 import { VerifyScreen } from '../src/features/auth/VerifyScreen';
+import { hadLoginIntent, setLoginIntent } from '../src/features/auth/loginIntent';
 import { CODE_TTL_MS, verifyStore } from '../src/features/auth/verifyLogic';
 import { age as ageCopy, errors, signIn } from '../src/strings/en';
 
@@ -352,5 +353,38 @@ describe('P4-AUTH-07 A05 age check', () => {
     setup('/age', fakeApi(), { age: { ageModule: mod, device: { os: 'ios', version: '18.5' } } });
     expect(await screen.findByRole('header', { name: ageCopy.title })).toBeTruthy();
     expect(mod.requestAgeRangeAsync).not.toHaveBeenCalled();
+  });
+});
+
+describe('A03 login mode with an address that has no account yet', () => {
+  const noSignal = {
+    requestAgeRangeAsync: jest.fn(async () => null),
+    requestAgeSignalsAccessAsync: jest.fn(async () => 'SHARED'),
+  };
+  const ios26 = { os: 'ios' as const, version: '26.1' };
+
+  afterEach(() => setLoginIntent(false));
+
+  it('sends the same code as sign-up (no account enumeration) and remembers the intent', async () => {
+    const api = fakeApi();
+    const router = setup('/email?mode=login', api);
+    await typeEmail('new@osu.edu');
+    expect(await screen.findByText(osu.school.name)).toBeTruthy();
+    fireEvent.press(screen.getByTestId('email-send'));
+    await waitFor(() => expect(router.getPathname()).toBe('/verify'));
+    expect(api.sendCode).toHaveBeenCalledWith('new@osu.edu');
+    expect(hadLoginIntent()).toBe(true);
+  });
+
+  it('after the code, the birthday step explains that a new account is being set up', async () => {
+    setLoginIntent(true);
+    setup('/age', fakeApi(), { age: { ageModule: noSignal, device: ios26 } });
+    expect(await screen.findByText(`${ageCopy.newFromSignIn} ${ageCopy.body}`)).toBeTruthy();
+  });
+
+  it('the sign-up path keeps the plain birthday copy', async () => {
+    setLoginIntent(false);
+    setup('/age', fakeApi(), { age: { ageModule: noSignal, device: ios26 } });
+    expect(await screen.findByText(ageCopy.body)).toBeTruthy();
   });
 });
