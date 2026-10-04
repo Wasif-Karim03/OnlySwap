@@ -5,6 +5,7 @@ import { StyleSheet } from 'react-native-unistyles';
 import { captureRef } from 'react-native-view-shot';
 
 import { track } from '@/lib/analytics';
+import { devTrace } from '@/lib/devTrace';
 import { Button } from '@/components/Button';
 import { NavBar } from '@/components/NavBar';
 import { Photo } from '@/components/Photo';
@@ -60,6 +61,7 @@ export function SellPostedScreen({
   const cover = coverUri || (coverPath ? mediaUrl(mediaBase(), coverPath) : null);
 
   useEffect(() => {
+    devTrace('posted: mounted');
     if (listing) haptic('success'); // Budget: "listing posted" (DESIGN_SYSTEM §5).
   }, [listing]);
 
@@ -67,7 +69,10 @@ export function SellPostedScreen({
     let alive = true;
     api
       .campusName()
-      .then((name) => alive && setCampus(name))
+      .then((name) => {
+        devTrace('posted: campus');
+        if (alive) setCampus(name);
+      })
       .catch(() => alive && setCampus(null));
     return () => {
       alive = false;
@@ -81,10 +86,14 @@ export function SellPostedScreen({
       if (started.current || !cardRef.current) return;
       started.current = true;
       try {
+        devTrace('posted: capture start');
         const uri = await capture(cardRef.current);
+        devTrace('posted: captured');
         await api.uploadShareCard(listing.id, uri);
+        devTrace('posted: card uploaded');
         setCard('ready');
       } catch {
+        devTrace('posted: card failed');
         setCard('failed');
       }
     };
@@ -135,7 +144,10 @@ export function SellPostedScreen({
         price={price}
         title={listing.title}
         tags={tags}
-        onReady={() => setPhotoReady(true)}
+        onReady={() => {
+          devTrace('posted: photo loaded');
+          setPhotoReady(true);
+        }}
       />
       <NavBar
         leading="close"

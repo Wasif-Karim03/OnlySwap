@@ -5,6 +5,7 @@ import { Linking, Platform, Pressable, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { track } from '@/lib/analytics';
+import { devTrace } from '@/lib/devTrace';
 import { Banner } from '@/components/Banner';
 import { Button } from '@/components/Button';
 import { ChipGroup } from '@/components/Chip';
@@ -94,11 +95,15 @@ export function SellMeetupScreen({
       return;
     }
     setPosting(true);
+    devTrace('post: loading on');
     try {
       const listing = await api.createListing(createArgs(draft, chosen));
+      devTrace('post: created');
       track('listing_posted', { photos_count: draft.photos.length });
       usePostedStore.getState().set(listing, draft.photos[0]?.uri ?? null);
+      devTrace('post: draft reset');
       reset();
+      devTrace('post: navigate');
       router.replace('/sell/posted');
     } catch (e) {
       const appError = toAppError(e);

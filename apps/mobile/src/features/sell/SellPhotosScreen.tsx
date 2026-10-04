@@ -5,6 +5,7 @@ import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { track } from '@/lib/analytics';
+import { devTrace } from '@/lib/devTrace';
 import { Button } from '@/components/Button';
 import { Icon } from '@/components/icons/Icon';
 import { PermissionPrimerView } from '@/components/PermissionPrimer';
@@ -86,6 +87,7 @@ export function SellPhotosScreen({
   const [error, setError] = useState<string | null>(null);
   const [primer, setPrimer] = useState<'camera' | 'photos' | null>(null);
   useEffect(() => track('listing_create_started'), []);
+  useEffect(() => devTrace(`photos: ${draft.photos.length} in draft`), [draft.photos.length]);
   const camera = usePermissionPrimer('camera', cameraOs);
   const photos = usePermissionPrimer('photos', photosOs);
   const reserving = useRef<Promise<string> | null>(null);
