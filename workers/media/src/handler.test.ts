@@ -96,6 +96,7 @@ test('best-effort per-IP limit', async () => {
 
 test('publicKey', () => {
   assert.equal(publicKey('/c/osu/u/U/avatar_x.webp'), 'c/osu/u/U/avatar_x.webp');
-  assert.equal(publicKey('/c/osu/quad/P/x.webp'), null);
+  assert.equal(publicKey('/c/osu/quad/P/x_full.webp'), 'c/osu/quad/P/x_full.webp');
+  assert.equal(publicKey('/c/osu/chat/C/x_full.webp'), null);
   assert.equal(publicKey('/share/L.JPG'), 'share/L.JPG');
 });

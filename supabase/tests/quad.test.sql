@@ -1,7 +1,7 @@
 -- S45: The Quad backend (P10-QUAD-01). T-INT-QUAD-ANON, T-INT-QUAD-01,
 -- T-INT-QUAD-02, T-SEC-04 (database half), rate limits (T-SEC-10 quad).
 begin;
-select plan(51);
+select plan(52);
 select tests.create_fixtures();
 select tests.set_now('2027-03-10 12:00:00-05');
 update public.profiles set created_at = '2027-01-01' where campus_id = tests.uid('OSU');
@@ -192,6 +192,14 @@ select is(
   (select bool_or(r like 'ERROR: RATE_LIMITED:quad_post%')::text
    from (select pg_temp.post('C', 'more ' || i) as r from generate_series(1, 10) i) x),
   'live,live|true', 'the 11th post in an hour is refused');
+
+-- Uploads (P5-MEDIA-02 quad kind) ------------------------------------------------------------------
+select is(
+  concat_ws('|',
+    tests.try_text($$select private.can_upload('00000000-0000-4000-8000-00000000000b', 'quad', '00000000-0000-4000-8000-00000000b001')::text$$),
+    tests.try_text(format('select private.can_upload(%L, %L, %L)::text', tests.uid('B'), 'quad', pg_temp.pid('best study spot?'))),
+    tests.try_text(format('select private.can_upload(%L, %L, %L)::text', tests.uid('D'), 'quad', '00000000-0000-4000-8000-00000000b002'))),
+  tests.uid('OSU') || '|ERROR: FORBIDDEN|ERROR: FORBIDDEN', 'quad photos: a fresh post id is fine, someone else''s post or an inactive account is not');
 
 select * from finish();
 rollback;

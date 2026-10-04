@@ -1,5 +1,5 @@
 // upload-url Edge Function (P5-MEDIA-02, API §5). POST with the user's JWT:
-//   { kind: 'listing' | 'avatar' | 'share', target_id, files: [{ idx, variant, type, size }] }
+//   { kind: 'listing' | 'avatar' | 'share' | 'quad', target_id, files: [{ idx, variant, type, size }] }
 // → { uploads: [{ idx, variant, key, url, headers }], expires_in }
 // Logic: ../_shared/uploadUrl.ts. Ownership and the 60/h limit are checked in
 // SQL (private.can_upload, private.hit_key) over the direct DB connection.

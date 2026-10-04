@@ -1,6 +1,7 @@
 // Media Worker (P5-MEDIA-01, ARCHITECTURE: Worker serves R2). Public reads of
 // listing photos, avatars and share cards from the `onlyswap-media` bucket.
-// Everything else is a 404. Signed chat-photo reads arrive in R1.1.
+// Quad photos (R1.1) are public like listing photos (unguessable keys).
+// Everything else is a 404; chat photos are read through signed URLs (S47).
 // No imports, so Node tests run the same code as the Worker.
 
 /** The parts of an R2 bucket binding the Worker uses. */
@@ -14,7 +15,7 @@ export type Bucket = {
 
 export type Env = { MEDIA: Bucket };
 
-/** Public prefixes (DATA_MODEL §6). `c/{campus}/chat/` stays private (R1.1). */
+/** Public prefixes (DATA_MODEL §6). `c/{campus}/chat/` stays private. */
 export const PUBLIC_PREFIXES = ['c/', 'share/'] as const;
 
 const TYPES: Record<string, string> = {
@@ -57,8 +58,8 @@ export function publicKey(pathname: string): string | null {
   if (!key || key.length > 512) return null;
   if (key.split('/').some((part) => part === '' || part === '.' || part === '..')) return null;
   if (!PUBLIC_PREFIXES.some((p) => key.startsWith(p))) return null;
-  // c/{campus}/chat/… and c/{campus}/quad/… are not public in R1.0.
-  if (/^c\/[^/]+\/(chat|quad)\//.test(key)) return null;
+  // c/{campus}/chat/… is never public (signed reads only).
+  if (/^c\/[^/]+\/chat\//.test(key)) return null;
   const ext = key.slice(key.lastIndexOf('.') + 1).toLowerCase();
   return TYPES[ext] ? key : null;
 }

@@ -69,6 +69,7 @@ test('listing photos: one uuid per photo, full and thumb keys, signed size and t
 test('avatar and share keys', () => {
   assert.equal(objectKey('avatar', 'c', 'u', 'u', 'full', 'x'), 'c/c/u/u/avatar_x.webp');
   assert.equal(objectKey('share', 'c', 'u', 'L', 'full', 'x'), 'share/L.jpg');
+  assert.equal(objectKey('quad', 'c', 'u', 'P', 'thumb', 'x'), 'c/c/quad/P/x_thumb.webp');
 });
 
 test('sizes and types follow DATA_MODEL §6', async () => {

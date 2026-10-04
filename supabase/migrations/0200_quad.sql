@@ -1132,6 +1132,47 @@ as $$
   end
 $$;
 
+-- Uploads learn the 'quad' kind: a photo for a new post goes under a fresh
+-- post id the phone picked (create_quad_post then uses it), or an own post.
+create or replace function private.can_upload(p_uid uuid, p_kind text, p_target uuid)
+returns uuid
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare
+  campus uuid;
+  owner uuid;
+begin
+  select campus_id into campus from public.profiles where id = p_uid and status = 'active';
+  if campus is null then
+    perform private.raise('FORBIDDEN');
+  end if;
+  if p_kind = 'avatar' and p_target = p_uid then
+    return campus;
+  elsif p_kind = 'listing' and (
+      exists (select 1 from public.listings l
+              where l.id = p_target and l.seller_id = p_uid and l.status <> 'deleted')
+      or exists (select 1 from public.listing_reservations r
+                 where r.id = p_target and r.user_id = p_uid)) then
+    return campus;
+  elsif p_kind = 'share' and exists (
+      select 1 from public.listings l
+      where l.id = p_target and l.seller_id = p_uid and l.status <> 'deleted') then
+    return campus;
+  elsif p_kind = 'quad' and private.quad_on(campus)
+        and exists (select 1 from public.profiles p where p.id = p_uid and p.quad_rules_accepted_at is not null) then
+    select q.author_id into owner from public.quad_posts q where q.id = p_target;
+    if owner is null or owner = p_uid then
+      return campus;
+    end if;
+  end if;
+  perform private.raise('FORBIDDEN');
+  return null;
+end;
+$$;
+
 -- ---------------------------------------------------------------------------
 -- Grants
 revoke all on function private.require_quad(boolean) from public, anon, authenticated;
