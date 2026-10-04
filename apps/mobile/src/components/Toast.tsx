@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { View } from 'react-native';
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { StyleSheet } from 'react-native-unistyles';
 import { create } from 'zustand';
 
@@ -53,8 +53,10 @@ export function ToastHost() {
   if (!current) return null;
   return (
     <Animated.View
+      // Entering only: an exiting animation leaves a ghost view that crashed
+      // Android when the next toast mounted (see OfflineBanner).
+      key={current.id}
       entering={FadeIn.duration(150)}
-      exiting={FadeOut.duration(150)}
       style={styles.host}
       pointerEvents="box-none"
     >

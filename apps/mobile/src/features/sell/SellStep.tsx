@@ -1,8 +1,8 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 import { NavBar } from '@/components/NavBar';
 import { StepIndicator } from '@/components/Progress';
@@ -11,6 +11,8 @@ import { fill } from '@/lib/format';
 import { sell as copy } from '@/strings/en';
 
 export const SELL_STEPS = 3;
+/** Used until the dock has been measured. */
+const DOCK_FALLBACK = 96;
 
 type Props = {
   step: number;
@@ -43,6 +45,12 @@ export function SellStep({
   testID,
 }: Props) {
   const insets = useSafeAreaInsets();
+  // The focused field scrolls to sit above the keyboard and the docked
+  // button, so it uses the dock's real height (larger text sizes, the
+  // Android gesture bar) rather than a guess.
+  const [dockHeight, setDockHeight] = useState(DOCK_FALLBACK);
+  const { theme } = useUnistyles();
+  const fieldGap = theme.space.lg;
   return (
     <View style={styles.root} testID={testID}>
       <NavBar
@@ -59,7 +67,7 @@ export function SellStep({
         <StepIndicator step={step} total={SELL_STEPS} />
       </View>
       <KeyboardAwareScrollView
-        bottomOffset={96}
+        bottomOffset={dock ? dockHeight + fieldGap : fieldGap}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.content}
       >
@@ -79,7 +87,10 @@ export function SellStep({
       </KeyboardAwareScrollView>
       {dock ? (
         <KeyboardStickyView offset={{ closed: 0, opened: insets.bottom }}>
-          <View style={[styles.dock, { paddingBottom: insets.bottom + styles.dockGap.height }]}>
+          <View
+            style={[styles.dock, { paddingBottom: insets.bottom + styles.dockGap.height }]}
+            onLayout={(e) => setDockHeight(e.nativeEvent.layout.height)}
+          >
             {dock}
           </View>
         </KeyboardStickyView>

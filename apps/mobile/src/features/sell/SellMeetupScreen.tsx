@@ -141,22 +141,26 @@ export function SellMeetupScreen({
       dock={
         <>
           {/* The confirm hint and post errors sit with the button: the checkbox
-              is below the fold, so a message in the list would go unseen. */}
-          {confirmHint ? (
-            <Text
-              variant="meta"
-              tone="red"
-              accessibilityLiveRegion="polite"
-              testID="sell-confirm-hint"
-            >
-              {copy.confirmBanned}
-            </Text>
-          ) : null}
-          {error ? (
-            <View testID="sell-post-error">
-              <Banner kind="error" message={error} />
-            </View>
-          ) : null}
+              is below the fold, so a message in the list would go unseen. The
+              wrapper is always mounted (not flattened) so messages appearing
+              and leaving never re-insert views next to the button. */}
+          <View collapsable={false} style={styles.dockMessages}>
+            {confirmHint ? (
+              <Text
+                variant="meta"
+                tone="red"
+                accessibilityLiveRegion="polite"
+                testID="sell-confirm-hint"
+              >
+                {copy.confirmBanned}
+              </Text>
+            ) : null}
+            {error ? (
+              <View testID="sell-post-error">
+                <Banner kind="error" message={error} />
+              </View>
+            ) : null}
+          </View>
           <Button
             label={copy.post}
             onPress={() => void post()}
@@ -312,6 +316,7 @@ export function SellMeetupScreen({
 const styles = StyleSheet.create((theme) => ({
   flex: { flex: 1, gap: theme.space.xs },
   list: { gap: theme.space.sm },
+  dockMessages: { gap: theme.space.xs },
   field: { gap: theme.space.xs },
   spot: (selected: boolean) => ({
     borderRadius: theme.radius.control,

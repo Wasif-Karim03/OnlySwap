@@ -71,7 +71,11 @@ export function Button({
       style={fullWidth ? styles.full : styles.hug}
     >
       <View style={styles.body(variant, size, disabled)}>
-        <View style={loading ? styles.hidden : undefined}>
+        {/* The same views whether loading or not, only their opacity changes.
+            Swapping a flattened wrapper for a real one and adding the spinner
+            in the same frame crashed Android when Post was tapped ("child
+            already has a parent", owner testing on a Pixel-class phone). */}
+        <View collapsable={false} style={loading ? styles.hidden : styles.shown}>
           <Text
             variant={size === 'S' ? 'label' : 'bodyStrong'}
             tone={TONE[variant]}
@@ -80,7 +84,13 @@ export function Button({
             {label}
           </Text>
         </View>
-        {loading ? <ActivityIndicator style={styles.spinner} color={spinnerColor} /> : null}
+        <ActivityIndicator
+          animating={loading}
+          style={[styles.spinner, loading ? styles.shown : styles.hidden]}
+          color={spinnerColor}
+          importantForAccessibility="no-hide-descendants"
+          accessibilityElementsHidden
+        />
       </View>
     </Tappable>
   );
@@ -109,6 +119,7 @@ const styles = StyleSheet.create((theme) => ({
               : 'transparent',
   }),
   hidden: { opacity: 0 },
+  shown: { opacity: 1 },
   // Labels wrap at large Dynamic Type sizes instead of truncating (rule 10).
   label: { textAlign: 'center' },
   spinner: { position: 'absolute' },

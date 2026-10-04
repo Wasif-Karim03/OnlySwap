@@ -30,6 +30,9 @@ function currentDevice(): Device {
   };
 }
 
+/** Years back from today where the date wheels open (owner feedback, Android testing). */
+export const PICKER_START_YEARS_AGO = 20;
+
 /**
  * A05 Age check (P4-AUTH-07; boards A7 Birthday, A8 Not eligible; D4 native
  * date picker). The OS signal goes first; the date field is the fallback.
@@ -150,6 +153,10 @@ export function AgeScreen({
   }
 
   const maxDate = new Date();
+  // Where the wheels start before anything is picked: a typical student's
+  // birth year, so nobody scrolls back from today. The field stays empty
+  // until the person moves the wheels and confirms.
+  const startDate = new Date(maxDate.getFullYear() - PICKER_START_YEARS_AGO, 0, 1);
   const onPick = (e: DateTimePickerEvent, value?: Date) => {
     if (Platform.OS === 'android') setPickerOpen(false);
     if (e.type === 'set' && value) {
@@ -207,9 +214,11 @@ export function AgeScreen({
       {pickerOpen ? (
         <DateTimePicker
           testID="age-picker"
-          value={date ?? maxDate}
+          value={date ?? startDate}
           mode="date"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          // Wheels on both platforms (Android's default is a month calendar,
+          // which takes dozens of taps to reach a birth year).
+          display="spinner"
           maximumDate={maxDate}
           onChange={onPick}
           textColor={theme.colors.ink}

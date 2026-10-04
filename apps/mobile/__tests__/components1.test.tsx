@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { StyleSheet } from 'react-native';
 
 import { avatarShade, initials } from '../src/components/Avatar';
-import { isOffline } from '../src/components/Banner';
+import { isOffline, OFFLINE_SHOW_DELAY_MS, OfflineBanner } from '../src/components/Banner';
 import { Button } from '../src/components/Button';
 import { ChipGroup, toggleChip } from '../src/components/Chip';
 import { IconButton } from '../src/components/IconButton';
@@ -55,6 +55,18 @@ describe('P2-CMP-01 Button', () => {
     expect(screen.getByRole('button', { name: 'B' }).props.accessibilityState).toMatchObject({
       busy: true,
     });
+  });
+
+  it('keeps the same views while loading (Android crash on Post, owner testing)', () => {
+    const { rerender, toJSON } = render(<Button label="Post listing" onPress={() => {}} />);
+    const shape = (node: unknown): unknown => {
+      const n = node as { type: string; children?: unknown[] } | string;
+      if (typeof n === 'string') return 'text';
+      return [n.type, (n.children ?? []).map(shape)];
+    };
+    const idle = shape(toJSON());
+    rerender(<Button label="Post listing" loading onPress={() => {}} />);
+    expect(shape(toJSON())).toEqual(idle);
   });
 
   it('fires the success haptic only when asked (haptics budget)', () => {
@@ -291,6 +303,18 @@ describe('P2-CMP-05 Toast and banners', () => {
     act(() => useToastStore.getState().show('error', 'Two'));
     expect(screen.queryByText('One')).toBeNull();
     expect(screen.getByText('Two')).toBeTruthy();
+  });
+
+  it('the offline banner waits out short drops before showing', () => {
+    const NetInfo = jest.requireMock('@react-native-community/netinfo');
+    const spy = jest
+      .spyOn(NetInfo, 'useNetInfo')
+      .mockReturnValue({ isConnected: false, isInternetReachable: false });
+    render(<OfflineBanner />);
+    expect(screen.queryByTestId('offline-banner')).toBeNull();
+    act(() => jest.advanceTimersByTime(OFFLINE_SHOW_DELAY_MS + 10));
+    expect(screen.getByTestId('offline-banner')).toBeTruthy();
+    spy.mockRestore();
   });
 
   it('treats disconnected or unreachable as offline', () => {

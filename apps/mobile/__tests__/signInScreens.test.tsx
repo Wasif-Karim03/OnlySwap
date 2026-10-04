@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { Text, View } from 'react-native';
 
 import type { AuthApi } from '../src/features/auth/api';
-import { AgeScreen } from '../src/features/auth/AgeScreen';
+import { AgeScreen, PICKER_START_YEARS_AGO } from '../src/features/auth/AgeScreen';
 import { EmailScreen } from '../src/features/auth/EmailScreen';
 import { VerifyScreen } from '../src/features/auth/VerifyScreen';
 import { hadLoginIntent, setLoginIntent } from '../src/features/auth/loginIntent';
@@ -304,6 +304,18 @@ describe('P4-AUTH-07 A05 age check', () => {
     expect(api.signOut).toHaveBeenCalledWith('local');
     fireEvent.press(screen.getByTestId('age-close'));
     await waitFor(() => expect(router.getPathname()).toBe('/welcome'));
+  });
+
+  it('the date wheels open about 20 years back, as wheels on every platform', async () => {
+    setup('/age', fakeApi(), { age: { ageModule: signal(null), device: ios26 } });
+    await screen.findByRole('header', { name: ageCopy.title });
+    fireEvent.press(screen.getByTestId('age-field'));
+    const picker = screen.getByTestId('age-picker');
+    expect(picker.props.display).toBe('spinner');
+    expect((picker.props.value as Date).getFullYear()).toBe(
+      new Date().getFullYear() - PICKER_START_YEARS_AGO,
+    );
+    expect(screen.getByText(ageCopy.fieldPlaceholder)).toBeTruthy();
   });
 
   it('no signal shows the birthday field; nothing is prefilled', async () => {

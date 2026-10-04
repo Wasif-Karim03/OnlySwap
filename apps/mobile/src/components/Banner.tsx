@@ -1,6 +1,7 @@
 import { useNetInfo } from '@react-native-community/netinfo';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
-import Animated, { SlideInUp, SlideOutUp, FadeIn, FadeOut } from 'react-native-reanimated';
+import Animated, { FadeIn, SlideInUp } from 'react-native-reanimated';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { banner as bannerCopy } from '@/strings/en';
@@ -33,16 +34,38 @@ export function isOffline(state: {
   return state.isConnected === false || state.isInternetReachable === false;
 }
 
-/** Slides in from the top while the device is offline (fades with reduce motion). */
+/** How long the connection must stay down before the banner shows (flaps are common on Android). */
+export const OFFLINE_SHOW_DELAY_MS = 1500;
+
+/**
+ * Slides in from the top while the device is offline (fades with reduce
+ * motion). It has an entering animation only: Reanimated exiting animations
+ * keep a ghost view in the tree, and a banner that came back while its old
+ * copy was still leaving crashed Android ("child already has a parent",
+ * owner testing). It also waits OFFLINE_SHOW_DELAY_MS so short drops during
+ * uploads don't flash it.
+ */
 export function OfflineBanner() {
   const net = useNetInfo();
   const reduced = useReducedMotion();
-  if (!isOffline(net)) return null;
+  const offlineNow = isOffline(net);
+  const [waited, setWaited] = useState(false);
+
+  useEffect(() => {
+    if (!offlineNow) return undefined;
+    const t = setTimeout(() => setWaited(true), OFFLINE_SHOW_DELAY_MS);
+    return () => {
+      clearTimeout(t);
+      setWaited(false);
+    };
+  }, [offlineNow]);
+
+  const shown = offlineNow && waited;
+  if (!shown) return null;
   return (
     <Animated.View
       testID="offline-banner"
       entering={reduced ? FadeIn.duration(150) : SlideInUp.duration(220)}
-      exiting={reduced ? FadeOut.duration(150) : SlideOutUp.duration(220)}
       style={styles.top}
     >
       <Banner kind="offline" message={bannerCopy.offline} />
