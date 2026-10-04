@@ -50,7 +50,8 @@ select is(
   '{"enabled": false, "until": null}'::jsonb, 'maintenance is off by default'
 );
 select is(
-  (select value::text from public.app_config where key = 'quad_enabled'), 'false', 'the Quad is off (R1.1)'
+  (select jsonb_typeof(value) from public.app_config where key = 'quad_enabled'), 'boolean',
+  'the Quad kill switch is a boolean (0100 ships it off; the local seed turns it on)'
 );
 
 select * from finish();

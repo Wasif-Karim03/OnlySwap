@@ -85,8 +85,8 @@ select is(
   'msg 25', 'message evidence keeps the reported text'
 );
 
--- names_student reads common_first_names (empty in R1.0)
-insert into public.common_first_names (name) values ('maya');
+-- names_student reads common_first_names (seeded by 0200_quad.sql)
+insert into public.common_first_names (name) values ('maya') on conflict do nothing;
 select ok(private.names_student('I saw Maya at the rec'), 'a capitalized common first name is flagged');
 select ok(not private.names_student('maya is a word here'), 'lowercase words are not names');
 

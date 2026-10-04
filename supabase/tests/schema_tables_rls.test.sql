@@ -20,9 +20,11 @@ select tables_are(
     'support_requests','daily_counters',
     -- 0006 notifications and email
     'notifications','notification_prefs','push_tokens','push_tickets','email_outbox',
-    'announcements','data_exports'
+    'announcements','data_exports',
+    -- 0200 Quad (R1.1, DEC 76)
+    'quad_posts','quad_replies','quad_votes','quad_poll_options','quad_poll_votes','quad_hides','quad_mutes'
   ],
-  'public has exactly the R1.0 tables from DATA_MODEL §2.1 to §2.5'
+  'public has exactly the tables from DATA_MODEL §2.1 to §2.6'
 );
 
 -- T-SEC-19 (early form): no public table without RLS.

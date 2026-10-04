@@ -194,7 +194,7 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 | `register_push_token` | `token, platform, app_version` | void | `ExponentPushToken[…]` format; upsert `last_seen_at` | 20/day |
 | `disable_push_token` | `token` | void | — | — |
 
-**[R1.1] Quad RPCs:** `get_quad_feed`, `get_quad_thread`, `create_quad_post`, `create_quad_reply`, `vote_quad`, `vote_poll`, `hide_quad_author`, `unhide_quad`, `get_my_quad_hides`, `set_quad_replies`, `delete_quad_post`, `get_my_quad`, `mute_keyword`, `unmute_keyword`, `accept_quad_rules`.
+**[R1.1] Quad RPCs:** `get_quad_status`, `get_my_quad_mutes` (DEC 77), `get_quad_feed`, `get_quad_thread`, `create_quad_post`, `create_quad_reply`, `vote_quad`, `vote_poll`, `hide_quad_author`, `unhide_quad`, `get_my_quad_hides`, `set_quad_replies`, `delete_quad_post`, `get_my_quad`, `mute_keyword`, `unmute_keyword`, `accept_quad_rules`.
 - Contracts are as in `docs/archive/blueprint-v0/backend.md` §4.
 - The feed rank is computed at read (BE-08).
 - They return `FEATURE_OFF` unless `campuses.quad_enabled`.

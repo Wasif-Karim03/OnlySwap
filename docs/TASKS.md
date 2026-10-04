@@ -284,9 +284,9 @@
 **Moved by the first scope cut:**
 
 - [ ] **P1-SPIKE-02** Spike: MapLibre + OpenFreeMap style renders in the dev build on both OSes. · SETUP-06 · map visible with a pin · S
-- [ ] **P3-DB-05** `0005_quad.sql`: quad tables · DB-02 · — · S
+- [x] **P3-DB-05** `0005_quad.sql`: quad tables · DB-02 · — · S
 - [ ] **P8-CHAT-04** Photos in chat behind `chat_photos_enabled` (upload kind chat, signed media URLs, blur until tapped for new contacts) · CHAT-03, P5-MEDIA-03 · the flag hides the camera button · M
-- [ ] **P10-QUAD-01** RPCs `get_quad_feed`, `get_quad_thread`, `create_quad_post`, `create_quad_reply`, `vote_quad`, `vote_poll`, `hide_quad_author`, `unhide_quad`, `get_my_quad_hides`, `set_quad_replies`, `delete_quad_post`, `get_my_quad`, `mute_keyword`/`unmute_keyword`, `accept_quad_rules`; vote and score triggers; hot_rank · P3-DB-05, P3-DB-07 · T-INT-QUAD-ANON: no RPC ever returns `author_id` · L
+- [x] **P10-QUAD-01** RPCs `get_quad_feed`, `get_quad_thread`, `create_quad_post`, `create_quad_reply`, `vote_quad`, `vote_poll`, `hide_quad_author`, `unhide_quad`, `get_my_quad_hides`, `set_quad_replies`, `delete_quad_post`, `get_my_quad`, `mute_keyword`/`unmute_keyword`, `accept_quad_rules`; vote and score triggers; hot_rank · P3-DB-05, P3-DB-07 · T-INT-QUAD-ANON: no RPC ever returns `author_id` · L
 - [ ] **P10-QUAD-02** Remote flag `quad_enabled` hides the tab · QUAD-01 · flipping the flag in admin removes the tab on the next launch · S
 - [ ] **P10-QUAD-03** S-Q01 Welcome to the Quad (disclosure + agree) · QUAD-01 · — · S
 - [ ] **P10-QUAD-04** S-Q02 Quad feed (sorts, votes, pinned announcement, day one Q4, new-posts pill) · QUAD-01 · — · L

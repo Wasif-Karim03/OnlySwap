@@ -1589,6 +1589,9 @@ isOneToOne: false
             "accept_offer":
 { Args: { "offer_id": string }; Returns: Json
                            },
+"accept_quad_rules":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
 "accept_rules":
 { Args: { "version": string }; Returns: undefined
                            },
@@ -1700,6 +1703,12 @@ isOneToOne: false
 "create_meetup_share":
 { Args: { "meetup_id": string }; Returns: Json
                            },
+"create_quad_post":
+{ Args: { "body": string,"kind": string,"photo_path"?: string,"place"?: string,"poll"?: Json,"post_id"?: string }; Returns: Json
+                           },
+"create_quad_reply":
+{ Args: { "body": string,"post_id": string }; Returns: Json
+                           },
 "create_report":
 { Args: { "details"?: string,"reason": string,"target_id": string,"target_type": string }; Returns: Json
                            },
@@ -1711,6 +1720,9 @@ isOneToOne: false
                            },
 "delete_listing":
 { Args: { "id": string }; Returns: undefined
+                           },
+"delete_quad_post":
+{ Args: { "post_id": string }; Returns: undefined
                            },
 "delete_saved_search":
 { Args: { "id": string }; Returns: undefined
@@ -1754,6 +1766,15 @@ isOneToOne: false
 "get_messages":
 { Args: { "after"?: number,"before"?: number,"chat_id": string,"limit"?: number }; Returns: Json
                            },
+"get_my_quad":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"get_my_quad_hides":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"get_my_quad_mutes":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "get_my_rating":
 { Args: { "chat_id": string }; Returns: Json
                            },
@@ -1772,6 +1793,15 @@ isOneToOne: false
 "get_profile":
 { Args: { "user_id": string }; Returns: Json
                            },
+"get_quad_feed":
+{ Args: { "cursor"?: Json,"sort"?: string }; Returns: Json
+                           },
+"get_quad_status":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"get_quad_thread":
+{ Args: { "post_id": string }; Returns: Json
+                           },
 "get_saved":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
@@ -1780,6 +1810,9 @@ isOneToOne: false
                            },
 "hide_listing":
 { Args: { "listing_id": string }; Returns: undefined
+                           },
+"hide_quad_author":
+{ Args: { "post_id": string }; Returns: undefined
                            },
 "list_blocked":
 { Args: Record<PropertyKey, never>; Returns: Json
@@ -1807,6 +1840,9 @@ isOneToOne: false
                            },
 "mark_sold":
 { Args: { "buyer_id"?: string,"id": string }; Returns: undefined
+                           },
+"mute_keyword":
+{ Args: { "keyword": string }; Returns: undefined
                            },
 "my_listings":
 { Args: Record<PropertyKey, never>; Returns: Json
@@ -1868,6 +1904,9 @@ isOneToOne: false
 "set_listing_share_image":
 { Args: { "id": string }; Returns: Json
                            },
+"set_quad_replies":
+{ Args: { "enabled": boolean,"post_id": string }; Returns: undefined
+                           },
 "submit_rating":
 { Args: { "chat_id": string,"comment"?: string,"tags"?: (string)[],"thumbs_up": boolean }; Returns: undefined
                            },
@@ -1876,6 +1915,12 @@ isOneToOne: false
                            },
 "undo_swipe":
 { Args: { "listing_id": string }; Returns: undefined
+                           },
+"unhide_quad":
+{ Args: { "source_post_id": string }; Returns: undefined
+                           },
+"unmute_keyword":
+{ Args: { "keyword": string }; Returns: undefined
                            },
 "unsave_listing":
 { Args: { "listing_id": string }; Returns: Json
@@ -1894,6 +1939,12 @@ isOneToOne: false
                            },
 "update_saved_search":
 { Args: { "alerts"?: boolean,"id": string,"seen"?: boolean }; Returns: Json
+                           },
+"vote_poll":
+{ Args: { "option_id": string,"post_id": string }; Returns: Json
+                           },
+"vote_quad":
+{ Args: { "target_id": string,"target_type": string,"value": number }; Returns: Json
                            },
 "watch_listing":
 { Args: { "listing_id": string }; Returns: undefined

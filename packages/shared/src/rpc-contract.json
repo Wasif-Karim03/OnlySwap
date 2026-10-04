@@ -10,6 +10,16 @@
     ]
   },
   {
+    "name": "accept_quad_rules",
+    "args": "",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "accept_rules",
     "args": "version text",
     "returns": "void",
@@ -380,6 +390,26 @@
     ]
   },
   {
+    "name": "create_quad_post",
+    "args": "kind text, body text, photo_path text, poll jsonb, place text, post_id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "create_quad_reply",
+    "args": "post_id uuid, body text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "create_report",
     "args": "target_type text, target_id text, reason text, details text",
     "returns": "jsonb",
@@ -412,6 +442,16 @@
   {
     "name": "delete_listing",
     "args": "id uuid",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "delete_quad_post",
+    "args": "post_id uuid",
     "returns": "void",
     "security": "definer",
     "grants": [
@@ -563,6 +603,36 @@
     ]
   },
   {
+    "name": "get_my_quad",
+    "args": "",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "get_my_quad_hides",
+    "args": "",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "get_my_quad_mutes",
+    "args": "",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "get_my_rating",
     "args": "chat_id uuid",
     "returns": "jsonb",
@@ -623,6 +693,36 @@
     ]
   },
   {
+    "name": "get_quad_feed",
+    "args": "sort text, cursor jsonb",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "get_quad_status",
+    "args": "",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "get_quad_thread",
+    "args": "post_id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "get_saved",
     "args": "",
     "returns": "jsonb",
@@ -645,6 +745,16 @@
   {
     "name": "hide_listing",
     "args": "listing_id uuid",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "hide_quad_author",
+    "args": "post_id uuid",
     "returns": "void",
     "security": "definer",
     "grants": [
@@ -736,6 +846,16 @@
   {
     "name": "mark_sold",
     "args": "id uuid, buyer_id uuid",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "mute_keyword",
+    "args": "keyword text",
     "returns": "void",
     "security": "definer",
     "grants": [
@@ -946,6 +1066,16 @@
     ]
   },
   {
+    "name": "set_quad_replies",
+    "args": "post_id uuid, enabled boolean",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "submit_rating",
     "args": "chat_id uuid, thumbs_up boolean, tags text[], comment text",
     "returns": "void",
@@ -968,6 +1098,26 @@
   {
     "name": "undo_swipe",
     "args": "listing_id uuid",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "unhide_quad",
+    "args": "source_post_id uuid",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "unmute_keyword",
+    "args": "keyword text",
     "returns": "void",
     "security": "definer",
     "grants": [
@@ -1028,6 +1178,26 @@
   {
     "name": "update_saved_search",
     "args": "id uuid, alerts boolean, seen boolean",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "vote_poll",
+    "args": "post_id uuid, option_id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "vote_quad",
+    "args": "target_type text, target_id uuid, value smallint",
     "returns": "jsonb",
     "security": "definer",
     "grants": [

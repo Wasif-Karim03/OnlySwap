@@ -143,3 +143,46 @@ from (
 
 -- Seed data is local, so the stats views have something to show right away.
 refresh materialized view public.profile_stats_mv;
+
+-- The Quad (R1.1, DEC 76). On at both local campuses so it can be tried here,
+-- and on at the reviewer campus (store review must see every feature). Bots
+-- have agreed to the Quad rules; posts come from them, never the reviewer.
+update public.app_config set value = 'true' where key = 'quad_enabled';
+update public.campuses set quad_enabled = true
+where id in ('10000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000002');
+update public.profiles set quad_rules_accepted_at = now() - interval '29 days'
+where id in ('20000000-0000-4000-8000-00000000000a', '20000000-0000-4000-8000-00000000000b',
+             '20000000-0000-4000-8000-00000000000c', '20000000-0000-4000-8000-0000000000f2');
+
+insert into public.quad_posts (campus_id, author_id, kind, body, score, created_at)
+select c, a, 'text', b, s, now() - (h || ' hours')::interval
+from (values
+  ('10000000-0000-4000-8000-000000000001'::uuid, '20000000-0000-4000-8000-00000000000a'::uuid, 'Best quiet study spot that isn''t the library?', 12, 3),
+  ('10000000-0000-4000-8000-000000000001'::uuid, '20000000-0000-4000-8000-00000000000b'::uuid, 'The line at the union coffee place is wild today', 7, 1),
+  ('10000000-0000-4000-8000-000000000001'::uuid, '20000000-0000-4000-8000-00000000000c'::uuid, 'Anyone else hear the marching band practicing at 7am', 21, 9),
+  ('10000000-0000-4000-8000-000000000001'::uuid, '20000000-0000-4000-8000-00000000000a'::uuid, 'Free pizza in the engineering lobby until it''s gone', 30, 2),
+  ('10000000-0000-4000-8000-000000000001'::uuid, '20000000-0000-4000-8000-00000000000b'::uuid, 'What''s the easiest gen ed you''ve taken', 15, 20),
+  ('10000000-0000-4000-8000-000000000001'::uuid, '20000000-0000-4000-8000-00000000000c'::uuid, 'Lost a blue water bottle near the oval, turned in anywhere?', 4, 5),
+  ('10000000-0000-4000-8000-000000000002'::uuid, '20000000-0000-4000-8000-0000000000f2'::uuid, 'Where do people study late on campus?', 9, 2),
+  ('10000000-0000-4000-8000-000000000002'::uuid, '20000000-0000-4000-8000-0000000000f2'::uuid, 'The dining hall waffles are back', 14, 6),
+  ('10000000-0000-4000-8000-000000000002'::uuid, '20000000-0000-4000-8000-0000000000f2'::uuid, 'Tips for a first-year moving in next week?', 6, 30)
+) as v(c, a, b, s, h);
+
+insert into public.quad_posts (id, campus_id, author_id, kind, body, score, created_at) values
+  ('30000000-0000-4000-8000-00000000a001', '10000000-0000-4000-8000-000000000001',
+   '20000000-0000-4000-8000-00000000000b', 'poll', 'Best dining hall?', 18, now() - interval '4 hours');
+insert into public.quad_poll_options (post_id, label, idx, votes) values
+  ('30000000-0000-4000-8000-00000000a001', 'Traditions', 1, 12),
+  ('30000000-0000-4000-8000-00000000a001', 'Kennedy', 2, 7),
+  ('30000000-0000-4000-8000-00000000a001', 'Scott', 3, 9);
+
+insert into public.quad_replies (post_id, author_id, body, alias_no, created_at)
+select q.id, r.a, r.b, r.n, now() - interval '1 hour'
+from public.quad_posts q
+cross join (values
+  ('20000000-0000-4000-8000-00000000000b'::uuid, '4th floor of the union, nobody knows about it', 1::smallint),
+  ('20000000-0000-4000-8000-00000000000c'::uuid, 'Science library basement', 2::smallint),
+  ('20000000-0000-4000-8000-00000000000a'::uuid, 'Thanks, trying the union tomorrow', 0::smallint)
+) as r(a, b, n)
+where q.body = 'Best quiet study spot that isn''t the library?';
+update public.quad_posts set reply_count = 3 where body = 'Best quiet study spot that isn''t the library?';

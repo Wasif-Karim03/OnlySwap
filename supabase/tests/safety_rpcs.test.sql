@@ -37,7 +37,7 @@ select is(
   'ERROR: NOT_FOUND', 'malformed id is NOT_FOUND');
 select is(
   tests.try_text_as(tests.uid('B'), $$select public.create_report('quad_post', '1', 'spam')::text$$),
-  'ERROR: INVALID:target_type', 'quad targets are not reportable in R1.0');
+  'ERROR: NOT_FOUND', 'quad targets are reportable (DEC 76); a missing post is NOT_FOUND');
 select is(
   tests.try_text_as(tests.uid('B'), format('select public.create_report(%L, %L, %L, %L)::text', 'user', tests.uid('C'), 'spam', repeat('x', 501))),
   'ERROR: INVALID:details', 'details over 500 chars refused');
@@ -131,8 +131,8 @@ select is(
     tests.try_text_as(tests.uid('B'), $$select public.create_appeal('strike', '00000000-0000-4000-8000-0000000007a1')::text$$),
     tests.try_text_as(tests.uid('C'), $$select public.create_appeal('quad_post', '1')::text$$),
     tests.try_text_as(tests.uid('C'), $$select public.create_report('listing', '00000000-0000-4000-8000-0000000001a1', 'spam')::text$$)),
-  'ERROR: ALREADY_APPEALED|ERROR: NOT_FOUND|ERROR: FEATURE_OFF|ERROR: NOT_ACTIVE:suspended',
-  'appeal once per subject, own subjects only, quad off; suspended cannot report');
+  'ERROR: ALREADY_APPEALED|ERROR: NOT_FOUND|ERROR: NOT_FOUND|ERROR: NOT_ACTIVE:suspended',
+  'appeal once per subject, own subjects only (a missing quad post too); suspended cannot report');
 
 select * from finish();
 rollback;
