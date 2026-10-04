@@ -1,7 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 import { NavBar } from '@/components/NavBar';
@@ -44,10 +43,11 @@ export function SellStep({
   overlay,
   testID,
 }: Props) {
-  const insets = useSafeAreaInsets();
-  // The focused field scrolls to sit above the keyboard and the docked
-  // button, so it uses the dock's real height (larger text sizes, the
-  // Android gesture bar) rather than a guess.
+  // The Sell steps live inside the tabs: the tab bar below already covers the
+  // home indicator, and it hides while the keyboard is open (app/(tabs)), so
+  // the dock rests on the screen edge and rides straight up with the
+  // keyboard. The focused field scrolls to sit above the keyboard and the
+  // dock, using the dock's measured height (larger text sizes) not a guess.
   const [dockHeight, setDockHeight] = useState(DOCK_FALLBACK);
   const { theme } = useUnistyles();
   const fieldGap = theme.space.lg;
@@ -86,11 +86,8 @@ export function SellStep({
         <View style={styles.children}>{children}</View>
       </KeyboardAwareScrollView>
       {dock ? (
-        <KeyboardStickyView offset={{ closed: 0, opened: insets.bottom }}>
-          <View
-            style={[styles.dock, { paddingBottom: insets.bottom + styles.dockGap.height }]}
-            onLayout={(e) => setDockHeight(e.nativeEvent.layout.height)}
-          >
+        <KeyboardStickyView>
+          <View style={styles.dock} onLayout={(e) => setDockHeight(e.nativeEvent.layout.height)}>
             {dock}
           </View>
         </KeyboardStickyView>
@@ -113,8 +110,8 @@ const styles = StyleSheet.create((theme) => ({
   dock: {
     paddingHorizontal: theme.space.screen,
     paddingTop: theme.space.sm,
+    paddingBottom: theme.space.md,
     gap: theme.space.xs,
     backgroundColor: theme.colors.bg,
   },
-  dockGap: { height: theme.space.md },
 }));

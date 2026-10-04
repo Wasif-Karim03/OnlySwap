@@ -104,6 +104,18 @@ describe('P1-SETUP-02 tab shell (R1.0 tabs: Discover, Sell, Inbox, Profile)', ()
     expect(screen.getByTestId('tab-bar').props.accessibilityRole).toBe('tablist');
   });
 
+  it('hides the tab bar while the keyboard is open (Sell fields stay visible)', async () => {
+    const kc = jest.requireMock('react-native-keyboard-controller');
+    const spy = jest
+      .spyOn(kc, 'useKeyboardState')
+      .mockImplementation(((select: (s: { isVisible: boolean }) => unknown) =>
+        select({ isVisible: true })) as never);
+    renderRouter(routes, { initialUrl: '/discover' });
+    await screen.findByTestId('screen-discover');
+    expect(screen.queryByTestId('tab-bar')).toBeNull();
+    spy.mockRestore();
+  });
+
   it('P2-CMP-09 switches tabs from the tab bar', async () => {
     const router = renderRouter(routes, { initialUrl: '/discover' });
     await screen.findByTestId('screen-discover');

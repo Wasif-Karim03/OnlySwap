@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
 import type { ComponentProps } from 'react';
+import { useKeyboardState } from 'react-native-keyboard-controller';
 
 import { TabBar, type TabItem } from '@/components/TabBar';
 import { usePushHandling } from '@/lib/push';
@@ -17,6 +18,11 @@ const ITEMS: Record<string, Omit<TabItem, 'key'>> = {
 
 /** Adapts React Navigation's tab state to the TabBar component (P2-CMP-09). */
 function AppTabBar({ state, navigation }: TabBarProps) {
+  // Hidden while typing (both platforms), so the screen reaches the keyboard
+  // and a docked button sits right on top of it instead of floating a tab
+  // bar's height higher over the fields (owner testing on Android).
+  const keyboardOpen = useKeyboardState((s) => s.isVisible);
+  if (keyboardOpen) return null;
   const items = state.routes.map((route) => ({ key: route.key, ...ITEMS[route.name]! }));
   const activeKey = state.routes[state.index]!.key;
   return (
