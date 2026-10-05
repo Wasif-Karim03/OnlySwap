@@ -82,8 +82,10 @@ select is(tests.try_text_as(tests.uid('B'), format('select public.send_message(%
     'c/' || tests.uid('OSU') || '/chat/00000000-0000-4000-8000-0000000000d1/33333333-3333-4333-8333-333333333333_full.webp')),
   'ERROR: FEATURE_OFF', 'chat photos are off until the owner turns them on (R11-PHOTO-GATE)');
 update public.app_config set value = 'true' where key = 'chat_photos_enabled';
-update vault.secrets set secret = 'test-media-key' where name = 'media_signing_key';
-select vault.create_secret('test-media-key', 'media_signing_key') where not exists (select 1 from vault.secrets where name = 'media_signing_key');
+-- vault.update_secret keeps the secret encrypted (a plain UPDATE would not).
+select case when exists (select 1 from vault.decrypted_secrets where name = 'media_signing_key')
+            then vault.update_secret((select id from vault.decrypted_secrets where name = 'media_signing_key'), 'test-media-key')::text
+            else vault.create_secret('test-media-key', 'media_signing_key')::text end;
 select is(tests.try_text_as(tests.uid('B'), format('select public.send_message(%L, %L, %L, %L, %L)::text',
     '00000000-0000-4000-8000-0000000000d1', '', '00000000-0000-4000-8000-00000000c102', 'photo', 'c/x/chat/y/z_full.webp')),
   'ERROR: INVALID:photo_path', 'the photo must be in this chat''s folder');

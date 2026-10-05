@@ -172,7 +172,7 @@ select is(pg_temp.q('B', format('select public.set_quad_replies(%L, true)::text'
 select is(pg_temp.q('A', format('select public.delete_quad_post(%L)::text', pg_temp.pid('anyone want to grab food'))), '',
   'the poster deletes it');
 select is(
-  pg_temp.q('A', $$select string_agg(p ->> 'body' || '=' || (p ->> 'status'), ',' order by p ->> 'body') from jsonb_array_elements(public.get_my_quad() -> 'posts') p$$),
+  pg_temp.q('A', $$select string_agg(p ->> 'body' || '=' || (p ->> 'status'), ',' order by p ->> 'body' collate "C") from jsonb_array_elements(public.get_my_quad() -> 'posts') p$$),
   'Best dining hall?=live,Madison from my class is so rude=held,best study spot?=live,rate jake r=held,sunset from the oval=hidden',
   'Your Quad lists own posts with their status, not the deleted one');
 

@@ -282,13 +282,13 @@ isOneToOne: false
                   ]
                 },"campuses": {
                   Row: {
-                    "created_at": string,"founding_seller_limit": number,"id": string,"is_demo": boolean,"name": string,"noshow_pause_threshold": number,"offers_per_hour": number,"quad_enabled": boolean,"reverify_months": number,"short_name": string,"slug": string,"status": Database["public"]['Enums']["campus_status"],"timezone": string,"unlock_threshold": number,"unlocked_at": string | null
+                    "created_at": string,"founding_seller_limit": number,"id": string,"is_demo": boolean,"name": string,"noshow_pause_threshold": number,"offers_per_hour": number,"quad_autohide_score": number,"quad_enabled": boolean,"reverify_months": number,"short_name": string,"slug": string,"status": Database["public"]['Enums']["campus_status"],"timezone": string,"unlock_threshold": number,"unlocked_at": string | null
                   }
                   Insert: {
-                    "created_at"?: string,"founding_seller_limit"?: number,"id"?: string,"is_demo"?: boolean,"name": string,"noshow_pause_threshold"?: number,"offers_per_hour"?: number,"quad_enabled"?: boolean,"reverify_months"?: number,"short_name": string,"slug": string,"status"?: Database["public"]['Enums']["campus_status"],"timezone"?: string,"unlock_threshold"?: number,"unlocked_at"?: string | null
+                    "created_at"?: string,"founding_seller_limit"?: number,"id"?: string,"is_demo"?: boolean,"name": string,"noshow_pause_threshold"?: number,"offers_per_hour"?: number,"quad_autohide_score"?: number,"quad_enabled"?: boolean,"reverify_months"?: number,"short_name": string,"slug": string,"status"?: Database["public"]['Enums']["campus_status"],"timezone"?: string,"unlock_threshold"?: number,"unlocked_at"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"founding_seller_limit"?: number,"id"?: string,"is_demo"?: boolean,"name"?: string,"noshow_pause_threshold"?: number,"offers_per_hour"?: number,"quad_enabled"?: boolean,"reverify_months"?: number,"short_name"?: string,"slug"?: string,"status"?: Database["public"]['Enums']["campus_status"],"timezone"?: string,"unlock_threshold"?: number,"unlocked_at"?: string | null
+                    "created_at"?: string,"founding_seller_limit"?: number,"id"?: string,"is_demo"?: boolean,"name"?: string,"noshow_pause_threshold"?: number,"offers_per_hour"?: number,"quad_autohide_score"?: number,"quad_enabled"?: boolean,"reverify_months"?: number,"short_name"?: string,"slug"?: string,"status"?: Database["public"]['Enums']["campus_status"],"timezone"?: string,"unlock_threshold"?: number,"unlocked_at"?: string | null
                   }
                   Relationships: [
                     
@@ -905,13 +905,13 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "adult_confirmed_at": string | null,"age_method": Database["public"]['Enums']["age_method"] | null,"analytics_opt_in": boolean,"areas": (string)[],"avatar_path": string | null,"bio": string | null,"campus_id": string,"crash_reports_opt_in": boolean,"created_at": string,"display_name": string | null,"email_hash": string,"first_name": string | null,"founding_seller_until": string | null,"id": string,"invite_code": string,"invited_by": string | null,"last_active_at": string | null,"last_initial": string | null,"noshow_count": number,"paused_until": string | null,"rules_accepted_at": string | null,"rules_version": string | null,"seen_unlock_at": string | null,"status": Database["public"]['Enums']["user_status"],"status_reason": string | null,"strike_count": number,"theme_mode": string,"verified_until": string,"year": Database["public"]['Enums']["class_year"] | null
+                    "adult_confirmed_at": string | null,"age_method": Database["public"]['Enums']["age_method"] | null,"analytics_opt_in": boolean,"areas": (string)[],"avatar_path": string | null,"bio": string | null,"campus_id": string,"crash_reports_opt_in": boolean,"created_at": string,"display_name": string | null,"email_hash": string,"first_name": string | null,"founding_seller_until": string | null,"id": string,"invite_code": string,"invited_by": string | null,"last_active_at": string | null,"last_initial": string | null,"noshow_count": number,"paused_until": string | null,"quad_rules_accepted_at": string | null,"rules_accepted_at": string | null,"rules_version": string | null,"seen_unlock_at": string | null,"status": Database["public"]['Enums']["user_status"],"status_reason": string | null,"strike_count": number,"theme_mode": string,"verified_until": string,"year": Database["public"]['Enums']["class_year"] | null
                   }
                   Insert: {
-                    "adult_confirmed_at"?: string | null,"age_method"?: Database["public"]['Enums']["age_method"] | null,"analytics_opt_in"?: boolean,"areas"?: (string)[],"avatar_path"?: string | null,"bio"?: string | null,"campus_id": string,"crash_reports_opt_in"?: boolean,"created_at"?: string,"display_name"?: never,"email_hash": string,"first_name"?: string | null,"founding_seller_until"?: string | null,"id": string,"invite_code"?: string,"invited_by"?: string | null,"last_active_at"?: string | null,"last_initial"?: string | null,"noshow_count"?: number,"paused_until"?: string | null,"rules_accepted_at"?: string | null,"rules_version"?: string | null,"seen_unlock_at"?: string | null,"status"?: Database["public"]['Enums']["user_status"],"status_reason"?: string | null,"strike_count"?: number,"theme_mode"?: string,"verified_until": string,"year"?: Database["public"]['Enums']["class_year"] | null
+                    "adult_confirmed_at"?: string | null,"age_method"?: Database["public"]['Enums']["age_method"] | null,"analytics_opt_in"?: boolean,"areas"?: (string)[],"avatar_path"?: string | null,"bio"?: string | null,"campus_id": string,"crash_reports_opt_in"?: boolean,"created_at"?: string,"display_name"?: never,"email_hash": string,"first_name"?: string | null,"founding_seller_until"?: string | null,"id": string,"invite_code"?: string,"invited_by"?: string | null,"last_active_at"?: string | null,"last_initial"?: string | null,"noshow_count"?: number,"paused_until"?: string | null,"quad_rules_accepted_at"?: string | null,"rules_accepted_at"?: string | null,"rules_version"?: string | null,"seen_unlock_at"?: string | null,"status"?: Database["public"]['Enums']["user_status"],"status_reason"?: string | null,"strike_count"?: number,"theme_mode"?: string,"verified_until": string,"year"?: Database["public"]['Enums']["class_year"] | null
                   }
                   Update: {
-                    "adult_confirmed_at"?: string | null,"age_method"?: Database["public"]['Enums']["age_method"] | null,"analytics_opt_in"?: boolean,"areas"?: (string)[],"avatar_path"?: string | null,"bio"?: string | null,"campus_id"?: string,"crash_reports_opt_in"?: boolean,"created_at"?: string,"display_name"?: never,"email_hash"?: string,"first_name"?: string | null,"founding_seller_until"?: string | null,"id"?: string,"invite_code"?: string,"invited_by"?: string | null,"last_active_at"?: string | null,"last_initial"?: string | null,"noshow_count"?: number,"paused_until"?: string | null,"rules_accepted_at"?: string | null,"rules_version"?: string | null,"seen_unlock_at"?: string | null,"status"?: Database["public"]['Enums']["user_status"],"status_reason"?: string | null,"strike_count"?: number,"theme_mode"?: string,"verified_until"?: string,"year"?: Database["public"]['Enums']["class_year"] | null
+                    "adult_confirmed_at"?: string | null,"age_method"?: Database["public"]['Enums']["age_method"] | null,"analytics_opt_in"?: boolean,"areas"?: (string)[],"avatar_path"?: string | null,"bio"?: string | null,"campus_id"?: string,"crash_reports_opt_in"?: boolean,"created_at"?: string,"display_name"?: never,"email_hash"?: string,"first_name"?: string | null,"founding_seller_until"?: string | null,"id"?: string,"invite_code"?: string,"invited_by"?: string | null,"last_active_at"?: string | null,"last_initial"?: string | null,"noshow_count"?: number,"paused_until"?: string | null,"quad_rules_accepted_at"?: string | null,"rules_accepted_at"?: string | null,"rules_version"?: string | null,"seen_unlock_at"?: string | null,"status"?: Database["public"]['Enums']["user_status"],"status_reason"?: string | null,"strike_count"?: number,"theme_mode"?: string,"verified_until"?: string,"year"?: Database["public"]['Enums']["class_year"] | null
                   }
                   Relationships: [
                     {
@@ -996,6 +996,307 @@ isOneToOne: false
       referencedColumns: ["id"]
     },{
       foreignKeyName: "push_tokens_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"quad_hides": {
+                  Row: {
+                    "created_at": string,"excerpt": string | null,"hidden_author_id": string,"source_post_id": string | null,"user_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"excerpt"?: string | null,"hidden_author_id": string,"source_post_id"?: string | null,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"excerpt"?: string | null,"hidden_author_id"?: string,"source_post_id"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "quad_hides_hidden_author_id_fkey"
+      columns: ["hidden_author_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_hides_hidden_author_id_fkey"
+      columns: ["hidden_author_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_hides_hidden_author_id_fkey"
+      columns: ["hidden_author_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_hides_hidden_author_id_fkey"
+      columns: ["hidden_author_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_hides_source_post_id_fkey"
+      columns: ["source_post_id"]
+isOneToOne: false
+      referencedRelation: "quad_posts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_hides_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_hides_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_hides_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_hides_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"quad_mutes": {
+                  Row: {
+                    "created_at": string,"keyword": string,"user_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"keyword": string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"keyword"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "quad_mutes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_mutes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_mutes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_mutes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"quad_poll_options": {
+                  Row: {
+                    "id": string,"idx": number,"label": string,"post_id": string,"votes": number
+                  }
+                  Insert: {
+                    "id"?: string,"idx": number,"label": string,"post_id": string,"votes"?: number
+                  }
+                  Update: {
+                    "id"?: string,"idx"?: number,"label"?: string,"post_id"?: string,"votes"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "quad_poll_options_post_id_fkey"
+      columns: ["post_id"]
+isOneToOne: false
+      referencedRelation: "quad_posts"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"quad_poll_votes": {
+                  Row: {
+                    "created_at": string,"option_id": string,"post_id": string,"user_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"option_id": string,"post_id": string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"option_id"?: string,"post_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "quad_poll_votes_option_id_fkey"
+      columns: ["option_id"]
+isOneToOne: false
+      referencedRelation: "quad_poll_options"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_poll_votes_post_id_fkey"
+      columns: ["post_id"]
+isOneToOne: false
+      referencedRelation: "quad_posts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_poll_votes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_poll_votes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_poll_votes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_poll_votes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"quad_posts": {
+                  Row: {
+                    "author_id": string,"body": string,"campus_id": string,"created_at": string,"expires_at": string | null,"hold_reason": string | null,"id": string,"kind": string,"photo_path": string | null,"place": string | null,"replies_enabled": boolean,"reply_count": number,"score": number,"status": string
+                  }
+                  Insert: {
+                    "author_id": string,"body": string,"campus_id": string,"created_at"?: string,"expires_at"?: string | null,"hold_reason"?: string | null,"id"?: string,"kind"?: string,"photo_path"?: string | null,"place"?: string | null,"replies_enabled"?: boolean,"reply_count"?: number,"score"?: number,"status"?: string
+                  }
+                  Update: {
+                    "author_id"?: string,"body"?: string,"campus_id"?: string,"created_at"?: string,"expires_at"?: string | null,"hold_reason"?: string | null,"id"?: string,"kind"?: string,"photo_path"?: string | null,"place"?: string | null,"replies_enabled"?: boolean,"reply_count"?: number,"score"?: number,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "quad_posts_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_posts_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_posts_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_posts_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_posts_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campus_progress"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_posts_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campuses"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"quad_replies": {
+                  Row: {
+                    "alias_no": number,"author_id": string,"body": string,"created_at": string,"hold_reason": string | null,"id": string,"post_id": string,"score": number,"status": string
+                  }
+                  Insert: {
+                    "alias_no": number,"author_id": string,"body": string,"created_at"?: string,"hold_reason"?: string | null,"id"?: string,"post_id": string,"score"?: number,"status"?: string
+                  }
+                  Update: {
+                    "alias_no"?: number,"author_id"?: string,"body"?: string,"created_at"?: string,"hold_reason"?: string | null,"id"?: string,"post_id"?: string,"score"?: number,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "quad_replies_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_replies_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_replies_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_replies_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_replies_post_id_fkey"
+      columns: ["post_id"]
+isOneToOne: false
+      referencedRelation: "quad_posts"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"quad_votes": {
+                  Row: {
+                    "created_at": string,"target_id": string,"target_type": string,"user_id": string,"value": number
+                  }
+                  Insert: {
+                    "created_at"?: string,"target_id": string,"target_type": string,"user_id": string,"value": number
+                  }
+                  Update: {
+                    "created_at"?: string,"target_id"?: string,"target_type"?: string,"user_id"?: string,"value"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "quad_votes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_votes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_votes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_votes_user_id_fkey"
       columns: ["user_id"]
 isOneToOne: false
       referencedRelation: "public_profiles"
@@ -1413,7 +1714,47 @@ isOneToOne: false
                 }
           }
           Views: {
-            "campus_progress": {
+            "admin_metrics_funnel": {
+                  Row: {
+                    "activated": number | null,"campus_id": string | null,"completed_swaps": number | null,"day": string | null,"meetups_confirmed": number | null,"offers": number | null,"offers_accepted": number | null,"signups": number | null,"swiped_10_24h": number | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"admin_metrics_liquidity": {
+                  Row: {
+                    "active_buyers": number | null,"campus_id": string | null,"feed_exhausted": number | null,"listings_created": number | null,"median_hours_to_first_offer": number | null,"sell_through_final": boolean | null,"sold_14d": number | null,"week": string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"admin_metrics_retention": {
+                  Row: {
+                    "campus_id": string | null,"cohort": number | null,"d1": number | null,"d1_eligible": number | null,"d30": number | null,"d30_eligible": number | null,"d7": number | null,"d7_eligible": number | null,"signup_week": string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "profiles_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campus_progress"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "profiles_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campuses"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"admin_metrics_safety": {
+                  Row: {
+                    "campus_id": string | null,"completed_swaps": number | null,"meetups_completed": number | null,"meetups_confirmed": number | null,"meetups_no_show": number | null,"p90_hours_to_resolve": number | null,"reports": number | null,"week": string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"campus_progress": {
                   Row: {
                     "founding_left": number | null,"id": string | null,"members": number | null,"name": string | null,"slug": string | null,"status": Database["public"]['Enums']["campus_status"] | null,"threshold": number | null
                   }
@@ -1698,7 +2039,7 @@ isOneToOne: false
 { Args: { "id": string,"patch": Json,"reason": string }; Returns: undefined
                            },
 "admin_upsert_banned_word":
-{ Args: { "action": string,"match": string,"pattern": string,"reason": string,"scopes": string[] }; Returns: Json
+{ Args: { "action": string,"match": string,"pattern": string,"reason": string,"scopes": (string)[] }; Returns: Json
                            },
 "admin_upsert_domain":
 { Args: { "campus_id": string,"domain": string,"kind": string,"reason": string }; Returns: undefined
@@ -1905,8 +2246,9 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
 "price_hint":
-| { Args: { "category_id": number }; Returns: Json }
-| { Args: { "category_id": number,"condition": string }; Returns: Json
+{ Args: { "category_id": number }; Returns: Json
+                           } |
+{ Args: { "category_id": number,"condition": string }; Returns: Json
                            },
 "propose_meetup":
 { Args: { "chat_id": string,"custom_place"?: string,"spot_id"?: string,"starts_at": string }; Returns: Json
