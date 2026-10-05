@@ -190,3 +190,27 @@ cross join (values
 ) as r(a, b, n)
 where q.body = 'Best quiet study spot that isn''t the library?';
 update public.quad_posts set reply_count = 3 where body = 'Best quiet study spot that isn''t the library?';
+
+-- Around campus (R1.1, S48): a free food post (live for 3 hours after a reset)
+-- and Wanted posts at Ohio State and the reviewer campus, so the campus feed
+-- and "I have this" can be tried right away.
+insert into public.listings
+  (id, campus_id, seller_id, kind, title, description, category_id, price_cents, wanted_max_cents,
+   meet_spot_ids, meet_note, expires_at, created_at, bumped_at, updated_at)
+values
+  ('31000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-00000000000b',
+   'food', 'Leftover pizza from club meeting', 'Cheese and pepperoni, about 10 slices.', null, 0, null,
+   coalesce((select array[s.id] from public.safe_spots s where s.campus_id = '10000000-0000-4000-8000-000000000001' and s.sort = 2), '{}'),
+   null, now() + interval '3 hours', now() - interval '10 minutes', now() - interval '10 minutes', now()),
+  ('31000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-00000000000a',
+   'wanted', 'Mini fridge', 'For a dorm room, small is fine.', 1, 0, 5000,
+   '{}', null, now() + interval '60 days', now() - interval '2 hours', now() - interval '2 hours', now()),
+  ('31000000-0000-4000-8000-000000000003', '10000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-00000000000c',
+   'wanted', 'TI-84 calculator', 'Need it before the midterm.', 3, 0, 4000,
+   '{}', null, now() + interval '60 days', now() - interval '1 day', now() - interval '1 day', now()),
+  ('31000000-0000-4000-8000-000000000004', '10000000-0000-4000-8000-000000000002', '20000000-0000-4000-8000-0000000000f2',
+   'food', 'Free bagels', 'Plain and everything.', null, 0, null,
+   '{}', 'Demo Student Center, by the cafe', now() + interval '3 hours', now() - interval '5 minutes', now() - interval '5 minutes', now()),
+  ('31000000-0000-4000-8000-000000000005', '10000000-0000-4000-8000-000000000002', '20000000-0000-4000-8000-0000000000f2',
+   'wanted', 'Desk lamp', 'Anything that clamps to a desk.', 9, 0, 1500,
+   '{}', null, now() + interval '60 days', now() - interval '3 hours', now() - interval '3 hours', now());

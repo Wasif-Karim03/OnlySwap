@@ -17,6 +17,7 @@ import { CampusPage } from './pages/Campus';
 import { AuditPage, ConfigPage } from './pages/Config';
 import { ListingsPage } from './pages/Listings';
 import { OverviewPage } from './pages/Overview';
+import { QuadPage } from './pages/Quad';
 import { AppealsPage, ReportDetailPage, ReportsPage } from './pages/Reports';
 import { UserDetailPage, UsersPage } from './pages/Users';
 
@@ -34,6 +35,7 @@ function Shell() {
         <Link to="/appeals">Appeals</Link>
         <Link to="/users">Users</Link>
         <Link to="/listings">Listings</Link>
+        <Link to="/quad">Quad</Link>
         <Link to="/campuses">Campuses</Link>
         <Link to="/config">Flags and config</Link>
         <Link to="/audit">Audit log</Link>
@@ -66,6 +68,7 @@ const routeTree = root.addChildren([
     page('/users', () => <UsersPage who={useWho()} />),
     page('/users/$id', () => <UserDetailPage who={useWho()} />),
     page('/listings', ListingsPage),
+    page('/quad', () => <QuadPage who={useWho()} />),
     page('/campuses', () => <CampusPage who={useWho()} />),
     page('/config', () => <ConfigPage who={useWho()} />),
     page('/audit', AuditPage),

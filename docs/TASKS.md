@@ -285,7 +285,7 @@
 
 - [ ] **P1-SPIKE-02** Spike: MapLibre + OpenFreeMap style renders in the dev build on both OSes. · SETUP-06 · map visible with a pin · S
 - [x] **P3-DB-05** `0005_quad.sql`: quad tables · DB-02 · — · S
-- [ ] **P8-CHAT-04** Photos in chat behind `chat_photos_enabled` (upload kind chat, signed media URLs, blur until tapped for new contacts) · CHAT-03, P5-MEDIA-03 · the flag hides the camera button · M
+- [x] **P8-CHAT-04** Photos in chat behind `chat_photos_enabled` (upload kind chat, signed media URLs, blur until tapped for new contacts) · CHAT-03, P5-MEDIA-03 · the flag hides the camera button · M
 - [x] **P10-QUAD-01** RPCs `get_quad_feed`, `get_quad_thread`, `create_quad_post`, `create_quad_reply`, `vote_quad`, `vote_poll`, `hide_quad_author`, `unhide_quad`, `get_my_quad_hides`, `set_quad_replies`, `delete_quad_post`, `get_my_quad`, `mute_keyword`/`unmute_keyword`, `accept_quad_rules`; vote and score triggers; hot_rank · P3-DB-05, P3-DB-07 · T-INT-QUAD-ANON: no RPC ever returns `author_id` · L
 - [x] **P10-QUAD-02** Remote flag `quad_enabled` hides the tab · QUAD-01 · flipping the flag in admin removes the tab on the next launch · S
 - [x] **P10-QUAD-03** S-Q01 Welcome to the Quad (disclosure + agree) · QUAD-01 · — · S
@@ -296,10 +296,10 @@
 - [ ] 🆕 **R11-MAP-01** MapLibre + OpenFreeMap map on Plan the pickup and Safety center (spots only, no location permission). · deps P1-SPIKE-02 · done when the map renders with the designation pins · M
 - [ ] 🆕 **R11-ADM-01** Admin metrics UI (funnel, retention, liquidity, safety views). · deps P12-ADM-03 · done when it matches T-DATA-02 · L
 - [ ] 🆕 **R11-ADM-02** Admin team (invite moderator), announcements (1/week), banned-words UI. · deps P12-ADM-03 · done when every action is logged · L
-- [ ] 🆕 **R11-ADM-03** Admin Quad queue + reveal with re-MFA + receipt. · deps P10-QUAD-01 · done when T-INT-ADMIN-03 passes · M
+- [x] 🆕 **R11-ADM-03** Admin Quad queue + reveal with re-MFA + receipt. · deps P10-QUAD-01 · done when T-INT-ADMIN-03 passes · M
 - [ ] 🆕 **R11-NOTIF-01** R1.1 notification types (quad_reply, quad_milestone, announcements, free_food, rating_revealed). · deps P9-PUSH-04 · done when each fires once · M
 - [ ] 🆕 **R11-REL-01** R1.1 release: privacy policy Quad section, Apple age questionnaire (social media yes), Quad enabled per campus at ≥300 active users, the tab bar gains Quad. · deps all R1.1 · done when RELEASE §8 R1.1 go/no-go passes · M
-- [ ] 🆕 **R11-PHOTO-GATE** Chat photos only after CSAM scanning is active (Q2/Q3) or an explicit owner risk acceptance is logged. · deps P8-CHAT-04 · done when the decision is logged · S
+- [x] 🆕 **R11-PHOTO-GATE** Chat photos only after CSAM scanning is active (Q2/Q3) or an explicit owner risk acceptance is logged. · deps P8-CHAT-04 · done when the decision is logged · S
 
 ## R2 backlog
 

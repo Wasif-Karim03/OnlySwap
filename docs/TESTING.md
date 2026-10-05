@@ -67,7 +67,7 @@ Helpers `tests.authenticate_as(uid, aal)` and `tests.clear_authentication()` com
 | T-UNIT-OFF-02 | Offer status → UI state map | every status × role pair → expected component (E3–E8) |
 | T-UNIT-CHAT-01 | `useChat` merge | dedupe by id and client_id; order by id; reconnect fetches since last id |
 | T-UNIT-CHAT-02 | Send queue | offline messages sent in order on reconnect; failure marks retry |
-| T-UNIT-CHAT-03 **[R1.1]** | Photo blur rule | blurred when the sender has no prior revealed photo in the chat; reveal is local |
+| T-UNIT-CHAT-03 **[R1.1]** | Photo blur | incoming photos are blurred until tapped while the sender has fewer than 10 messages in the chat or the chat is under 24 h old (DEC 79) |
 | T-UNIT-MEET-01 | Directions deep link | builds `maps://?daddr=lat,lng` (iOS) / `geo:` + `google.navigation` intent (Android) / web fallback |
 | T-UNIT-MEET-02 | Meetup state derivation | before, T−30, here/late, cancelled, rescheduled, no-show window (≥ +20 min) |
 | T-UNIT-DEAL-01 | `maybeAskForReview` | ≥3 swaps and 14 d and 120 d since last; never after fell-through/no-show |

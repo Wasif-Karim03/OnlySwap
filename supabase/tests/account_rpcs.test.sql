@@ -88,7 +88,8 @@ select is((select analytics_opt_in::text || crash_reports_opt_in::text || theme_
 -- my_waitlist_position ------------------------------------------------------------------------------
 insert into auth.users (id, email) values ('00000000-0000-4000-8000-0000000000f2', 'second@umich.edu');
 update public.profiles set created_at = now() + interval '1 minute' where id = '00000000-0000-4000-8000-0000000000f2';
-select is(tests.try_text_as('00000000-0000-4000-8000-0000000000f2', $$select public.my_waitlist_position()::text$$),
+select is(tests.try_text_as('00000000-0000-4000-8000-0000000000f2', $$select jsonb_build_object('members', r -> 'members', 'position', r -> 'position', 'threshold', r -> 'threshold')::text
+     from public.my_waitlist_position() r$$),
   '{"members": 2, "position": 2, "threshold": 500}', 'my_waitlist_position: second in line');
 select is(tests.try_text_as(tests.uid('A'), $$select public.my_waitlist_position() ->> 'position'$$), null,
   'my_waitlist_position: no position on a live campus');

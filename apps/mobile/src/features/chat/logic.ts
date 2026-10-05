@@ -9,22 +9,35 @@ export type Message = {
   client_id: string | null;
   created_at: string;
   mine?: boolean;
+  /** Photo messages (P8-CHAT-04): the full image key. */
+  photo_path?: string | null;
+  /** Signed relative path ("key?exp=..&sig=..", valid 1 to 2 hours); null for text. */
+  photo_url?: string | null;
 };
+
+/** A photo picked on this phone, shown while it uploads and sends. */
+export type LocalPhoto = { uri: string; width: number; height: number };
 
 /** A message on screen: sent (from the server) or still local. */
 export type ChatItem =
-  | (Message & { state: 'sent' })
+  /** `local`: my own photo picked on this phone, kept so it doesn't reload once sent. */
+  | (Message & { state: 'sent'; local?: LocalPhoto })
   | {
       state: 'pending' | 'failed';
       id: null;
       client_id: string;
+      /** The text, or the photo caption ('' for none). */
       body: string;
-      kind: 'text';
+      kind: 'text' | 'photo';
       created_at: string;
       mine: true;
       sender_id: null;
       meta: null;
       chat_id: string;
+      /** Photo only: the picked file, the uploaded key once done, upload progress 0..1. */
+      local?: LocalPhoto;
+      photo_path?: string | null;
+      progress?: number;
     };
 
 /**
@@ -39,9 +52,19 @@ export function mergeMessages(
 ): ChatItem[] {
   const byId = new Map<number, ChatItem>();
   const sentClientIds = new Set<string>();
-  for (const m of current) if (m.state === 'sent') byId.set(m.id, m);
+  const localPhotos = new Map<string, LocalPhoto>();
+  for (const m of current) {
+    if (m.state === 'sent') byId.set(m.id, m);
+    if (m.local && m.client_id) localPhotos.set(m.client_id, m.local);
+  }
   for (const m of incoming) {
-    byId.set(m.id, { ...m, mine: m.mine ?? (me !== null && m.sender_id === me), state: 'sent' });
+    const local = m.client_id ? localPhotos.get(m.client_id) : undefined;
+    byId.set(m.id, {
+      ...m,
+      mine: m.mine ?? (me !== null && m.sender_id === me),
+      state: 'sent',
+      ...(local ? { local } : {}),
+    });
   }
   for (const m of byId.values()) if (m.client_id) sentClientIds.add(m.client_id);
   const sent = [...byId.values()].sort((a, b) => (a.id as number) - (b.id as number));
@@ -78,4 +101,66 @@ export function scamHint(body: string | null | undefined): 'link' | 'phone' | 'p
   if (URL_RE.test(body)) return 'link';
   if (PHONE_RE.test(body)) return 'phone';
   return null;
+}
+
+// ---------------------------------------------------------------------------
+// Photos in chat (P8-CHAT-04, R11-PHOTO-GATE)
+
+/** Fewer messages than this from the other person and their photos start blurred. */
+export const NEW_CONTACT_MESSAGES = 10;
+/** A chat younger than this counts as a new contact. */
+export const NEW_CONTACT_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Is the other person still a "new contact"? True when they have sent fewer
+ * than 10 messages in this chat or the chat is under 24 hours old. An unknown
+ * start counts as new (blurred is the safe side).
+ */
+export function isNewContact(input: {
+  otherMessages: number;
+  chatStartedAt: string | null | undefined;
+  now: Date;
+}): boolean {
+  if (input.otherMessages < NEW_CONTACT_MESSAGES) return true;
+  const started = input.chatStartedAt ? Date.parse(input.chatStartedAt) : NaN;
+  if (!Number.isFinite(started)) return true;
+  return input.now.getTime() - started < NEW_CONTACT_MS;
+}
+
+/**
+ * The new-contact rule over what's loaded. Only loaded messages are counted
+ * and the oldest loaded one stands in for the chat's start when the server
+ * doesn't send it, so both undercount: a long chat may stay blurred until
+ * older pages load, never the other way round.
+ */
+export function newContactFromItems(
+  items: ChatItem[],
+  now: Date,
+  chatCreatedAt?: string | null,
+): boolean {
+  let otherMessages = 0;
+  let oldest: string | null = null;
+  for (const m of items) {
+    if (m.state !== 'sent') continue;
+    if (oldest === null && m.created_at) oldest = m.created_at;
+    if (!m.mine && m.sender_id !== null && (m.kind === 'text' || m.kind === 'photo')) {
+      otherMessages += 1;
+    }
+  }
+  return isNewContact({ otherMessages, chatStartedAt: chatCreatedAt ?? oldest, now });
+}
+
+/**
+ * Chat photo URL: the media base plus the signed relative path, query string
+ * kept (the Worker checks `exp` and `sig`). Null when there is no photo yet.
+ */
+export function chatPhotoUrl(base: string, signedPath: string | null | undefined): string | null {
+  if (!signedPath) return null;
+  return `${base.replace(/\/+$/, '')}/${signedPath.replace(/^\/+/, '')}`;
+}
+
+/** Keeps very tall or very wide photos to a bubble-friendly shape (width / height). */
+export function bubbleAspect(width: number | null | undefined, height: number | null | undefined) {
+  if (!width || !height || width <= 0 || height <= 0) return 1;
+  return Math.min(Math.max(width / height, 0.6), 1.8);
 }

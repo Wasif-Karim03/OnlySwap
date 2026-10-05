@@ -29,6 +29,7 @@ const config: AppConfig = {
   minVersionAndroid: '1.0.0',
   rulesVersion: '3',
   rulesChanges: ['Fakes are now on the banned list.', 'Meetups need a Meetup spot after dark.'],
+  chatPhotosEnabled: false,
 };
 
 function fakeApi(over: Partial<Record<keyof AuthApi, jest.Mock>> = {}) {

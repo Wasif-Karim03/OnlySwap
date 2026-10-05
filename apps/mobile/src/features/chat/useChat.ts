@@ -9,7 +9,14 @@ import { supabaseRealtime, type RealtimeSource } from '@/lib/realtime';
 import { uuid as newUuid } from '@/lib/uuid';
 
 import { chatApi, type ChatApi } from './api';
-import { firstSentId, lastSentId, mergeMessages, type ChatItem, type Message } from './logic';
+import {
+  firstSentId,
+  lastSentId,
+  mergeMessages,
+  type ChatItem,
+  type LocalPhoto,
+  type Message,
+} from './logic';
 
 export const PAGE = 50;
 
@@ -24,13 +31,17 @@ export type ChatState = {
   /** After a reconnect: everything since the last message we have. */
   catchUp: () => Promise<void>;
   send: (body: string) => Promise<void>;
+  /** A photo with an optional caption: uploads, then sends, in order with text (P8-CHAT-04). */
+  sendPhoto: (photo: LocalPhoto, caption: string) => Promise<void>;
+  /** Refetches one message, e.g. when its signed photo URL has expired. */
+  refreshMessage: (id: number) => Promise<void>;
   retry: (clientId: string) => Promise<void>;
   /** Sends queued messages in the order they were written. */
   flushPending: () => Promise<void>;
 };
 
 type Deps = {
-  api: Pick<ChatApi, 'messages' | 'send'>;
+  api: Pick<ChatApi, 'messages' | 'send'> & Partial<Pick<ChatApi, 'sendPhoto' | 'uploadPhoto'>>;
   me: () => string | null;
   uuid?: () => string;
   now?: () => Date;
@@ -41,6 +52,8 @@ export function createChatStore(chatId: string, deps: Deps): StoreApi<ChatState>
   const uuid = deps.uuid ?? newUuid;
   const now = deps.now ?? (() => new Date());
   let flushing: Promise<void> | null = null;
+  // One refetch per message per minute: a photo that keeps failing is really gone.
+  const refreshedAt = new Map<number, number>();
 
   return createStore<ChatState>((set, get) => {
     const merge = (incoming: Message[]) =>
@@ -52,20 +65,62 @@ export function createChatStore(chatId: string, deps: Deps): StoreApi<ChatState>
         ),
       });
 
+    type Local = Extract<ChatItem, { state: 'pending' | 'failed' }>;
+    const patchLocal = (clientId: string, patch: Partial<Local>) =>
+      set({
+        items: get().items.map((m) =>
+          m.state !== 'sent' && m.client_id === clientId ? { ...m, ...patch } : m,
+        ),
+      });
+    const localItem = (clientId: string): Local | undefined => {
+      const m = get().items.find((x) => x.state !== 'sent' && x.client_id === clientId);
+      return m && m.state !== 'sent' ? m : undefined;
+    };
+
+    const deliver = async (clientId: string): Promise<Message> => {
+      const m = localItem(clientId);
+      if (!m) throw new Error('gone');
+      if (m.kind !== 'photo') return deps.api.send(chatId, m.body, clientId);
+      if (!deps.api.sendPhoto || !deps.api.uploadPhoto || !m.local) {
+        throw toAppError({ code: 'P0001', message: 'FEATURE_OFF' });
+      }
+      let path = m.photo_path ?? null;
+      if (!path) {
+        patchLocal(clientId, { progress: 0 });
+        path = await deps.api.uploadPhoto(chatId, m.local, (f) =>
+          patchLocal(clientId, { progress: f }),
+        );
+        // A retry after a failed send reuses the upload.
+        patchLocal(clientId, { photo_path: path, progress: 1 });
+      }
+      return deps.api.sendPhoto(chatId, m.body, clientId, path);
+    };
+
     /** true = sent; false = still offline (kept pending); failed ones are marked. */
-    const attempt = async (clientId: string, body: string): Promise<boolean> => {
+    const attempt = async (clientId: string): Promise<boolean> => {
       try {
-        const m = await deps.api.send(chatId, body, clientId);
+        const m = await deliver(clientId);
         merge([m]);
         return true;
       } catch (e) {
         if (toAppError(e).code === 'ERR_OFFLINE') {
-          setLocal(clientId, 'pending');
+          // Queued like text: no upload progress until the network is back.
+          patchLocal(clientId, { state: 'pending', progress: undefined });
           return false;
         }
         setLocal(clientId, 'failed');
         return true;
       }
+    };
+
+    const enqueue = async (item: Local) => {
+      set({ items: [...get().items, item] });
+      // Keep the order: if older messages are still queued, send through the queue.
+      const queuedBefore = get().items.some(
+        (m) => m.state === 'pending' && m.client_id !== item.client_id,
+      );
+      if (queuedBefore) return get().flushPending();
+      await attempt(item.client_id);
     };
 
     return {
@@ -106,11 +161,10 @@ export function createChatStore(chatId: string, deps: Deps): StoreApi<ChatState>
       send: async (body) => {
         const text = body.trim();
         if (!text) return;
-        const clientId = uuid();
-        const item: ChatItem = {
+        await enqueue({
           state: 'pending',
           id: null,
-          client_id: clientId,
+          client_id: uuid(),
           body: text,
           kind: 'text',
           created_at: now().toISOString(),
@@ -118,20 +172,40 @@ export function createChatStore(chatId: string, deps: Deps): StoreApi<ChatState>
           sender_id: null,
           meta: null,
           chat_id: chatId,
-        };
-        set({ items: [...get().items, item] });
-        // Keep the order: if older messages are still queued, send through the queue.
-        const queuedBefore = get().items.some(
-          (m) => m.state === 'pending' && m.client_id !== clientId,
-        );
-        if (queuedBefore) return get().flushPending();
-        await attempt(clientId, text);
+        });
+      },
+      sendPhoto: async (photo, caption) => {
+        await enqueue({
+          state: 'pending',
+          id: null,
+          client_id: uuid(),
+          body: caption.trim(),
+          kind: 'photo',
+          created_at: now().toISOString(),
+          mine: true,
+          sender_id: null,
+          meta: null,
+          chat_id: chatId,
+          local: photo,
+          photo_path: null,
+        });
+      },
+      refreshMessage: async (id) => {
+        const at = now().getTime();
+        const last = refreshedAt.get(id);
+        if (last !== undefined && at - last < 60_000) return;
+        refreshedAt.set(id, at);
+        try {
+          merge(await deps.api.messages(chatId, { after: id - 1, limit: 1 }));
+        } catch {
+          // The placeholder stays; the next open tries again.
+        }
       },
       retry: async (clientId) => {
         const m = get().items.find((x) => x.state === 'failed' && x.client_id === clientId);
         if (!m || m.state === 'sent') return;
         setLocal(clientId, 'pending');
-        await attempt(clientId, m.body ?? '');
+        await attempt(clientId);
       },
       flushPending: async () => {
         if (flushing) return flushing;
@@ -139,7 +213,7 @@ export function createChatStore(chatId: string, deps: Deps): StoreApi<ChatState>
           for (;;) {
             const next = get().items.find((m) => m.state === 'pending');
             if (!next || next.state === 'sent') break;
-            const ok = await attempt(next.client_id!, next.body ?? '');
+            const ok = await attempt(next.client_id!);
             if (!ok) break; // still offline: keep the rest in order
           }
         })();

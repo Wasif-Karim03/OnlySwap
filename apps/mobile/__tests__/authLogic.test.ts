@@ -74,6 +74,7 @@ const config: AppConfig = {
   minVersionAndroid: '1.0.0',
   rulesVersion: '2',
   rulesChanges: [],
+  chatPhotosEnabled: false,
 };
 const ready: GateProfile = {
   status: 'active',
@@ -174,6 +175,7 @@ describe('parseAppConfig', () => {
       minVersionAndroid: '1.0.2',
       rulesVersion: '3',
       rulesChanges: ['Fakes are now on the banned list.'],
+      chatPhotosEnabled: false,
     });
   });
   it('falls back safely on junk', () => {
@@ -183,7 +185,10 @@ describe('parseAppConfig', () => {
       minVersionAndroid: '0',
       rulesVersion: '',
       rulesChanges: [],
+      chatPhotosEnabled: false,
     });
+    expect(parseAppConfig({ chat_photos_enabled: true }).chatPhotosEnabled).toBe(true);
+    expect(parseAppConfig({ chat_photos_enabled: 'true' }).chatPhotosEnabled).toBe(false);
     expect(parseAppConfig({ maintenance: 'yes' }).maintenance.enabled).toBe(false);
   });
 });

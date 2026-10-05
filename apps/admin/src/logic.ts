@@ -82,5 +82,65 @@ export function errorMessage(e: unknown): string {
     NOT_FOUND: 'That no longer exists.',
     FORBIDDEN: "That isn't allowed.",
   };
+  if (m === 'FORBIDDEN:mfa_required') return 'Confirm with a fresh authenticator code first.';
+  if (code === 'RATE_LIMITED') {
+    const at = rateLimitRetryAt(m);
+    return at
+      ? `Limit reached. Try again after ${formatWhen(at)}.`
+      : 'Limit reached. Try again later.';
+  }
   return known[code] ?? m;
+}
+
+/** "RATE_LIMITED:quad_reveal:2026-10-05T00:00:00Z" -> the retry time (ISO), or null. */
+export function rateLimitRetryAt(message: string): string | null {
+  const m = /^RATE_LIMITED:[a-z_]+:(.+)$/.exec(message);
+  if (!m || Number.isNaN(Date.parse(m[1]!))) return null;
+  return m[1]!;
+}
+
+// ---------------------------------------------------------------------------
+// Quad moderation (R11-ADM-03)
+
+export const QUAD_VIEWS = [
+  { id: 'held', label: 'Held' },
+  { id: 'hidden', label: 'Hidden by votes' },
+  { id: 'reported', label: 'Reported' },
+] as const;
+export type QuadView = (typeof QUAD_VIEWS)[number]['id'];
+
+/** Why a Quad post or reply was held or hidden, in plain words. */
+export function holdReasonLabel(reason: string | null | undefined): string {
+  if (!reason) return '';
+  if (reason.startsWith('term:')) return `Review word: ${reason.slice(5)}`;
+  const known: Record<string, string> = {
+    names_student: 'Names a student',
+    new_account_photo: 'New account photo',
+    downvoted: 'Hidden by votes',
+    reports: '3+ reports',
+    author_deleted: 'Author deleted their account',
+  };
+  return known[reason] ?? reason;
+}
+
+/** Only the owner may reveal who wrote a Quad post (T-INT-ADMIN-03). */
+export function canReveal(who: Pick<Whoami, 'admin' | 'role' | 'aal'>): boolean {
+  return who.admin && who.role === 'owner' && who.aal === 'aal2';
+}
+
+/** Form check before a reveal: case ref and reason 3+ characters, a 6-digit code. */
+export function revealFormError(caseRef: string, reason: string, code: string): string | null {
+  if (caseRef.trim().length < 3) return 'Add a case reference of at least 3 characters.';
+  if (reason.trim().length < 3) return 'Add a reason of at least 3 characters.';
+  if (!/^\d{6}$/.test(code.trim())) return 'Enter the 6-digit code from your authenticator app.';
+  return null;
+}
+
+/** Short age: "now", "12m", "5h", "3d". */
+export function ageLabel(iso: string, now: number): string {
+  const s = Math.max(0, Math.floor((now - Date.parse(iso)) / 1000));
+  if (s < 60) return 'now';
+  if (s < 3600) return `${Math.floor(s / 60)}m`;
+  if (s < 86_400) return `${Math.floor(s / 3600)}h`;
+  return `${Math.floor(s / 86_400)}d`;
 }

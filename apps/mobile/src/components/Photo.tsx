@@ -31,6 +31,12 @@ export type PhotoProps = {
   contentFit?: 'cover' | 'contain';
   /** Neutral fill behind the photo; off in the dark full-screen viewer. */
   backdrop?: boolean;
+  /** Blurs the image (chat photos from a new contact, P8-CHAT-04). */
+  blurRadius?: number;
+  /** The loaded image's pixel size. */
+  onLoad?: (size: { width: number; height: number }) => void;
+  /** Called once when the image fails, e.g. an expired signed URL. */
+  onError?: () => void;
   testID?: string;
 };
 
@@ -47,6 +53,9 @@ export function Photo({
   rounded = 'none',
   contentFit = 'cover',
   backdrop = true,
+  blurRadius,
+  onLoad,
+  onError,
   testID,
 }: PhotoProps) {
   const reduced = useReducedMotion();
@@ -88,8 +97,15 @@ export function Photo({
           contentFit={contentFit}
           transition={reduced ? 0 : motion.fade.duration}
           recyclingKey={typeof source === 'string' ? source : undefined}
-          onLoad={() => setLoaded(true)}
-          onError={() => setFailed(true)}
+          blurRadius={blurRadius}
+          onLoad={(e) => {
+            setLoaded(true);
+            onLoad?.({ width: e.source.width, height: e.source.height });
+          }}
+          onError={() => {
+            setFailed(true);
+            onError?.();
+          }}
           accessible={false}
           accessibilityIgnoresInvertColors
           style={styles.image}

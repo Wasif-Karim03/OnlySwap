@@ -14,6 +14,7 @@ const config: AppConfig = {
   minVersionAndroid: '1.0.0',
   rulesVersion: '1',
   rulesChanges: [],
+  chatPhotosEnabled: false,
 };
 const profile: GateProfile = {
   status: 'active',

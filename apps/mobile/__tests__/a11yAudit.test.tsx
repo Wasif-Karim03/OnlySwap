@@ -272,6 +272,9 @@ describe('P11-A11Y-01 every control has a role and a name', () => {
       mute: jest.fn(),
       hide: jest.fn(),
       report: jest.fn(),
+      sendPhoto: jest.fn(),
+      uploadPhoto: jest.fn(),
+      reportMessage: jest.fn(),
     } as ChatApi;
     const meetups = { forChat: jest.fn(async () => null) } as unknown as MeetupsApi;
     const store = createChatStore('c1', { api: chat, me: () => 'me' });

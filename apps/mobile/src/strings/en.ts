@@ -97,7 +97,7 @@ export const primer = {
   openSettings: 'Open Settings',
   camera: {
     title: 'Take photos of your stuff',
-    body: 'OnlySwap uses the camera only when you add photos to a listing or your profile. Nothing is recorded in the background.',
+    body: 'OnlySwap uses the camera only when you add photos to a listing, your profile or a chat. Nothing is recorded in the background.',
     cta: 'Continue',
     alternative: 'Choose from library instead',
     deniedTitle: 'Camera is turned off',
@@ -1106,6 +1106,26 @@ export const chat = {
   block: 'Block {name}',
   hide: 'Hide chat',
   hideDone: 'Chat hidden. It comes back if they message you.',
+  // Photos in chat (P8-CHAT-04, R11-PHOTO-GATE)
+  addPhoto: 'Add a photo',
+  photoSheetTitle: 'Send a photo',
+  photoLibrary: 'Choose from library',
+  photoCamera: 'Take a photo',
+  photoCaptionHint: 'Anything you typed goes with the photo as a caption.',
+  photoLabel: 'Photo',
+  photoFrom: 'Photo from {name}',
+  yourPhoto: 'Your photo',
+  photoPreview: 'Photo',
+  uploading: 'Uploading {percent}%',
+  uploadingLabel: 'Uploading photo, {percent} percent',
+  photoFailed: "Couldn't open that photo. Try again.",
+  tapToView: 'Tap to view',
+  photoHiddenLabel:
+    'Photo from {name}, hidden because you are new to each other. Double tap to view.',
+  viewPhoto: 'View photo',
+  closePhoto: 'Close photo',
+  reportMessage: 'Report message',
+  messageOptions: 'Message options',
 } as const;
 
 export const meetup = {

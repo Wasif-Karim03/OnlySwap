@@ -1745,6 +1745,9 @@ isOneToOne: false
 "get_app_config":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"get_campus_feed":
+{ Args: { "cursor"?: Json,"kind"?: string }; Returns: Json
+                           },
 "get_chat":
 { Args: { "chat_id": string }; Returns: Json
                            },
@@ -1756,6 +1759,9 @@ isOneToOne: false
                            },
 "get_inbox":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"get_invite":
+{ Args: { "code": string }; Returns: Json
                            },
 "get_listing":
 { Args: { "id": string }; Returns: Json
@@ -1849,6 +1855,9 @@ isOneToOne: false
                            },
 "mark_sold":
 { Args: { "buyer_id"?: string,"id": string }; Returns: undefined
+                           },
+"mark_unlock_seen":
+{ Args: Record<PropertyKey, never>; Returns: undefined
                            },
 "mute_keyword":
 { Args: { "keyword": string }; Returns: undefined

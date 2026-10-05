@@ -5,7 +5,7 @@ select plan(8);
 
 select is((select string_agg(slug || ':' || status, ',' order by slug) from public.campuses),
   'demo:live,osu:live,umich:waitlist', 'three campuses: launch, reviewer, waitlist');
-select is((select count(*)::int from public.listings where status = 'active'), 40, '40 active demo listings');
+select is((select count(*)::int from public.listings where status = 'active' and kind in ('sale', 'free')), 40, '40 active demo listings');
 select is((select count(*)::int from public.profiles p
            where p.first_name is not null and p.adult_confirmed_at is not null and p.rules_accepted_at is not null), 6,
   'six onboarded users (fixture and reviewer accounts)');

@@ -15,7 +15,7 @@ import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { getEnv } from '@/lib/env';
 import { useUserChannel, type RealtimeSource } from '@/lib/realtime';
-import { notificationsScreen as notifCopy, offers as copy } from '@/strings/en';
+import { chat as chatCopy, notificationsScreen as notifCopy, offers as copy } from '@/strings/en';
 
 import { mediaUrl } from '../sell/logic';
 import { offersApi, type OffersApi } from './api';
@@ -80,9 +80,10 @@ export function InboxScreen({
 
   const chatRow = (c: ChatSummary) => {
     const name = c.other?.display_name ?? copy.deletedUser;
-    const last = c.last_message?.body
-      ? `${c.last_message.mine ? copy.you : ''}${c.last_message.body}`
-      : '';
+    const lastText =
+      c.last_message?.body || (c.last_message?.kind === 'photo' ? chatCopy.photoPreview : '');
+    const last =
+      lastText && c.last_message ? `${c.last_message.mine ? copy.you : ''}${lastText}` : '';
     return (
       <Tappable
         key={c.id}

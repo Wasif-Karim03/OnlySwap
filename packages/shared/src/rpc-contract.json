@@ -531,6 +531,16 @@
     ]
   },
   {
+    "name": "get_campus_feed",
+    "args": "kind text, cursor jsonb",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "get_chat",
     "args": "chat_id uuid",
     "returns": "jsonb",
@@ -566,6 +576,17 @@
     "returns": "jsonb",
     "security": "definer",
     "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "get_invite",
+    "args": "code text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "anon",
       "authenticated",
       "service_role"
     ]
@@ -876,6 +897,16 @@
   {
     "name": "mark_sold",
     "args": "id uuid, buyer_id uuid",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "mark_unlock_seen",
+    "args": "",
     "returns": "void",
     "security": "definer",
     "grants": [

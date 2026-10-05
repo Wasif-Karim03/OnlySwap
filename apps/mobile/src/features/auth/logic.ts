@@ -91,6 +91,8 @@ export type AppConfig = {
   rulesVersion: string;
   /** "What changed" lines for the Updated rules screen (D10, DEC 52). */
   rulesChanges: string[];
+  /** Photos in chat (P8-CHAT-04, R11-PHOTO-GATE). Off unless the server says true. */
+  chatPhotosEnabled: boolean;
 };
 
 export type GateProfile = {
@@ -210,5 +212,6 @@ export function parseAppConfig(raw: unknown): AppConfig {
     rulesChanges: Array.isArray(r.rules_changes)
       ? r.rules_changes.filter((x): x is string => typeof x === 'string' && x.trim() !== '')
       : [],
+    chatPhotosEnabled: r.chat_photos_enabled === true,
   };
 }

@@ -63,6 +63,9 @@ function fakeApi(over: Partial<ChatApi> = {}): ChatApi {
     mute: jest.fn(async () => {}),
     hide: jest.fn(async () => {}),
     report: jest.fn(async () => {}),
+    sendPhoto: jest.fn(),
+    uploadPhoto: jest.fn(),
+    reportMessage: jest.fn(async () => {}),
     ...over,
   };
 }
