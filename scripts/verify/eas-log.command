@@ -10,5 +10,5 @@ const b = JSON.parse(require("fs").readFileSync("/tmp/eas-build.json", "utf8"));
 for (const u of b.logFiles || []) console.log(u);
 ' > /tmp/eas-log-urls.txt
 : > eas-build.log
-while read -r u; do curl -sL "$u" >> eas-build.log; done < /tmp/eas-log-urls.txt
+while read -r u; do curl -sL --compressed "$u" >> eas-build.log; done < /tmp/eas-log-urls.txt
 echo "saved $(wc -l < eas-build.log) lines to eas-build.log"

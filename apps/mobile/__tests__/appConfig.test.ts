@@ -195,3 +195,24 @@ describe('T-STORE blocked-permission lists stay in sync', () => {
     expect([...listed].sort()).toEqual([...BLOCKED_ANDROID_PERMISSIONS].sort());
   });
 });
+
+describe('Android WorkManager pin (first R2 build: duplicate classes)', () => {
+  it('pins work-runtime and work-runtime-ktx to one version in app/build.gradle', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const plugin = require('../plugins/withWorkRuntimeFix');
+    const mods: { contents: string } = { contents: 'android {}\n' };
+    const cfg = plugin({ name: 'x', slug: 'x' });
+    const mod = cfg.mods?.android?.appBuildGradle;
+    expect(typeof mod).toBe('function');
+    return mod({ modResults: { ...mods, language: 'groovy' }, modRequest: {} }).then(
+      (out: { modResults: { contents: string } }) => {
+        expect(out.modResults.contents).toContain(
+          `force 'androidx.work:work-runtime-ktx:${plugin.WORK_VERSION}'`,
+        );
+        expect(out.modResults.contents).toContain(
+          `force 'androidx.work:work-runtime:${plugin.WORK_VERSION}'`,
+        );
+      },
+    );
+  });
+});

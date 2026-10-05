@@ -275,6 +275,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         })),
       ],
       ['./plugins/withReleaseHardening', { variant }],
+      './plugins/withWorkRuntimeFix',
       // Source maps and native symbols upload during EAS builds (P14-MON-01). Needs
       // SENTRY_ORG / SENTRY_PROJECT (build env) and SENTRY_AUTH_TOKEN (EAS secret).
       ...(process.env.SENTRY_ORG && process.env.SENTRY_PROJECT
