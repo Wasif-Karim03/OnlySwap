@@ -4,7 +4,7 @@ import { createRpc, type RpcClient } from '@/lib/rpc';
 import { getSupabase } from '@/lib/supabase';
 import { uploadApi } from '@/lib/uploadApi';
 
-import type { Category, CreateListingArgs, ListingKind, Spot } from './logic';
+import type { AnyListingKind, Category, CreateListingArgs, Spot } from './logic';
 
 /**
  * Sell calls (P5-SELL-01, P5-SELL-02). `sellApi` is the app's instance;
@@ -43,7 +43,7 @@ export type SellApi = {
 export type PostedListing = {
   id: string;
   status: string;
-  kind: ListingKind;
+  kind: AnyListingKind;
   title: string;
   price_cents: number;
   condition: string | null;

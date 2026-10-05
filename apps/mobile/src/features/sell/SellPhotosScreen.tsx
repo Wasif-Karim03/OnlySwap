@@ -20,7 +20,7 @@ import {
   usePermissionPrimer,
   type OsApi,
 } from '@/lib/permissions';
-import { sell as copy } from '@/strings/en';
+import { campus as campusCopy, sell as copy } from '@/strings/en';
 
 import { sellApi, type SellApi } from './api';
 import { getDraftStore, useDraft, type DraftState } from './draft';
@@ -263,6 +263,24 @@ export function SellPhotosScreen({
         </>
       }
     >
+      {draft.wantedRef ? (
+        <View style={styles.answering} testID="sell-answering">
+          <Text variant="bodyStrong">{campusCopy.answeringTitle}</Text>
+          <Text variant="meta" tone="ink2">
+            {fill(campusCopy.answeringBody, { title: draft.wantedTitle ?? '' })}
+          </Text>
+          <View style={styles.start}>
+            <Button
+              label={campusCopy.answeringRemove}
+              variant="text"
+              size="S"
+              fullWidth={false}
+              onPress={() => update({ wantedRef: null, wantedTitle: null })}
+              testID="sell-answering-remove"
+            />
+          </View>
+        </View>
+      ) : null}
       <PhotoGrid
         photos={draft.photos}
         progress={progress}
@@ -294,6 +312,28 @@ export function SellPhotosScreen({
           {copy.tip}
         </Text>
       </View>
+      {draft.wantedRef ? null : (
+        <View style={styles.more} testID="sell-campus-entries">
+          <View style={styles.half}>
+            <Button
+              label={campusCopy.postFood}
+              variant="secondary"
+              size="M"
+              onPress={() => router.push('/sell/food')}
+              testID="sell-post-food"
+            />
+          </View>
+          <View style={styles.half}>
+            <Button
+              label={campusCopy.askFor}
+              variant="secondary"
+              size="M"
+              onPress={() => router.push('/sell/wanted')}
+              testID="sell-ask-wanted"
+            />
+          </View>
+        </View>
+      )}
     </SellStep>
   );
 }
@@ -310,4 +350,14 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.bg2,
   },
   tipText: { flex: 1 },
+  answering: {
+    gap: theme.space.xs,
+    padding: theme.space.md,
+    borderRadius: theme.radius.control,
+    borderWidth: 1,
+    borderColor: theme.colors.line,
+    backgroundColor: theme.colors.card,
+  },
+  start: { flexDirection: 'row' },
+  more: { flexDirection: 'row', gap: theme.space.sm },
 }));

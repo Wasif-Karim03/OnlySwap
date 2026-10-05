@@ -65,6 +65,16 @@ export function createR2(cfg: R2Env, doFetch: Fetch = fetch) {
       });
     },
 
+    /** Presigned GET, e.g. a data export in the private bucket (P11-ACC-02). */
+    presignGet(bucket: string, key: string, expiresIn = 3600): Promise<string> {
+      const endpoint = cfg.publicEndpoint ?? cfg.endpoint;
+      return presign(cfg, {
+        method: 'GET',
+        url: objectUrl({ endpoint }, bucket, key),
+        expiresIn,
+      });
+    },
+
     /** Keys under a prefix (ListObjectsV2, all pages). */
     async list(bucket: string, prefix: string): Promise<string[]> {
       const keys: string[] = [];

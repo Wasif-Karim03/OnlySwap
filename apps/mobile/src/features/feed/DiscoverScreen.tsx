@@ -17,6 +17,7 @@ import { getEnv } from '@/lib/env';
 import { getStorage } from '@/lib/storage';
 import { feed as copy, saved as savedCopy } from '@/strings/en';
 
+import { DiscoverSegment } from '../campus/DiscoverSegment';
 import { feedApi, type FeedApi } from './api';
 import type { SwipeDir } from './deckMath';
 import {
@@ -240,6 +241,7 @@ export function DiscoverScreen({
   return (
     <View style={styles.root} testID="screen-discover">
       {header}
+      <DiscoverSegment value="swipe" />
       {body}
     </View>
   );

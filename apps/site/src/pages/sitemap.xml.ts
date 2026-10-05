@@ -1,5 +1,5 @@
-// sitemap.xml (P13-WEB-09): the public pages only. Share pages (/l, /m) and
-// /delete stay out of search.
+// sitemap.xml (P13-WEB-09): the public pages only. Share and invite pages
+// (/l, /m, /i), /joined and /delete stay out of search.
 import type { APIRoute } from 'astro';
 
 const legal = Object.keys(import.meta.glob('../content/legal/*.md')).map(

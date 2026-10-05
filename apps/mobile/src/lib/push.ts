@@ -39,6 +39,16 @@ export function routeForNotification(
   const type = s('type') ?? '';
   if ((type === 'quad_reply' || type === 'quad_milestone') && s('post_id'))
     return { pathname: '/quad/[id]', params: { id: s('post_id')! } };
+  // Around campus and waitlist (R1.1): the new listing for a Wanted match (else
+  // the Wanted itself), the food post, and the one-time "campus open" screen.
+  if (type === 'campus_unlocked') return '/unlocked';
+  if (type === 'wanted_match' || type === 'free_food') {
+    const id = s('listing_id') ?? (type === 'wanted_match' ? s('wanted_id') : null);
+    if (id) return { pathname: '/listing/[id]', params: { id } };
+    return type === 'free_food'
+      ? { pathname: '/discover/campus', params: { kind: 'food' } }
+      : '/notifications';
+  }
   if (s('meetup_id') && type.startsWith('meetup_'))
     return { pathname: '/meetup/[id]', params: { id: s('meetup_id')! } };
   if (type === 'rate_prompt' && s('chat_id'))

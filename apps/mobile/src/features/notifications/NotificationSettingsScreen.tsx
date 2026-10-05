@@ -30,7 +30,10 @@ import {
 
 const prefsKey = ['notification-prefs'] as const;
 
-type Switch = Exclude<keyof NotificationPrefs, 'quiet_start' | 'quiet_end' | 'quad_replies'>;
+type Switch = Exclude<
+  keyof NotificationPrefs,
+  'quiet_start' | 'quiet_end' | 'quad_replies' | 'free_food'
+>;
 const SWITCHES: { key: Switch; label: string; body: string }[] = [
   { key: 'offers', label: copy.offers, body: copy.offersBody },
   { key: 'messages', label: copy.messages, body: copy.messagesBody },
@@ -109,6 +112,14 @@ export function NotificationSettingsScreen({
             onChange={(v) => void save({ [s.key]: v })}
           />
         ))}
+        {typeof p.free_food === 'boolean' ? (
+          <Toggle
+            label={copy.freeFood}
+            description={copy.freeFoodBody}
+            value={p.free_food}
+            onChange={(v) => void save({ free_food: v })}
+          />
+        ) : null}
         {quadOn && typeof p.quad_replies === 'boolean' ? (
           <Toggle
             label={copy.quadReplies}

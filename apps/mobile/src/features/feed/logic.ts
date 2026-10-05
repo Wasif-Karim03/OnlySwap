@@ -1,14 +1,15 @@
 import { fill } from '@/lib/format';
 import { feed as copy, sell as sellCopy } from '@/strings/en';
 
-import { ago, mediaUrl, priceLabel, type Condition, type ListingKind } from '../sell/logic';
+import { ago, mediaUrl, priceLabel, type AnyListingKind, type Condition } from '../sell/logic';
 import type { SwipeDir } from './deckMath';
 import type { DeckCard } from './SwipeCard';
 
 /** One card from `get_feed` / `get_listing` (private.feed_item, API §3). */
 export type FeedItem = {
   id: string;
-  kind: ListingKind;
+  /** food and wanted only come from get_listing and get_campus_feed (R1.1). */
+  kind: AnyListingKind;
   status: 'active' | 'hold' | 'sold' | 'expired' | 'held_review' | 'removed';
   title: string;
   description: string | null;

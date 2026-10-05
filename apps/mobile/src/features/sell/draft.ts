@@ -77,6 +77,26 @@ export function createDraftStore(
   });
 }
 
+/**
+ * "I have this" on a Wanted post (P5-SELL-08, D16): starts a fresh draft
+ * prefilled with its title and category, carrying the Wanted id so
+ * create_listing sends it as wanted_ref. reset() clears it again.
+ */
+export function answerWanted(
+  store: StoreApi<DraftState>,
+  wanted: { id: string; title: string; category_id: number | null },
+): void {
+  const { reset, update } = store.getState();
+  reset();
+  update({
+    kind: 'sale',
+    title: wanted.title,
+    categoryId: wanted.category_id,
+    wantedRef: wanted.id,
+    wantedTitle: wanted.title,
+  });
+}
+
 let appStore: StoreApi<DraftState> | undefined;
 
 export function getDraftStore(): StoreApi<DraftState> {

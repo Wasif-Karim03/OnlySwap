@@ -24,13 +24,17 @@ import { useToastStore } from '@/components/Toast';
 import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
 import {
+  campus as campusCopy,
   deal as dealCopy,
   feed as copy,
   sell as sellCopy,
   system as systemCopy,
 } from '@/strings/en';
 
+import { FoodTimeTag } from '../campus/CampusCards';
+import { canAnswer } from '../campus/logic';
 import { sellApi } from '../sell/api';
+import { answerWanted, getDraftStore } from '../sell/draft';
 import {
   listingLink,
   mediaUrl,
@@ -56,6 +60,7 @@ export function ListingScreen({
   site = () => getEnv().EXPO_PUBLIC_SITE_URL,
   share = (content) => Share.share(content),
   now = () => new Date(),
+  draftStore = getDraftStore(),
 }: {
   id: string;
   api?: FeedApi;
@@ -64,6 +69,7 @@ export function ListingScreen({
   site?: () => string;
   share?: (content: { message: string; url?: string }) => Promise<unknown>;
   now?: () => Date;
+  draftStore?: ReturnType<typeof getDraftStore>;
 }) {
   const router = useRouter();
   const qc = useQueryClient();
@@ -109,7 +115,14 @@ export function ListingScreen({
   const item = data;
   const owner = item.access === 'owner';
   const base = mediaBase();
-  const price = priceLabel(item.kind, item.price_cents, copy.free);
+  // Food and Wanted posts (R1.1) never take offers: no price, no offer button.
+  const campusKind = item.kind === 'food' || item.kind === 'wanted';
+  const price =
+    item.kind === 'food'
+      ? campusCopy.listingFood
+      : item.kind === 'wanted'
+        ? campusCopy.listingWanted
+        : priceLabel(item.kind, item.price_cents, copy.free);
   const setItem = (patch: Partial<FeedItem>) =>
     qc.setQueryData<ListingResult>(listingKey(id), (old) =>
       old && isVisible(old) ? { ...old, ...patch } : old,
@@ -190,6 +203,9 @@ export function ListingScreen({
             {statusTag ? (
               <Tag label={statusTag} tone={item.status === 'sold' ? 'neutral' : 'amber'} />
             ) : null}
+            {item.kind === 'food' && !statusTag ? (
+              <FoodTimeTag expiresAt={item.expires_at} now={now} />
+            ) : null}
           </View>
           <Text variant="title" accessibilityRole="header">
             {item.title}
@@ -197,6 +213,15 @@ export function ListingScreen({
           <Text variant="meta" tone="ink2">
             {metaLine(item, now())}
           </Text>
+          {campusKind ? (
+            <Text variant="body" tone="ink2" testID="listing-campus-note">
+              {item.kind === 'food'
+                ? campusCopy.listingFoodBody
+                : owner
+                  ? campusCopy.wantedOwnBody
+                  : campusCopy.listingWantedBody}
+            </Text>
+          ) : null}
           {!item.open_to_offers && item.kind === 'sale' ? (
             <Text variant="meta" tone="ink2">
               {copy.notOpenToOffers}
@@ -320,7 +345,7 @@ export function ListingScreen({
                 onPress={() => router.push({ pathname: '/listing/[id]/edit', params: { id } })}
               />
             </View>
-            {item.status === 'active' || item.status === 'hold' ? (
+            {!campusKind && (item.status === 'active' || item.status === 'hold') ? (
               <View style={styles.flex}>
                 <Button
                   label={dealCopy.markSold}
@@ -330,13 +355,15 @@ export function ListingScreen({
                 />
               </View>
             ) : null}
-            <View style={styles.flex}>
-              <Button
-                label={copy.seeOffers}
-                variant="dark"
-                onPress={() => router.push({ pathname: '/listing/[id]/offers', params: { id } })}
-              />
-            </View>
+            {campusKind ? null : (
+              <View style={styles.flex}>
+                <Button
+                  label={copy.seeOffers}
+                  variant="dark"
+                  onPress={() => router.push({ pathname: '/listing/[id]/offers', params: { id } })}
+                />
+              </View>
+            )}
           </>
         ) : (
           <>
@@ -358,7 +385,19 @@ export function ListingScreen({
                 />
               ) : item.status === 'sold' ? (
                 <Button label={copy.sold} disabled onPress={() => {}} />
-              ) : (
+              ) : item.kind === 'wanted' ? (
+                canAnswer(item) ? (
+                  <Button
+                    label={campusCopy.iHaveThis}
+                    accessibilityHint={fill(campusCopy.iHaveThisLabel, { title: item.title })}
+                    onPress={() => {
+                      answerWanted(draftStore, item);
+                      router.push('/sell');
+                    }}
+                    testID="listing-i-have-this"
+                  />
+                ) : null
+              ) : item.kind === 'food' ? null : (
                 <Button
                   label={item.kind === 'free' ? copy.askForIt : copy.offer}
                   onPress={() => router.push({ pathname: '/listing/[id]/offer', params: { id } })}

@@ -50,8 +50,28 @@
     ]
   },
   {
+    "name": "admin_create_announcement",
+    "args": "campus_id uuid, type text, title text, body text, send_push boolean, pinned_hours integer, reason text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "admin_decide_appeal",
     "args": "id uuid, decision text, note text",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_delete_banned_word",
+    "args": "id uuid, reason text",
     "returns": "void",
     "security": "definer",
     "grants": [
@@ -90,6 +110,36 @@
     ]
   },
   {
+    "name": "admin_invite_admin",
+    "args": "email text, role text, campus_id uuid, reason text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_list_admins",
+    "args": "",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_list_announcements",
+    "args": "campus_id uuid, cursor integer",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "admin_list_appeals",
     "args": "filters jsonb, cursor integer",
     "returns": "jsonb",
@@ -102,6 +152,16 @@
   {
     "name": "admin_list_audit",
     "args": "filters jsonb, cursor bigint",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_list_banned_words",
+    "args": "filters jsonb, cursor integer",
     "returns": "jsonb",
     "security": "definer",
     "grants": [
@@ -160,6 +220,46 @@
     ]
   },
   {
+    "name": "admin_metrics_funnel",
+    "args": "campus_id uuid, from_day date, to_day date",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_metrics_liquidity",
+    "args": "campus_id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_metrics_retention",
+    "args": "campus_id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_metrics_safety",
+    "args": "campus_id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "admin_moderate_quad",
     "args": "target_type text, id uuid, action text, reason text",
     "returns": "void",
@@ -183,6 +283,16 @@
     "name": "admin_read_reported_chat",
     "args": "report_id uuid",
     "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_remove_admin",
+    "args": "user_id uuid, reason text",
+    "returns": "void",
     "security": "definer",
     "grants": [
       "authenticated",
@@ -253,6 +363,16 @@
     "name": "admin_update_campus",
     "args": "id uuid, patch jsonb, reason text",
     "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_upsert_banned_word",
+    "args": "pattern text, match text, scopes text[], action text, reason text",
+    "returns": "jsonb",
     "security": "definer",
     "grants": [
       "authenticated",
@@ -947,6 +1067,16 @@
   {
     "name": "price_hint",
     "args": "category_id smallint",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "price_hint",
+    "args": "category_id smallint, condition text",
     "returns": "jsonb",
     "security": "definer",
     "grants": [

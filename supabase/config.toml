@@ -444,6 +444,11 @@ verify_jwt = false
 [functions.archive-chats]
 verify_jwt = false
 
+# P11-ACC-02: the signed-in user's own export; the gateway checks the JWT and
+# the handler resolves the user from it again.
+[functions.export-data]
+verify_jwt = true
+
 [analytics]
 enabled = true
 port = 54327

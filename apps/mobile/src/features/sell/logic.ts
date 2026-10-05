@@ -15,6 +15,8 @@ export const PRICE_MAX_CENTS = 200_000;
 export const PRICE_MIN_CENTS = 100;
 
 export type ListingKind = 'sale' | 'free';
+/** Every listing kind on the server; food and Wanted posts are Around campus (R1.1). */
+export type AnyListingKind = ListingKind | 'food' | 'wanted';
 export type Condition = 'new' | 'like_new' | 'good' | 'fair';
 export type PickupBy = 'tomorrow' | 'sunday' | 'week';
 export type Availability = 'weekdays' | 'weekends' | 'mornings' | 'afternoons' | 'evenings';
@@ -62,6 +64,10 @@ export type SellDraft = {
   spotIds: string[] | null;
   meetNote: string;
   availability: Availability[];
+  /** "I have this" (P5-SELL-08): the Wanted post this listing answers, sent as wanted_ref. */
+  wantedRef: string | null;
+  /** That Wanted's title, for the banner on step 1. */
+  wantedTitle: string | null;
   startedAt: string;
   updatedAt: string;
 };
@@ -84,6 +90,8 @@ export function emptyDraft(now: Date = new Date()): SellDraft {
     spotIds: null,
     meetNote: '',
     availability: [],
+    wantedRef: null,
+    wantedTitle: null,
     startedAt: iso,
     updatedAt: iso,
   };
@@ -365,7 +373,7 @@ export function directionsUrl(spot: Pick<Spot, 'lat' | 'lng' | 'name'>, platform
 
 export type CreateListingArgs = {
   id: string;
-  kind: ListingKind;
+  kind: AnyListingKind;
   title: string;
   description: string | null;
   category_id: number | null;
@@ -383,6 +391,12 @@ export type CreateListingArgs = {
   meet_note: string | null;
   availability: string[];
   pickup_by: string | null;
+  /** Only on a listing that answers a Wanted (sale or free). */
+  wanted_ref?: string;
+  /** Wanted posts: the most the poster would pay, or null for any. */
+  wanted_max_cents?: number | null;
+  /** Free food: how long it is around, 15 to 180 minutes. */
+  food_minutes?: number;
 };
 
 export function createArgs(
@@ -413,12 +427,13 @@ export function createArgs(
     meet_note: d.meetNote.trim() || null,
     availability: d.availability,
     pickup_by: d.kind === 'free' ? pickupDate(d.pickupBy, today) : null,
+    ...(d.wantedRef ? { wanted_ref: d.wantedRef } : {}),
   };
 }
 
 /** "$60", "$12.50" or "Free". */
-export function priceLabel(kind: ListingKind, cents: number, free: string): string {
-  if (kind === 'free' || cents === 0) return free;
+export function priceLabel(kind: AnyListingKind, cents: number, free: string): string {
+  if (kind === 'free' || kind === 'food' || cents === 0) return free;
   const dollars = cents / 100;
   return `$${Number.isInteger(dollars) ? dollars.toLocaleString('en-US') : dollars.toFixed(2)}`;
 }

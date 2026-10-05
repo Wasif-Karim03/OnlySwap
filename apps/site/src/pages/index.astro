@@ -63,7 +63,16 @@ const playStore = (import.meta.env.PUBLIC_PLAY_STORE_URL as string | undefined) 
 </Base>
 
 <script>
-  import { campusProgress, friendly, joinWaitlist, progressLine, schoolEmailProblem } from '../lib/client';
+  import {
+    campusProgress,
+    friendly,
+    joinedHref,
+    joinedTarget,
+    joinWaitlist,
+    OPEN_NOW_LINE,
+    progressLine,
+    schoolEmailProblem,
+  } from '../lib/client';
 
   const env = {
     url: import.meta.env.PUBLIC_SUPABASE_URL as string,
@@ -119,9 +128,15 @@ const playStore = (import.meta.env.PUBLIC_PLAY_STORE_URL as string | undefined) 
     button.disabled = true;
     try {
       await joinWaitlist(env, email, String(data.get('turnstile') ?? ''));
-      msg.className = 'ok';
-      msg.textContent = "Thanks. If your school is open, get the app and sign in. If not, we'll email you when it opens.";
-      form.reset();
+      // R11-INVITE-01: waitlist campuses go to /joined (campus slug only in the URL).
+      const target = await joinedTarget(env, email);
+      if (target.kind === 'live') {
+        msg.className = 'ok';
+        msg.textContent = OPEN_NOW_LINE(target.name);
+        form.reset();
+      } else {
+        window.location.assign(joinedHref(target));
+      }
     } catch (err) {
       msg.textContent = friendly(err);
     } finally {

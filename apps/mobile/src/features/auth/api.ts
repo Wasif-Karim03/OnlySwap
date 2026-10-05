@@ -9,6 +9,7 @@ import {
   isPersonalDomain,
   normalizeEmail,
   parseAppConfig,
+  shouldShowUnlocked,
   type AppConfig,
   type GateProfile,
 } from './logic';
@@ -38,6 +39,9 @@ type ProfileRow = {
   adult_confirmed_at: string | null;
   rules_version: string | null;
   verified_until?: string | null;
+  created_at?: string | null;
+  seen_unlock_at?: string | null;
+  campuses?: { status: string | null; unlocked_at: string | null } | null;
 };
 
 export type ProfileQuery = (
@@ -263,6 +267,11 @@ export function createAuthApi(deps: Deps) {
         adultConfirmed: data.adult_confirmed_at !== null,
         rulesVersion: data.rules_version,
         verifiedUntil: data.verified_until ?? null,
+        showUnlocked: shouldShowUnlocked({
+          created_at: data.created_at,
+          seen_unlock_at: data.seen_unlock_at,
+          campus: data.campuses,
+        }),
       };
     },
   };
@@ -277,7 +286,9 @@ export const authApi: AuthApi = createAuthApi({
   profile: (userId) =>
     getSupabase()
       .from('profiles')
-      .select('status, first_name, adult_confirmed_at, rules_version, verified_until')
+      .select(
+        'status, first_name, adult_confirmed_at, rules_version, verified_until, created_at, seen_unlock_at, campuses(status, unlocked_at)',
+      )
       .eq('id', userId)
       .maybeSingle<ProfileRow>(),
 });

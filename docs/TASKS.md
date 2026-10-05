@@ -272,14 +272,14 @@
 
 **Moved by the second scope cut (DEC-13):**
 
-- [ ] **P4-AUTH-12** S-A13 Campus waitlist (count, invite link, share, tour) + `public_campus_progress` · AUTH-02 · the count updates · M
-- [ ] **P4-AUTH-13** Campus unlock: trigger, `private.unlock_campus`, `campus-unlock` function (push + email queue), S-A14 Campus unlocked · AUTH-12, P9-PUSH-03, P9-MAIL-02 · simulating the 500th signup unlocks and notifies · M
-- [ ] **P5-SELL-06** S-C02 Post free food and S-C05 Post a Wanted · SELL-01 · caps enforced · M
-- [ ] 🆕 **P5-SELL-08** Wanted → "I have this": opens Sell prefilled with `wanted_ref`; `wanted_match` notification to the poster. · deps P5-SELL-06, P6-CAMP-01 · done when the poster gets a notification and can offer · S
-- [ ] **P6-CAMP-01** RPC `get_campus_feed` + S-C01 Campus feed (free food countdown, free stuff, Wanted with "I have this" prefill, Day one C6, Founding sellers C7) · P5-SELL-06 · — · L
+- [x] **P4-AUTH-12** S-A13 Campus waitlist (count, invite link, share, tour) + `public_campus_progress` · AUTH-02 · the count updates · M
+- [x] **P4-AUTH-13** Campus unlock: trigger, `private.unlock_campus`, `campus-unlock` function (push + email queue), S-A14 Campus unlocked · AUTH-12, P9-PUSH-03, P9-MAIL-02 · simulating the 500th signup unlocks and notifies · M
+- [x] **P5-SELL-06** S-C02 Post free food and S-C05 Post a Wanted · SELL-01 · caps enforced · M
+- [x] 🆕 **P5-SELL-08** Wanted → "I have this": opens Sell prefilled with `wanted_ref`; `wanted_match` notification to the poster. · deps P5-SELL-06, P6-CAMP-01 · done when the poster gets a notification and can offer · S
+- [x] **P6-CAMP-01** RPC `get_campus_feed` + S-C01 Campus feed (free food countdown, free stuff, Wanted with "I have this" prefill, Day one C6, Founding sellers C7) · P5-SELL-06 · — · L
 - [ ] **P11-ACC-02** Edge Function `export-data` + S-F17 Download your data · P3 · the JSON link arrives by email · M
 - [ ] 🆕 **R11-HINT-01** Price hint UI in Sell details (`price_hint`; hidden while n < 5). · deps P5-SELL-03 · done when shown only with ≥5 comparables · S
-- [ ] 🆕 **R11-INVITE-01** `/i/[code]` and `/joined` pages; invite links in the waitlist screen. · deps P4-AUTH-12 · — · S
+- [x] 🆕 **R11-INVITE-01** `/i/[code]` and `/joined` pages; invite links in the waitlist screen. · deps P4-AUTH-12 · — · S
 
 **Moved by the first scope cut:**
 
@@ -297,7 +297,7 @@
 - [ ] 🆕 **R11-ADM-01** Admin metrics UI (funnel, retention, liquidity, safety views). · deps P12-ADM-03 · done when it matches T-DATA-02 · L
 - [ ] 🆕 **R11-ADM-02** Admin team (invite moderator), announcements (1/week), banned-words UI. · deps P12-ADM-03 · done when every action is logged · L
 - [x] 🆕 **R11-ADM-03** Admin Quad queue + reveal with re-MFA + receipt. · deps P10-QUAD-01 · done when T-INT-ADMIN-03 passes · M
-- [ ] 🆕 **R11-NOTIF-01** R1.1 notification types (quad_reply, quad_milestone, announcements, free_food, rating_revealed). · deps P9-PUSH-04 · done when each fires once · M
+- [x] 🆕 **R11-NOTIF-01** R1.1 notification types (quad_reply, quad_milestone, announcements, free_food, rating_revealed). · deps P9-PUSH-04 · done when each fires once · M
 - [ ] 🆕 **R11-REL-01** R1.1 release: privacy policy Quad section, Apple age questionnaire (social media yes), Quad enabled per campus at ≥300 active users, the tab bar gains Quad. · deps all R1.1 · done when RELEASE §8 R1.1 go/no-go passes · M
 - [x] 🆕 **R11-PHOTO-GATE** Chat photos only after CSAM scanning is active (Q2/Q3) or an explicit owner risk acceptance is logged. · deps P8-CHAT-04 · done when the decision is logged · S
 

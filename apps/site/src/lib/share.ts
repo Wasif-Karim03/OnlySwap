@@ -29,7 +29,7 @@ export function money(cents: number, kind?: string): string {
   return `$${(cents / 100).toFixed(cents % 100 ? 2 : 0)}`;
 }
 
-async function rpc(
+export async function rpc(
   env: ShareEnv,
   fn: string,
   args: Record<string, unknown>,
@@ -53,8 +53,10 @@ async function rpc(
   return { ok: res.ok, status: res.status, body };
 }
 
-function page(opts: {
+export function page(opts: {
   appBanner?: string;
+  /** Script files for the end of the body; defaults to localtime.js. */
+  scripts?: (string | { src: string; module: true })[];
   title: string;
   description: string;
   body: string;
@@ -63,6 +65,13 @@ function page(opts: {
   refresh?: number;
 }): string {
   const { title, description, body, image, url, refresh, appBanner } = opts;
+  const scripts = (opts.scripts ?? ['/localtime.js'])
+    .map((s) =>
+      typeof s === 'string'
+        ? `<script src="${esc(s)}" defer></script>`
+        : `<script type="module" src="${esc(s.src)}"></script>`,
+    )
+    .join('\n');
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -86,12 +95,20 @@ ${image ? `<meta property="og:image" content="${esc(image)}" />\n<meta name="twi
 <a class="brand" href="/">OnlySwap</a>
 ${body}
 </main>
-<script src="/localtime.js" defer></script>
+${scripts}
 </body>
 </html>`;
 }
 
-function html(status: number, content: string, cache: string): Response {
+export const SHARE_CSP =
+  "default-src 'self'; img-src 'self' https: data:; style-src 'self'; script-src 'self'; base-uri 'none'; frame-ancestors 'none'";
+
+export function html(
+  status: number,
+  content: string,
+  cache: string,
+  csp: string = SHARE_CSP,
+): Response {
   return new Response(content, {
     status,
     headers: {
@@ -102,8 +119,7 @@ function html(status: number, content: string, cache: string): Response {
       'x-content-type-options': 'nosniff',
       'x-frame-options': 'DENY',
       'referrer-policy': 'no-referrer',
-      'content-security-policy':
-        "default-src 'self'; img-src 'self' https: data:; style-src 'self'; script-src 'self'; base-uri 'none'; frame-ancestors 'none'",
+      'content-security-policy': csp,
     },
   });
 }

@@ -11,3 +11,6 @@
 
 /delete
   X-Robots-Tag: noindex
+
+/joined
+  X-Robots-Tag: noindex

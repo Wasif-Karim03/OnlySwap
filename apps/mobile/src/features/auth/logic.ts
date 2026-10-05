@@ -102,6 +102,8 @@ export type GateProfile = {
   rulesVersion: string | null;
   /** YYYY-MM-DD; the yearly student check is due after this day (X9). */
   verifiedUntil?: string | null;
+  /** A10: your campus opened after you joined and you haven't seen it yet (show once). */
+  showUnlocked?: boolean;
 };
 
 export type GateInput = {
@@ -128,6 +130,7 @@ export type GateRoute =
   | 'rules'
   | 'rules-updated'
   | 'waitlist'
+  | 'unlocked'
   | 'notifications'
   | 'home';
 
@@ -143,6 +146,7 @@ export const GATE_HREF = {
   rules: '/rules',
   'rules-updated': '/rules?updated=1',
   waitlist: '/waitlist',
+  unlocked: '/unlocked',
   // Not /notifications: that path is the notification list (F09).
   notifications: '/allow-notifications',
   home: '/discover',
@@ -183,8 +187,29 @@ export function computeGate(input: GateInput): GateRoute | null {
   if (profile.rulesVersion === null) return 'rules';
   if (config && profile.rulesVersion !== config.rulesVersion) return 'rules-updated';
   if (profile.status === 'waitlist') return 'waitlist';
+  if (profile.status === 'active' && profile.showUnlocked) return 'unlocked';
   if (!input.notificationsAsked) return 'notifications';
   return 'home';
+}
+
+/**
+ * A10 once (P4-AUTH-13): same rule as my_waitlist_position().show_unlocked,
+ * from the profile row and its campus so launch needs no extra call.
+ */
+export function shouldShowUnlocked(row: {
+  created_at?: string | null;
+  seen_unlock_at?: string | null;
+  campus?: { status?: string | null; unlocked_at?: string | null } | null;
+}): boolean {
+  const opened = row.campus?.unlocked_at ? Date.parse(row.campus.unlocked_at) : NaN;
+  const joined = row.created_at ? Date.parse(row.created_at) : NaN;
+  return (
+    row.campus?.status === 'live' &&
+    !Number.isNaN(opened) &&
+    !Number.isNaN(joined) &&
+    joined < opened &&
+    !row.seen_unlock_at
+  );
 }
 
 /** A local calendar date as YYYY-MM-DD. */

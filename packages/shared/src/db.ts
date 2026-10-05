@@ -1601,8 +1601,14 @@ isOneToOne: false
 "admin_clear_strike":
 { Args: { "id": string,"reason": string }; Returns: undefined
                            },
+"admin_create_announcement":
+{ Args: { "body": string,"campus_id": string,"pinned_hours"?: number,"reason"?: string,"send_push"?: boolean,"title": string,"type": string }; Returns: Json
+                           },
 "admin_decide_appeal":
 { Args: { "decision": string,"id": string,"note": string }; Returns: undefined
+                           },
+"admin_delete_banned_word":
+{ Args: { "id": string,"reason": string }; Returns: undefined
                            },
 "admin_delete_domain":
 { Args: { "domain": string,"reason": string }; Returns: undefined
@@ -1613,10 +1619,22 @@ isOneToOne: false
 "admin_get_config":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"admin_invite_admin":
+{ Args: { "campus_id"?: string,"email": string,"reason"?: string,"role": string }; Returns: Json
+                           },
+"admin_list_admins":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"admin_list_announcements":
+{ Args: { "campus_id"?: string,"cursor"?: number }; Returns: Json
+                           },
 "admin_list_appeals":
 { Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
                            },
 "admin_list_audit":
+{ Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
+                           },
+"admin_list_banned_words":
 { Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
                            },
 "admin_list_campuses":
@@ -1634,6 +1652,18 @@ isOneToOne: false
 "admin_list_users":
 { Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
                            },
+"admin_metrics_funnel":
+{ Args: { "campus_id"?: string,"from_day"?: string,"to_day"?: string }; Returns: Json
+                           },
+"admin_metrics_liquidity":
+{ Args: { "campus_id"?: string }; Returns: Json
+                           },
+"admin_metrics_retention":
+{ Args: { "campus_id"?: string }; Returns: Json
+                           },
+"admin_metrics_safety":
+{ Args: { "campus_id"?: string }; Returns: Json
+                           },
 "admin_moderate_quad":
 { Args: { "action": string,"id": string,"reason": string,"target_type": string }; Returns: undefined
                            },
@@ -1642,6 +1672,9 @@ isOneToOne: false
                            },
 "admin_read_reported_chat":
 { Args: { "report_id": string }; Returns: Json
+                           },
+"admin_remove_admin":
+{ Args: { "reason": string,"user_id": string }; Returns: undefined
                            },
 "admin_report_detail":
 { Args: { "id": string }; Returns: Json
@@ -1663,6 +1696,9 @@ isOneToOne: false
                            },
 "admin_update_campus":
 { Args: { "id": string,"patch": Json,"reason": string }; Returns: undefined
+                           },
+"admin_upsert_banned_word":
+{ Args: { "action": string,"match": string,"pattern": string,"reason": string,"scopes": string[] }; Returns: Json
                            },
 "admin_upsert_domain":
 { Args: { "campus_id": string,"domain": string,"kind": string,"reason": string }; Returns: undefined
@@ -1869,7 +1905,8 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
 "price_hint":
-{ Args: { "category_id": number }; Returns: Json
+| { Args: { "category_id": number }; Returns: Json }
+| { Args: { "category_id": number,"condition": string }; Returns: Json
                            },
 "propose_meetup":
 { Args: { "chat_id": string,"custom_place"?: string,"spot_id"?: string,"starts_at": string }; Returns: Json

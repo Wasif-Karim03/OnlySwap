@@ -22,6 +22,8 @@ export type NotificationPrefs = {
   message_previews: boolean;
   /** Quad replies and milestones (R1.1). Off by default; present once the server returns it. */
   quad_replies?: boolean;
+  /** Free food posts on your campus (R1.1). Off by default; present once the server returns it. */
+  free_food?: boolean;
   quiet_start: string;
   quiet_end: string;
 };

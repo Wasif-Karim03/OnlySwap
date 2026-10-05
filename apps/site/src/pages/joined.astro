@@ -1,0 +1,116 @@
+---
+import Base from '../layouts/Base.astro';
+
+// W06 /joined (R11-INVITE-01): the confirmation after joining the waitlist from the
+// landing page or an invite page. The URL carries the campus slug only
+// (?campus=osu), never the email. Progress comes from public_campus_progress.
+const appStore = (import.meta.env.PUBLIC_APP_STORE_URL as string | undefined) || '';
+const playStore = (import.meta.env.PUBLIC_PLAY_STORE_URL as string | undefined) || '';
+---
+
+<Base title="You're on the list | OnlySwap" noindex>
+  <section class="hero">
+    <h1 id="joined-heading">You're on the list</h1>
+    <p class="muted" id="joined-line">We'll let you know when your school opens.</p>
+    <div id="joined-progress" aria-live="polite"></div>
+  </section>
+
+  <section aria-labelledby="friends" class="card">
+    <h2 id="friends">Get your friends to join</h2>
+    <p class="muted">
+      Your school opens once enough students sign up. Send this link to friends at your school and ask
+      them to join with their school email. Every student who joins gets it closer.
+    </p>
+    <div class="row">
+      <button type="button" id="share">Share OnlySwap</button>
+      <p id="share-msg" role="status" class="meta"></p>
+    </div>
+  </section>
+
+  <section aria-labelledby="next">
+    <h2 id="next">What happens next</h2>
+    <p class="muted" id="joined-next">
+      We'll email you once when your school opens on OnlySwap. Then get the app and sign in with your
+      school email.
+    </p>
+    {
+      (appStore || playStore) && (
+        <div class="row">
+          {appStore && (
+            <a class="btn" href={appStore}>
+              Get it on the App Store
+            </a>
+          )}
+          {playStore && (
+            <a class="btn secondary" href={playStore}>
+              Get it on Google Play
+            </a>
+          )}
+        </div>
+      )
+    }
+  </section>
+</Base>
+
+<script>
+  import { campusProgress, joinedCopy, SLUG_RE, type CampusProgress } from '../lib/client';
+
+  const env = {
+    url: import.meta.env.PUBLIC_SUPABASE_URL as string,
+    key: import.meta.env.PUBLIC_SUPABASE_ANON_KEY as string,
+  };
+  const slug = new URLSearchParams(window.location.search).get('campus') ?? '';
+  const heading = document.getElementById('joined-heading')!;
+  const line = document.getElementById('joined-line')!;
+  const next = document.getElementById('joined-next')!;
+  const box = document.getElementById('joined-progress')!;
+
+  function show(c: CampusProgress | null) {
+    const copy = joinedCopy(c);
+    heading.textContent = copy.heading;
+    line.textContent = copy.line;
+    next.textContent = copy.next;
+    if (copy.percent === null) {
+      box.replaceChildren();
+      return;
+    }
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    bar.setAttribute('role', 'progressbar');
+    bar.setAttribute('aria-valuenow', String(copy.percent));
+    bar.setAttribute('aria-valuemin', '0');
+    bar.setAttribute('aria-valuemax', '100');
+    bar.setAttribute('aria-label', copy.line);
+    const fill = document.createElement('span');
+    fill.style.width = `${copy.percent}%`;
+    bar.append(fill);
+    box.replaceChildren(bar);
+  }
+
+  if (SLUG_RE.test(slug) && env.url && env.key) {
+    box.innerHTML = '<p class="meta">Loading your school…</p>';
+    campusProgress(env)
+      .then((rows) => show(rows.find((c) => c.slug === slug) ?? null))
+      .catch(() => {
+        box.innerHTML = '<p class="meta">We couldn’t load your school’s progress right now.</p>';
+      });
+  }
+
+  const share = document.getElementById('share') as HTMLButtonElement;
+  const shareMsg = document.getElementById('share-msg')!;
+  share.addEventListener('click', async () => {
+    const url = `${window.location.origin}/`;
+    const text = 'Join OnlySwap with your school email so our campus opens sooner.';
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'OnlySwap', text, url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      shareMsg.textContent = 'Link copied.';
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
+      shareMsg.textContent = `Copy this link: ${url}`;
+    }
+  });
+</script>

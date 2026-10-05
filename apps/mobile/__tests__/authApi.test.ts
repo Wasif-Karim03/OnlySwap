@@ -143,6 +143,7 @@ describe('auth/api codes and sessions', () => {
       adultConfirmed: true,
       rulesVersion: '1',
       verifiedUntil: null,
+      showUnlocked: false,
     });
     expect(profile).toHaveBeenCalledWith('u1');
   });

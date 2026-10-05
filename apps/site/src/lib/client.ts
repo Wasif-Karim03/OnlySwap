@@ -65,13 +65,107 @@ export async function joinWaitlist(
   email: string,
   turnstileToken: string,
   f: Fetch = fetch,
+  inviteCode?: string,
 ): Promise<void> {
+  const body: Record<string, string> = {
+    email: email.trim().toLowerCase(),
+    turnstile_token: turnstileToken,
+  };
+  // /i/:code carries the invite along (R11-INVITE-01); the function ignores fields it doesn't use.
+  if (inviteCode) body.invite_code = inviteCode;
   const res = await f(`${env.url}/functions/v1/waitlist-request`, {
     method: 'POST',
     headers: headers(env),
-    body: JSON.stringify({ email: email.trim().toLowerCase(), turnstile_token: turnstileToken }),
+    body: JSON.stringify(body),
   });
   await json(res);
+}
+
+export type School = { name: string; short_name: string; status: string };
+
+/** lookup_school(domain): the campus for a student email domain, or null. */
+export async function lookupSchool(
+  env: Env,
+  domain: string,
+  f: Fetch = fetch,
+): Promise<School | null> {
+  const res = await f(`${env.url}/rest/v1/rpc/lookup_school`, {
+    method: 'POST',
+    headers: headers(env),
+    body: JSON.stringify({ domain }),
+  });
+  return json<School | null>(res);
+}
+
+/** Campus slugs in /joined?campus= (the only thing the URL carries, never the email). */
+export const SLUG_RE = /^[a-z0-9][a-z0-9-]{0,62}$/;
+
+export type JoinedTarget =
+  { kind: 'waitlist'; slug: string } | { kind: 'live'; name: string } | { kind: 'unknown' };
+
+/**
+ * After a waitlist join (R11-INVITE-01): which campus the email belongs to, so the
+ * page can go to /joined?campus=<slug> (waitlist) or say the school is already open.
+ * Any lookup failure falls back to the plain /joined page.
+ */
+export async function joinedTarget(
+  env: Env,
+  email: string,
+  f: Fetch = fetch,
+): Promise<JoinedTarget> {
+  const domain = email.trim().toLowerCase().split('@')[1] ?? '';
+  if (!domain) return { kind: 'unknown' };
+  try {
+    const school = await lookupSchool(env, domain, f);
+    if (!school) return { kind: 'unknown' };
+    const rows = await campusProgress(env, f);
+    const row = rows.find((c) => c.name === school.name);
+    if (!row) return { kind: 'unknown' };
+    if (row.status === 'live') return { kind: 'live', name: row.name };
+    return SLUG_RE.test(row.slug) ? { kind: 'waitlist', slug: row.slug } : { kind: 'unknown' };
+  } catch {
+    return { kind: 'unknown' };
+  }
+}
+
+export function joinedHref(t: JoinedTarget): string {
+  return t.kind === 'waitlist' ? `/joined?campus=${encodeURIComponent(t.slug)}` : '/joined';
+}
+
+export const OPEN_NOW_LINE = (name: string) =>
+  `${name} is open now. Get the app and sign in with your school email.`;
+
+/** W06 /joined copy for the campus in the URL (or none). */
+export function joinedCopy(c: CampusProgress | null): {
+  heading: string;
+  line: string;
+  percent: number | null;
+  next: string;
+} {
+  if (!c) {
+    return {
+      heading: "You're on the list",
+      line: "We'll let you know when your school opens.",
+      percent: null,
+      next: "We'll email you once when your school opens on OnlySwap. Then get the app and sign in with your school email.",
+    };
+  }
+  if (c.status === 'live') {
+    return {
+      heading: `${c.name} is open`,
+      line: OPEN_NOW_LINE(c.name),
+      percent: 100,
+      next: 'Get the app and sign in with your school email to start buying and selling.',
+    };
+  }
+  const { text, percent } = progressLine(c);
+  const left = Math.max(c.threshold - c.members, 0);
+  return {
+    heading: `You're on the list for ${c.name}`,
+    line: left > 0 ? `${text}. ${left} more to open.` : `${text}. Opening soon.`,
+    percent,
+    next: `We'll email you once when ${c.name} opens. Then get the app and sign in with your school email.`,
+  };
 }
 
 export type Topic = 'general' | 'cant_access_email' | 'safety' | 'bug' | 'other';
