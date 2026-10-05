@@ -1,0 +1,16 @@
+---
+// The "handoff" mark from the design board: two halves of one circle, passed
+// between two hands. Accent tile, ink halves.
+interface Props {
+  size?: number;
+}
+const { size = 34 } = Astro.props;
+const glyph = Math.round(size * 0.62);
+---
+
+<span class="mark" style={`--mark:${size}px`} aria-hidden="true">
+  <svg width={glyph} height={glyph} viewBox="0 0 100 100">
+    <path d="M45 14a32 32 0 0 0 0 64z" fill="currentColor"></path>
+    <path d="M55 22a32 32 0 0 1 0 64z" fill="currentColor"></path>
+  </svg>
+</span>

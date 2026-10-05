@@ -1,20 +1,27 @@
 ---
 import '@onlyswap/tokens/tokens.css';
 import '../styles/site.css';
+import Icons from '../components/Icons.astro';
+import Logo from '../components/Logo.astro';
 
 interface Props {
   title: string;
   description?: string;
   noindex?: boolean;
   path?: string;
+  /** Full-width sections (landing). Content pages get a readable column. */
+  wide?: boolean;
 }
 const {
   title,
   description = 'Buy and sell with verified students at your school. Meet on campus, pay in person.',
   noindex = false,
   path = Astro.url.pathname,
+  wide = false,
 } = Astro.props;
 const canonical = new URL(path, Astro.site).toString();
+const webApp = (import.meta.env.PUBLIC_WEB_APP_URL as string | undefined) || 'https://onlyswap-web.pages.dev';
+const year = new Date().getFullYear();
 ---
 
 <!doctype html>
@@ -34,28 +41,61 @@ const canonical = new URL(path, Astro.site).toString();
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   </head>
   <body>
+    <Icons />
     <a class="skip" href="#main">Skip to content</a>
-    <header class="top">
-      <a href="/" class="brand">OnlySwap</a>
-      <nav aria-label="Main">
-        <a href="/safety">Safety</a>
-        <a href="/help">Help</a>
-      </nav>
+    <header class="nav">
+      <div class="nav-in">
+        <a href="/" class="brand" aria-label="OnlySwap home"><Logo size={34} /><span>onlyswap</span></a>
+        <nav aria-label="Main" class="nav-links">
+          <a href="/#how">How it works</a>
+          <a href="/safety">Safety</a>
+          <a href="/#quad">The Quad</a>
+          <a href="/#schools">Schools</a>
+        </nav>
+        <div class="nav-end">
+          <a href={webApp} class="nav-login">Log in</a>
+          <a href="/#get" class="btn">Get the app</a>
+        </div>
+      </div>
     </header>
-    <main id="main">
+    <main id="main" class={wide ? 'wide' : 'page'}>
       <slot />
     </main>
     <footer class="foot">
-      <nav aria-label="Legal">
-        <a href="/terms">Terms</a>
-        <a href="/privacy">Privacy</a>
-        <a href="/rules">Community Rules</a>
-        <a href="/banned-items">Banned items</a>
-        <a href="/cookies">Cookies</a>
-        <a href="/child-safety">Child safety</a>
-        <a href="/delete">Delete account</a>
-      </nav>
-      <span>OnlySwap is not affiliated with any school.</span>
+      <div class="foot-in">
+        <div class="foot-brand">
+          <a href="/" class="brand" aria-label="OnlySwap home"><Logo size={30} /><span>onlyswap</span></a>
+          <p>The marketplace for students at your school.</p>
+        </div>
+        <nav aria-label="Product">
+          <h2>Product</h2>
+          <a href="/#how">How it works</a>
+          <a href="/#quad">The Quad</a>
+          <a href="/#schools">Schools</a>
+          <a href={webApp}>Use it in your browser</a>
+        </nav>
+        <nav aria-label="Safety">
+          <h2>Safety</h2>
+          <a href="/safety">Safety tips</a>
+          <a href="/rules">Community rules</a>
+          <a href="/banned-items">Banned items</a>
+          <a href="/child-safety">Child safety</a>
+        </nav>
+        <nav aria-label="Support">
+          <h2>Support</h2>
+          <a href="/help">Help and contact</a>
+          <a href="/delete">Delete account</a>
+        </nav>
+        <nav aria-label="Legal">
+          <h2>Legal</h2>
+          <a href="/terms">Terms</a>
+          <a href="/privacy">Privacy</a>
+          <a href="/cookies">Cookies</a>
+        </nav>
+      </div>
+      <div class="foot-bottom">
+        <span>© {year} OnlySwap. Not affiliated with or endorsed by any university.</span>
+      </div>
     </footer>
   </body>
 </html>

@@ -1,64 +1,296 @@
 ---
+import Icon from '../components/Icon.astro';
+import Item from '../components/Item.astro';
 import Turnstile from '../components/Turnstile.astro';
 import Base from '../layouts/Base.astro';
 
-// W01 landing (P13-WEB-02). Store links come from the build (set once the store
-// pages exist); until then the buttons point at /download.
-const appStore = (import.meta.env.PUBLIC_APP_STORE_URL as string | undefined) || '/download';
-const playStore = (import.meta.env.PUBLIC_PLAY_STORE_URL as string | undefined) || '/download';
+// W01 landing (P13-WEB-02), built from the board's "Landing page" frames with
+// the locked copy rules (Meetup spot, no em dashes, no emoji). Campus numbers
+// are live from public_campus_progress; nothing on this page is made up.
+const appStore = (import.meta.env.PUBLIC_APP_STORE_URL as string | undefined) || '';
+const playStore = (import.meta.env.PUBLIC_PLAY_STORE_URL as string | undefined) || '';
+const webApp = (import.meta.env.PUBLIC_WEB_APP_URL as string | undefined) || 'https://onlyswap-web.pages.dev';
+
+const steps = [
+  { n: '1', h: 'Swipe', p: 'Right to make an offer, left to skip. Or search when you know what you need.' },
+  { n: '2', h: 'Offer, then chat', p: 'The seller sees your offer first. A chat only opens if they say yes.' },
+  { n: '3', h: 'Meet and swap', p: 'Pick a Meetup spot on campus, check the item, pay in person.' },
+];
+const features = [
+  { i: 'building', h: 'Only your school', p: 'Everyone signs up with a school email, and your feed only shows your campus.' },
+  { i: 'chat', h: 'No surprise DMs', p: 'Buyers send an offer, not a message. You decide who you talk to.' },
+  { i: 'pin', h: 'Meetup spots built in', p: 'Every listing shows public places on campus that work well for a meetup.' },
+  { i: 'gift', h: 'A shelf for free stuff', p: 'Moving out? Give things away in two taps instead of leaving them on the curb.' },
+  { i: 'trend', h: 'Real price hints', p: 'See what similar things actually sold for at your school before you post.' },
+  { i: 'quad', h: 'The Quad', p: 'A campus board without your name on it. Moderated, posts only, no DMs.' },
+];
+const checks = [
+  'Real students only, checked again every year',
+  'Sellers accept before any chat opens',
+  'Meetup spots on every listing',
+  'Share your meetup with a friend in one tap',
+  'Report or block from any screen, reviewed by a person',
+];
+const faq = [
+  { q: 'Is it free?', a: 'Yes. Listing, offering and chatting are free. You pay each other in person, and OnlySwap never touches the money.' },
+  { q: 'Who can join?', a: "Current students 18 and older with a school email. We check again once a year, so alumni and staff don't end up on a students-only app." },
+  { q: 'How do meetups work?', a: 'Once the seller accepts your offer, you pick a time and a Meetup spot on campus in the chat. Check the item, pay, done.' },
+  { q: "What can't I sell?", a: 'Alcohol, vapes, medicine, weapons, tickets, meal swipes and coursework, among others. The full list is on the banned items page.' },
+  { q: 'Is the Quad anonymous?', a: 'To other students, yes. We keep your account on file and only share it if the law requires it or someone is in danger.' },
+  { q: "My school isn't open yet", a: 'Check your school email above. We count you toward your campus and email you once when it opens. Nothing else.' },
+];
 ---
 
-<Base title="OnlySwap: buy and sell with students at your school">
+<Base title="OnlySwap: buy and sell with students at your school" wide>
+  <!-- Hero -->
   <section class="hero">
-    <h1>Buy and sell with students at your school.</h1>
-    <p class="muted">
-      Swipe through what people on campus are selling, make an offer, and meet at a Meetup spot. Pay in
-      person. Only verified students 18 and older can join.
-    </p>
-    <div class="row">
-      <a class="btn" href={appStore}>Get it on the App Store</a>
-      <a class="btn secondary" href={playStore}>Get it on Google Play</a>
+    <div class="hero-copy">
+      <span class="pill" id="live-pill"><i></i><span>Opening campus by campus</span></span>
+      <h1 class="h1">Buy and sell with students at your school.</h1>
+      <p class="lead">
+        Swipe through what people on your campus are selling. Make an offer, meet at a Meetup spot between classes,
+        and pay in person. No shipping, no strangers, no fees.
+      </p>
+      <form id="waitlist" class="join" novalidate>
+        <label class="join-field">
+          <span class="sr">School email</span>
+          <Icon name="mail" size={20} />
+          <input type="email" name="email" autocomplete="email" placeholder="you@school.edu" required />
+        </label>
+        <button type="submit" class="btn accent big">Check my school</button>
+        <Turnstile />
+      </form>
+      <p id="waitlist-msg" role="status" class="join-msg"></p>
+      <p class="fine">School emails only. If your school isn't open yet, we email you once when it is.</p>
+      <ul class="trust">
+        <li><Icon name="shield" size={19} />Verified students, 18+</li>
+        <li><Icon name="pin" size={19} />Meetup spots on campus</li>
+        <li><Icon name="tag" size={19} />No fees</li>
+      </ul>
+    </div>
+
+    <div class="hero-art" aria-hidden="true">
+      <div class="phone">
+        <div class="ph-top"><span>Discover</span><Icon name="tag" size={18} /></div>
+        <div class="deck">
+          <div class="card-back"></div>
+          <div class="swipe">
+            <div class="swipe-photo tone-a"><Item kind="fridge" size={150} /></div>
+            <div class="swipe-info">
+              <b class="price">$40</b>
+              <span>Mini fridge, 3.1 cu ft</span>
+              <small>Like new · Baker Hall · 12m</small>
+            </div>
+          </div>
+        </div>
+        <div class="ph-actions">
+          <span class="round"><Icon name="x" size={24} /></span>
+          <span class="round dark"><Icon name="tag" size={24} /></span>
+          <span class="round"><Icon name="heart" size={22} /></span>
+        </div>
+      </div>
+      <div class="float f1">
+        <span class="f-ic"><Icon name="check" size={18} /></span>
+        <div><b>Devin accepted your offer</b><small>Mini fridge · $35 · now</small></div>
+      </div>
+      <div class="float f2">
+        <span class="f-ic light"><Icon name="pin" size={18} /></span>
+        <div><b>Library entrance</b><small>Meetup spot · Tue 2:30 PM</small></div>
+      </div>
     </div>
   </section>
 
-  <section aria-labelledby="how">
-    <h2 id="how">How it works</h2>
+  <!-- What people swap -->
+  <section class="strip" aria-labelledby="swap">
+    <div class="strip-head">
+      <h2 id="swap" class="h3">What students swap</h2>
+      <span class="fine">Examples</span>
+    </div>
+    <div class="strip-row">
+      <div class="mini"><div class="mini-ph tone-b"><Item kind="books" size={84} /></div><b>$25</b><span>Chem textbook bundle</span></div>
+      <div class="mini"><div class="mini-ph tone-c"><Item kind="lamp" size={84} /></div><b>$12</b><span>Desk lamp, black</span></div>
+      <div class="mini"><div class="mini-ph tone-a"><Item kind="chair" size={84} /></div><b>$30</b><span>Desk chair, grey</span></div>
+      <div class="mini"><div class="mini-ph tone-b"><Item kind="bike" size={84} /></div><b>$120</b><span>City bike</span></div>
+      <div class="mini"><div class="mini-ph tone-c"><Item kind="guitar" size={84} /></div><b>$140</b><span>Electric guitar</span></div>
+      <div class="mini"><div class="mini-ph tone-a"><Item kind="fridge" size={84} /></div><b class="free">Free</b><span>Mini fridge, works fine</span></div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="sec" id="how" aria-labelledby="how-h">
+    <h2 id="how-h" class="h2">Three steps, and no awkward DMs.</h2>
     <div class="steps">
-      <div class="card">
-        <h3>Swipe</h3>
-        <p class="muted">Right to make an offer, left to skip, save anything you want to watch.</p>
+      {
+        steps.map((s, i) => (
+          <article class="step">
+            <span class="num">{s.n}</span>
+            <h3>{s.h}</h3>
+            <p>{s.p}</p>
+            <div class="vignette" aria-hidden="true">
+              {i === 0 && (
+                <div class="v-swipe">
+                  <span class="round"><Icon name="x" size={22} /></span>
+                  <div class="v-card tone-c"><Item kind="lamp" size={70} /><b>$12</b></div>
+                  <span class="round dark"><Icon name="tag" size={22} /></span>
+                </div>
+              )}
+              {i === 1 && (
+                <div class="v-offer">
+                  <small>New offer</small>
+                  <b>$35 for Mini fridge</b>
+                  <span>Asking $40 · from Devin</span>
+                  <div class="v-btns"><span class="ghost">Decline</span><span class="solid">Accept</span></div>
+                </div>
+              )}
+              {i === 2 && (
+                <div class="v-meet">
+                  <div class="v-row"><Icon name="pin" size={20} /><div><b>Library entrance</b><span>Meetup spot</span></div></div>
+                  <div class="v-row"><Icon name="clock" size={20} /><div><b>Tue, 2:30 PM</b><span>You both confirmed</span></div></div>
+                  <div class="v-row"><Icon name="share" size={20} /><div><b>Share with a friend</b><span>Optional</span></div></div>
+                </div>
+              )}
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="sec tight" aria-labelledby="built">
+    <h2 id="built" class="h2">Built for one campus, not the whole internet.</h2>
+    <div class="feat">
+      {
+        features.map((f) => (
+          <div>
+            <span class="feat-ic"><Icon name={f.i} size={24} /></span>
+            <h3>{f.h}</h3>
+            <p>{f.p}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- Safety -->
+  <section class="sec dark" aria-labelledby="meet">
+    <div class="split">
+      <div>
+        <h2 id="meet" class="h2">Built around the meetup.</h2>
+        <p class="lead">
+          Meeting someone you don't know is the risky part of buying secondhand, so that's where most of the design
+          went.
+        </p>
+        <ul class="checks">
+          {checks.map((c) => <li><Icon name="check" size={20} />{c}</li>)}
+        </ul>
+        <a class="btn ghost-dark" href="/safety">Read the safety tips</a>
       </div>
-      <div class="card">
-        <h3>Offer</h3>
-        <p class="muted">Chat opens once the seller accepts. No spam, no strangers.</p>
-      </div>
-      <div class="card">
-        <h3>Meet and pay</h3>
-        <p class="muted">Pick a Meetup spot on campus, check the item, pay in person.</p>
+      <div class="meet-art" aria-hidden="true">
+        <div class="phone small">
+          <div class="ph-top"><span>Meetup</span><Icon name="shield" size={18} /></div>
+          <div class="meet-card">
+            <small>Today</small>
+            <b>Mini fridge with Devin</b>
+            <div class="v-row"><Icon name="pin" size={20} /><div><b>Library entrance</b><span>Meetup spot · 4 min walk</span></div></div>
+            <div class="v-row"><Icon name="clock" size={20} /><div><b>2:30 PM</b><span>In 45 minutes</span></div></div>
+          </div>
+          <div class="meet-btns">
+            <span class="solid">I'm here</span>
+            <span class="ghost">Running late</span>
+          </div>
+          <div class="meet-share"><Icon name="share" size={18} />Share with a friend</div>
+          <div class="meet-share"><Icon name="flag" size={18} />Report a problem</div>
+        </div>
       </div>
     </div>
   </section>
 
-  <section aria-labelledby="schools">
-    <h2 id="schools">Schools</h2>
-    <div id="progress" aria-live="polite"><p class="meta">Loading schools…</p></div>
+  <!-- Quad -->
+  <section class="sec soft" id="quad" aria-labelledby="quad-h">
+    <div class="split reverse">
+      <div class="quad-art" aria-hidden="true">
+        {
+          [
+            ['B', 'Found a blue water bottle in the library, 2nd floor. Left it at the front desk.', 24, '12m'],
+            ['K', 'Where do people actually study after 10 PM? The library gets packed.', 41, '1h'],
+            ['M', 'Free pizza at the student union right now, first come first served.', 87, '2h'],
+          ].map(([a, t, v, m]) => (
+            <div class="post">
+              <span class={`alias a-${a}`}>{a}</span>
+              <div>
+                <p>{t}</p>
+                <small>
+                  <Icon name="up" size={15} /> {v} · {m}
+                </small>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+      <div>
+        <span class="pill plain"><Icon name="lock" size={15} />Anonymous to students, not to us</span>
+        <h2 id="quad-h" class="h2">And for everything else, the Quad.</h2>
+        <p class="lead">
+          Found a lost water bottle, need a quiet study spot, want to complain about whoever microwaves fish at 2 AM.
+          Post it to your campus without your name on it.
+        </p>
+        <p class="fine big">
+          No names of students, no phone numbers, no DMs. Posts voted down to -5 disappear, and a person reviews every
+          report. The Quad opens at a campus once it has enough students.
+        </p>
+      </div>
+    </div>
   </section>
 
-  <section aria-labelledby="check" class="card">
-    <h2 id="check">Is your school on OnlySwap?</h2>
-    <p class="muted">
-      Enter your school email. If your school isn't open yet, we'll email you once when it is. Nothing
-      else.
-    </p>
-    <form id="waitlist" novalidate>
-      <label>
-        School email
-        <input type="email" name="email" autocomplete="email" required />
-      </label>
-      <Turnstile />
-      <button type="submit">Check my school</button>
-      <p id="waitlist-msg" role="status"></p>
-    </form>
+  <!-- Schools -->
+  <section class="sec center" id="schools" aria-labelledby="schools-h">
+    <h2 id="schools-h" class="h2">Is your school open yet?</h2>
+    <p class="lead">Each campus opens once enough students join with their school email.</p>
+    <div id="progress" class="camps" aria-live="polite"><p class="fine">Loading schools…</p></div>
+    <p><a class="btn" href="#waitlist">Check my school</a></p>
+  </section>
+
+  <!-- FAQ -->
+  <section class="sec faq-sec" aria-labelledby="faq-h">
+    <h2 id="faq-h" class="h2">Questions</h2>
+    <div class="faq">
+      {
+        faq.map((f, i) => (
+          <details open={i === 0}>
+            <summary>
+              {f.q}
+              <Icon name="plus" size={22} />
+            </summary>
+            <p>{f.a}</p>
+          </details>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- Get the app -->
+  <section class="sec" id="get" aria-labelledby="get-h">
+    <div class="cta">
+      <h2 id="get-h" class="h2">Someone on your campus is selling exactly what you need.</h2>
+      <div class="stores">
+        {
+          appStore ? (
+            <a class="store" href={appStore}><Icon name="phone" size={22} /><span><small>Download on the</small>App Store</span></a>
+          ) : (
+            <span class="store soon"><Icon name="phone" size={22} /><span><small>Coming soon to the</small>App Store</span></span>
+          )
+        }
+        {
+          playStore ? (
+            <a class="store" href={playStore}><Icon name="download" size={22} /><span><small>Get it on</small>Google Play</span></a>
+          ) : (
+            <span class="store soon"><Icon name="download" size={22} /><span><small>Coming soon to</small>Google Play</span></span>
+          )
+        }
+        <a class="store light" href={webApp}><Icon name="globe" size={22} /><span><small>Or use it in your</small>Browser</span></a>
+      </div>
+    </div>
   </section>
 </Base>
 
@@ -79,20 +311,31 @@ const playStore = (import.meta.env.PUBLIC_PLAY_STORE_URL as string | undefined) 
     key: import.meta.env.PUBLIC_SUPABASE_ANON_KEY as string,
   };
   const box = document.getElementById('progress')!;
+  const pill = document.querySelector('#live-pill span')!;
   if (!env.url || !env.key) {
     box.innerHTML = '';
   } else {
     campusProgress(env)
       .then((rows) => {
+        const live = rows.filter((c) => c.status === 'live');
+        if (live.length === 1) pill.textContent = `Open at ${live[0]!.name}`;
+        else if (live.length > 1) pill.textContent = `Open at ${live.length} schools`;
         box.replaceChildren(
           ...rows.map((c) => {
             const { text, percent } = progressLine(c);
+            const isLive = c.status === 'live';
             const el = document.createElement('div');
-            el.className = 'card';
-            const p = document.createElement('p');
-            p.textContent = text;
+            el.className = 'camp';
+            const head = document.createElement('div');
+            head.className = 'camp-head';
+            const name = document.createElement('b');
+            name.textContent = c.name;
+            const tag = document.createElement('span');
+            tag.className = isLive ? 'tag open' : 'tag';
+            tag.textContent = isLive ? 'Open' : 'Waitlist';
+            head.append(name, tag);
             const bar = document.createElement('div');
-            bar.className = 'bar';
+            bar.className = isLive ? 'bar live' : 'bar';
             bar.setAttribute('role', 'progressbar');
             bar.setAttribute('aria-valuenow', String(percent));
             bar.setAttribute('aria-valuemin', '0');
@@ -101,14 +344,17 @@ const playStore = (import.meta.env.PUBLIC_PLAY_STORE_URL as string | undefined) 
             const fill = document.createElement('span');
             fill.style.width = `${percent}%`;
             bar.append(fill);
-            el.append(p, bar);
+            const line = document.createElement('p');
+            line.className = 'fine';
+            line.textContent = text;
+            el.append(head, bar, line);
             return el;
           }),
         );
-        if (!rows.length) box.innerHTML = '<p class="meta">Schools are coming soon.</p>';
+        if (!rows.length) box.innerHTML = '<p class="fine">The first schools open soon. Check yours above to be counted.</p>';
       })
       .catch(() => {
-        box.innerHTML = '<p class="meta">We couldn’t load schools right now.</p>';
+        box.innerHTML = '<p class="fine">We couldn’t load schools right now.</p>';
       });
   }
 
@@ -119,7 +365,7 @@ const playStore = (import.meta.env.PUBLIC_PLAY_STORE_URL as string | undefined) 
     const data = new FormData(form);
     const email = String(data.get('email') ?? '');
     const problem = schoolEmailProblem(email);
-    msg.className = 'error';
+    msg.className = 'join-msg error';
     if (problem) {
       msg.textContent = problem;
       return;
@@ -131,7 +377,7 @@ const playStore = (import.meta.env.PUBLIC_PLAY_STORE_URL as string | undefined) 
       // R11-INVITE-01: waitlist campuses go to /joined (campus slug only in the URL).
       const target = await joinedTarget(env, email);
       if (target.kind === 'live') {
-        msg.className = 'ok';
+        msg.className = 'join-msg ok';
         msg.textContent = OPEN_NOW_LINE(target.name);
         form.reset();
       } else {
