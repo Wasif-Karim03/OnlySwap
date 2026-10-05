@@ -5,7 +5,7 @@
 // private.can_upload, picks the object keys itself, and signs the exact
 // content-type and content-length so R2 refuses anything else (SEC-02).
 
-export type UploadKind = 'listing' | 'avatar' | 'share' | 'quad';
+export type UploadKind = 'listing' | 'avatar' | 'share' | 'quad' | 'chat';
 export type Variant = 'full' | 'thumb';
 
 export type FileRequest = { idx: number; variant: Variant; type: string; size: number };
@@ -27,6 +27,10 @@ export const LIMITS: Record<UploadKind, Partial<Record<Variant, { type: string; 
   avatar: { full: { type: 'image/webp', max: 300 * 1024 } },
   share: { full: { type: 'image/jpeg', max: 500 * 1024 } },
   quad: {
+    full: { type: 'image/webp', max: 2 * 1024 * 1024 },
+    thumb: { type: 'image/webp', max: 200 * 1024 },
+  },
+  chat: {
     full: { type: 'image/webp', max: 2 * 1024 * 1024 },
     thumb: { type: 'image/webp', max: 200 * 1024 },
   },
@@ -88,6 +92,7 @@ export function objectKey(
   if (kind === 'listing') return `c/${campus}/l/${targetId}/${uuid}_${variant}.webp`;
   if (kind === 'avatar') return `c/${campus}/u/${userId}/avatar_${uuid}.webp`;
   if (kind === 'quad') return `c/${campus}/quad/${targetId}/${uuid}_${variant}.webp`;
+  if (kind === 'chat') return `c/${campus}/chat/${targetId}/${uuid}_${variant}.webp`;
   return `share/${targetId}.jpg`;
 }
 
@@ -116,7 +121,8 @@ export async function handleUploadUrl(
     unknown
   >;
   const kind = body.kind as UploadKind;
-  if (!['listing', 'avatar', 'share', 'quad'].includes(kind)) return fail(400, 'INVALID:kind');
+  if (!['listing', 'avatar', 'share', 'quad', 'chat'].includes(kind))
+    return fail(400, 'INVALID:kind');
   const targetId = String(body.target_id ?? '');
   if (!UUID.test(targetId)) return fail(400, 'INVALID:target_id');
   const bad = validateFiles(kind, body.files);

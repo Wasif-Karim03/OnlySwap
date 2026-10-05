@@ -1625,11 +1625,17 @@ isOneToOne: false
 "admin_list_listings":
 { Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
                            },
+"admin_list_quad":
+{ Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
+                           },
 "admin_list_reports":
 { Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
                            },
 "admin_list_users":
 { Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
+                           },
+"admin_moderate_quad":
+{ Args: { "action": string,"id": string,"reason": string,"target_type": string }; Returns: undefined
                            },
 "admin_overview":
 { Args: { "campus_id"?: string }; Returns: Json
@@ -1642,6 +1648,9 @@ isOneToOne: false
                            },
 "admin_resolve_report":
 { Args: { "action": string,"id": string,"note": string,"suspend_days"?: number }; Returns: undefined
+                           },
+"admin_reveal_quad_author":
+{ Args: { "case_ref": string,"id": string,"reason": string,"target_type": string }; Returns: Json
                            },
 "admin_set_config":
 { Args: { "key": string,"reason": string,"value": Json }; Returns: undefined
@@ -1896,7 +1905,7 @@ isOneToOne: false
 { Args: { "q"?: string }; Returns: Json
                            },
 "send_message":
-{ Args: { "body": string,"chat_id": string,"client_id": string,"kind"?: string }; Returns: Json
+{ Args: { "body": string,"chat_id": string,"client_id": string,"kind"?: string,"photo_path"?: string }; Returns: Json
                            },
 "set_chat_mute":
 { Args: { "chat_id": string,"muted": boolean }; Returns: undefined

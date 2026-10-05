@@ -13,6 +13,10 @@ select vault.create_secret('local-dev-pepper-not-a-secret', 'email_hash_pepper')
 where not exists (select 1 from vault.decrypted_secrets where name = 'email_hash_pepper');
 select vault.create_secret('local-dev-waitlist-key-not-a-secret', 'waitlist_email_key')
 where not exists (select 1 from vault.decrypted_secrets where name = 'waitlist_email_key');
+-- Chat photo signatures (R1.1). The local media Worker (wrangler dev) uses the
+-- same value as MEDIA_SIGNING_KEY; local Storage ignores the signature.
+select vault.create_secret('local-dev-media-key-not-a-secret', 'media_signing_key')
+where not exists (select 1 from vault.decrypted_secrets where name = 'media_signing_key');
 
 -- Campuses: a live launch campus, the reviewer campus, and a waitlist campus.
 insert into public.campuses (id, slug, name, short_name, status, timezone, is_demo, unlock_threshold) values

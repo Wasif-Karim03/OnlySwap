@@ -4,6 +4,8 @@ name = "onlyswap-media"
 main = "src/index.ts"
 compatibility_date = "2026-09-01"
 workers_dev = true
+# Chat photos (R1.1) need the signing secret, the same value as the Vault
+# secret media_signing_key: `npx wrangler secret put MEDIA_SIGNING_KEY` (and --env staging).
 
 [[r2_buckets]]
 binding = "MEDIA"

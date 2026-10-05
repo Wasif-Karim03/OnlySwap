@@ -8,6 +8,7 @@ import {
   publicKey,
   RATE_LIMIT,
   resetRateLimit,
+  signChat,
   type Env,
 } from './handler.ts';
 
@@ -99,4 +100,41 @@ test('publicKey', () => {
   assert.equal(publicKey('/c/osu/quad/P/x_full.webp'), 'c/osu/quad/P/x_full.webp');
   assert.equal(publicKey('/c/osu/chat/C/x_full.webp'), null);
   assert.equal(publicKey('/share/L.JPG'), 'share/L.JPG');
+});
+
+test('chat photos: only with a valid, unexpired signature (P8-CHAT-04)', async () => {
+  const key = 'c/osu/chat/C1/33333333-3333-4333-8333-333333333333_full.webp';
+  const signed: Env = {
+    MEDIA_SIGNING_KEY: 'test-media-key',
+    MEDIA: {
+      get: async (k) => (k === key ? { body: 'CHATPHOTO', size: 9, httpEtag: '"c"' } : null),
+    },
+  };
+  const now = Date.UTC(2027, 2, 10, 17, 0, 0);
+  const exp = Math.floor(now / 1000) + 3600;
+  const sig = await signChat('test-media-key', key, exp);
+  const at = (q: string) => handle(new Request(`https://m.test/${key}${q}`), signed, now);
+
+  const ok = await at(`?exp=${exp}&sig=${sig}`);
+  assert.equal(ok.status, 200);
+  assert.equal(ok.headers.get('cache-control'), 'private, max-age=3600');
+  assert.equal((await at('')).status, 404);
+  assert.equal((await at(`?exp=${exp}&sig=${'0'.repeat(64)}`)).status, 404);
+  assert.equal((await at(`?exp=${exp + 1}&sig=${sig}`)).status, 404);
+  const old = Math.floor(now / 1000) - 1;
+  assert.equal(
+    (await at(`?exp=${old}&sig=${await signChat('test-media-key', key, old)}`)).status,
+    404,
+  );
+  // No key configured: never served.
+  assert.equal(
+    (
+      await handle(
+        new Request(`https://m.test/${key}?exp=${exp}&sig=${sig}`),
+        { MEDIA: signed.MEDIA },
+        now,
+      )
+    ).status,
+    404,
+  );
 });

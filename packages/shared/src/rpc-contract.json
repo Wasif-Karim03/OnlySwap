@@ -130,6 +130,16 @@
     ]
   },
   {
+    "name": "admin_list_quad",
+    "args": "filters jsonb, cursor integer",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "admin_list_reports",
     "args": "filters jsonb, cursor integer",
     "returns": "jsonb",
@@ -143,6 +153,16 @@
     "name": "admin_list_users",
     "args": "filters jsonb, cursor integer",
     "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_moderate_quad",
+    "args": "target_type text, id uuid, action text, reason text",
+    "returns": "void",
     "security": "definer",
     "grants": [
       "authenticated",
@@ -183,6 +203,16 @@
     "name": "admin_resolve_report",
     "args": "id uuid, action text, note text, suspend_days integer",
     "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_reveal_quad_author",
+    "args": "target_type text, id uuid, case_ref text, reason text",
+    "returns": "jsonb",
     "security": "definer",
     "grants": [
       "authenticated",
@@ -1037,7 +1067,7 @@
   },
   {
     "name": "send_message",
-    "args": "chat_id uuid, body text, client_id uuid, kind text",
+    "args": "chat_id uuid, body text, client_id uuid, kind text, photo_path text",
     "returns": "jsonb",
     "security": "definer",
     "grants": [

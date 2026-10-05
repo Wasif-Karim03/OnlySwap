@@ -13,7 +13,7 @@ export type Bucket = {
   } | null>;
 };
 
-export type Env = { MEDIA: Bucket };
+export type Env = { MEDIA: Bucket; MEDIA_SIGNING_KEY?: string };
 
 /** Public prefixes (DATA_MODEL §6). `c/{campus}/chat/` stays private. */
 export const PUBLIC_PREFIXES = ['c/', 'share/'] as const;
@@ -64,6 +64,60 @@ export function publicKey(pathname: string): string | null {
   return TYPES[ext] ? key : null;
 }
 
+/** c/{campus}/chat/{chat}/{file}: private, served only with a valid signature. */
+export function chatKey(pathname: string): string | null {
+  let key: string;
+  try {
+    key = decodeURIComponent(pathname.replace(/^\/+/, ''));
+  } catch {
+    return null;
+  }
+  if (
+    key.length > 512 ||
+    key.split('/').some((part) => part === '' || part === '.' || part === '..')
+  ) {
+    return null;
+  }
+  return /^c\/[^/]+\/chat\/[^/]+\/[0-9a-f-]{36}_(full|thumb)\.webp$/.test(key) ? key : null;
+}
+
+/** Hex HMAC-SHA256 of "key:exp" (matches private.media_signed_path in SQL). */
+export async function signChat(secret: string, key: string, exp: number): Promise<string> {
+  const enc = new TextEncoder();
+  const k = await crypto.subtle.importKey(
+    'raw',
+    enc.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const mac = await crypto.subtle.sign('HMAC', k, enc.encode(`${key}:${exp}`));
+  return [...new Uint8Array(mac)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+/** Constant-time string compare (equal lengths only). */
+function same(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i += 1) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+/** Seconds a signed chat URL is still good for, or null when it isn't valid. */
+export async function chatAccess(
+  url: URL,
+  secret: string | undefined,
+  now: number,
+): Promise<number | null> {
+  const key = chatKey(url.pathname);
+  const exp = Number(url.searchParams.get('exp'));
+  const sig = url.searchParams.get('sig') ?? '';
+  if (!key || !secret || !Number.isInteger(exp) || !/^[0-9a-f]{64}$/.test(sig)) return null;
+  const left = exp - Math.floor(now / 1000);
+  if (left <= 0 || left > 3 * 3600) return null;
+  return same(await signChat(secret, key, exp), sig) ? left : null;
+}
+
 function notFound(): Response {
   return new Response('Not found', {
     status: 404,
@@ -83,7 +137,16 @@ export async function handle(
   if (rateLimited(ip, now)) {
     return new Response('Too many requests', { status: 429, headers: { 'retry-after': '60' } });
   }
-  const key = publicKey(new URL(request.url).pathname);
+  const url = new URL(request.url);
+  let key = publicKey(url.pathname);
+  let cacheControl = CACHE_CONTROL;
+  if (!key) {
+    // Chat photos (R1.1): only with a valid, unexpired signature.
+    const left = await chatAccess(url, env.MEDIA_SIGNING_KEY, now);
+    if (left === null) return notFound();
+    key = chatKey(url.pathname);
+    cacheControl = `private, max-age=${left}`;
+  }
   if (!key) return notFound();
 
   const object = await env.MEDIA.get(key);
@@ -92,7 +155,7 @@ export async function handle(
   const ext = key.slice(key.lastIndexOf('.') + 1).toLowerCase();
   const headers = {
     'content-type': TYPES[ext] as string,
-    'cache-control': CACHE_CONTROL,
+    'cache-control': cacheControl,
     'x-content-type-options': 'nosniff',
     etag: object.httpEtag,
     'content-length': String(object.size),

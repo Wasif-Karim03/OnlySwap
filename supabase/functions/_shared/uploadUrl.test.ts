@@ -70,6 +70,7 @@ test('avatar and share keys', () => {
   assert.equal(objectKey('avatar', 'c', 'u', 'u', 'full', 'x'), 'c/c/u/u/avatar_x.webp');
   assert.equal(objectKey('share', 'c', 'u', 'L', 'full', 'x'), 'share/L.jpg');
   assert.equal(objectKey('quad', 'c', 'u', 'P', 'thumb', 'x'), 'c/c/quad/P/x_thumb.webp');
+  assert.equal(objectKey('chat', 'c', 'u', 'C', 'full', 'x'), 'c/c/chat/C/x_full.webp');
 });
 
 test('sizes and types follow DATA_MODEL §6', async () => {
@@ -111,7 +112,7 @@ test('sizes and types follow DATA_MODEL §6', async () => {
       'INVALID:size',
     ],
     [{ kind: 'share', target_id: LISTING, files: [photo(0, 'full')] }, 'INVALID:type'],
-    [{ kind: 'chat', target_id: LISTING, files: [photo(0, 'full')] }, 'INVALID:kind'],
+    [{ kind: 'video', target_id: LISTING, files: [photo(0, 'full')] }, 'INVALID:kind'],
     [{ kind: 'listing', target_id: '../x', files: [photo(0, 'full')] }, 'INVALID:target_id'],
     [{ kind: 'listing', target_id: LISTING, files: [photo(0, 'full', 0)] }, 'INVALID:size'],
   ];
