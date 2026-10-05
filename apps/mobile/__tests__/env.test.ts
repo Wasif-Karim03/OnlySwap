@@ -26,6 +26,19 @@ describe('P1-ENV-01 env validation', () => {
     );
   });
 
+  it('accepts private LAN addresses so a phone can reach the Mac', () => {
+    for (const host of ['192.168.4.53', '172.20.122.51', '10.0.0.7']) {
+      expect(() =>
+        parseEnv({ ...valid, EXPO_PUBLIC_SUPABASE_URL: `http://${host}:54321` }),
+      ).not.toThrow();
+    }
+    for (const host of ['172.32.0.1', '11.0.0.1', '8.8.8.8']) {
+      expect(() =>
+        parseEnv({ ...valid, EXPO_PUBLIC_SUPABASE_URL: `http://${host}:54321` }),
+      ).toThrow(/must be https/);
+    }
+  });
+
   it('crashes with a clear message listing every missing variable', () => {
     let error: unknown;
     try {
