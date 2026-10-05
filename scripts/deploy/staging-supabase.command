@@ -77,9 +77,10 @@ if [ -z "$GMAIL_PASS" ]; then
   fi
 fi
 SUPPORT=$(kc_get onlyswap-support-inbox)
+case "$SUPPORT" in *@*) ;; *) SUPPORT="" ;; esac
 if [ -z "$SUPPORT" ]; then
   read -rp "Support inbox (where help requests go, Enter = sender Gmail): " SUPPORT
-  SUPPORT=${SUPPORT:-$GMAIL_USER}
+  case "$SUPPORT" in *@*) ;; *) SUPPORT=$GMAIL_USER ;; esac
   [ -n "$SUPPORT" ] && kc_set onlyswap-support-inbox "$SUPPORT"
 fi
 
@@ -95,12 +96,12 @@ let toml = fs.readFileSync(file, 'utf8');
 const i = toml.indexOf(start);
 if (i >= 0) toml = toml.slice(0, i).trimEnd() + '\n' + toml.slice(toml.indexOf(end) + end.length).trimStart();
 const smtp = gmail
-  ? `\n[remotes.staging.auth.email.smtp]\nenabled = true\nhost = "smtp.gmail.com"\nport = 465\nuser = "${gmail}"\npass = "env(STAGING_SMTP_PASS)"\nadmin_email = "${gmail}"\nsender_name = "OnlySwap"\n`
+  ? `\n[remotes.staging.auth.email.smtp]\nenabled = true\nhost = "smtp.gmail.com"\nport = 465\nuser = "env(STAGING_SMTP_USER)"\npass = "env(STAGING_SMTP_PASS)"\nadmin_email = "env(STAGING_SMTP_USER)"\nsender_name = "OnlySwap"\n`
   : '';
 toml = `${toml.trimEnd()}\n\n${start}\n[remotes.staging]\nproject_id = "${ref}"\n\n[remotes.staging.auth]\nsite_url = "${site}"\nadditional_redirect_urls = ["${site}"]\n${smtp}${end}\n`;
 fs.writeFileSync(file, toml);
 NODE
-STAGING_SMTP_PASS="$GMAIL_PASS" SB config push --project-ref "$REF" --yes 2>&1 | tee -a "$LOG" || die "config push failed"
+STAGING_SMTP_USER="$GMAIL_USER" STAGING_SMTP_PASS="$GMAIL_PASS" SB config push --project-ref "$REF" --yes 2>&1 | tee -a "$LOG" || die "config push failed"
 
 say "6/7 Vault secrets and function secrets"
 KEYS=$(SB projects api-keys --project-ref "$REF" --reveal -o json) || die "could not read API keys"
