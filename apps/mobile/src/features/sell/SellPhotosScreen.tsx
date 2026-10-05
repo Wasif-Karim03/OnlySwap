@@ -14,6 +14,7 @@ import { Text } from '@/components/Text';
 import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
 import { pickPhotos, type PickedPhoto } from '@/lib/media';
+import { supportsFeature } from '@/lib/platform';
 import {
   osPermissions,
   primerStep as primerStepOf,
@@ -285,7 +286,7 @@ export function SellPhotosScreen({
         photos={draft.photos}
         progress={progress}
         sourceOf={(p) => p.uri || (p.thumbPath ? mediaUrl(mediaBase(), p.thumbPath) : '')}
-        onCamera={() => void withPermission('camera')}
+        onCamera={supportsFeature('camera') ? () => void withPermission('camera') : undefined}
         onLibrary={() => void withPermission('photos')}
         onRemove={remove}
         onRetry={retry}

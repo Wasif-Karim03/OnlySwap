@@ -1,0 +1,7 @@
+# Student web app (P13-WEB-07). Every other path falls back to index.html:
+# the export has no top-level 404.html, so Cloudflare Pages serves the app as a
+# single-page app and Expo Router shows the route (or its own not-found screen).
+# Do not add "/* /index.html 200": Pages flags it as an infinite loop.
+
+# Listing share links (https://<site>/l/<id>) opened on the web app's host.
+/l/:id /listing/:id 302

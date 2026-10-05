@@ -142,6 +142,8 @@ export function EmailScreen({ api = authApi }: { api?: AuthApi }) {
           autoCorrect={false}
           textContentType="password"
           autoComplete="password"
+          returnKeyType="go"
+          onSubmitEditing={() => canSend && send.mutate()}
           testID="email-password"
         />
       ) : null}

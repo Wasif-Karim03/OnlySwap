@@ -26,6 +26,7 @@ import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
 import { pickPhotos, type PickedPhoto } from '@/lib/media';
 import { osPermissions, primerStep, type OsApi } from '@/lib/permissions';
+import { enterSends } from '@/lib/platform';
 import type { RealtimeSource } from '@/lib/realtime';
 import { chat as copy } from '@/strings';
 
@@ -361,6 +362,12 @@ export function ChatScreen({
               multiline
               maxLength={1000}
               style={styles.input}
+              // Web app: Enter sends, Shift+Enter is a new line (P13-WEB-07).
+              onKeyPress={(e) => {
+                if (!enterSends(e)) return;
+                e.preventDefault();
+                if (text.trim()) send();
+              }}
               testID="chat-input"
             />
             <IconButton

@@ -17,6 +17,7 @@ import { getEnv } from '@/lib/env';
 import { getSupabase } from '@/lib/supabase';
 import { createQueryClient, wireQueryManagers } from '@/lib/queryClient';
 import { startTelemetry, useTelemetry } from '@/lib/telemetry';
+import { useWebTitle } from '@/lib/webTitle';
 import { useKeepModeOnFontScale } from '@/theme/mode';
 
 // Fail fast: a missing or invalid EXPO_PUBLIC_* value stops the app at launch
@@ -38,6 +39,8 @@ export default function RootLayout() {
   const [queryClient] = useState(createQueryClient);
   useKeepModeOnFontScale();
   useDevRouteLog();
+  // Web app (P13-WEB-07): a page title per route.
+  useWebTitle();
   useTelemetry();
   useEffect(() => watchSessionExpiry(getSupabase().auth), []);
   // Home screen widget + meetup Live Activity follow the meetups the app loads (P17-FEAT-01).

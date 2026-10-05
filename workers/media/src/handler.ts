@@ -157,6 +157,8 @@ export async function handle(
     'content-type': TYPES[ext] as string,
     'cache-control': cacheControl,
     'x-content-type-options': 'nosniff',
+    // Public images may be drawn by the web app (share card capture).
+    'access-control-allow-origin': '*',
     etag: object.httpEtag,
     'content-length': String(object.size),
   };

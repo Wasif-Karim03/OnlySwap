@@ -10,7 +10,9 @@ import { Button } from '@/components/Button';
 import { GlyphTile } from '@/components/EmptyState';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
+import { WebDateInput } from '@/components/WebDateInput';
 import { errorCopy, toAppError } from '@/lib/errors';
+import { isWebPlatform } from '@/lib/platform';
 import { age as copy } from '@/strings';
 
 import { requestAgeSignal, toIsoDate, type AgeRangeModule, type Device } from './age';
@@ -188,30 +190,49 @@ export function AgeScreen({
         />
       }
     >
-      <Tappable
-        accessibilityRole="button"
-        accessibilityLabel={copy.fieldLabel}
-        accessibilityValue={{ text: date ? date.toLocaleDateString() : copy.fieldPlaceholder }}
-        onPress={() => setPickerOpen(true)}
-        testID="age-field"
-      >
-        <View style={styles.field(pickerOpen && Platform.OS === 'ios')}>
+      {isWebPlatform() ? (
+        // Web app (P13-WEB-07): the browser's date field instead of the wheels.
+        <View style={styles.webField}>
           <Text variant="label" tone="ink2">
             {copy.fieldLabel}
           </Text>
-          <Text variant="body" tone={date ? 'ink' : 'ink3'}>
-            {date
-              ? date.toLocaleDateString(undefined, {
-                  month: 'long',
-                  day: 'numeric',
-                  year: 'numeric',
-                })
-              : copy.fieldPlaceholder}
-          </Text>
+          <WebDateInput
+            value={date}
+            max={maxDate}
+            label={copy.fieldLabel}
+            onChange={(value) => {
+              setDate(value);
+              setError(null);
+            }}
+            testID="age-field-web"
+          />
         </View>
-      </Tappable>
+      ) : (
+        <Tappable
+          accessibilityRole="button"
+          accessibilityLabel={copy.fieldLabel}
+          accessibilityValue={{ text: date ? date.toLocaleDateString() : copy.fieldPlaceholder }}
+          onPress={() => setPickerOpen(true)}
+          testID="age-field"
+        >
+          <View style={styles.field(pickerOpen && Platform.OS === 'ios')}>
+            <Text variant="label" tone="ink2">
+              {copy.fieldLabel}
+            </Text>
+            <Text variant="body" tone={date ? 'ink' : 'ink3'}>
+              {date
+                ? date.toLocaleDateString(undefined, {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })
+                : copy.fieldPlaceholder}
+            </Text>
+          </View>
+        </Tappable>
+      )}
 
-      {pickerOpen ? (
+      {pickerOpen && !isWebPlatform() ? (
         <DateTimePicker
           testID="age-picker"
           value={date ?? startDate}
@@ -245,6 +266,7 @@ const styles = StyleSheet.create((theme) => ({
     justifyContent: 'center',
     backgroundColor: theme.colors.bg,
   },
+  webField: { gap: theme.space.xs },
   field: (focused: boolean) => ({
     gap: theme.space.xs,
     padding: theme.space.lg,

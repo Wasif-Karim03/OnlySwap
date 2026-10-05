@@ -8,7 +8,7 @@
  * Under Jest the app always runs in English so tests can match en.ts text.
  */
 
-import { DevSettings } from 'react-native';
+import { DevSettings, Platform } from 'react-native';
 
 import { en, type Strings } from './en';
 import { es } from './es';
@@ -80,6 +80,11 @@ export const strings: Strings = LOCALES[locale];
 
 /** Reloads the JS bundle: expo-updates in release builds, DevSettings in dev. */
 export async function reloadApp(): Promise<void> {
+  // Web app (P13-WEB-07): a page reload is the restart.
+  if (Platform.OS === 'web') {
+    globalThis.location?.reload();
+    return;
+  }
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const Updates = require('expo-updates') as typeof import('expo-updates');
@@ -156,6 +161,7 @@ export const {
   waitlist,
   unlocked,
   spotsMap,
+  web,
 } = strings;
 
 export type { Strings };

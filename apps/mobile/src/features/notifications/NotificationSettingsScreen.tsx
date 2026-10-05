@@ -15,6 +15,7 @@ import { Toggle } from '@/components/Toggle';
 import { useToastStore } from '@/components/Toast';
 import { fill } from '@/lib/format';
 import { osPermissions, type OsApi } from '@/lib/permissions';
+import { supportsFeature } from '@/lib/platform';
 import { notificationsScreen as copy } from '@/strings';
 import { readableColumn } from '@/theme/layout';
 
@@ -66,6 +67,9 @@ export function NotificationSettingsScreen({
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/profile'));
 
   useEffect(() => {
+    // Web app: the switches still apply to the account's phones, but the browser
+    // never gets pushes, so there is no OS setting to warn about (P13-WEB-07).
+    if (!supportsFeature('push')) return undefined;
     let alive = true;
     os.get()
       .then((p) => alive && setOsOff(p.status !== 'granted'))

@@ -48,7 +48,9 @@ const styles = StyleSheet.create((theme) => ({
       fontWeight: t.fontWeight,
       letterSpacing: t.letterSpacing,
       lineHeight: t.lineHeight,
-      fontVariant: 'fontVariant' in t ? [...t.fontVariant] : undefined,
+      // Unistyles on web hands theme arrays over in another form; only spread a real array.
+      fontVariant:
+        'fontVariant' in t && Array.isArray(t.fontVariant) ? [...t.fontVariant] : undefined,
       color: tone === 'inverse' ? theme.colors.bg : theme.colors[tone],
     };
   },

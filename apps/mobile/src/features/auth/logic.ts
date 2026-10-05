@@ -110,7 +110,8 @@ export type GateInput = {
   /** `undefined` while loading; `null` when it couldn't be fetched (checks are skipped). */
   config: AppConfig | null | undefined;
   appVersion: string;
-  platform: 'ios' | 'android';
+  /** `web` = the student web app (P13-WEB-07): no store version check, no push primer. */
+  platform: 'ios' | 'android' | 'web';
   session: 'loading' | 'signedOut' | 'signedIn';
   /** `undefined` while loading; `null` when the signed-in user has no profile row. */
   profile: GateProfile | null | undefined;
@@ -163,8 +164,11 @@ export function computeGate(input: GateInput): GateRoute | null {
 
   if (config) {
     if (config.maintenance.enabled) return 'maintenance';
-    const min = input.platform === 'ios' ? config.minVersionIos : config.minVersionAndroid;
-    if (compareVersions(input.appVersion, min) < 0) return 'update';
+    // The web app is always the latest deploy, so there is nothing to update.
+    if (input.platform !== 'web') {
+      const min = input.platform === 'ios' ? config.minVersionIos : config.minVersionAndroid;
+      if (compareVersions(input.appVersion, min) < 0) return 'update';
+    }
   }
 
   if (session === 'signedOut') return 'welcome';
@@ -188,7 +192,8 @@ export function computeGate(input: GateInput): GateRoute | null {
   if (config && profile.rulesVersion !== config.rulesVersion) return 'rules-updated';
   if (profile.status === 'waitlist') return 'waitlist';
   if (profile.status === 'active' && profile.showUnlocked) return 'unlocked';
-  if (!input.notificationsAsked) return 'notifications';
+  // Web never registers for push (P13-WEB-07), so it skips the push primer.
+  if (!input.notificationsAsked && input.platform !== 'web') return 'notifications';
   return 'home';
 }
 

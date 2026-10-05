@@ -58,7 +58,7 @@ export function useAppGate(options: Options = {}): AppGate {
   const route = computeGate({
     config: configValue,
     appVersion: options.appVersion ?? Application.nativeApplicationVersion ?? '0',
-    platform: Platform.OS === 'android' ? 'android' : 'ios',
+    platform: Platform.OS === 'android' ? 'android' : Platform.OS === 'web' ? 'web' : 'ios',
     session: session.status,
     profile: profileValue,
     notificationsAsked: (options.notificationsAsked ?? defaultNotificationsAsked)(),

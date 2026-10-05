@@ -23,7 +23,8 @@ type Props = {
   progress: Record<string, number>;
   /** Preview source for a photo: its local file, or the uploaded thumbnail. */
   sourceOf: (photo: DraftPhoto) => string;
-  onCamera: () => void;
+  /** Omitted on web (P13-WEB-07): the browser only uploads from files. */
+  onCamera?: () => void;
   onLibrary: () => void;
   onRemove: (id: string) => void;
   onRetry: (id: string) => void;
@@ -49,7 +50,7 @@ export function PhotoGrid({
   const [width, setWidth] = useState(0);
   const cell = width > 0 ? (width - GAP * (COLUMNS - 1)) / COLUMNS : 0;
   const room = photos.length < MAX_PHOTOS;
-  const used = photos.length + (room ? 2 : 0);
+  const used = photos.length + (room ? (onCamera ? 2 : 1) : 0);
   const blanks = Math.max(0, Math.max(COLUMNS * 2, Math.ceil(used / COLUMNS) * COLUMNS) - used);
 
   return (
@@ -74,13 +75,15 @@ export function PhotoGrid({
       ))}
       {room ? (
         <>
-          <AddTile
-            cell={cell}
-            icon="camera"
-            label={copy.camera}
-            onPress={onCamera}
-            testID="sell-add-camera"
-          />
+          {onCamera ? (
+            <AddTile
+              cell={cell}
+              icon="camera"
+              label={copy.camera}
+              onPress={onCamera}
+              testID="sell-add-camera"
+            />
+          ) : null}
           <AddTile
             cell={cell}
             icon="image"

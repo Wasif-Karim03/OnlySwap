@@ -2009,6 +2009,29 @@ export const spotsMap = {
   spikeSpot: 'Test pin',
 } as const;
 
+/** Student web app (P13-WEB-07): browser tab titles, "<page> | OnlySwap". */
+export const web = {
+  appName: 'OnlySwap',
+  titles: {
+    signIn: 'Sign in',
+    discover: 'Discover',
+    search: 'Search',
+    saved: 'Saved',
+    listing: 'Listing',
+    offer: 'Make an offer',
+    inbox: 'Inbox',
+    chat: 'Chat',
+    sell: 'Sell',
+    profile: 'Profile',
+    settings: 'Settings',
+    notifications: 'Notifications',
+    quad: 'Quad',
+    meetup: 'Meetup',
+    safety: 'Safety',
+    help: 'Help',
+  },
+} as const;
+
 export const en = {
   permissions,
   tabs,
@@ -2056,6 +2079,7 @@ export const en = {
   waitlist,
   unlocked,
   spotsMap,
+  web,
 } as const;
 
 export default en;

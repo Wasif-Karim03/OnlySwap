@@ -1,100 +1,35 @@
 import * as Crypto from 'expo-crypto';
 import * as SecureStore from 'expo-secure-store';
-import { createMMKV, type MMKV } from 'react-native-mmkv';
+import { createMMKV } from 'react-native-mmkv';
+
+import {
+  createTypedStorage,
+  runMigrations,
+  type SessionStorage,
+  type TypedStorage,
+} from './storageCore';
 
 /**
- * Typed, versioned app storage (T-UNIT-LIB-08).
+ * Typed, versioned app storage (T-UNIT-LIB-08), iOS and Android.
  * MMKV is encrypted (AES-256) with a random key kept in SecureStore
  * (SECURITY §5). The auth session itself lives in SecureStore, see
- * `secureSessionStorage` below.
+ * `secureSessionStorage` below. The web app uses `storage.web.ts`.
  */
 
-export type StorageSchema = {
-  'theme.mode': 'system' | 'light' | 'dark';
-  /** Language setting (P17-FEAT-03); read once at startup by strings/index.ts. */
-  'settings.language': 'system' | 'en' | 'es';
-  'privacy.analyticsOptOut': boolean;
-  'privacy.crashOptOut': boolean;
-  'onboarding.swipeCoachSeen': boolean;
-  'onboarding.notificationsAsked': boolean;
-  /** The Sell draft; checked and versioned by features/sell/logic.ts (T-UNIT-SELL-01). */
-  'sell.draft': unknown;
-  /** Swipes not yet sent to record_swipes (features/feed/swipes.ts), newest 200. */
-  'feed.swipeQueue': unknown;
-  /** Recent search text, newest first (features/search/logic.ts). */
-  'search.recent': unknown;
-  /** Last time we asked for an App Store / Play review (ISO), X26. */
-  'review.lastAskedAt': string;
-  /** Invite code from an /i/{code} link, sent with the sign-up (features/auth/invite.ts). */
-  'auth.inviteCode': { code: string; savedAt: string };
-  /** Upcoming meetups the app has seen, for the widget (features/widgets/logic.ts KnownMeetup[]). */
-  'widgets.meetups': unknown;
-  /** The last widget payload sent to the home screen (Android redraws from it). */
-  'widgets.payload': unknown;
-  /** Live Activity content by ActivityKit id, so the app can match running activities to meetups. */
-  'widgets.liveProps': unknown;
-  /** Settings > Appearance "Show meetups on the Lock Screen" (P17-FEAT-01). Unset means on. */
-  'settings.liveActivities': boolean;
-  /** Settings > Appearance app icon (R2-ICON-01). */
-  'settings.appIcon': 'default' | 'night' | 'paper' | 'mono';
-};
+export {
+  createTypedStorage,
+  MIGRATIONS,
+  runMigrations,
+  STORAGE_VERSION,
+  type KVStore,
+  type Migration,
+  type SessionStorage,
+  type StorageKey,
+  type StorageSchema,
+  type TypedStorage,
+} from './storageCore';
 
-export type StorageKey = keyof StorageSchema;
-
-export const STORAGE_VERSION = 1;
-const VERSION_KEY = '__storage_version';
 const MMKV_KEY_NAME = 'onlyswap.mmkv.key.v1';
-
-/** Each entry upgrades storage from `from` to `from + 1`. */
-export type Migration = { from: number; run: (store: MMKV) => void };
-
-export const MIGRATIONS: Migration[] = [
-  // v0 → v1: first versioned layout. Nothing existed before, so only stamp it.
-  { from: 0, run: () => {} },
-];
-
-export function runMigrations(
-  store: MMKV,
-  migrations: Migration[] = MIGRATIONS,
-  target = STORAGE_VERSION,
-): number {
-  let version = store.getNumber(VERSION_KEY) ?? 0;
-  while (version < target) {
-    const step = migrations.find((m) => m.from === version);
-    if (!step) throw new Error(`storage: no migration from v${version}`);
-    step.run(store);
-    version += 1;
-    store.set(VERSION_KEY, version);
-  }
-  return version;
-}
-
-export function createTypedStorage(store: MMKV) {
-  return {
-    get<K extends StorageKey>(key: K): StorageSchema[K] | undefined {
-      const raw = store.getString(key);
-      if (raw === undefined) return undefined;
-      try {
-        return JSON.parse(raw) as StorageSchema[K];
-      } catch {
-        store.remove(key);
-        return undefined;
-      }
-    },
-    set<K extends StorageKey>(key: K, value: StorageSchema[K]): void {
-      store.set(key, JSON.stringify(value));
-    },
-    remove(key: StorageKey): void {
-      store.remove(key);
-    },
-    clearAll(): void {
-      store.clearAll();
-      store.set(VERSION_KEY, STORAGE_VERSION);
-    },
-  };
-}
-
-export type TypedStorage = ReturnType<typeof createTypedStorage>;
 
 function hex(bytes: Uint8Array): string {
   return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
@@ -132,7 +67,7 @@ export function getStorage(): TypedStorage {
  */
 const CHUNK = 1800;
 
-export const secureSessionStorage = {
+export const secureSessionStorage: SessionStorage = {
   async getItem(key: string): Promise<string | null> {
     const count = Number(await SecureStore.getItemAsync(`${key}.n`));
     if (!count) return SecureStore.getItemAsync(key);

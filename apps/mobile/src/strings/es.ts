@@ -1946,6 +1946,28 @@ const spotsMap: Strings['spotsMap'] = {
   spikeSpot: 'Pin de prueba',
 };
 
+const web: Strings['web'] = {
+  appName: 'OnlySwap',
+  titles: {
+    signIn: 'Iniciar sesión',
+    discover: 'Explorar',
+    search: 'Buscar',
+    saved: 'Guardados',
+    listing: 'Publicación',
+    offer: 'Hacer una oferta',
+    inbox: 'Bandeja',
+    chat: 'Chat',
+    sell: 'Vender',
+    profile: 'Perfil',
+    settings: 'Ajustes',
+    notifications: 'Notificaciones',
+    quad: 'Quad',
+    meetup: 'Encuentro',
+    safety: 'Seguridad',
+    help: 'Ayuda',
+  },
+};
+
 export const es: Strings = {
   permissions,
   tabs,
@@ -1993,6 +2015,7 @@ export const es: Strings = {
   waitlist,
   unlocked,
   spotsMap,
+  web,
 };
 
 export default es;

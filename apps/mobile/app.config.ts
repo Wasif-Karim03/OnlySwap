@@ -98,7 +98,19 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     slug: 'onlyswap',
     owner: EXPO_OWNER,
     version: '1.0.0',
-    platforms: ['ios', 'android'],
+    // Web = the student web app (P13-WEB-07, F36/W08): the same routes exported
+    // as a single-page app to Cloudflare Pages (`onlyswap-web`, WEB_DEPLOY.md).
+    platforms: ['ios', 'android', 'web'],
+    web: {
+      bundler: 'metro',
+      output: 'single',
+      name: 'OnlySwap',
+      shortName: 'OnlySwap',
+      lang: 'en',
+      themeColor: BRAND.bgLight,
+      backgroundColor: BRAND.bgLight,
+      favicon: './assets/images/favicon.png',
+    },
     scheme: 'onlyswap',
     orientation: 'portrait',
     userInterfaceStyle: 'automatic',

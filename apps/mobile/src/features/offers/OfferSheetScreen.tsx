@@ -169,6 +169,8 @@ export function OfferSheetScreen({
                   label={copy.amountLabel}
                   value={amount ?? String(ask / 100)}
                   onChangeText={setAmount}
+                  // Enter sends from the keyboard on the web app (P13-WEB-07).
+                  onSubmitEditing={() => valid && void send()}
                   testID="offer-amount"
                 />
                 <View style={styles.chips}>

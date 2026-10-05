@@ -6,6 +6,7 @@ import { StyleSheet } from 'react-native-unistyles';
 import { Text } from '@/components/Text';
 import { Toggle } from '@/components/Toggle';
 import { useToastStore } from '@/components/Toast';
+import { isWebPlatform } from '@/lib/platform';
 import { getStorage, type TypedStorage } from '@/lib/storage';
 import { settings as copy } from '@/strings';
 
@@ -44,7 +45,8 @@ export function AppIconPicker({
     const saved = store.get('settings.appIcon');
     return isAppIconChoice(saved) ? saved : 'default';
   });
-  if (!api.supported()) return null;
+  // The web app has no app icon to change (P13-WEB-07).
+  if (isWebPlatform(os) || !api.supported()) return null;
 
   const choose = async (choice: AppIconChoice) => {
     if (choice === selected) return;

@@ -14,6 +14,7 @@ import { SkeletonCard } from '@/components/Skeleton';
 import { Text } from '@/components/Text';
 import { useToastStore } from '@/components/Toast';
 import { getEnv } from '@/lib/env';
+import { isWebPlatform } from '@/lib/platform';
 import { getStorage } from '@/lib/storage';
 import { feed as copy, saved as savedCopy } from '@/strings';
 import { LAYOUT, useLayout } from '@/theme/layout';
@@ -65,8 +66,13 @@ export function DiscoverScreen({
   const router = useRouter();
   // iPad, wide window: a grid instead of swiping, beside the sidebar (board N5).
   // Narrower windows keep the deck, with the card capped (LAYOUT.deckMax).
+  // The web app always browses as a grid (W08): a mouse doesn't swipe.
   const layout = useLayout();
-  const gridWidth = layout.wide ? layout.width - LAYOUT.railWidth : undefined;
+  const gridWidth = layout.wide
+    ? layout.width - LAYOUT.railWidth
+    : isWebPlatform()
+      ? layout.width
+      : undefined;
   const store = useMemo(() => swipes ?? getSwipeStore(api), [swipes, api]);
   useSwipeFlush(store);
 

@@ -4,6 +4,7 @@ import { router, type Href } from 'expo-router';
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
 
+import { isWebPlatform } from './platform';
 import { createRpc, type RpcClient } from './rpc';
 import { getSupabase } from './supabase';
 
@@ -83,6 +84,8 @@ function projectId(): string | undefined {
 
 /** After permission is granted: get the Expo token and store it on the server. */
 export async function registerForPush(): Promise<string | null> {
+  // The web app never registers for push (P13-WEB-07): no web push in R2.
+  if (isWebPlatform()) return null;
   await ensureChannels();
   const perm = await Notifications.getPermissionsAsync();
   if (!perm.granted) return null;
@@ -97,6 +100,7 @@ export async function registerForPush(): Promise<string | null> {
 
 /** On sign-out: this device stops getting the account's pushes. */
 export async function unregisterPush(): Promise<void> {
+  if (isWebPlatform()) return;
   try {
     const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId: projectId() });
     await rpc('disable_push_token', { token });
@@ -106,6 +110,7 @@ export async function unregisterPush(): Promise<void> {
 }
 
 export async function setBadge(unread: number): Promise<void> {
+  if (isWebPlatform()) return;
   await Notifications.setBadgeCountAsync(Math.max(0, unread)).catch(() => false);
 }
 
@@ -116,7 +121,7 @@ export async function setBadge(unread: number): Promise<void> {
  */
 export function usePushHandling(enabled: boolean) {
   useEffect(() => {
-    if (!enabled) return undefined;
+    if (!enabled || isWebPlatform()) return undefined;
     const subs: { remove: () => void }[] = [];
     // Defensive: native modules can be missing (tests, Expo Go); push is best effort.
     try {

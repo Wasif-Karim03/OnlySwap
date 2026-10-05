@@ -1,0 +1,19 @@
+# Student web app (P13-WEB-07) on Cloudflare Pages project `onlyswap-web`.
+# `npx expo export -p web` copies public/ into dist/, so this ships as dist/_headers.
+# CSP: the app bundle, Supabase (REST, Auth, Realtime websockets), R2 presigned
+# uploads, photo reads (img-src https:), and optional Sentry/PostHog.
+# If EXPO_PUBLIC_MEDIA_URL is fetched from a custom domain, add it to connect-src.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' blob: data: https://*.supabase.co wss://*.supabase.co https://*.r2.cloudflarestorage.com https://*.workers.dev https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://us.i.posthog.com https://eu.i.posthog.com; worker-src 'self' blob:; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Strict-Transport-Security: max-age=31536000
+  Cross-Origin-Opener-Policy: same-origin
+
+/index.html
+  Cache-Control: no-cache
+
+/_expo/static/*
+  Cache-Control: public, max-age=31536000, immutable

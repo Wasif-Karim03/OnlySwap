@@ -303,7 +303,7 @@
 
 ## R2 backlog
 
-- [ ] **P13-WEB-07** W-LOGIN, W-BROWSE, W-LISTING, W-INBOX, W-SELL (web app, reusing mobile features with web-specific layout wrappers) · P4–P8 · a web user can list and make an offer · L
+- [x] **P13-WEB-07** W-LOGIN, W-BROWSE, W-LISTING, W-INBOX, W-SELL (web app, reusing mobile features with web-specific layout wrappers) · P4–P8 · a web user can list and make an offer · L
 - [ ] **P17-FEAT-01** Home screen widgets + Live Activity (`expo-widgets`), shipped only in the release that enables them · P16 · Apple rules checked (launch.md §4) · L
 - [ ] **P17-FEAT-02** iPad layout (N5/N6), then `supportsTablet=true` and 13" iPad screenshots · P16 · — · L
 - [ ] **P17-FEAT-03** Spanish (`es.ts`, screenshots per locale) · P16 · — · L

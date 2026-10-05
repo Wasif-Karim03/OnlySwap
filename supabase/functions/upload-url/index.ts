@@ -9,6 +9,7 @@ import postgres from 'npm:postgres@3.4.7';
 import { createR2, r2FromEnv } from '../_shared/r2.ts';
 import { handleUploadUrl } from '../_shared/uploadUrl.ts';
 import { withMonitoring } from '../_shared/monitor.ts';
+import { CORS_HEADERS } from '../_shared/waitlist.ts';
 
 const admin = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -22,6 +23,9 @@ Deno.serve(
   withMonitoring(
     'upload-url',
     async (req) => {
+      // The student web app (P13-WEB-07) calls this from the browser.
+      if (req.method === 'OPTIONS')
+        return new Response(null, { status: 204, headers: CORS_HEADERS });
       let body: unknown = null;
       try {
         body = await req.json();
@@ -47,7 +51,7 @@ Deno.serve(
       );
       return new Response(JSON.stringify(res.body), {
         status: res.status,
-        headers: { 'content-type': 'application/json' },
+        headers: { 'content-type': 'application/json', ...CORS_HEADERS },
       });
     },
     Deno.env,
