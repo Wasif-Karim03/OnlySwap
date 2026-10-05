@@ -32,6 +32,7 @@ import { Text } from '@/components/Text';
 import { useScreenReader } from '@/lib/a11y';
 import { haptic } from '@/lib/haptics';
 import { feed as copy } from '@/strings';
+import { LAYOUT, gridCellWidth, gridColumns } from '@/theme/layout';
 import { useReducedMotion } from '@/theme/reducedMotion';
 
 import {
@@ -59,6 +60,11 @@ type Props = {
   onOpen: (card: DeckCard) => void;
   /** Forces list mode; by default it follows the screen reader and reduce motion (X33). */
   listMode?: boolean;
+  /**
+   * iPad, wide window (board N5): a grid instead of swiping, laid out for this
+   * many points of width. Each tile keeps the list mode's Skip, Save and Offer.
+   */
+  gridWidth?: number;
   ref?: Ref<SwipeDeckHandle>;
   testID?: string;
 };
@@ -73,10 +79,18 @@ const LIST_ACTIONS = ['offer', 'save', 'skip', 'activate'] as const;
  * swipes for the buttons, and a plain list with four actions when a screen
  * reader or reduce motion is on.
  */
-export function SwipeDeck({ cards, onSwipe, onOpen, listMode, ref, testID = 'deck' }: Props) {
+export function SwipeDeck({
+  cards,
+  onSwipe,
+  onOpen,
+  listMode,
+  gridWidth,
+  ref,
+  testID = 'deck',
+}: Props) {
   const screenReader = useScreenReader();
   const reduced = useReducedMotion();
-  const asList = listMode ?? (screenReader || reduced);
+  const asList = gridWidth !== undefined || (listMode ?? (screenReader || reduced));
 
   const [size, setSize] = useState({ width: 0, height: 0 });
   const drag = useSharedValue(0);
@@ -96,7 +110,15 @@ export function SwipeDeck({ cards, onSwipe, onOpen, listMode, ref, testID = 'dec
   );
 
   if (asList) {
-    return <DeckList cards={cards} onSwipe={onSwipe} onOpen={onOpen} testID={testID} />;
+    return (
+      <DeckList
+        cards={cards}
+        onSwipe={onSwipe}
+        onOpen={onOpen}
+        gridWidth={gridWidth}
+        testID={testID}
+      />
+    );
   }
 
   const onLayout = (e: LayoutChangeEvent) => {
@@ -319,11 +341,17 @@ type ListProps = {
   cards: DeckCard[];
   onSwipe: (card: DeckCard, dir: SwipeDir) => void;
   onOpen: (card: DeckCard) => void;
+  gridWidth?: number;
   testID: string;
 };
 
-/** Screen reader / reduce motion mode (X33): a list, each card with four actions. */
-function DeckList({ cards, onSwipe, onOpen, testID }: ListProps) {
+/**
+ * Screen reader / reduce motion mode (X33): a list, each card with four
+ * actions. With `gridWidth` (iPad N5) the same tiles wrap into columns.
+ */
+function DeckList({ cards, onSwipe, onOpen, gridWidth, testID }: ListProps) {
+  const columns = gridWidth !== undefined ? gridColumns(gridWidth) : 1;
+  const cellWidth = gridWidth !== undefined ? gridCellWidth(gridWidth, columns) : undefined;
   const actions = LIST_ACTIONS.map((name) => ({
     name,
     label:
@@ -338,7 +366,7 @@ function DeckList({ cards, onSwipe, onOpen, testID }: ListProps) {
 
   return (
     <ScrollView
-      contentContainerStyle={styles.list}
+      contentContainerStyle={cellWidth !== undefined ? styles.grid : styles.list}
       testID={`${testID}-list`}
       accessibilityLabel={copy.listTitle}
     >
@@ -351,7 +379,11 @@ function DeckList({ cards, onSwipe, onOpen, testID }: ListProps) {
           else if (name === 'skip') onSwipe(card, 'left');
         };
         return (
-          <View key={card.id} style={styles.listItem}>
+          <View
+            key={card.id}
+            style={[styles.listItem, cellWidth !== undefined ? { width: cellWidth } : null]}
+            testID={cellWidth !== undefined ? `deck-tile-${card.id}` : undefined}
+          >
             <Tappable
               accessibilityRole="button"
               accessibilityLabel={cardLabel(card)}
@@ -370,14 +402,21 @@ function DeckList({ cards, onSwipe, onOpen, testID }: ListProps) {
                 variant="secondary"
                 size="M"
                 onPress={() => onSwipe(card, 'left')}
+                testID={`deck-item-${card.id}-skip`}
               />
               <Button
                 label={copy.save}
                 variant="secondary"
                 size="M"
                 onPress={() => onSwipe(card, 'save')}
+                testID={`deck-item-${card.id}-save`}
               />
-              <Button label={copy.offer} size="M" onPress={() => onSwipe(card, 'right')} />
+              <Button
+                label={copy.offer}
+                size="M"
+                onPress={() => onSwipe(card, 'right')}
+                testID={`deck-item-${card.id}-offer`}
+              />
             </View>
           </View>
         );
@@ -417,7 +456,20 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  list: { padding: theme.space.screen, gap: theme.space.xl },
+  list: {
+    padding: theme.space.screen,
+    gap: theme.space.xl,
+    width: '100%',
+    maxWidth: LAYOUT.readableMax,
+    alignSelf: 'center',
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    padding: theme.space.screen,
+    columnGap: theme.space.md,
+    rowGap: theme.space.xl,
+  },
   listItem: { gap: theme.space.md },
   listCard: { aspectRatio: 3 / 4 },
   listButtons: { flexDirection: 'row', gap: theme.space.sm, flexWrap: 'wrap' },

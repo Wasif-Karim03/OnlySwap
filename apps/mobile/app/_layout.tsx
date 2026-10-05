@@ -12,6 +12,7 @@ import { ToastHost } from '@/components/Toast';
 import { launchStartedAt } from '@/features/auth/launchTiming';
 import { SessionExpiredSheet } from '@/features/auth/SessionExpiredSheet';
 import { watchSessionExpiry } from '@/features/auth/sessionExpiry';
+import { startWidgetSync } from '@/features/widgets/sync';
 import { getEnv } from '@/lib/env';
 import { getSupabase } from '@/lib/supabase';
 import { createQueryClient, wireQueryManagers } from '@/lib/queryClient';
@@ -39,6 +40,8 @@ export default function RootLayout() {
   useDevRouteLog();
   useTelemetry();
   useEffect(() => watchSessionExpiry(getSupabase().auth), []);
+  // Home screen widget + meetup Live Activity follow the meetups the app loads (P17-FEAT-01).
+  useEffect(() => startWidgetSync(queryClient), [queryClient]);
   useEffect(() => {
     const t = setTimeout(() => void SplashScreen.hideAsync().catch(() => {}), SPLASH_BACKSTOP_MS);
     return () => clearTimeout(t);

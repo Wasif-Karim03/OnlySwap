@@ -17,6 +17,7 @@ import { Text } from '@/components/Text';
 import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
 import { campus as copy, feed as feedCopy, saved as savedCopy } from '@/strings';
+import { feedColumn } from '@/theme/layout';
 
 import type { FeedCursor } from '../feed/logic';
 import { answerWanted, getDraftStore, type DraftState } from '../sell/draft';
@@ -235,8 +236,10 @@ export function CampusFeedScreen({
 
   return (
     <View style={styles.root} testID="screen-campus">
-      {header}
-      {body}
+      <View style={feedColumn}>
+        {header}
+        {body}
+      </View>
     </View>
   );
 }

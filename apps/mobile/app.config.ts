@@ -3,6 +3,7 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
 import tokens from '@onlyswap/tokens/tokens.json';
 
 import permissions from './src/strings/permissions.json';
+import widgetCopy from './src/strings/widgets.json';
 
 /**
  * Locked native config (TASKS P1-SETUP-04). Every value here is asserted by
@@ -64,6 +65,22 @@ export const BLOCKED_ANDROID_PERMISSIONS = [
   'me.everything.badger.permission.BADGE_COUNT_WRITE',
 ] as const;
 
+/**
+ * Alternate app icons (R2-ICON-01, board F14: Night, Paper, Mono; Default is
+ * the main icon). Names must match NATIVE_ICON_NAMES in
+ * src/features/appIcon/logic.ts. Images: assets/images/app-icons/generate.py.
+ */
+export const ALT_APP_ICONS = [
+  { name: 'Night', file: 'night', background: tokens.color.dark.bg },
+  { name: 'Paper', file: 'paper', background: tokens.color.light.bg },
+  { name: 'Mono', file: 'mono', background: tokens.color.dark.card },
+] as const;
+
+/** iOS App Group shared by the app and the widget extension (expo-widgets). */
+export const WIDGET_APP_GROUP = `group.${BUNDLE_ID}`;
+/** Widget kind (iOS) / widget name (Android); must match features/widgets. */
+export const WIDGET_NAME = 'NextMeetup';
+
 /** `development` | `preview` | `production`, set per profile in eas.json. */
 export type AppVariant = 'development' | 'preview' | 'production';
 
@@ -91,7 +108,11 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     extra: { eas: { projectId: EAS_PROJECT_ID } },
     ios: {
       bundleIdentifier: BUNDLE_ID,
-      supportsTablet: false,
+      // iPad (P17-FEAT-02): phones stay portrait (`orientation`); with
+      // requireFullScreen off, prebuild adds all four iPad orientations
+      // (UISupportedInterfaceOrientations~ipad) for Split View and Slide Over.
+      supportsTablet: true,
+      requireFullScreen: false,
       deploymentTarget: '16.4',
       config: { usesNonExemptEncryption: false },
       associatedDomains: [`applinks:${WEB_HOST}`],
@@ -190,6 +211,57 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       // hooks; its manifest asks for location, which BLOCKED_ANDROID_PERMISSIONS
       // strips. No NSLocation* usage string is added (spots only, DEC 35).
       '@maplibre/maplibre-react-native',
+      // P17-FEAT-01: iOS "Next meetup" widget + meetup Live Activity (WidgetKit
+      // extension, App Group). No push to Live Activities: the app starts,
+      // updates and ends them itself ($0, no APNs server).
+      [
+        'expo-widgets',
+        {
+          groupIdentifier: WIDGET_APP_GROUP,
+          enablePushNotifications: false,
+          widgets: [
+            {
+              name: WIDGET_NAME,
+              displayName: widgetCopy.nextMeetupName,
+              description: widgetCopy.nextMeetupDescription,
+              ios: { supportedFamilies: ['systemSmall', 'systemMedium'] },
+            },
+          ],
+        },
+      ],
+      // P17-FEAT-01: Android "Next meetup" home screen widget.
+      [
+        'react-native-android-widget',
+        {
+          widgets: [
+            {
+              name: WIDGET_NAME,
+              label: widgetCopy.nextMeetupName,
+              description: widgetCopy.nextMeetupDescription,
+              minWidth: '110dp',
+              minHeight: '110dp',
+              targetCellWidth: 2,
+              targetCellHeight: 2,
+              resizeMode: 'horizontal|vertical',
+              // Redraw every 30 min (the minimum) so an ended meetup drops off.
+              updatePeriodMillis: 1_800_000,
+            },
+          ],
+        },
+      ],
+      // R2-ICON-01: alternate icons (iOS alternate icons, Android activity-alias).
+      [
+        'expo-alternate-app-icons',
+        ALT_APP_ICONS.map((icon) => ({
+          name: icon.name,
+          ios: `./assets/images/app-icons/${icon.file}.png`,
+          android: {
+            foregroundImage: `./assets/images/app-icons/${icon.file}-foreground.png`,
+            backgroundColor: icon.background,
+            monochromeImage: './assets/images/android-icon-monochrome.png',
+          },
+        })),
+      ],
       ['./plugins/withReleaseHardening', { variant }],
       // Source maps and native symbols upload during EAS builds (P14-MON-01). Needs
       // SENTRY_ORG / SENTRY_PROJECT (build env) and SENTRY_AUTH_TOKEN (EAS secret).

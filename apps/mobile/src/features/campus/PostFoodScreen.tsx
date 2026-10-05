@@ -18,6 +18,7 @@ import { getEnv } from '@/lib/env';
 import { pickPhotos, type PickedPhoto } from '@/lib/media';
 import { osPermissions, type OsApi } from '@/lib/permissions';
 import { campus as copy } from '@/strings';
+import { readableColumn } from '@/theme/layout';
 
 import { sellApi, type PostedListing, type SellApi } from '../sell/api';
 import { MEET_NOTE_MAX, sortSpots, TITLE_MAX } from '../sell/logic';
@@ -271,7 +272,12 @@ export function PostFoodScreen({
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   flex: { flex: 1 },
-  body: { gap: theme.space.lg, padding: theme.space.screen, paddingBottom: theme.space['2xl'] },
+  body: {
+    ...readableColumn,
+    gap: theme.space.lg,
+    padding: theme.space.screen,
+    paddingBottom: theme.space['2xl'],
+  },
   gap: { gap: theme.space.sm },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
   note: {

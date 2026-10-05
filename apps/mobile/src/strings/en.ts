@@ -1041,6 +1041,9 @@ export const offers = {
   unread: 'Unread',
   you: 'You: ',
   deletedUser: 'Deleted user',
+  // iPad two-pane Inbox (N6), right pane before a chat is picked
+  paneEmptyTitle: 'Pick a chat',
+  paneEmptyBody: 'Choose a conversation on the left to read it and reply.',
   // Status lines (E3-E8)
   status: {
     pending_seller: '{name} offered {amount}',
@@ -1192,6 +1195,17 @@ export const meetup = {
   emergencyHint: 'If you ever feel unsafe, leave and call 911.',
   cancelled: 'This meetup was cancelled.',
   rescheduledFrom: 'Moved from {when}',
+  // Home screen widget + Live Activity (P17-FEAT-01). Only spot, time and a first name.
+  widgetTitle: 'Next meetup',
+  widgetEmpty: 'No meetups planned',
+  widgetEmptyBody: 'Plan one in a chat.',
+  widgetOpenChat: 'Open chat',
+  widgetWith: 'With {name}',
+  liveTitle: 'Meet {name}',
+  liveTitleNoName: 'Your meetup',
+  liveOnMyWay: 'On my way',
+  liveLate: 'Running {n} min late',
+  liveStarted: 'Starting now',
 } as const;
 
 export const deal = {
@@ -1516,6 +1530,16 @@ export const settings = {
   // F14 appearance
   appearanceTitle: 'Appearance',
   modes: { system: 'Match phone', light: 'Light', dark: 'Dark' },
+  // R2-ICON-01 app icon
+  appIconTitle: 'App icon',
+  appIcons: { default: 'Default', night: 'Night', paper: 'Paper', mono: 'Mono' },
+  appIconFailed: "Couldn't change the icon. Try again.",
+  appIconAndroid: 'Your home screen can take a moment to show the new icon.',
+  // P17-FEAT-01 Live Activity
+  lockScreenTitle: 'Lock Screen',
+  liveActivities: 'Show meetups on the Lock Screen',
+  liveActivitiesBody:
+    'A countdown starts 2 hours before a confirmed meetup and ends after it. It shows the spot, the time and a first name.',
   // P17-FEAT-03 language (each language is named in its own language)
   languageTitle: 'Language',
   languages: { system: 'Match phone', en: 'English', es: 'Español' },

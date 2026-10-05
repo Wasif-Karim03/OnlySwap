@@ -18,6 +18,7 @@ import { fill } from '@/lib/format';
 import { registerForPush } from '@/lib/push';
 import { getStorage } from '@/lib/storage';
 import { waitlist as copy } from '@/strings';
+import { readableColumn } from '@/theme/layout';
 
 import { authApi, type AuthApi } from '../auth/api';
 import { useGateHandoff } from '../auth/useAppGate';
@@ -259,7 +260,12 @@ function TourRow({ icon, title, body }: { icon: IconName; title: string; body: s
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   pad: { padding: theme.space.screen },
-  body: { gap: theme.space.xl, padding: theme.space.screen, paddingBottom: theme.space['2xl'] },
+  body: {
+    ...readableColumn,
+    gap: theme.space.xl,
+    padding: theme.space.screen,
+    paddingBottom: theme.space['2xl'],
+  },
   gap: { gap: theme.space.sm },
   flex: { flex: 1, gap: theme.space.xs },
   row: { flexDirection: 'row', gap: theme.space.sm },

@@ -1,0 +1,48 @@
+# Raw iPad store screenshots (P17-FEAT-02). Optional: skip it and the export
+# script skips the iPad set. Run on a 13-inch iPad simulator in portrait
+# (iPad Pro 13-inch (M5), 2064 x 2752 px), signed in as the reviewer on Demo
+# University. At that width the app uses the wide layout: sidebar, grid
+# Discover (board N5) and the two-pane Inbox (N6).
+#   maestro --device "<iPad simulator UDID>" test apps/mobile/.maestro/store/screenshots-ipad.yaml -e REVIEW_PASSWORD=...
+# Then: node --experimental-strip-types scripts/export-store-assets.ts
+# Same five ideas and order as screenshots.yaml (see CAPTIONS in that script).
+appId: app.onlyswap
+tags: [store, ipad]
+---
+- launchApp:
+    clearState: true
+- takeScreenshot: ../../../../store-assets/raw/ipad-4
+- runFlow: ../subflows/reviewer.yaml
+# 1. Grid Discover (no swipe coach on the grid).
+- extendedWaitUntil:
+    visible:
+      id: 'deck-tile-.*'
+    timeout: 15000
+- takeScreenshot: ../../../../store-assets/raw/ipad-1
+# 2. Offer sheet from the first tile's Offer button.
+- tapOn:
+    id: 'deck-item-.*-offer'
+    index: 0
+- assertVisible:
+    id: screen-offer
+- takeScreenshot: ../../../../store-assets/raw/ipad-2
+- back
+# 3. Two-pane Inbox with the first chat open.
+- tapOn: Inbox
+- tapOn: Chats
+- runFlow:
+    when:
+      visible:
+        id: 'inbox-chat-.*'
+    commands:
+      - tapOn:
+          id: 'inbox-chat-.*'
+          index: 0
+      - extendedWaitUntil:
+          visible:
+            id: screen-chat
+          timeout: 10000
+      - takeScreenshot: ../../../../store-assets/raw/ipad-3
+# 5. Sell.
+- tapOn: Sell
+- takeScreenshot: ../../../../store-assets/raw/ipad-5

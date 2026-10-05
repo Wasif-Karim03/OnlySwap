@@ -175,8 +175,15 @@ const EXPECTED_PLIST_KEYS = [
   'UISupportedInterfaceOrientations',
   'UIUserInterfaceStyle',
   'UIViewControllerBasedStatusBarAppearance',
+  // R2 (DEC 76, 84): iPad orientations, widgets and Live Activities.
+  'UISupportedInterfaceOrientations~ipad',
+  'NSSupportsLiveActivities',
+  'NSSupportsLiveActivitiesFrequentUpdates',
+  'ExpoWidgetsAppGroupIdentifier',
   ...(VARIANT === 'development' ? DEV_ONLY_PLIST_KEYS : []),
 ];
+// Keys that some plugin versions write and others don't (alternate icons).
+const OPTIONAL_PLIST_KEYS = ['CFBundleIcons', 'CFBundleIcons~ipad'];
 // Usage descriptions allowed in R1.0: camera and photos only (no location, mic, contacts, Face ID).
 const ALLOWED_USAGE_KEYS = ['NSCameraUsageDescription', 'NSPhotoLibraryUsageDescription'];
 
@@ -185,6 +192,8 @@ const EXPECTED_ENTITLEMENTS = {
   'com.apple.developer.associated-domains': ['applinks:onlyswap.pages.dev'],
   'com.apple.developer.declared-age-range': true,
   'com.apple.developer.usernotifications.time-sensitive': true,
+  // Widgets read the next meetup from the shared App Group (DEC 84).
+  'com.apple.security.application-groups': ['group.app.onlyswap'],
 };
 
 // ---------- merged manifest mode (Mac: after gradle processes the release manifest)
@@ -234,10 +243,11 @@ if (!existsSync(iosDir)) {
 const target = readdirSync(iosDir).find((d) => existsSync(join(iosDir, d, 'Info.plist')));
 const plist = parsePlist(readFileSync(join(iosDir, target, 'Info.plist'), 'utf8'));
 const plistKeys = Object.keys(plist);
+const plistCore = plistKeys.filter((k) => !OPTIONAL_PLIST_KEYS.includes(k));
 check(
   `Info.plist has exactly the expected keys (${VARIANT})`,
-  sameSet(plistKeys, EXPECTED_PLIST_KEYS),
-  diff(plistKeys, EXPECTED_PLIST_KEYS),
+  sameSet(plistCore, EXPECTED_PLIST_KEYS),
+  diff(plistCore, EXPECTED_PLIST_KEYS),
 );
 const usage = plistKeys.filter(
   (k) => /UsageDescription$/.test(k) && !DEV_ONLY_PLIST_KEYS.includes(k),
@@ -249,13 +259,18 @@ check(
 );
 check('ITSAppUsesNonExemptEncryption is NO', plist.ITSAppUsesNonExemptEncryption === false);
 check(
-  'portrait only',
+  'iPhone: portrait only',
   (plist.UISupportedInterfaceOrientations ?? []).every((o) =>
     o.startsWith('UIInterfaceOrientationPortrait'),
   ),
   String(plist.UISupportedInterfaceOrientations),
 );
-check('no iPad orientations key (phone only)', !('UISupportedInterfaceOrientations~ipad' in plist));
+check(
+  'iPad: all four orientations (P17-FEAT-02)',
+  (plist['UISupportedInterfaceOrientations~ipad'] ?? []).length === 4,
+  String(plist['UISupportedInterfaceOrientations~ipad']),
+);
+check('iPad multitasking (UIRequiresFullScreen false)', plist.UIRequiresFullScreen === false);
 const schemes = (plist.CFBundleURLTypes ?? []).flatMap((t) => t.CFBundleURLSchemes ?? []);
 check('URL scheme onlyswap registered', schemes.includes('onlyswap'), schemes.join(', '));
 check('display name OnlySwap', plist.CFBundleDisplayName === 'OnlySwap');
@@ -294,8 +309,8 @@ check(
 const pbx = readFileSync(join(iosDir, `${target}.xcodeproj`, 'project.pbxproj'), 'utf8');
 check('bundle id app.onlyswap', /PRODUCT_BUNDLE_IDENTIFIER = "?app\.onlyswap"?;/.test(pbx));
 check(
-  'iPhone only (TARGETED_DEVICE_FAMILY = 1)',
-  /TARGETED_DEVICE_FAMILY = "?1"?;/.test(pbx) && !/TARGETED_DEVICE_FAMILY = "?1,2"?;/.test(pbx),
+  'iPhone and iPad (TARGETED_DEVICE_FAMILY = 1,2)',
+  /TARGETED_DEVICE_FAMILY = "?1,2"?;/.test(pbx),
 );
 const podProps = JSON.parse(readFileSync(join(iosDir, 'Podfile.properties.json'), 'utf8'));
 check(

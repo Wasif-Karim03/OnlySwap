@@ -1,4 +1,5 @@
 import type { ExpoConfig } from 'expo/config';
+import { IOSConfig } from 'expo/config-plugins';
 
 import buildConfig, { BLOCKED_ANDROID_PERMISSIONS, BUNDLE_ID, WEB_HOST } from '../app.config';
 import { permissions } from '../src/strings/en';
@@ -38,11 +39,36 @@ describe('T-STORE (TESTING §7) app.config.ts matches the locked native config (
     expect(cfg.android?.package).toBe('app.onlyswap');
   });
 
-  it('is portrait, phone only, with no export-regulated encryption', () => {
+  it('is portrait on phones, with no export-regulated encryption', () => {
     expect(cfg.orientation).toBe('portrait');
-    expect(cfg.ios?.supportsTablet).toBe(false);
     expect(cfg.ios?.config?.usesNonExemptEncryption).toBe(false);
     expect(cfg.ios?.deploymentTarget).toBe('16.4');
+  });
+
+  it('P17-FEAT-02 supports iPad in every orientation, multitasking on, phones portrait only', () => {
+    expect(cfg.ios?.supportsTablet).toBe(true);
+    expect(cfg.ios?.requireFullScreen).toBe(false);
+    // What prebuild writes to Info.plist, from the same Expo config plugins.
+    const plist = IOSConfig.RequiresFullScreen.setRequiresFullScreen(
+      cfg,
+      IOSConfig.Orientation.setOrientation(cfg, {}),
+    ) as Record<string, unknown>;
+    expect(plist.UISupportedInterfaceOrientations).toEqual([
+      'UIInterfaceOrientationPortrait',
+      'UIInterfaceOrientationPortraitUpsideDown',
+    ]);
+    expect([...(plist['UISupportedInterfaceOrientations~ipad'] as string[])].sort()).toEqual(
+      [
+        'UIInterfaceOrientationLandscapeLeft',
+        'UIInterfaceOrientationLandscapeRight',
+        'UIInterfaceOrientationPortrait',
+        'UIInterfaceOrientationPortraitUpsideDown',
+      ].sort(),
+    );
+    expect(plist.UIRequiresFullScreen).toBe(false);
+    expect(IOSConfig.DeviceFamily.getDeviceFamilies(cfg)).toEqual([1, 2]);
+    // Android stays phone-portrait (no tablets, CLAUDE.md platforms).
+    expect(cfg.android).not.toHaveProperty('screenOrientation');
   });
 
   it('declares exactly the three iOS capabilities', () => {

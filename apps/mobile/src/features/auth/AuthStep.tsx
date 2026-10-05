@@ -6,6 +6,7 @@ import { StyleSheet } from 'react-native-unistyles';
 
 import { NavBar } from '@/components/NavBar';
 import { Text } from '@/components/Text';
+import { readableColumn } from '@/theme/layout';
 
 type Props = {
   title: string;
@@ -71,6 +72,7 @@ export function AuthStep({
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   content: {
+    ...readableColumn,
     paddingHorizontal: theme.space.screen,
     paddingTop: theme.space.sm,
     paddingBottom: theme.space['2xl'],
@@ -78,6 +80,7 @@ const styles = StyleSheet.create((theme) => ({
   body: { marginTop: theme.space.sm },
   children: { marginTop: theme.space.xl, gap: theme.space.md },
   dock: {
+    ...readableColumn,
     paddingHorizontal: theme.space.screen,
     paddingTop: theme.space.sm,
     gap: theme.space.xs,

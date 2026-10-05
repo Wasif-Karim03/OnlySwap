@@ -26,6 +26,7 @@ import { getEnv } from '@/lib/env';
 import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
 import { feed as feedCopy, me as copy, profileView, intlLocale } from '@/strings';
+import { readableColumn } from '@/theme/layout';
 
 import { avatarDeps, type AvatarDeps } from '../auth/avatar';
 import { feedApi, type FeedApi } from '../feed/api';
@@ -616,7 +617,12 @@ export function RelistScreen({ id, api = meApi }: { id: string; api?: MeApi }) {
 
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
-  body: { padding: theme.space.screen, gap: theme.space.md, paddingBottom: theme.space['2xl'] },
+  body: {
+    ...readableColumn,
+    padding: theme.space.screen,
+    gap: theme.space.md,
+    paddingBottom: theme.space['2xl'],
+  },
   head: { flexDirection: 'row', alignItems: 'center', gap: theme.space.md },
   flex: { flex: 1 },
   tagRow: { flexDirection: 'row', marginTop: theme.space.xs },

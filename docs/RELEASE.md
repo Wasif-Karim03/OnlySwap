@@ -225,3 +225,14 @@ Legal pages are drafted by the owner. A lawyer review is optional and not free (
 - chat photos: on only with CSAM scanning or a logged risk acceptance (R11-PHOTO-GATE), else off and left out of the review notes
 - Quad tests green
 - per campus, later: `campuses.quad_enabled` on only at ≥300 active users, with a moderator besides the owner recommended
+
+**Widgets, Live Activity and app icons** (P17-FEAT-01, R2-ICON-01; Apple rules, App Review Guidelines 4.5 and the ActivityKit / WidgetKit HIG):
+- the release that turns these on is a new native build (widget extension, App Group `group.app.onlyswap`, alternate icons); the App ID and the widget extension ID (`app.onlyswap.ExpoWidgetsTarget`) both have the App Group capability in the Apple Developer portal, and EAS credentials cover both targets
+- Live Activity only for a real, time-bound event the user set up: a confirmed meetup, from 2 h before until 30 min after the start; the app ends it when the meetup is cancelled, done or over, and on sign-out
+- the user can turn it off in Settings > Appearance > "Show meetups on the Lock Screen" (and in iOS Settings); off ends any running activity
+- no ads, promotions or unrelated content in the widget or the Live Activity; tapping opens the matching chat or meetup
+- content is limited to the spot name, the time, the other person's first name and a status: no messages, listing details, last names, photos or location; nothing shows after sign-out
+- no Live Activity push (`enablePushNotifications: false`), so no APNs server and no `aps-environment` change for it
+- widget and Live Activity text follows Dynamic Type and uses system fonts and colors; VoiceOver reads the Android widget's label
+- alternate icons use only the OnlySwap mark (no school names or marks), and the default icon in the store listing is the main icon
+- manual check on a device: add the small and medium widget, confirm a meetup within 2 h, see the countdown on the Lock Screen and in the Dynamic Island, check in ("I'm here"), cancel, switch the setting off; Android: add the widget, switch each icon

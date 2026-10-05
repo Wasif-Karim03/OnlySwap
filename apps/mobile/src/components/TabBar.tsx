@@ -3,9 +3,11 @@ import { Platform, Pressable, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { fill } from '@/lib/format';
-import { nav as navCopy } from '@/strings';
+import { nav as navCopy, welcome as brandCopy } from '@/strings';
+import { LAYOUT } from '@/theme/layout';
 
 import { Icon, type IconName } from './icons/Icon';
+import { Mark } from './Mark';
 import { Text } from './Text';
 
 export type TabItem = {
@@ -39,6 +41,11 @@ type Props = {
   variant?: TabBarVariant;
   /** Adds the home-indicator inset. Off in the component kit preview. */
   safeBottom?: boolean;
+  /**
+   * `bar`: bottom tabs. `rail`: the iPad sidebar on wide windows (board N5/N6
+   * `aside`): wordmark, then one row per tab with icon and label.
+   */
+  layout?: 'bar' | 'rail';
   testID?: string;
 };
 
@@ -53,8 +60,20 @@ export function TabBar({
   onLongPress,
   variant = Platform.OS === 'android' ? 'android' : 'ios',
   safeBottom = true,
+  layout = 'bar',
   testID,
 }: Props) {
+  if (layout === 'rail') {
+    return (
+      <TabRail
+        items={items}
+        activeKey={activeKey}
+        onSelect={onSelect}
+        onLongPress={onLongPress}
+        testID={testID}
+      />
+    );
+  }
   const android = variant === 'android';
   return (
     <View testID={testID} accessibilityRole="tablist" style={styles.bar(android, safeBottom)}>
@@ -97,7 +116,106 @@ export function TabBar({
   );
 }
 
+/** iPad sidebar (board N5/N6): same tabs, roles and badges as the bar, stacked. */
+function TabRail({
+  items,
+  activeKey,
+  onSelect,
+  onLongPress,
+  testID,
+}: Pick<Props, 'items' | 'activeKey' | 'onSelect' | 'onLongPress' | 'testID'>) {
+  return (
+    <View testID={testID} style={styles.rail}>
+      <View style={styles.brand}>
+        <Mark size={size.avatarS} tone="accent" />
+        <Text variant="heading" style={styles.wordmark}>
+          {brandCopy.wordmark}
+        </Text>
+      </View>
+      <View accessibilityRole="tablist" style={styles.railItems}>
+        {items.map((item) => {
+          const active = item.key === activeKey;
+          const badge = badgeText(item.badge);
+          return (
+            <Pressable
+              key={item.key}
+              testID={testID ? `${testID}-${item.key}` : undefined}
+              accessibilityRole="tab"
+              accessibilityLabel={tabAccessibilityLabel(item)}
+              accessibilityState={{ selected: active }}
+              onPress={() => onSelect(item.key)}
+              onLongPress={onLongPress ? () => onLongPress(item.key) : undefined}
+              style={styles.railItem(active)}
+            >
+              <Icon
+                name={item.icon}
+                size={size.tabIcon}
+                tone={active ? 'ink' : 'ink2'}
+                strokeWidth={active ? 2.2 : 1.8}
+              />
+              <Text
+                variant="bodyStrong"
+                tone={active ? 'ink' : 'ink2'}
+                overlay
+                numberOfLines={1}
+                style={styles.railLabel}
+              >
+                {item.label}
+              </Text>
+              {badge ? (
+                <View style={styles.railBadge}>
+                  <Text variant="meta" tone="inverse" overlay style={styles.badgeText}>
+                    {badge}
+                  </Text>
+                </View>
+              ) : null}
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create((theme, rt) => ({
+  rail: {
+    width: LAYOUT.railWidth,
+    paddingTop: rt.insets.top + theme.space.xl,
+    paddingBottom: rt.insets.bottom + theme.space.lg,
+    paddingHorizontal: theme.space.md,
+    backgroundColor: theme.colors.bg2,
+    borderRightWidth: 1,
+    borderRightColor: theme.colors.line,
+  },
+  brand: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.space.sm,
+    paddingHorizontal: theme.space.sm,
+    paddingBottom: theme.space.xl,
+  },
+  wordmark: { fontWeight: '800' },
+  railItems: { gap: theme.space.xs },
+  railItem: (active: boolean) => ({
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.space.md,
+    minHeight: theme.size.hit,
+    paddingHorizontal: theme.space.md,
+    paddingVertical: theme.space.sm,
+    borderRadius: theme.radius.thumb,
+    backgroundColor: active ? theme.colors.bg : 'transparent',
+  }),
+  railLabel: { flex: 1 },
+  railBadge: {
+    minWidth: theme.size.badge,
+    minHeight: theme.size.badge,
+    paddingHorizontal: theme.space.xs,
+    borderRadius: theme.radius.chip,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.red,
+  },
   bar: (android: boolean, safeBottom: boolean) => ({
     flexDirection: 'row',
     justifyContent: 'space-around',

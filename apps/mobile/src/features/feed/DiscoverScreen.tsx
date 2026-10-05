@@ -16,6 +16,7 @@ import { useToastStore } from '@/components/Toast';
 import { getEnv } from '@/lib/env';
 import { getStorage } from '@/lib/storage';
 import { feed as copy, saved as savedCopy } from '@/strings';
+import { LAYOUT, useLayout } from '@/theme/layout';
 
 import { DiscoverSegment } from '../campus/DiscoverSegment';
 import { feedApi, type FeedApi } from './api';
@@ -62,6 +63,10 @@ export function DiscoverScreen({
   now?: () => Date;
 }) {
   const router = useRouter();
+  // iPad, wide window: a grid instead of swiping, beside the sidebar (board N5).
+  // Narrower windows keep the deck, with the card capped (LAYOUT.deckMax).
+  const layout = useLayout();
+  const gridWidth = layout.wide ? layout.width - LAYOUT.railWidth : undefined;
   const store = useMemo(() => swipes ?? getSwipeStore(api), [swipes, api]);
   useSwipeFlush(store);
 
@@ -192,8 +197,10 @@ export function DiscoverScreen({
   let body;
   if (phase === 'loading') {
     body = (
-      <View style={styles.stage} accessibilityLabel={copy.loading} testID="discover-loading">
-        <SkeletonCard />
+      <View style={styles.deck}>
+        <View style={styles.stage} accessibilityLabel={copy.loading} testID="discover-loading">
+          <SkeletonCard />
+        </View>
       </View>
     );
   } else if (phase === 'error') {
@@ -213,9 +220,9 @@ export function DiscoverScreen({
     );
   } else {
     body = (
-      <View style={styles.flex}>
-        <SwipeDeck cards={cards} onSwipe={onSwipe} onOpen={onOpen} />
-        {showCoach && cards.length > 0 ? (
+      <View style={gridWidth !== undefined ? styles.flex : styles.deck}>
+        <SwipeDeck cards={cards} onSwipe={onSwipe} onOpen={onOpen} gridWidth={gridWidth} />
+        {showCoach && cards.length > 0 && gridWidth === undefined ? (
           <View style={styles.coach} testID="discover-coach" accessibilityViewIsModal={false}>
             <Text variant="heading" accessibilityRole="header">
               {copy.coachTitle}
@@ -251,6 +258,7 @@ const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   flex: { flex: 1 },
   row: { flexDirection: 'row' },
+  deck: { flex: 1, width: '100%', maxWidth: LAYOUT.deckMax, alignSelf: 'center' },
   stage: { flex: 1, margin: theme.space.screen },
   coach: {
     position: 'absolute',

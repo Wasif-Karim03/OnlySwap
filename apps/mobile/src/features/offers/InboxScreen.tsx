@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, type ReactNode } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
@@ -16,7 +16,9 @@ import { Text } from '@/components/Text';
 import { getEnv } from '@/lib/env';
 import { useUserChannel, type RealtimeSource } from '@/lib/realtime';
 import { chat as chatCopy, notificationsScreen as notifCopy, offers as copy } from '@/strings';
+import { LAYOUT, useLayout } from '@/theme/layout';
 
+import { ChatScreen } from '../chat/ChatScreen';
 import { mediaUrl } from '../sell/logic';
 import { offersApi, type OffersApi } from './api';
 import { inboxSections, money, offerView, type ChatSummary, type Offer } from './logic';
@@ -25,18 +27,29 @@ export const inboxKey = ['inbox'] as const;
 
 type Tab = 'offers' | 'chats';
 
-/** E01 Inbox (P7-OFF-03): offers by whose turn it is, chats with unread, live while focused. */
+const defaultChatPane = (id: string) => <ChatScreen key={id} id={id} pane />;
+
+/**
+ * E01 Inbox (P7-OFF-03): offers by whose turn it is, chats with unread, live
+ * while focused. On a wide iPad window it is two panes (board N6): the list on
+ * the left and the open chat on the right, the way Messages works.
+ */
 export function InboxScreen({
   api = offersApi,
   realtime,
   mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
+  chatPane = defaultChatPane,
 }: {
   api?: OffersApi;
   realtime?: RealtimeSource;
   mediaBase?: () => string;
+  /** Right pane on wide windows; tests pass a stub. */
+  chatPane?: (id: string) => ReactNode;
 }) {
   const router = useRouter();
+  const twoPane = useLayout().wide;
   const [tab, setTab] = useState<Tab>('offers');
+  const [openChat, setOpenChat] = useState<string | null>(null);
   const query = useQuery({ queryKey: inboxKey, queryFn: () => api.inbox() });
   useUserChannel('inbox', () => void query.refetch(), realtime);
   // Also refresh whenever the tab comes back into view, in case a ping was missed.
@@ -89,10 +102,15 @@ export function InboxScreen({
         key={c.id}
         accessibilityRole="button"
         accessibilityLabel={`${name}, ${c.listing_title}${c.unread ? `, ${copy.unread}` : ''}. ${last}`}
-        onPress={() => router.push({ pathname: '/chat/[id]', params: { id: c.id } })}
+        accessibilityState={twoPane ? { selected: openChat === c.id } : undefined}
+        onPress={() =>
+          twoPane
+            ? setOpenChat(c.id)
+            : router.push({ pathname: '/chat/[id]', params: { id: c.id } })
+        }
         testID={`inbox-chat-${c.id}`}
       >
-        <View style={styles.row}>
+        <View style={[styles.row, twoPane && openChat === c.id ? styles.rowOpen : null]}>
           <Avatar
             name={name}
             uri={c.other?.avatar_path ? mediaUrl(base, c.other.avatar_path) : null}
@@ -168,8 +186,8 @@ export function InboxScreen({
     }
   }
 
-  return (
-    <View style={styles.root} testID="screen-inbox">
+  const list = (
+    <>
       <NavBar
         variant="large"
         title={copy.inboxTitle}
@@ -194,6 +212,33 @@ export function InboxScreen({
         />
       </View>
       {body}
+    </>
+  );
+
+  if (!twoPane) {
+    return (
+      <View style={styles.root} testID="screen-inbox">
+        {list}
+      </View>
+    );
+  }
+  return (
+    <View style={[styles.root, styles.panes]} testID="screen-inbox">
+      <View style={styles.listPane} testID="inbox-list-pane">
+        {list}
+      </View>
+      <View style={styles.flex} testID="inbox-chat-pane">
+        {openChat ? (
+          chatPane(openChat)
+        ) : (
+          <EmptyState
+            icon="chat"
+            title={copy.paneEmptyTitle}
+            body={copy.paneEmptyBody}
+            testID="inbox-pane-empty"
+          />
+        )}
+      </View>
     </View>
   );
 }
@@ -215,6 +260,18 @@ const styles = StyleSheet.create((theme) => ({
     paddingVertical: theme.space.sm,
   },
   flex: { flex: 1 },
+  panes: { flexDirection: 'row' },
+  listPane: {
+    width: LAYOUT.inboxListWidth,
+    borderRightWidth: 1,
+    borderRightColor: theme.colors.line,
+  },
+  rowOpen: {
+    marginHorizontal: -theme.space.sm,
+    paddingHorizontal: theme.space.sm,
+    borderRadius: theme.radius.thumb,
+    backgroundColor: theme.colors.bg2,
+  },
   dot: {
     width: theme.space.sm,
     height: theme.space.sm,

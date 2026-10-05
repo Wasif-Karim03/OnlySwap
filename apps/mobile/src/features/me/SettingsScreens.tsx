@@ -34,8 +34,10 @@ import {
   settings as copy,
   type LanguagePref,
 } from '@/strings';
+import { readableColumn } from '@/theme/layout';
 import { THEME_MODES, useThemeModeStore, type ThemeMode } from '@/theme/mode';
 
+import { AppIconPicker, LiveActivityToggle } from '../appIcon/AppearanceExtras';
 import { authApi, type AuthApi } from '../auth/api';
 import { meApi, type Me, type MeApi } from './api';
 import { exportApi, type ExportApi } from './exportData';
@@ -185,7 +187,7 @@ export function AppearanceScreen({ api = meApi }: { api?: MeApi }) {
   return (
     <View style={styles.root} testID="screen-appearance">
       <NavBar title={copy.appearanceTitle} onLeading={leave} />
-      <View style={styles.body}>
+      <ScrollView contentContainerStyle={styles.body}>
         {THEME_MODES.map((m) => (
           <OptionRow
             key={m}
@@ -195,7 +197,9 @@ export function AppearanceScreen({ api = meApi }: { api?: MeApi }) {
             onPress={() => choose(m)}
           />
         ))}
-      </View>
+        <AppIconPicker />
+        <LiveActivityToggle />
+      </ScrollView>
     </View>
   );
 }
@@ -441,6 +445,6 @@ export function DataExportScreen({
 
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
-  body: { padding: theme.space.screen, gap: theme.space.lg },
+  body: { ...readableColumn, padding: theme.space.screen, gap: theme.space.lg },
   list: { gap: theme.space.xs },
 }));

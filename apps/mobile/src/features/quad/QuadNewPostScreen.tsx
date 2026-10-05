@@ -24,6 +24,7 @@ import { pickPhotos, type PickedPhoto } from '@/lib/media';
 import { osPermissions, primerStep, type OsApi } from '@/lib/permissions';
 import { uuid } from '@/lib/uuid';
 import { quad as copy } from '@/strings';
+import { readableColumn } from '@/theme/layout';
 
 import { mediaUrl } from '../sell/logic';
 import { quadApi, type NewQuadPost, type QuadApi } from './api';
@@ -352,7 +353,7 @@ export function QuadNewPostScreen({
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   flex: { flex: 1 },
-  body: { gap: theme.space.lg, padding: theme.space.screen },
+  body: { ...readableColumn, gap: theme.space.lg, padding: theme.space.screen },
   gap: { gap: theme.space.sm },
   row: { flexDirection: 'row', gap: theme.space.sm, flexWrap: 'wrap' },
   optionRow: { flexDirection: 'row', alignItems: 'flex-end', gap: theme.space.xs },

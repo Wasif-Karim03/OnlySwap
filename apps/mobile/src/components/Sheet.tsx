@@ -7,6 +7,7 @@ import Animated, { runOnJS, useAnimatedStyle, useSharedValue } from 'react-nativ
 import { StyleSheet } from 'react-native-unistyles';
 
 import { sheet as sheetCopy } from '@/strings';
+import { LAYOUT, useLayout } from '@/theme/layout';
 import { animateTo, resolveMotion } from '@/theme/motion';
 import { useReducedMotion } from '@/theme/reducedMotion';
 
@@ -31,9 +32,12 @@ type Props = {
 /**
  * Bottom sheet (DESIGN_SYSTEM §6). Modal gives the focus trap and Android back;
  * spring open (fade with reduce motion); drag down to close; keyboard aware.
+ * On iPad (regular and wide windows) it floats as a centered card no wider
+ * than `LAYOUT.sheetMax` instead of spanning the screen (P17-FEAT-02).
  */
 export function Sheet({ visible, onClose, title, children, testID }: Props) {
   const { height: screenH } = useWindowDimensions();
+  const floating = useLayout().tablet;
   const reduced = useReducedMotion();
   const [mounted, setMounted] = useState(visible);
   const [panelH, setPanelH] = useState(screenH);
@@ -90,15 +94,19 @@ export function Sheet({ visible, onClose, title, children, testID }: Props) {
             style={styles.scrim}
           />
         </Animated.View>
-        <KeyboardAvoidingView behavior="padding" style={styles.bottom} pointerEvents="box-none">
+        <KeyboardAvoidingView
+          behavior="padding"
+          style={floating ? styles.center : styles.bottom}
+          pointerEvents="box-none"
+        >
           <GestureDetector gesture={pan}>
             <Animated.View
               testID={testID}
               accessibilityViewIsModal
               onLayout={(e) => setPanelH(e.nativeEvent.layout.height)}
-              style={panelStyle}
+              style={[floating ? styles.floatingSlot : null, panelStyle]}
             >
-              <View style={styles.panel}>
+              <View style={[styles.panel, floating ? styles.floatingPanel : null]}>
                 <View style={styles.grabber} accessible={false} />
                 {title ? (
                   <Text variant="heading" accessibilityRole="header">
@@ -119,6 +127,13 @@ const styles = StyleSheet.create((theme, rt) => ({
   fill: FILL,
   scrim: { flex: 1, backgroundColor: theme.colors.overlay },
   bottom: { flex: 1, justifyContent: 'flex-end' },
+  center: { flex: 1, justifyContent: 'center', padding: theme.space.xl },
+  floatingSlot: { width: '100%', maxWidth: LAYOUT.sheetMax, alignSelf: 'center' },
+  floatingPanel: {
+    borderRadius: theme.radius.sheet,
+    paddingBottom: theme.space.xl,
+    shadowOffset: { width: 0, height: theme.elevation.soft.offsetY },
+  },
   panel: {
     backgroundColor: theme.colors.bg,
     borderTopLeftRadius: theme.radius.sheet,

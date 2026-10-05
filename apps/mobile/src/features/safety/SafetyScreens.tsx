@@ -20,6 +20,7 @@ import { TextArea } from '@/components/TextArea';
 import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
 import { safety as copy, intlLocale } from '@/strings';
+import { readableColumn } from '@/theme/layout';
 
 import { authApi, type AuthApi } from '../auth/api';
 import { SpotsMap } from '../meetups/SpotsMap';
@@ -268,7 +269,12 @@ export function HelpScreen({
 
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
-  body: { padding: theme.space.screen, gap: theme.space.md, paddingBottom: theme.space['2xl'] },
+  body: {
+    ...readableColumn,
+    padding: theme.space.screen,
+    gap: theme.space.md,
+    paddingBottom: theme.space['2xl'],
+  },
   step: {
     gap: theme.space.xs,
     paddingVertical: theme.space.sm,

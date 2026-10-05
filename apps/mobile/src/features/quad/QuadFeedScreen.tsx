@@ -18,6 +18,7 @@ import { Text } from '@/components/Text';
 import { getEnv } from '@/lib/env';
 import { toAppError } from '@/lib/errors';
 import { quad as copy } from '@/strings';
+import { feedColumn } from '@/theme/layout';
 
 import { quadApi, type QuadApi, type QuadCursor, type QuadSort } from './api';
 import { quadKeys, useQuadStatus } from './cache';
@@ -180,63 +181,66 @@ function QuadFeed({ api, mediaBase, now }: Required<Deps>) {
     );
   }
 
+  // One centered column on iPad, the phone layout's width (P17-FEAT-02).
   return (
     <View style={styles.root} testID="screen-quad">
-      <NavBar
-        title={copy.title}
-        variant="large"
-        trailing={
-          <>
-            <IconButton
-              icon="bell"
-              accessibilityLabel={copy.openActivity}
-              onPress={() => router.push('/quad/activity')}
-              testID="quad-open-activity"
-            />
-            <IconButton
-              icon="eye"
-              accessibilityLabel={copy.openMuted}
-              onPress={() => router.push('/quad/muted')}
-              testID="quad-open-muted"
-            />
-            <IconButton
-              icon="user"
-              accessibilityLabel={copy.openMine}
-              onPress={() => router.push('/quad/mine')}
-              testID="quad-open-mine"
-            />
-          </>
-        }
-      />
-      <View style={styles.head}>
-        <View style={styles.anon}>
-          <Icon name="lock" size={14} tone="ink2" />
-          <Text variant="meta" tone="ink2">
-            {copy.subtitle}
-          </Text>
-        </View>
-        <SegmentedControl
-          label={copy.sortLabel}
-          segments={SORTS.map((s) => ({ value: s, label: copy.sorts[s] }))}
-          value={sort}
-          onChange={setSort}
+      <View style={feedColumn}>
+        <NavBar
+          title={copy.title}
+          variant="large"
+          trailing={
+            <>
+              <IconButton
+                icon="bell"
+                accessibilityLabel={copy.openActivity}
+                onPress={() => router.push('/quad/activity')}
+                testID="quad-open-activity"
+              />
+              <IconButton
+                icon="eye"
+                accessibilityLabel={copy.openMuted}
+                onPress={() => router.push('/quad/muted')}
+                testID="quad-open-muted"
+              />
+              <IconButton
+                icon="user"
+                accessibilityLabel={copy.openMine}
+                onPress={() => router.push('/quad/mine')}
+                testID="quad-open-mine"
+              />
+            </>
+          }
         />
-      </View>
-      <View style={styles.flex}>{body}</View>
-      {!off ? (
-        <View style={styles.fab}>
-          <Tappable
-            accessibilityRole="button"
-            accessibilityLabel={copy.newPost}
-            onPress={newPost}
-            testID="quad-new-post"
-          >
-            <View style={styles.fabFill}>
-              <Icon name="edit" tone="onAccent" />
-            </View>
-          </Tappable>
+        <View style={styles.head}>
+          <View style={styles.anon}>
+            <Icon name="lock" size={14} tone="ink2" />
+            <Text variant="meta" tone="ink2">
+              {copy.subtitle}
+            </Text>
+          </View>
+          <SegmentedControl
+            label={copy.sortLabel}
+            segments={SORTS.map((s) => ({ value: s, label: copy.sorts[s] }))}
+            value={sort}
+            onChange={setSort}
+          />
         </View>
-      ) : null}
+        <View style={styles.flex}>{body}</View>
+        {!off ? (
+          <View style={styles.fab}>
+            <Tappable
+              accessibilityRole="button"
+              accessibilityLabel={copy.newPost}
+              onPress={newPost}
+              testID="quad-new-post"
+            >
+              <View style={styles.fabFill}>
+                <Icon name="edit" tone="onAccent" />
+              </View>
+            </Tappable>
+          </View>
+        ) : null}
+      </View>
       {actions.overlays}
     </View>
   );

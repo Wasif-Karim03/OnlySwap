@@ -20,6 +20,7 @@ import { getEnv } from '@/lib/env';
 import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
 import { safety as copy, intlLocale } from '@/strings';
+import { readableColumn } from '@/theme/layout';
 
 import { authApi, type AuthApi } from '../auth/api';
 import { useSession } from '../auth/useSession';
@@ -310,7 +311,7 @@ export function DeleteAccountScreen({
 const styles = StyleSheet.create((theme, rt) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   statusRoot: { flex: 1, backgroundColor: theme.colors.bg, paddingTop: rt.insets.top },
-  body: { padding: theme.space.screen, gap: theme.space.md },
+  body: { ...readableColumn, padding: theme.space.screen, gap: theme.space.md },
   actions: { gap: theme.space.sm, marginTop: theme.space.lg },
   sheet: { gap: theme.space.md, paddingBottom: theme.space.xl },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },

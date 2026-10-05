@@ -21,6 +21,7 @@ import { Text } from '@/components/Text';
 import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
 import { feed as feedCopy, profileView as copy, intlLocale } from '@/strings';
+import { readableColumn } from '@/theme/layout';
 
 import { mediaUrl, priceLabel } from '../sell/logic';
 import { profileApi, type ProfileApi, type ProfileResult, type PublicProfile } from './api';
@@ -261,7 +262,7 @@ export function ProfileViewScreen({
 
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
-  body: { padding: theme.space.screen, gap: theme.space.md },
+  body: { ...readableColumn, padding: theme.space.screen, gap: theme.space.md },
   head: { alignItems: 'center', gap: theme.space.sm, paddingBottom: theme.space.lg },
   tags: { flexDirection: 'row', gap: theme.space.sm },
   stats: { flexDirection: 'row', gap: theme.space.lg },

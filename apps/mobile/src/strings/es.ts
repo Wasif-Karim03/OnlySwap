@@ -1029,6 +1029,8 @@ const offers: Strings['offers'] = {
   unread: 'Sin leer',
   you: 'Tú: ',
   deletedUser: 'Usuario eliminado',
+  paneEmptyTitle: 'Elige un chat',
+  paneEmptyBody: 'Elige una conversación a la izquierda para leerla y responder.',
   status: {
     pending_seller: '{name} ofreció {amount}',
     pending_buyer: 'Ofreciste {amount}. Esperando a {name}.',
@@ -1173,6 +1175,16 @@ const meetup: Strings['meetup'] = {
   emergencyHint: 'Si en algún momento te sientes en peligro, vete y llama al 911.',
   cancelled: 'Este encuentro se canceló.',
   rescheduledFrom: 'Cambiado de {when}',
+  widgetTitle: 'Próximo encuentro',
+  widgetEmpty: 'No hay encuentros planeados',
+  widgetEmptyBody: 'Planea uno en un chat.',
+  widgetOpenChat: 'Abrir chat',
+  widgetWith: 'Con {name}',
+  liveTitle: 'Encuentro con {name}',
+  liveTitleNoName: 'Tu encuentro',
+  liveOnMyWay: 'Voy en camino',
+  liveLate: 'Llego {n} min tarde',
+  liveStarted: 'Empieza ahora',
 };
 
 const deal: Strings['deal'] = {
@@ -1482,6 +1494,14 @@ const settings: Strings['settings'] = {
   crashBody: 'Cuando la app falla, envía un reporte sin tu nombre ni tu correo.',
   appearanceTitle: 'Apariencia',
   modes: { system: 'Igual que el teléfono', light: 'Claro', dark: 'Oscuro' },
+  appIconTitle: 'Ícono de la app',
+  appIcons: { default: 'Predeterminado', night: 'Noche', paper: 'Papel', mono: 'Mono' },
+  appIconFailed: 'No se pudo cambiar el ícono. Inténtalo de nuevo.',
+  appIconAndroid: 'Tu pantalla de inicio puede tardar un momento en mostrar el ícono nuevo.',
+  lockScreenTitle: 'Pantalla bloqueada',
+  liveActivities: 'Mostrar encuentros en la pantalla bloqueada',
+  liveActivitiesBody:
+    'Una cuenta regresiva empieza 2 horas antes de un encuentro confirmado y termina después. Muestra el lugar, la hora y un nombre de pila.',
   languageTitle: 'Idioma',
   languages: { system: 'Igual que el teléfono', en: 'English', es: 'Español' },
   languageRestartTitle: '¿Cambiar el idioma?',

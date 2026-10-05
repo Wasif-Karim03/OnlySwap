@@ -65,8 +65,11 @@ export function ChatScreen({
   photosOs = osPermissions.photos,
   openSettings = () => Linking.openSettings(),
   now = () => new Date(),
+  pane = false,
 }: {
   id: string;
+  /** Right pane of the iPad two-pane Inbox (N6): no back button. */
+  pane?: boolean;
   me?: string | null;
   api?: ChatApi;
   meetups?: MeetupsApi;
@@ -116,7 +119,7 @@ export function ChatScreen({
   if (info.isPending || (state.loading && state.items.length === 0)) {
     return (
       <View style={styles.root}>
-        <NavBar onLeading={leave} />
+        <NavBar leading={pane ? 'none' : 'back'} onLeading={leave} />
         <SkeletonList rows={6} />
       </View>
     );
@@ -124,7 +127,7 @@ export function ChatScreen({
   if (info.isError || !info.data) {
     return (
       <View style={styles.root}>
-        <NavBar onLeading={leave} />
+        <NavBar leading={pane ? 'none' : 'back'} onLeading={leave} />
         <ErrorState error={info.error} onRetry={() => info.refetch()} />
       </View>
     );
@@ -247,6 +250,7 @@ export function ChatScreen({
     <View style={styles.root} testID="screen-chat">
       <NavBar
         title={name}
+        leading={pane ? 'none' : 'back'}
         onLeading={leave}
         trailing={
           <IconButton

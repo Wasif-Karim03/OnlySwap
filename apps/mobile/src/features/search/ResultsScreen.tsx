@@ -16,6 +16,7 @@ import { useToastStore } from '@/components/Toast';
 import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
 import { feed as feedCopy, search as copy } from '@/strings';
+import { gridCellWidth, gridColumns, useLayout } from '@/theme/layout';
 
 import { sellApi } from '../sell/api';
 import { mediaUrl, priceLabel, type Category } from '../sell/logic';
@@ -40,6 +41,10 @@ export function ResultsScreen({
   mediaBase?: () => string;
 }) {
   const router = useRouter();
+  // More columns on iPad; every cell the same width, even in a short last row.
+  const { width } = useLayout();
+  const columns = gridColumns(width);
+  const cell = { width: gridCellWidth(width, columns) };
   const [filters, setFilters] = useState<SearchFilters>(initialFilters);
   const [sheet, setSheet] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -109,8 +114,9 @@ export function ResultsScreen({
   } else {
     body = (
       <FlatList
+        key={`cols-${columns}`}
         data={items}
-        numColumns={2}
+        numColumns={columns}
         keyExtractor={(i) => i.id}
         columnWrapperStyle={styles.columns}
         contentContainerStyle={styles.grid}
@@ -119,7 +125,7 @@ export function ResultsScreen({
           if (results.hasNextPage && !results.isFetchingNextPage) void results.fetchNextPage();
         }}
         renderItem={({ item }) => (
-          <View style={styles.cell}>
+          <View style={cell}>
             <ListingTile
               title={item.title}
               price={priceLabel(item.kind, item.price_cents, feedCopy.free)}
@@ -185,5 +191,4 @@ const styles = StyleSheet.create((theme) => ({
   },
   grid: { padding: theme.space.screen, gap: theme.space.lg },
   columns: { gap: theme.space.md },
-  cell: { flex: 1 },
 }));

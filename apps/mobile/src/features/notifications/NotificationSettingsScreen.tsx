@@ -16,6 +16,7 @@ import { useToastStore } from '@/components/Toast';
 import { fill } from '@/lib/format';
 import { osPermissions, type OsApi } from '@/lib/permissions';
 import { notificationsScreen as copy } from '@/strings';
+import { readableColumn } from '@/theme/layout';
 
 import { quadApi, type QuadApi } from '../quad/api';
 import { useQuadStatus } from '../quad/cache';
@@ -184,7 +185,7 @@ export function NotificationSettingsScreen({
 
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
-  body: { padding: theme.space.screen, gap: theme.space.lg },
+  body: { ...readableColumn, padding: theme.space.screen, gap: theme.space.lg },
   gap: { gap: theme.space.sm },
   row: { flexDirection: 'row', gap: theme.space.sm, flexWrap: 'wrap' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },

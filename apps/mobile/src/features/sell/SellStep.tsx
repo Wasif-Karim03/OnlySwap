@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 import { NavBar } from '@/components/NavBar';
@@ -8,6 +9,7 @@ import { StepIndicator } from '@/components/Progress';
 import { Text } from '@/components/Text';
 import { fill } from '@/lib/format';
 import { sell as copy } from '@/strings';
+import { readableColumn, useLayout } from '@/theme/layout';
 
 export const SELL_STEPS = 3;
 /** Used until the dock has been measured. */
@@ -51,6 +53,10 @@ export function SellStep({
   const [dockHeight, setDockHeight] = useState(DOCK_FALLBACK);
   const { theme } = useUnistyles();
   const fieldGap = theme.space.lg;
+  // iPad sidebar (wide): no tab bar below, so the dock pads for the home
+  // indicator itself and drops that padding while the keyboard is up.
+  const rail = useLayout().wide;
+  const insets = useSafeAreaInsets();
   return (
     <View style={styles.root} testID={testID}>
       <NavBar
@@ -86,8 +92,11 @@ export function SellStep({
         <View style={styles.children}>{children}</View>
       </KeyboardAwareScrollView>
       {dock ? (
-        <KeyboardStickyView>
-          <View style={styles.dock} onLayout={(e) => setDockHeight(e.nativeEvent.layout.height)}>
+        <KeyboardStickyView offset={rail ? { closed: 0, opened: insets.bottom } : undefined}>
+          <View
+            style={[styles.dock, rail ? { paddingBottom: insets.bottom + theme.space.md } : null]}
+            onLayout={(e) => setDockHeight(e.nativeEvent.layout.height)}
+          >
             {dock}
           </View>
         </KeyboardStickyView>
@@ -99,8 +108,13 @@ export function SellStep({
 
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
-  steps: { paddingHorizontal: theme.space.screen, paddingBottom: theme.space.sm },
+  steps: {
+    ...readableColumn,
+    paddingHorizontal: theme.space.screen,
+    paddingBottom: theme.space.sm,
+  },
   content: {
+    ...readableColumn,
     paddingHorizontal: theme.space.screen,
     paddingTop: theme.space.sm,
     paddingBottom: theme.space['2xl'],
@@ -108,6 +122,7 @@ const styles = StyleSheet.create((theme) => ({
   body: { marginTop: theme.space.xs },
   children: { marginTop: theme.space.lg, gap: theme.space.md },
   dock: {
+    ...readableColumn,
     paddingHorizontal: theme.space.screen,
     paddingTop: theme.space.sm,
     paddingBottom: theme.space.md,

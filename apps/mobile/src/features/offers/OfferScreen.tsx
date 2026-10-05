@@ -22,6 +22,7 @@ import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
 import { offers as copy, intlLocale } from '@/strings';
+import { readableColumn } from '@/theme/layout';
 
 import { dollarsToCents } from '../search/logic';
 import { mediaUrl } from '../sell/logic';
@@ -299,7 +300,7 @@ export function OfferScreen({
 
 const styles = StyleSheet.create((theme, rt) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
-  body: { padding: theme.space.screen, gap: theme.space.md },
+  body: { ...readableColumn, padding: theme.space.screen, gap: theme.space.md },
   listing: {
     flexDirection: 'row',
     gap: theme.space.md,
@@ -315,6 +316,7 @@ const styles = StyleSheet.create((theme, rt) => ({
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
   sheet: { gap: theme.space.lg, paddingBottom: theme.space.xl },
   dock: {
+    ...readableColumn,
     gap: theme.space.sm,
     paddingHorizontal: theme.space.screen,
     paddingTop: theme.space.md,

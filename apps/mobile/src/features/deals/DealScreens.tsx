@@ -19,6 +19,7 @@ import { TextArea } from '@/components/TextArea';
 import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
 import { deal as copy } from '@/strings';
+import { readableColumn } from '@/theme/layout';
 
 import { useSession } from '../auth/useSession';
 import { chatApi, type ChatApi } from '../chat/api';
@@ -386,7 +387,7 @@ export function RateScreen({
 
 const styles = StyleSheet.create((theme, rt) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
-  body: { padding: theme.space.screen, gap: theme.space.md },
+  body: { ...readableColumn, padding: theme.space.screen, gap: theme.space.md },
   row: { flexDirection: 'row', gap: theme.space.sm },
   flex: { flex: 1 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
@@ -397,6 +398,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     backgroundColor: theme.colors.bg2,
   },
   dock: {
+    ...readableColumn,
     paddingHorizontal: theme.space.screen,
     paddingTop: theme.space.md,
     paddingBottom: Math.max(rt.insets.bottom, theme.space.md),

@@ -18,6 +18,7 @@ import { Toggle } from '@/components/Toggle';
 import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
 import { feed as feedCopy, saved as copy } from '@/strings';
+import { gridCellWidth, gridColumns, useLayout } from '@/theme/layout';
 
 import { feedApi, type FeedApi } from '../feed/api';
 import type { FeedItem } from '../feed/logic';
@@ -54,6 +55,10 @@ export function SavedScreen({
   mediaBase?: () => string;
 }) {
   const router = useRouter();
+  // More columns on iPad; every cell the same width, even in a short last row.
+  const { width } = useLayout();
+  const columns = gridColumns(width);
+  const cell = { width: gridCellWidth(width, columns) };
   const qc = useQueryClient();
   const [tab, setTab] = useState<Tab>('items');
   const itemsQ = useQuery({ queryKey: ['saved', 'items'], queryFn: items });
@@ -113,13 +118,14 @@ export function SavedScreen({
     else
       body = (
         <FlatList
+          key={`cols-${columns}`}
           data={itemsQ.data}
-          numColumns={2}
+          numColumns={columns}
           keyExtractor={(i) => i.id}
           columnWrapperStyle={styles.columns}
           contentContainerStyle={styles.grid}
           renderItem={({ item }) => (
-            <View style={styles.cell}>
+            <View style={cell}>
               <ListingTile
                 title={item.title}
                 price={priceLabel(item.kind, item.price_cents, feedCopy.free)}
@@ -236,7 +242,6 @@ const styles = StyleSheet.create((theme) => ({
   tabs: { paddingHorizontal: theme.space.screen, paddingBottom: theme.space.md },
   grid: { padding: theme.space.screen, gap: theme.space.lg },
   columns: { gap: theme.space.md },
-  cell: { flex: 1 },
   unsave: { position: 'absolute', top: 0, right: 0 },
   list: { padding: theme.space.screen, gap: theme.space.md },
   searchRow: {

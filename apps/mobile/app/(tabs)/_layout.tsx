@@ -6,6 +6,7 @@ import { TabBar, type TabItem } from '@/components/TabBar';
 import { useQuadStatus } from '@/features/quad/cache';
 import { usePushHandling } from '@/lib/push';
 import { tabs } from '@/strings';
+import { useLayout } from '@/theme/layout';
 
 type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>>[0];
 
@@ -20,12 +21,18 @@ const ITEMS: Record<string, Omit<TabItem, 'key'>> = {
 };
 
 /** Adapts React Navigation's tab state to the TabBar component (P2-CMP-09). */
-function AppTabBar({ state, navigation, quadOn }: TabBarProps & { quadOn: boolean }) {
+function AppTabBar({
+  state,
+  navigation,
+  quadOn,
+  rail,
+}: TabBarProps & { quadOn: boolean; rail: boolean }) {
   // Hidden while typing (both platforms), so the screen reaches the keyboard
   // and a docked button sits right on top of it instead of floating a tab
-  // bar's height higher over the fields (owner testing on Android).
+  // bar's height higher over the fields (owner testing on Android). The iPad
+  // sidebar takes no height, so it stays.
   const keyboardOpen = useKeyboardState((s) => s.isVisible);
-  if (keyboardOpen) return null;
+  if (keyboardOpen && !rail) return null;
   const items = state.routes
     .filter((route) => quadOn || route.name !== 'quad')
     .map((route) => ({ key: route.key, ...ITEMS[route.name]! }));
@@ -33,6 +40,7 @@ function AppTabBar({ state, navigation, quadOn }: TabBarProps & { quadOn: boolea
   return (
     <TabBar
       testID="tab-bar"
+      layout={rail ? 'rail' : 'bar'}
       items={items}
       activeKey={activeKey}
       onSelect={(key) => {
@@ -52,11 +60,13 @@ export default function TabsLayout() {
   usePushHandling(true);
   // P10-QUAD-02: the Quad tab exists only where the campus switched it on.
   const quadOn = useQuadStatus().data?.enabled === true;
+  // iPad, wide window: a sidebar on the left instead of bottom tabs (board N5/N6).
+  const rail = useLayout().wide;
   return (
     <Tabs
       initialRouteName="discover"
-      tabBar={(props) => <AppTabBar {...props} quadOn={quadOn} />}
-      screenOptions={{ headerShown: false }}
+      tabBar={(props) => <AppTabBar {...props} quadOn={quadOn} rail={rail} />}
+      screenOptions={{ headerShown: false, tabBarPosition: rail ? 'left' : 'bottom' }}
     >
       <Tabs.Screen name="discover" options={{ title: tabs.discover }} />
       <Tabs.Screen name="quad" options={{ title: tabs.quad, href: quadOn ? undefined : null }} />

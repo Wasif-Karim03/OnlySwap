@@ -18,6 +18,7 @@ import { Text } from '@/components/Text';
 import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
 import { meetup as copy } from '@/strings';
+import { readableColumn } from '@/theme/layout';
 
 import { sellApi } from '../sell/api';
 import { directionsUrl, sortSpots, type Spot } from '../sell/logic';
@@ -190,12 +191,13 @@ export function PlanMeetupScreen({
 
 const styles = StyleSheet.create((theme, rt) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
-  body: { padding: theme.space.screen, gap: theme.space.md },
+  body: { ...readableColumn, padding: theme.space.screen, gap: theme.space.md },
   flex: { flex: 1 },
   spot: { flexDirection: 'row', alignItems: 'center', gap: theme.space.sm },
   tag: { flexDirection: 'row', paddingLeft: theme.space['2xl'] },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
   dock: {
+    ...readableColumn,
     paddingHorizontal: theme.space.screen,
     paddingTop: theme.space.md,
     paddingBottom: Math.max(rt.insets.bottom, theme.space.md),

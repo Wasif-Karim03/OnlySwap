@@ -20,6 +20,7 @@ import { errorText, toAppError } from '@/lib/errors';
 import { fill } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
 import { offers as copy } from '@/strings';
+import { readableColumn } from '@/theme/layout';
 
 import { feedApi, type FeedApi } from '../feed/api';
 import { listingKey } from '../feed/ListingScreen';
@@ -224,7 +225,7 @@ export function OfferSheetScreen({
 
 const styles = StyleSheet.create((theme, rt) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
-  body: { padding: theme.space.screen, gap: theme.space.md },
+  body: { ...readableColumn, padding: theme.space.screen, gap: theme.space.md },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
   center: { textAlign: 'center' },
   success: {
@@ -235,6 +236,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     padding: theme.space.screen,
   },
   dock: {
+    ...readableColumn,
     gap: theme.space.sm,
     paddingHorizontal: theme.space.screen,
     paddingTop: theme.space.md,

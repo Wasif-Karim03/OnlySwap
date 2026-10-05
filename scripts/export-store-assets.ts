@@ -1,7 +1,8 @@
 // Store assets (P16-STORE-01, RELEASE §5, TESTING §7).
 //   1. maestro test apps/mobile/.maestro/store/screenshots.yaml (per platform) → store-assets/raw/
+//      and, for iPad (P17-FEAT-02), store/screenshots-ipad.yaml on a 13-inch iPad simulator
 //   2. node --experimental-strip-types scripts/export-store-assets.ts
-// Writes store-assets/{ios,android}/ with each real screenshot framed under one
+// Writes store-assets/{ios,ipad,android}/ with each real screenshot framed under one
 // caption, at the exact sizes the stores accept (JPEG, no alpha), plus the Play
 // feature graphic and the 512 px icon, then checks every size. Uses the
 // Chromium from the e2e/web workspace (`pnpm --filter e2e-web exec playwright install chromium`).
@@ -24,10 +25,19 @@ export const CAPTIONS = [
 
 export const SIZES = {
   ios: { w: 1320, h: 2868 },
+  // 13-inch iPad, portrait (App Store Connect's required iPad size).
+  ipad: { w: 2064, h: 2752 },
   android: { w: 1080, h: 1920 },
   feature: { w: 1024, h: 500 },
   icon: { w: 512, h: 512 },
 } as const;
+
+/** Screenshot sets, each framed at SIZES[platform]. A set with no raw shots is skipped. */
+export const PLATFORMS = ['ios', 'ipad', 'android'] as const;
+export type Platform = (typeof PLATFORMS)[number];
+
+/** Device corner radius in the frame, as a share of the width (an iPad is squarer). */
+export const FRAME_RADIUS: Record<Platform, number> = { ios: 0.08, ipad: 0.03, android: 0.08 };
 
 /** Width and height from a JPEG (SOF marker) or PNG (IHDR) header. */
 export function imageSize(buf: Buffer): { w: number; h: number } | null {
@@ -46,13 +56,19 @@ export function imageSize(buf: Buffer): { w: number; h: number } | null {
   return null;
 }
 
-export function frameHtml(opts: { caption: string; shot: string; w: number; h: number }): string {
-  const { caption, shot, w, h } = opts;
+export function frameHtml(opts: {
+  caption: string;
+  shot: string;
+  w: number;
+  h: number;
+  radius?: number;
+}): string {
+  const { caption, shot, w, h, radius = FRAME_RADIUS.ios } = opts;
   const pad = Math.round(w * 0.07);
   return `<!doctype html><html><head><style>
     html,body{margin:0;width:${w}px;height:${h}px;overflow:hidden;background:#C8E27D;font-family:-apple-system,system-ui,sans-serif}
     h1{margin:0;padding:${Math.round(h * 0.06)}px ${pad}px 0;font-size:${Math.round(w * 0.078)}px;line-height:1.08;letter-spacing:-.04em;font-weight:800;color:#111110}
-    .phone{position:absolute;left:${pad}px;right:${pad}px;bottom:-${Math.round(h * 0.04)}px;top:${Math.round(h * 0.17)}px;border-radius:${Math.round(w * 0.08)}px;overflow:hidden;background:#000;box-shadow:0 30px 80px rgba(0,0,0,.25)}
+    .phone{position:absolute;left:${pad}px;right:${pad}px;bottom:-${Math.round(h * 0.04)}px;top:${Math.round(h * 0.17)}px;border-radius:${Math.round(w * radius)}px;overflow:hidden;background:#000;box-shadow:0 30px 80px rgba(0,0,0,.25)}
     .phone img{width:100%;display:block}
   </style></head><body><h1>${caption.replace(/</g, '&lt;')}</h1><div class="phone"><img src="${shot}"></div></body></html>`;
 }
@@ -65,7 +81,7 @@ async function main() {
   const dataUrl = (file: string) =>
     `data:image/png;base64,${readFileSync(file).toString('base64')}`;
 
-  for (const platform of ['ios', 'android'] as const) {
+  for (const platform of PLATFORMS) {
     const size = SIZES[platform];
     mkdirSync(join(outDir, platform), { recursive: true });
     for (let n = 1; n <= CAPTIONS.length; n += 1) {
@@ -76,7 +92,13 @@ async function main() {
       }
       const page = await browser.newPage({ viewport: { width: size.w, height: size.h } });
       await page.setContent(
-        frameHtml({ caption: CAPTIONS[n - 1]!, shot: dataUrl(src), w: size.w, h: size.h }),
+        frameHtml({
+          caption: CAPTIONS[n - 1]!,
+          shot: dataUrl(src),
+          w: size.w,
+          h: size.h,
+          radius: FRAME_RADIUS[platform],
+        }),
       );
       const file = join(outDir, platform, `${n}.jpg`);
       await page.screenshot({ path: file, type: 'jpeg', quality: 92 });

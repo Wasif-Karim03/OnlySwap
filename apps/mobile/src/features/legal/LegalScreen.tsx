@@ -9,6 +9,7 @@ import { Text } from '@/components/Text';
 import { fill } from '@/lib/format';
 import { LEGAL, type LegalSlug } from '@/legal/generated';
 import { legal as copy } from '@/strings';
+import { readableColumn } from '@/theme/layout';
 
 import { parseMarkdown } from './markdown';
 
@@ -95,7 +96,12 @@ export function LegalScreen({ doc }: { doc: string | undefined }) {
 
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
-  body: { padding: theme.space.screen, gap: theme.space.md, paddingBottom: theme.space['2xl'] },
+  body: {
+    ...readableColumn,
+    padding: theme.space.screen,
+    gap: theme.space.md,
+    paddingBottom: theme.space['2xl'],
+  },
   heading: { marginTop: theme.space.md },
   li: { flexDirection: 'row', gap: theme.space.sm, paddingLeft: theme.space.xs },
   row: {

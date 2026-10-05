@@ -10,6 +10,7 @@ import { Text } from '@/components/Text';
 import { osPermissions, usePermissionPrimer } from '@/lib/permissions';
 import { getStorage } from '@/lib/storage';
 import { notifyPrimer as copy, primer } from '@/strings';
+import { readableColumn } from '@/theme/layout';
 
 import { useGateHandoff } from './useAppGate';
 
@@ -128,6 +129,7 @@ export function NotificationsScreen({
 const styles = StyleSheet.create((theme) => ({
   screen: { flex: 1, backgroundColor: theme.colors.bg },
   body: {
+    ...readableColumn,
     flexGrow: 1,
     justifyContent: 'center',
     paddingHorizontal: theme.space.screen,
@@ -146,6 +148,7 @@ const styles = StyleSheet.create((theme) => ({
   flex: { flex: 1 },
   title: { marginTop: theme.space['2xl'] },
   dock: {
+    ...readableColumn,
     paddingHorizontal: theme.space.screen,
     paddingBottom: theme.space.md,
     gap: theme.space.xs,

@@ -23,6 +23,7 @@ import { Text } from '@/components/Text';
 import { useToastStore } from '@/components/Toast';
 import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
+import { useLayout } from '@/theme/layout';
 import {
   campus as campusCopy,
   deal as dealCopy,
@@ -73,6 +74,8 @@ export function ListingScreen({
 }) {
   const router = useRouter();
   const qc = useQueryClient();
+  // iPad, wide window: photos on the left, details on the right.
+  const wide = useLayout().wide;
   const query = useQuery({ queryKey: listingKey(id), queryFn: () => api.getListing(id) });
   const spotsQuery = useQuery({ queryKey: ['spots'], queryFn: spots, staleTime: 3600_000 });
   const [options, setOptions] = useState(false);
@@ -181,21 +184,26 @@ export function ListingScreen({
 
   return (
     <View style={styles.root} testID="screen-listing">
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <PhotoCarousel
-          photos={item.photos.map((p, i) => ({
-            key: `${p.path}-${i}`,
-            source: mediaUrl(base, p.path),
-            blurhash: p.blurhash,
-          }))}
-          label={item.title}
-          aspectRatio={1}
-          onPressPhoto={(i) =>
-            router.push({ pathname: '/listing/[id]/photos', params: { id, i: String(i) } })
-          }
-          testID="listing-photos"
-        />
-        <View style={styles.body}>
+      <ScrollView contentContainerStyle={[styles.scroll, wide ? styles.scrollWide : null]}>
+        <View
+          style={wide ? styles.photoPane : null}
+          testID={wide ? 'listing-photo-pane' : undefined}
+        >
+          <PhotoCarousel
+            photos={item.photos.map((p, i) => ({
+              key: `${p.path}-${i}`,
+              source: mediaUrl(base, p.path),
+              blurhash: p.blurhash,
+            }))}
+            label={item.title}
+            aspectRatio={1}
+            onPressPhoto={(i) =>
+              router.push({ pathname: '/listing/[id]/photos', params: { id, i: String(i) } })
+            }
+            testID="listing-photos"
+          />
+        </View>
+        <View style={[styles.body, wide ? styles.infoPane : null]}>
           <View style={styles.priceRow}>
             <Text variant="price" style={styles.flex}>
               {price}
@@ -311,20 +319,20 @@ export function ListingScreen({
 
       <View style={styles.top} pointerEvents="box-none">
         <NavBar
-          tone="onPhoto"
+          tone={wide ? 'default' : 'onPhoto'}
           onLeading={leave}
           trailing={
             <View style={styles.row}>
               <IconButton
                 icon="share"
-                tone="onPhoto"
+                tone={wide ? 'ink' : 'onPhoto'}
                 accessibilityLabel={copy.share}
                 onPress={onShare}
               />
               {!owner ? (
                 <IconButton
                   icon="more"
-                  tone="onPhoto"
+                  tone={wide ? 'ink' : 'onPhoto'}
                   accessibilityLabel={copy.more}
                   onPress={() => setOptions(true)}
                   testID="listing-more"
@@ -467,6 +475,15 @@ const styles = StyleSheet.create((theme, rt) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   pad: { flex: 1, padding: theme.space.screen },
   scroll: { paddingBottom: theme.size.buttonL + theme.space['2xl'] * 2 },
+  scrollWide: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: theme.space.xl,
+    paddingTop: rt.insets.top + theme.size.navBar,
+    paddingHorizontal: theme.space.screen,
+  },
+  photoPane: { flex: 1, borderRadius: theme.radius.card, overflow: 'hidden' },
+  infoPane: { flex: 1, paddingHorizontal: 0, paddingTop: 0 },
   flex: { flex: 1 },
   row: { flexDirection: 'row' },
   top: { position: 'absolute', top: 0, left: 0, right: 0 },

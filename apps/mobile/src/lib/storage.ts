@@ -27,6 +27,16 @@ export type StorageSchema = {
   'review.lastAskedAt': string;
   /** Invite code from an /i/{code} link, sent with the sign-up (features/auth/invite.ts). */
   'auth.inviteCode': { code: string; savedAt: string };
+  /** Upcoming meetups the app has seen, for the widget (features/widgets/logic.ts KnownMeetup[]). */
+  'widgets.meetups': unknown;
+  /** The last widget payload sent to the home screen (Android redraws from it). */
+  'widgets.payload': unknown;
+  /** Live Activity content by ActivityKit id, so the app can match running activities to meetups. */
+  'widgets.liveProps': unknown;
+  /** Settings > Appearance "Show meetups on the Lock Screen" (P17-FEAT-01). Unset means on. */
+  'settings.liveActivities': boolean;
+  /** Settings > Appearance app icon (R2-ICON-01). */
+  'settings.appIcon': 'default' | 'night' | 'paper' | 'mono';
 };
 
 export type StorageKey = keyof StorageSchema;
