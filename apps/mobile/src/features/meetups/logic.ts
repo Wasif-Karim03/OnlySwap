@@ -121,3 +121,61 @@ export function meetupActions(m: Meetup, now: Date) {
 export function shareUrl(site: string, token: string): string {
   return `${site.replace(/\/+$/, '')}/m/${token}`;
 }
+
+// ---------------------------------------------------------------------------
+// Spots map (R11-MAP-01): OpenFreeMap styles, no API key, no location.
+
+/** OpenFreeMap styles (free, no key, no billing). Attribution is shown under the map. */
+export const MAP_STYLES = {
+  light: 'https://tiles.openfreemap.org/styles/liberty',
+  dark: 'https://tiles.openfreemap.org/styles/dark',
+} as const;
+
+export function mapStyleFor(mode: 'light' | 'dark'): string {
+  return MAP_STYLES[mode];
+}
+
+/** [west, south, east, north], the order MapLibre's camera expects. */
+export type SpotBounds = [west: number, south: number, east: number, north: number];
+
+/** About 110 m: a single spot (or spots on top of each other) still gets a sane zoom. */
+export const MIN_SPAN_DEG = 0.002;
+
+type Coord = { lat: number; lng: number };
+
+export function validCoord(c: Coord): boolean {
+  return (
+    Number.isFinite(c.lat) &&
+    Number.isFinite(c.lng) &&
+    Math.abs(c.lat) <= 90 &&
+    Math.abs(c.lng) <= 180 &&
+    !(c.lat === 0 && c.lng === 0)
+  );
+}
+
+/**
+ * Bounds that contain every spot with a usable coordinate, widened to at least
+ * MIN_SPAN_DEG on each axis. Null when there is nothing to show.
+ */
+export function spotsBounds(spots: readonly Coord[], minSpan = MIN_SPAN_DEG): SpotBounds | null {
+  const ok = spots.filter(validCoord);
+  if (ok.length === 0) return null;
+  let west = Infinity;
+  let south = Infinity;
+  let east = -Infinity;
+  let north = -Infinity;
+  for (const s of ok) {
+    west = Math.min(west, s.lng);
+    east = Math.max(east, s.lng);
+    south = Math.min(south, s.lat);
+    north = Math.max(north, s.lat);
+  }
+  const padLng = Math.max(0, (minSpan - (east - west)) / 2);
+  const padLat = Math.max(0, (minSpan - (north - south)) / 2);
+  return [
+    Math.max(-180, west - padLng),
+    Math.max(-90, south - padLat),
+    Math.min(180, east + padLng),
+    Math.min(90, north + padLat),
+  ];
+}

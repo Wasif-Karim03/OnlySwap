@@ -22,6 +22,7 @@ import { fill } from '@/lib/format';
 import { safety as copy } from '@/strings/en';
 
 import { authApi, type AuthApi } from '../auth/api';
+import { SpotsMap } from '../meetups/SpotsMap';
 import { sellApi } from '../sell/api';
 import { directionsUrl, sortSpots, type Spot } from '../sell/logic';
 import { safetyApi, type SafetyApi } from './api';
@@ -62,7 +63,11 @@ export function ReportUpdateScreen({ id, api = safetyApi }: { id: string; api?: 
   );
 }
 
-/** F19 Safety center (P11-SAFE-05): Meetup spots with Directions, tips, 911, banned items. */
+/**
+ * F19 Safety center (P11-SAFE-05): Meetup spots with Directions, tips, 911,
+ * banned items. R11-MAP-01: a collapsible spots map above the list; tapping a
+ * pin highlights its row. No location permission.
+ */
 export function SafetyCenterScreen({
   spots = () => sellApi.spots(),
   openUrl = (url: string) => Linking.openURL(url),
@@ -72,7 +77,9 @@ export function SafetyCenterScreen({
 }) {
   const router = useRouter();
   const q = useQuery({ queryKey: ['spots'], queryFn: spots, staleTime: 3600_000 });
+  const [selected, setSelected] = useState<string | null>(null);
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/profile'));
+  const list = sortSpots(q.data ?? []);
   return (
     <View style={styles.root} testID="screen-safety">
       <NavBar title={copy.centerTitle} onLeading={leave} />
@@ -96,8 +103,16 @@ export function SafetyCenterScreen({
         {q.isError ? (
           <ErrorState error={q.error} onRetry={() => q.refetch()} layout="inline" />
         ) : null}
-        {sortSpots(q.data ?? []).map((s) => (
-          <View key={s.id} style={styles.row}>
+        {list.length > 0 ? (
+          <SpotsMap spots={list} selectedId={selected} onSelect={setSelected} />
+        ) : null}
+        {list.map((s) => (
+          <View
+            key={s.id}
+            style={styles.row(s.id === selected)}
+            accessibilityState={{ selected: s.id === selected }}
+            testID={`safety-spot-${s.id}`}
+          >
             <View style={styles.flex}>
               <Text variant="bodyStrong">{s.name}</Text>
               {s.description || s.hours ? (
@@ -266,12 +281,16 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: theme.radius.card,
     backgroundColor: theme.colors.redBg,
   },
-  row: {
+  row: (selected: boolean) => ({
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.space.sm,
     paddingVertical: theme.space.sm,
-  },
+    paddingHorizontal: theme.space.sm,
+    marginHorizontal: -theme.space.sm,
+    borderRadius: theme.radius.control,
+    backgroundColor: selected ? theme.colors.bg2 : 'transparent',
+  }),
   tagRow: { flexDirection: 'row', marginTop: theme.space.xs },
   flex: { flex: 1 },
   faq: {

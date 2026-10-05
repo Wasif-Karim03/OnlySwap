@@ -110,10 +110,40 @@ describe('T-STORE (TESTING §7) app.config.ts matches the locked native config (
     expect(cfg.runtimeVersion).toEqual({ policy: 'fingerprint' });
   });
 
-  it('adds no location or maps plugin in R1.0', () => {
-    const names = ((cfg.plugins ?? []) as PluginEntry[]).map((p) => (Array.isArray(p) ? p[0] : p));
+  it('R11-MAP-01 adds the MapLibre plugin without options and no location plugin', () => {
+    const entries = (cfg.plugins ?? []) as PluginEntry[];
+    const names = entries.map((p) => (Array.isArray(p) ? p[0] : p));
     expect(names).not.toContain('expo-location');
-    expect(names.some((n) => n.includes('maplibre'))).toBe(false);
+    // Bare entry: default (non-Google) location engine, no extra native deps.
+    expect(entries).toContain('@maplibre/maplibre-react-native');
+  });
+
+  it('asks for no location permission or usage string anywhere (spots only)', () => {
+    const blocked = cfg.android?.blockedPermissions ?? [];
+    for (const p of [
+      'android.permission.ACCESS_FINE_LOCATION',
+      'android.permission.ACCESS_COARSE_LOCATION',
+      'android.permission.ACCESS_BACKGROUND_LOCATION',
+    ]) {
+      expect(blocked).toContain(p);
+    }
+    expect(cfg.android?.permissions ?? []).toEqual([]);
+    const plist = Object.keys(cfg.ios?.infoPlist ?? {});
+    expect(plist.filter((k) => /location/i.test(k))).toEqual([]);
+    expect(JSON.stringify(cfg)).not.toMatch(/NSLocation|LOCATION_PERMISSION|locationPermission/);
+  });
+
+  it('the MapLibre manifest location permissions are all blocked', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const fs = require('node:fs') as typeof import('node:fs');
+    const root = require
+      .resolve('@maplibre/maplibre-react-native/package.json')
+      .replace(/package\.json$/, '');
+    const manifest = fs.readFileSync(`${root}android/src/main/AndroidManifest.xml`, 'utf8');
+    const declared = [...manifest.matchAll(/android:name="([^"]+)"/g)].map((m) => m[1]!);
+    const location = declared.filter((p) => p.includes('LOCATION'));
+    expect(location.length).toBeGreaterThan(0);
+    for (const p of location) expect(cfg.android?.blockedPermissions).toContain(p);
   });
 
   it('is linked to the EAS project and EAS Update', () => {

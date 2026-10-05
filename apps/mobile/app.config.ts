@@ -186,6 +186,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           faceIDPermission: false,
         },
       ],
+      // R11-MAP-01 spots map. The plugin only sets Gradle properties and Podfile
+      // hooks; its manifest asks for location, which BLOCKED_ANDROID_PERMISSIONS
+      // strips. No NSLocation* usage string is added (spots only, DEC 35).
+      '@maplibre/maplibre-react-native',
       ['./plugins/withReleaseHardening', { variant }],
       // Source maps and native symbols upload during EAS builds (P14-MON-01). Needs
       // SENTRY_ORG / SENTRY_PROJECT (build env) and SENTRY_AUTH_TOKEN (EAS secret).

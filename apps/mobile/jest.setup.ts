@@ -40,6 +40,25 @@ jest.mock('react-native-reanimated', () => ({
   useReducedMotion: () => false,
 }));
 
+// MapLibre is a native view; under Jest each component is a plain View that
+// keeps its props, so tests can read the camera and fire map/marker events.
+jest.mock('@maplibre/maplibre-react-native', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { createElement } = require('react') as typeof import('react');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { View } = require('react-native') as typeof import('react-native');
+  const host = (name: string) => {
+    const C = (props: Record<string, unknown>) => createElement(View, props);
+    C.displayName = name;
+    return C;
+  };
+  return {
+    Map: host('MapLibreMap'),
+    Camera: host('MapLibreCamera'),
+    Marker: host('MapLibreMarker'),
+  };
+});
+
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 require('./src/theme/unistyles');
 jest.mock('@react-native-community/netinfo', () =>

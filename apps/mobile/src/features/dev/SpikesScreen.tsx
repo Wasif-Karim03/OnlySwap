@@ -10,16 +10,23 @@ import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
 import { SuccessCheck } from '@/components/SuccessCheck';
 import { Text } from '@/components/Text';
 import { MediaCheck } from '@/features/dev/MediaCheck';
+import { SpotsMap } from '@/features/meetups/SpotsMap';
 import { THEME_MODES, useThemeModeStore, type ThemeMode } from '@/theme/mode';
 import { usePressFeedback } from '@/theme/motion';
-import { dev } from '@/strings/en';
+import { dev, spotsMap } from '@/strings/en';
 import { useReducedMotion } from '@/theme/reducedMotion';
 
 /**
- * Dev builds only: P1-SPIKE-03/04 checks plus the S4 type, theme and motion
+ * Dev builds only: P1-SPIKE-02/03/04 checks plus the S4 type, theme and motion
  * specimen. Removed with its route before store builds (see PR notes).
  */
 const spikeStore = createMMKV({ id: 'spike' });
+
+/** P1-SPIKE-02: one public and one police pin so both marker variants render. */
+const SPIKE_SPOTS = [
+  { id: 'spike-a', name: spotsMap.spikeSpot, lat: 39.9977, lng: -83.0086, police: false },
+  { id: 'spike-b', name: spotsMap.spikeSpot, lat: 40.0016, lng: -83.0136, police: true },
+];
 
 const TYPE_ROWS: TypeVariant[] = [
   'display',
@@ -64,6 +71,7 @@ export function SpikesScreen() {
   const [age, setAge] = useState<string>(dev.ageNotAsked);
   const [text, setText] = useState('');
   const [done, setDone] = useState(false);
+  const [pin, setPin] = useState<string | null>(null);
   const mode = useThemeModeStore((s) => s.mode);
   const setMode = useThemeModeStore((s) => s.setMode);
   const reduced = useReducedMotion();
@@ -167,6 +175,13 @@ export function SpikesScreen() {
         </View>
 
         <MediaCheck />
+
+        <View style={styles.card} testID="spike-map">
+          <Text variant="label" tone="ink2">
+            {spotsMap.spike}
+          </Text>
+          <SpotsMap spots={SPIKE_SPOTS} selectedId={pin} onSelect={setPin} />
+        </View>
 
         <View style={styles.card}>
           <Text variant="label" tone="ink2">

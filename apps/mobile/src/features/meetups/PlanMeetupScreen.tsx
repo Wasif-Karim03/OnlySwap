@@ -23,13 +23,15 @@ import { sellApi } from '../sell/api';
 import { directionsUrl, sortSpots, type Spot } from '../sell/logic';
 import { meetupsApi, type MeetupsApi } from './api';
 import { dayOptions, timeLabel, timeOptions } from './logic';
+import { SpotsMap } from './SpotsMap';
 
 const CUSTOM = '__custom';
 
 /**
  * E05 Plan the pickup (P8-MEET-02): Meetup spots (police-designated first,
- * with a Directions link), a custom public place, day and time. List only:
- * no map and no location permission.
+ * with a Directions link), a custom public place, day and time. R11-MAP-01
+ * adds a collapsible spots map above the list (synced selection); still no
+ * location permission, and the list stays the accessible UI.
  */
 export function PlanMeetupScreen({
   chatId,
@@ -96,6 +98,7 @@ export function PlanMeetupScreen({
           {copy.spotsTitle}
         </Text>
         {spotsQ.isPending ? <SkeletonList rows={3} /> : null}
+        {list.length > 0 ? <SpotsMap spots={list} selectedId={place} onSelect={setPlace} /> : null}
         {!spotsQ.isPending && list.length === 0 ? (
           <Text variant="body" tone="ink2">
             {copy.noSpots}

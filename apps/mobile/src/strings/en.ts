@@ -1967,6 +1967,15 @@ export const unlocked = {
   label: 'Campus open',
 } as const;
 
+/** Spots map on Plan the pickup and Safety (R11-MAP-01). Spots only, never your location. */
+export const spotsMap = {
+  show: 'Show map',
+  hide: 'Hide map',
+  attribution: 'Map: OpenFreeMap, OpenMapTiles. Data from OpenStreetMap contributors.',
+  spike: 'Map check (MapLibre + OpenFreeMap)',
+  spikeSpot: 'Test pin',
+} as const;
+
 export const en = {
   permissions,
   tabs,
@@ -2013,6 +2022,7 @@ export const en = {
   campus,
   waitlist,
   unlocked,
+  spotsMap,
 } as const;
 
 export default en;
