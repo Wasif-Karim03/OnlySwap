@@ -4,7 +4,7 @@ import { StyleSheet } from 'react-native-unistyles';
 
 import { fill } from '@/lib/format';
 import { errorCopy, toAppError } from '@/lib/errors';
-import { report as reportCopy } from '@/strings/en';
+import { report as reportCopy } from '@/strings';
 
 import { Button } from './Button';
 import { OptionRow } from './OptionRow';

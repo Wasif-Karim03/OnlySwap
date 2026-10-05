@@ -23,7 +23,7 @@ import { fill } from '@/lib/format';
 import { pickPhotos, type PickedPhoto } from '@/lib/media';
 import { osPermissions, primerStep, type OsApi } from '@/lib/permissions';
 import { uuid } from '@/lib/uuid';
-import { quad as copy } from '@/strings/en';
+import { quad as copy } from '@/strings';
 
 import { mediaUrl } from '../sell/logic';
 import { quadApi, type NewQuadPost, type QuadApi } from './api';

@@ -17,7 +17,7 @@ import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
 import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
-import { meetup as copy } from '@/strings/en';
+import { meetup as copy } from '@/strings';
 
 import { sellApi } from '../sell/api';
 import { directionsUrl, sortSpots, type Spot } from '../sell/logic';

@@ -1,4 +1,4 @@
-import { errors as errorStrings } from '@/strings/en';
+import { errors as errorStrings, intlLocale } from '@/strings';
 
 /**
  * Error codes (API §0) plus client-only codes. Server codes arrive as the
@@ -133,7 +133,7 @@ export type CopyOptions = {
 /** Formats a retry time in the campus time zone, e.g. "6:00 PM". */
 export function formatRetryTime(
   date: Date,
-  { campusTimeZone, locale = 'en-US' }: CopyOptions,
+  { campusTimeZone, locale = intlLocale }: CopyOptions,
 ): string {
   return new Intl.DateTimeFormat(locale, {
     hour: 'numeric',

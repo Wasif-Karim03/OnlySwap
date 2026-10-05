@@ -1,5 +1,5 @@
 import { fill } from '@/lib/format';
-import { feed as copy, sell as sellCopy } from '@/strings/en';
+import { feed as copy, sell as sellCopy } from '@/strings';
 
 import { ago, mediaUrl, priceLabel, type AnyListingKind, type Condition } from '../sell/logic';
 import type { SwipeDir } from './deckMath';

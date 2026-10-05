@@ -18,7 +18,7 @@ import { Mark } from '@/components/Mark';
 import { SuccessCheck } from '@/components/SuccessCheck';
 import { Text } from '@/components/Text';
 import { fill } from '@/lib/format';
-import { unlocked as copy } from '@/strings/en';
+import { unlocked as copy } from '@/strings';
 import { animateTo, resolveMotion } from '@/theme/motion';
 import { useReducedMotion } from '@/theme/reducedMotion';
 

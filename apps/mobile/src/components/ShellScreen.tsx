@@ -1,7 +1,7 @@
 import { useTheme } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { shell } from '@/strings/en';
+import { shell } from '@/strings';
 
 type Props = {
   testID: string;

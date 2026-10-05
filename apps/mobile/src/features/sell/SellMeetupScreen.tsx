@@ -19,7 +19,7 @@ import { Text } from '@/components/Text';
 import { getEnv } from '@/lib/env';
 import { errorCopy, toAppError } from '@/lib/errors';
 import { fill } from '@/lib/format';
-import { sell as copy } from '@/strings/en';
+import { sell as copy } from '@/strings';
 
 import { sellApi, type SellApi } from './api';
 import { getDraftStore, useDraft, type DraftState } from './draft';

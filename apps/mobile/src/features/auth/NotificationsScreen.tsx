@@ -9,7 +9,7 @@ import { PermissionPrimerView } from '@/components/PermissionPrimer';
 import { Text } from '@/components/Text';
 import { osPermissions, usePermissionPrimer } from '@/lib/permissions';
 import { getStorage } from '@/lib/storage';
-import { notifyPrimer as copy, primer } from '@/strings/en';
+import { notifyPrimer as copy, primer } from '@/strings';
 
 import { useGateHandoff } from './useAppGate';
 

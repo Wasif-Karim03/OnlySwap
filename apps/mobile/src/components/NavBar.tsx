@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { Platform, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
-import { nav as navCopy } from '@/strings/en';
+import { nav as navCopy } from '@/strings';
 
 import { IconButton } from './IconButton';
 import { Text } from './Text';

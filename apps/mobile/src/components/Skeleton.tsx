@@ -12,7 +12,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { StyleSheet } from 'react-native-unistyles';
 
-import { states as statesCopy } from '@/strings/en';
+import { states as statesCopy } from '@/strings';
 import { useReducedMotion } from '@/theme/reducedMotion';
 
 /**

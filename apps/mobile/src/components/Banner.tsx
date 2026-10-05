@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import Animated, { FadeIn, SlideInUp } from 'react-native-reanimated';
 import { StyleSheet } from 'react-native-unistyles';
 
-import { banner as bannerCopy } from '@/strings/en';
+import { banner as bannerCopy } from '@/strings';
 import { useReducedMotion } from '@/theme/reducedMotion';
 
 import { Icon } from './icons/Icon';

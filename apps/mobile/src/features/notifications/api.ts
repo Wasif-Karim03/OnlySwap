@@ -1,5 +1,6 @@
 import { createRpc, type RpcClient } from '@/lib/rpc';
 import { getSupabase } from '@/lib/supabase';
+import { intlLocale } from '@/strings';
 
 export type AppNotification = {
   id: number;
@@ -64,5 +65,5 @@ export const QUIET_TIMES = Array.from({ length: 48 }, (_, i) => {
 export function clockLabel(hhmm: string): string {
   const [h, m] = hhmm.split(':').map(Number);
   const d = new Date(2000, 0, 1, h ?? 0, m ?? 0);
-  return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  return d.toLocaleTimeString(intlLocale, { hour: 'numeric', minute: '2-digit' });
 }

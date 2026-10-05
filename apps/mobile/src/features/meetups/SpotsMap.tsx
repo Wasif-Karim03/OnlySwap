@@ -5,7 +5,7 @@ import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
-import { spotsMap as copy } from '@/strings/en';
+import { spotsMap as copy } from '@/strings';
 import { useReducedMotion } from '@/theme/reducedMotion';
 
 import type { Spot } from '../sell/logic';

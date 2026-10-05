@@ -25,7 +25,7 @@ import { ZoomableImage } from '@/components/ZoomableImage';
 import { toAppError } from '@/lib/errors';
 import type { PermissionKind } from '@/lib/permissions';
 import { fill } from '@/lib/format';
-import { kit2, photo as photoCopy, tabs } from '@/strings/en';
+import { kit2, photo as photoCopy, tabs } from '@/strings';
 
 import { ACCENT_NAMES, currentPreviewAccent, previewAccent } from './accentPreview';
 import { brokenPhotoUrl, samplePhotos } from './fixtures';

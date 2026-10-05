@@ -19,7 +19,7 @@ import { TextArea } from '@/components/TextArea';
 import { getEnv } from '@/lib/env';
 import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
-import { safety as copy } from '@/strings/en';
+import { safety as copy, intlLocale } from '@/strings';
 
 import { authApi, type AuthApi } from '../auth/api';
 import { useSession } from '../auth/useSession';
@@ -69,7 +69,7 @@ export function AccountStatusScreen({
   const target = kind === 'banned' ? null : appealTarget(s, me);
   const latestAppeal = s.appeals[0];
   const until = s.paused_until
-    ? new Date(s.paused_until).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    ? new Date(s.paused_until).toLocaleDateString(intlLocale, { month: 'short', day: 'numeric' })
     : null;
 
   const sendAppeal = async () => {

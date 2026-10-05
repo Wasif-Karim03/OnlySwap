@@ -10,7 +10,7 @@ import { Tag } from '@/components/Tag';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { fill } from '@/lib/format';
-import { campus as copy, feed as feedCopy } from '@/strings/en';
+import { campus as copy, feed as feedCopy } from '@/strings';
 
 import { agoLabel, sellerName } from '../feed/logic';
 import { mediaUrl, priceLabel } from '../sell/logic';

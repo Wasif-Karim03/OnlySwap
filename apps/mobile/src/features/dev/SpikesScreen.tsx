@@ -13,7 +13,7 @@ import { MediaCheck } from '@/features/dev/MediaCheck';
 import { SpotsMap } from '@/features/meetups/SpotsMap';
 import { THEME_MODES, useThemeModeStore, type ThemeMode } from '@/theme/mode';
 import { usePressFeedback } from '@/theme/motion';
-import { dev, spotsMap } from '@/strings/en';
+import { dev, spotsMap } from '@/strings';
 import { useReducedMotion } from '@/theme/reducedMotion';
 
 /**

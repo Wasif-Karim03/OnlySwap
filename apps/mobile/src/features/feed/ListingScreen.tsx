@@ -29,7 +29,7 @@ import {
   feed as copy,
   sell as sellCopy,
   system as systemCopy,
-} from '@/strings/en';
+} from '@/strings';
 
 import { FoodTimeTag } from '../campus/CampusCards';
 import { canAnswer } from '../campus/logic';

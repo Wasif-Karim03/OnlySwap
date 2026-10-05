@@ -15,7 +15,7 @@ import { Text } from '@/components/Text';
 import { useToastStore } from '@/components/Toast';
 import { getEnv } from '@/lib/env';
 import { getStorage } from '@/lib/storage';
-import { feed as copy, saved as savedCopy } from '@/strings/en';
+import { feed as copy, saved as savedCopy } from '@/strings';
 
 import { DiscoverSegment } from '../campus/DiscoverSegment';
 import { feedApi, type FeedApi } from './api';

@@ -13,7 +13,7 @@ import { SkeletonList } from '@/components/Skeleton';
 import { Toggle } from '@/components/Toggle';
 import { useToastStore } from '@/components/Toast';
 import { fill } from '@/lib/format';
-import { chat as copy, profileView } from '@/strings/en';
+import { chat as copy, profileView } from '@/strings';
 
 import { profileApi, type ProfileApi } from '../profiles/api';
 import { chatApi, type ChatApi, type ChatInfo } from './api';

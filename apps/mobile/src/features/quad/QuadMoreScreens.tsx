@@ -22,7 +22,7 @@ import { useToastStore } from '@/components/Toast';
 import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
 import { routeForNotification } from '@/lib/push';
-import { quad as copy, safety as safetyCopy } from '@/strings/en';
+import { quad as copy, safety as safetyCopy } from '@/strings';
 
 import { agoLabel } from '../feed/logic';
 import type { AppNotification } from '../notifications/api';

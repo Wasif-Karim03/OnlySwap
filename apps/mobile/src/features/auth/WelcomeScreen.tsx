@@ -9,7 +9,7 @@ import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { Button } from '@/components/Button';
 import { Mark } from '@/components/Mark';
 import { Text } from '@/components/Text';
-import { welcome as copy } from '@/strings/en';
+import { welcome as copy } from '@/strings';
 
 import { WELCOME_HERO, WELCOME_ITEMS } from './welcomeAssets';
 

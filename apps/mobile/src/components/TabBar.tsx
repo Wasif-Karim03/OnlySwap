@@ -3,7 +3,7 @@ import { Platform, Pressable, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { fill } from '@/lib/format';
-import { nav as navCopy } from '@/strings/en';
+import { nav as navCopy } from '@/strings';
 
 import { Icon, type IconName } from './icons/Icon';
 import { Text } from './Text';

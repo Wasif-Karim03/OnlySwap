@@ -5,7 +5,7 @@ import { Avatar } from '@/components/Avatar';
 import { Photo } from '@/components/Photo';
 import { Text } from '@/components/Text';
 import { fill } from '@/lib/format';
-import { feed as copy } from '@/strings/en';
+import { feed as copy } from '@/strings';
 
 /** What one deck card shows (built from a FeedItem by the screen). */
 export type DeckCard = {

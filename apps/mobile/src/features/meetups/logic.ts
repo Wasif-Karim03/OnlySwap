@@ -1,5 +1,5 @@
 import { fill } from '@/lib/format';
-import { meetup as copy } from '@/strings/en';
+import { meetup as copy, intlLocale } from '@/strings';
 
 export type MeetupStatus = 'proposed' | 'confirmed' | 'cancelled' | 'completed' | 'no_show';
 
@@ -42,13 +42,13 @@ export function whenLabel(iso: string, now: Date): string {
   const d = new Date(iso);
   const day = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
   const diff = Math.round((day(d) - day(now)) / 86_400_000);
-  const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  const time = d.toLocaleTimeString(intlLocale, { hour: 'numeric', minute: '2-digit' });
   const dayLabel =
     diff === 0
       ? copy.today
       : diff === 1
         ? copy.tomorrow
-        : d.toLocaleDateString('en-US', { weekday: 'short' });
+        : d.toLocaleDateString(intlLocale, { weekday: 'short' });
   return `${dayLabel} ${time}`;
 }
 
@@ -61,7 +61,7 @@ export function dayOptions(now: Date): { key: string; label: string; date: Date 
         ? copy.today
         : i === 1
           ? copy.tomorrow
-          : date.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' });
+          : date.toLocaleDateString(intlLocale, { weekday: 'short', day: 'numeric' });
     return { key: date.toISOString().slice(0, 10), label, date };
   });
 }
@@ -83,7 +83,7 @@ export function timeOptions(day: Date, now: Date): Date[] {
 }
 
 export function timeLabel(d: Date): string {
-  return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  return d.toLocaleTimeString(intlLocale, { hour: 'numeric', minute: '2-digit' });
 }
 
 /** "Starts in 25 min" / "Started 5 min ago" (E12 countdown). */

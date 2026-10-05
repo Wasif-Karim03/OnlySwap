@@ -25,7 +25,7 @@ import { useToastStore } from '@/components/Toast';
 import { getEnv } from '@/lib/env';
 import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
-import { feed as feedCopy, me as copy, profileView } from '@/strings/en';
+import { feed as feedCopy, me as copy, profileView, intlLocale } from '@/strings';
 
 import { avatarDeps, type AvatarDeps } from '../auth/avatar';
 import { feedApi, type FeedApi } from '../feed/api';
@@ -392,7 +392,7 @@ export function ListingStatsScreen({ id, api = meApi }: { id: string; api?: MeAp
   const q = useQuery({ queryKey: ['listing-stats', id], queryFn: () => api.stats(id) });
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/profile/listings'));
   const date = (iso: string) =>
-    new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    new Date(iso).toLocaleDateString(intlLocale, { month: 'short', day: 'numeric' });
   let body;
   if (q.isPending) body = <SkeletonList rows={4} />;
   else if (q.isError) body = <ErrorState error={q.error} onRetry={() => q.refetch()} />;

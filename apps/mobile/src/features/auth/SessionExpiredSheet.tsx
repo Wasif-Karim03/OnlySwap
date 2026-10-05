@@ -8,7 +8,7 @@ import { OTPInput } from '@/components/OTPInput';
 import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
 import { errorCopy, toAppError } from '@/lib/errors';
-import { sessionExpired as copy, signIn } from '@/strings/en';
+import { sessionExpired as copy, signIn } from '@/strings';
 
 import { authApi, type AuthApi } from './api';
 import { noteIntentionalSignOut, useSessionExpiry } from './sessionExpiry';

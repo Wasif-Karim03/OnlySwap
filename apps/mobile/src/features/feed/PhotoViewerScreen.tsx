@@ -9,7 +9,7 @@ import { Text } from '@/components/Text';
 import { ZoomableImage } from '@/components/ZoomableImage';
 import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
-import { feed as copy } from '@/strings/en';
+import { feed as copy } from '@/strings';
 
 import { mediaUrl } from '../sell/logic';
 import { feedApi, type FeedApi } from './api';

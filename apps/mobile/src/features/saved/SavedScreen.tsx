@@ -17,7 +17,7 @@ import { Text } from '@/components/Text';
 import { Toggle } from '@/components/Toggle';
 import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
-import { feed as feedCopy, saved as copy } from '@/strings/en';
+import { feed as feedCopy, saved as copy } from '@/strings';
 
 import { feedApi, type FeedApi } from '../feed/api';
 import type { FeedItem } from '../feed/logic';

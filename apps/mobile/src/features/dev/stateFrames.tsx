@@ -19,7 +19,7 @@ import { Text } from '@/components/Text';
 import { TextArea } from '@/components/TextArea';
 import { useToastStore } from '@/components/Toast';
 import { fill } from '@/lib/format';
-import { banner, kit2, statesFx as fx } from '@/strings/en';
+import { banner, kit2, statesFx as fx } from '@/strings';
 
 import { brokenPhotoUrl, samplePhotos } from './fixtures';
 

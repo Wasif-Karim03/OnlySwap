@@ -21,7 +21,7 @@ import { getEnv } from '@/lib/env';
 import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
-import { offers as copy } from '@/strings/en';
+import { offers as copy, intlLocale } from '@/strings';
 
 import { dollarsToCents } from '../search/logic';
 import { mediaUrl } from '../sell/logic';
@@ -147,7 +147,7 @@ export function OfferScreen({
         {view.open ? (
           <Text variant="meta" tone="ink2">
             {`${fill(copy.round, { n: o.round })} · ${fill(copy.expiresIn, {
-              when: new Date(o.expires_at).toLocaleString('en-US', {
+              when: new Date(o.expires_at).toLocaleString(intlLocale, {
                 weekday: 'short',
                 hour: 'numeric',
                 minute: '2-digit',

@@ -23,7 +23,17 @@ import { fill } from '@/lib/format';
 import { unregisterPush } from '@/lib/push';
 import { setCrashOptOut } from '@/lib/sentry';
 import { getSupabase } from '@/lib/supabase';
-import { settings as copy } from '@/strings/en';
+import {
+  deviceLocaleTag,
+  getLanguagePref,
+  intlLocale,
+  LANGUAGE_PREFS,
+  locale as activeLocale,
+  resolveLocale,
+  setLanguage,
+  settings as copy,
+  type LanguagePref,
+} from '@/strings';
 import { THEME_MODES, useThemeModeStore, type ThemeMode } from '@/theme/mode';
 
 import { authApi, type AuthApi } from '../auth/api';
@@ -71,6 +81,12 @@ export function SettingsScreen({
             label={copy.appearance}
             icon="eye"
             onPress={() => router.push('/settings/appearance')}
+          />
+          <ListRow
+            label={copy.language}
+            icon="chat"
+            value={copy.languages[getLanguagePref()]}
+            onPress={() => router.push('/settings/language')}
           />
           <ListRow
             label={copy.school}
@@ -184,6 +200,67 @@ export function AppearanceScreen({ api = meApi }: { api?: MeApi }) {
   );
 }
 
+/**
+ * Language (P17-FEAT-03): Match phone / English / Español. Saved on the
+ * device only. A choice that changes the shown language confirms, then
+ * restarts the app so every screen reloads its copy.
+ */
+export function LanguageScreen({
+  current = getLanguagePref(),
+  apply = setLanguage,
+  save = (pref: LanguagePref) => setLanguage(pref, { reload: () => {} }),
+  deviceTag = deviceLocaleTag(),
+}: {
+  current?: LanguagePref;
+  apply?: (pref: LanguagePref) => Promise<void>;
+  /** Saves without a restart, for a choice that keeps the same language. */
+  save?: (pref: LanguagePref) => Promise<void>;
+  deviceTag?: string;
+}) {
+  const leave = useLeave('/settings');
+  const [selected, setSelected] = useState<LanguagePref>(current);
+  const [pending, setPending] = useState<LanguagePref | null>(null);
+  const choose = (pref: LanguagePref) => {
+    if (pref === selected) return;
+    if (resolveLocale(pref, deviceTag) === activeLocale) {
+      setSelected(pref);
+      void save(pref).catch(() => {});
+      return;
+    }
+    setPending(pref);
+  };
+  return (
+    <View style={styles.root} testID="screen-language">
+      <NavBar title={copy.languageTitle} onLeading={leave} />
+      <View style={styles.body}>
+        {LANGUAGE_PREFS.map((pref) => (
+          <OptionRow
+            key={pref}
+            kind="radio"
+            label={copy.languages[pref]}
+            selected={selected === pref}
+            onPress={() => choose(pref)}
+          />
+        ))}
+      </View>
+      <ConfirmDialog
+        visible={pending !== null}
+        title={copy.languageRestartTitle}
+        message={copy.languageRestartBody}
+        confirmLabel={copy.languageRestartConfirm}
+        onConfirm={async () => {
+          if (!pending) return;
+          setSelected(pending);
+          setPending(null);
+          await apply(pending);
+        }}
+        onCancel={() => setPending(null)}
+        testID="language-confirm"
+      />
+    </View>
+  );
+}
+
 /** F15 Change school email: Supabase sends a confirmation to the new address. */
 export function ChangeSchoolScreen({
   updateEmail = async (email: string) => {
@@ -274,7 +351,7 @@ export function AboutScreen() {
 
 /** "Sat 3:00 PM" in the given zone: the export limit can end tomorrow. */
 export function exportRetryTime(date: Date, timeZone: string = deviceTz()): string {
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat(intlLocale, {
     weekday: 'short',
     hour: 'numeric',
     minute: '2-digit',

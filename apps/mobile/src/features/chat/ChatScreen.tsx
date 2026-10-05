@@ -27,7 +27,7 @@ import { fill } from '@/lib/format';
 import { pickPhotos, type PickedPhoto } from '@/lib/media';
 import { osPermissions, primerStep, type OsApi } from '@/lib/permissions';
 import type { RealtimeSource } from '@/lib/realtime';
-import { chat as copy } from '@/strings/en';
+import { chat as copy } from '@/strings';
 
 import { authApi, type AuthApi } from '../auth/api';
 import { useSession } from '../auth/useSession';

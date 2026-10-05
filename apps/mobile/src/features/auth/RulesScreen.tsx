@@ -13,7 +13,7 @@ import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { errorCopy, toAppError } from '@/lib/errors';
 import { haptic } from '@/lib/haptics';
-import { rules as copy, states } from '@/strings/en';
+import { rules as copy, states } from '@/strings';
 
 import { authApi, type AuthApi } from './api';
 import { AuthStep } from './AuthStep';

@@ -19,7 +19,7 @@ import { TextArea } from '@/components/TextArea';
 import { Toggle } from '@/components/Toggle';
 import { fill } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
-import { sell as copy } from '@/strings/en';
+import { sell as copy } from '@/strings';
 
 import { sellApi, type SellApi } from './api';
 import { getDraftStore, useDraft, type DraftState } from './draft';

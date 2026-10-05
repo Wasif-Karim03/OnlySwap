@@ -6,7 +6,7 @@ import { StyleSheet } from 'react-native-unistyles';
 import { EmptyState } from '@/components/EmptyState';
 import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
-import { system as copy } from '@/strings/en';
+import { system as copy, intlLocale } from '@/strings';
 
 import { authApi, type AuthApi } from '../auth/api';
 
@@ -39,7 +39,7 @@ export function MaintenanceScreen({ api = authApi }: { api?: Pick<AuthApi, 'getA
   const router = useRouter();
   const q = useQuery({ queryKey: ['app-config'], queryFn: () => api.getAppConfig() });
   const until = q.data?.maintenance.until
-    ? new Date(q.data.maintenance.until).toLocaleTimeString('en-US', {
+    ? new Date(q.data.maintenance.until).toLocaleTimeString(intlLocale, {
         hour: 'numeric',
         minute: '2-digit',
       })

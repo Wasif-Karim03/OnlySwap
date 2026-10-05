@@ -15,7 +15,7 @@ import { Toggle } from '@/components/Toggle';
 import { useToastStore } from '@/components/Toast';
 import { fill } from '@/lib/format';
 import { osPermissions, type OsApi } from '@/lib/permissions';
-import { notificationsScreen as copy } from '@/strings/en';
+import { notificationsScreen as copy } from '@/strings';
 
 import { quadApi, type QuadApi } from '../quad/api';
 import { useQuadStatus } from '../quad/cache';

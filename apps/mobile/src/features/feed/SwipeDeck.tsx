@@ -31,7 +31,7 @@ import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { useScreenReader } from '@/lib/a11y';
 import { haptic } from '@/lib/haptics';
-import { feed as copy } from '@/strings/en';
+import { feed as copy } from '@/strings';
 import { useReducedMotion } from '@/theme/reducedMotion';
 
 import {

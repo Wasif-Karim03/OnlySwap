@@ -6,7 +6,7 @@ import { StyleSheet } from 'react-native-unistyles';
 
 import { ErrorState } from '@/components/ErrorState';
 import { Mark } from '@/components/Mark';
-import { launch as copy } from '@/strings/en';
+import { launch as copy } from '@/strings';
 
 import { clearInviteCode } from './invite';
 import { launchStartedAt } from './launchTiming';

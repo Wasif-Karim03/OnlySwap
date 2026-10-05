@@ -1,6 +1,8 @@
 /**
  * All user-facing copy for the mobile app (CLAUDE.md rule 8).
  * Voice: plain student tone, no em dashes, no emoji, verbs on buttons.
+ * This is the source of truth; `es.ts` mirrors it and app code imports the
+ * active locale from `@/strings` (P17-FEAT-03).
  *
  * Native permission strings live in `permissions.json` because `app.config.ts`
  * runs in plain Node at prebuild time and can only read JSON or JS.
@@ -1493,6 +1495,7 @@ export const settings = {
   notifications: 'Notifications',
   privacy: 'Privacy',
   appearance: 'Appearance',
+  language: 'Language',
   school: 'Change school email',
   blocked: 'Blocked accounts',
   data: 'Download your data',
@@ -1513,6 +1516,12 @@ export const settings = {
   // F14 appearance
   appearanceTitle: 'Appearance',
   modes: { system: 'Match phone', light: 'Light', dark: 'Dark' },
+  // P17-FEAT-03 language (each language is named in its own language)
+  languageTitle: 'Language',
+  languages: { system: 'Match phone', en: 'English', es: 'Español' },
+  languageRestartTitle: 'Switch language?',
+  languageRestartBody: 'The app will restart to switch language.',
+  languageRestartConfirm: 'Restart',
   // F15 change school
   schoolTitle: 'Change school email',
   schoolBody:
@@ -2026,3 +2035,16 @@ export const en = {
 } as const;
 
 export default en;
+
+/** Turns every string literal type into `string`, keeping the shape. */
+type Widen<T> = T extends string
+  ? string
+  : T extends readonly (infer U)[]
+    ? readonly Widen<U>[]
+    : { readonly [K in keyof T]: Widen<T[K]> };
+
+/**
+ * The shape every locale must match (P17-FEAT-03). `es.ts` is typed with it,
+ * so a missing or extra key fails `tsc`. en.ts stays the source of truth.
+ */
+export type Strings = Widen<typeof en>;

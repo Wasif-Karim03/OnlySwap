@@ -23,7 +23,7 @@ import { Text } from '@/components/Text';
 import { TextArea } from '@/components/TextArea';
 import { useToastStore } from '@/components/Toast';
 import { Toggle } from '@/components/Toggle';
-import { kit, kit2 } from '@/strings/en';
+import { kit, kit2 } from '@/strings';
 import { THEME_MODES, useThemeModeStore } from '@/theme/mode';
 
 import {

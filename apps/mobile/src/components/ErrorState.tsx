@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { errorCopy, toAppError, type AppError } from '@/lib/errors';
-import { states as statesCopy } from '@/strings/en';
+import { states as statesCopy } from '@/strings';
 
 import { Button } from './Button';
 import { GlyphTile } from './EmptyState';

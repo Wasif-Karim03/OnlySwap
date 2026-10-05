@@ -4,7 +4,7 @@ import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanima
 import { StyleSheet } from 'react-native-unistyles';
 
 import { fill } from '@/lib/format';
-import { nav as navCopy } from '@/strings/en';
+import { nav as navCopy } from '@/strings';
 import { animateTo, resolveMotion } from '@/theme/motion';
 import { useReducedMotion } from '@/theme/reducedMotion';
 

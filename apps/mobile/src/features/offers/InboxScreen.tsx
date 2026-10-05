@@ -15,7 +15,7 @@ import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { getEnv } from '@/lib/env';
 import { useUserChannel, type RealtimeSource } from '@/lib/realtime';
-import { chat as chatCopy, notificationsScreen as notifCopy, offers as copy } from '@/strings/en';
+import { chat as chatCopy, notificationsScreen as notifCopy, offers as copy } from '@/strings';
 
 import { mediaUrl } from '../sell/logic';
 import { offersApi, type OffersApi } from './api';

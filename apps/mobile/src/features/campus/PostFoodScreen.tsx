@@ -17,7 +17,7 @@ import { Text } from '@/components/Text';
 import { getEnv } from '@/lib/env';
 import { pickPhotos, type PickedPhoto } from '@/lib/media';
 import { osPermissions, type OsApi } from '@/lib/permissions';
-import { campus as copy } from '@/strings/en';
+import { campus as copy } from '@/strings';
 
 import { sellApi, type PostedListing, type SellApi } from '../sell/api';
 import { MEET_NOTE_MAX, sortSpots, TITLE_MAX } from '../sell/logic';

@@ -11,7 +11,7 @@ import { GroupedList, ListRow } from '@/components/ListRow';
 import { Text } from '@/components/Text';
 import { fill } from '@/lib/format';
 import { getStorage } from '@/lib/storage';
-import { search as copy } from '@/strings/en';
+import { search as copy } from '@/strings';
 
 import { searchApi, type SearchApi } from './api';
 import { addRecent, parseRecent, type Suggestion } from './logic';

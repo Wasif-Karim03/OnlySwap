@@ -15,7 +15,7 @@ import { SkeletonGrid } from '@/components/Skeleton';
 import { useToastStore } from '@/components/Toast';
 import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
-import { feed as feedCopy, search as copy } from '@/strings/en';
+import { feed as feedCopy, search as copy } from '@/strings';
 
 import { sellApi } from '../sell/api';
 import { mediaUrl, priceLabel, type Category } from '../sell/logic';

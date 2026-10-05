@@ -6,7 +6,7 @@ import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { StyleSheet } from 'react-native-unistyles';
 
-import { sheet as sheetCopy } from '@/strings/en';
+import { sheet as sheetCopy } from '@/strings';
 import { animateTo, resolveMotion } from '@/theme/motion';
 import { useReducedMotion } from '@/theme/reducedMotion';
 

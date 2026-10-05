@@ -11,7 +11,7 @@ import { Input } from '@/components/Input';
 import { Text } from '@/components/Text';
 import { useToastStore } from '@/components/Toast';
 import { errorCopy, toAppError } from '@/lib/errors';
-import { signIn as copy } from '@/strings/en';
+import { signIn as copy } from '@/strings';
 
 import { authApi, type AuthApi } from './api';
 import { AuthStep } from './AuthStep';

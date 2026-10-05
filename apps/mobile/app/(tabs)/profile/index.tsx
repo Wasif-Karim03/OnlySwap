@@ -3,7 +3,7 @@ import { Pressable } from 'react-native';
 
 import { Text } from '@/components/Text';
 import { ProfileTabScreen } from '@/features/me/MeScreens';
-import { dev, kit } from '@/strings/en';
+import { dev, kit } from '@/strings';
 
 export default function ProfileRoute() {
   return (

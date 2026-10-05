@@ -12,7 +12,7 @@ import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { errorCopy, toAppError } from '@/lib/errors';
 import type { PickedPhoto } from '@/lib/media';
-import { primer, profileSetup as copy, states } from '@/strings/en';
+import { primer, profileSetup as copy, states } from '@/strings';
 
 import { authApi, type AuthApi, type ClassYear } from './api';
 import { AuthStep } from './AuthStep';

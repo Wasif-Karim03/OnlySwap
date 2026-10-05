@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { motion } from '@onlyswap/tokens';
-import { photo as photoCopy } from '@/strings/en';
+import { photo as photoCopy } from '@/strings';
 import { useReducedMotion } from '@/theme/reducedMotion';
 
 import { Icon } from './icons/Icon';

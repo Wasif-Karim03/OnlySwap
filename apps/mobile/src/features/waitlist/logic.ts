@@ -1,5 +1,5 @@
 import { fill } from '@/lib/format';
-import { waitlist as copy } from '@/strings/en';
+import { waitlist as copy } from '@/strings';
 
 import type { WaitlistInfo } from './api';
 

@@ -2,7 +2,7 @@ import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { fill } from '@/lib/format';
-import { search as copy } from '@/strings/en';
+import { search as copy } from '@/strings';
 
 import { Photo } from './Photo';
 import { Tag } from './Tag';

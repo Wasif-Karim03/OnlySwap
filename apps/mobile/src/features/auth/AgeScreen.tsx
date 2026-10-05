@@ -11,7 +11,7 @@ import { GlyphTile } from '@/components/EmptyState';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { errorCopy, toAppError } from '@/lib/errors';
-import { age as copy } from '@/strings/en';
+import { age as copy } from '@/strings';
 
 import { requestAgeSignal, toIsoDate, type AgeRangeModule, type Device } from './age';
 import { authApi, type AuthApi } from './api';

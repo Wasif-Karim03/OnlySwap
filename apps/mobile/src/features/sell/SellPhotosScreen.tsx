@@ -20,7 +20,7 @@ import {
   usePermissionPrimer,
   type OsApi,
 } from '@/lib/permissions';
-import { campus as campusCopy, sell as copy } from '@/strings/en';
+import { campus as campusCopy, sell as copy } from '@/strings';
 
 import { sellApi, type SellApi } from './api';
 import { getDraftStore, useDraft, type DraftState } from './draft';

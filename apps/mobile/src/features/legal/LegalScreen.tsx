@@ -8,7 +8,7 @@ import { NavBar } from '@/components/NavBar';
 import { Text } from '@/components/Text';
 import { fill } from '@/lib/format';
 import { LEGAL, type LegalSlug } from '@/legal/generated';
-import { legal as copy } from '@/strings/en';
+import { legal as copy } from '@/strings';
 
 import { parseMarkdown } from './markdown';
 

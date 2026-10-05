@@ -5,7 +5,7 @@ import { IconButton } from '@/components/IconButton';
 import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
 import { fill } from '@/lib/format';
-import { quad as copy } from '@/strings/en';
+import { quad as copy } from '@/strings';
 
 import { agoLabel } from '../../feed/logic';
 import type { QuadReply } from '../api';

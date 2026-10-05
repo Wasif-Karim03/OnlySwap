@@ -14,7 +14,7 @@ import { Text } from '@/components/Text';
 import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
-import { sell as copy } from '@/strings/en';
+import { sell as copy } from '@/strings';
 
 import { sellApi, type SellApi } from './api';
 import { listingLink, mediaUrl, priceLabel, type Condition, type ListingKind } from './logic';

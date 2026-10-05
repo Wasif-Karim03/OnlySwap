@@ -5,6 +5,8 @@
  * (create_listing); these rules only mirror it for instant feedback.
  */
 
+import { money } from '@/lib/format';
+
 export const DRAFT_VERSION = 1;
 export const MAX_PHOTOS = 8;
 export const TITLE_MIN = 3;
@@ -434,8 +436,7 @@ export function createArgs(
 /** "$60", "$12.50" or "Free". */
 export function priceLabel(kind: AnyListingKind, cents: number, free: string): string {
   if (kind === 'free' || kind === 'food' || cents === 0) return free;
-  const dollars = cents / 100;
-  return `$${Number.isInteger(dollars) ? dollars.toLocaleString('en-US') : dollars.toFixed(2)}`;
+  return money(cents);
 }
 
 /** R11-HINT-01: what price_hint(category_id, condition) answers, in cents. */
@@ -472,8 +473,7 @@ export function parsePriceHint(raw: unknown): PriceHint | null {
 
 /** "$45", "$12.50": dollars for the hint line (never "Free"). */
 export function dollars(cents: number): string {
-  const d = cents / 100;
-  return `$${Number.isInteger(d) ? d.toLocaleString('en-US') : d.toFixed(2)}`;
+  return money(cents);
 }
 
 /** The price field's text for a cents value ("45", "12.50"). */

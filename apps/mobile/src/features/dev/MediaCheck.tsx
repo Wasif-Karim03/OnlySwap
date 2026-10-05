@@ -8,7 +8,7 @@ import { inspectExif } from '@/lib/exifGps';
 import { processPhoto, uploadPhotos, xhrPut, type UploadFile } from '@/lib/media';
 import { getSupabase } from '@/lib/supabase';
 import { uploadApi } from '@/lib/uploadApi';
-import { dev } from '@/strings/en';
+import { dev } from '@/strings';
 
 const GPS_FIXTURE = require('@/lib/__fixtures__/gps.jpg') as number;
 

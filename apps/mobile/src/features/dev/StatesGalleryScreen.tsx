@@ -7,7 +7,7 @@ import { NavBar } from '@/components/NavBar';
 import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
 import { fill } from '@/lib/format';
-import { statesFx as fx } from '@/strings/en';
+import { statesFx as fx } from '@/strings';
 
 import { FrameBody, findFrame, STATE_FRAMES, type StateFrame } from './stateFrames';
 

@@ -7,7 +7,7 @@ import { NavBar } from '@/components/NavBar';
 import { StepIndicator } from '@/components/Progress';
 import { Text } from '@/components/Text';
 import { fill } from '@/lib/format';
-import { sell as copy } from '@/strings/en';
+import { sell as copy } from '@/strings';
 
 export const SELL_STEPS = 3;
 /** Used until the dock has been measured. */

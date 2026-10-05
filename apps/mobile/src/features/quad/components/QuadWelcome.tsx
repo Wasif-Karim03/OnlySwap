@@ -9,7 +9,7 @@ import { Icon, type IconName } from '@/components/icons/Icon';
 import { Checkbox } from '@/components/OptionRow';
 import { Text } from '@/components/Text';
 import { errorText } from '@/lib/errors';
-import { quad as copy } from '@/strings/en';
+import { quad as copy } from '@/strings';
 
 const RULES: { icon: IconName; title: string; body: string }[] = [
   { icon: 'lock', title: copy.ruleAnonTitle, body: copy.ruleAnonBody },

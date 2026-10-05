@@ -12,7 +12,7 @@ import { authApi, type AuthApi } from '@/features/auth/api';
 import { AuthStep } from '@/features/auth/AuthStep';
 import { normalizeEmail } from '@/features/auth/logic';
 import { errorCopy, toAppError } from '@/lib/errors';
-import { emailAccess as copy } from '@/strings/en';
+import { emailAccess as copy } from '@/strings';
 
 const deviceTz = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 const MAX_BODY = 2000;

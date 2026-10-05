@@ -20,7 +20,7 @@ import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
 import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
-import { feed as feedCopy, profileView as copy } from '@/strings/en';
+import { feed as feedCopy, profileView as copy, intlLocale } from '@/strings';
 
 import { mediaUrl, priceLabel } from '../sell/logic';
 import { profileApi, type ProfileApi, type ProfileResult, type PublicProfile } from './api';
@@ -45,7 +45,7 @@ export function replyLabel(minutes: number | null): string | null {
 
 export function joinedLabel(iso: string | null): string | null {
   if (!iso) return null;
-  const date = new Date(iso).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const date = new Date(iso).toLocaleDateString(intlLocale, { month: 'long', year: 'numeric' });
   return fill(copy.memberSince, { date });
 }
 

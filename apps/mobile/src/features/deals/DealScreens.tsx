@@ -18,7 +18,7 @@ import { Text } from '@/components/Text';
 import { TextArea } from '@/components/TextArea';
 import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
-import { deal as copy } from '@/strings/en';
+import { deal as copy } from '@/strings';
 
 import { useSession } from '../auth/useSession';
 import { chatApi, type ChatApi } from '../chat/api';

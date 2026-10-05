@@ -12,7 +12,7 @@ import { SkeletonList } from '@/components/Skeleton';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { routeForNotification, setBadge } from '@/lib/push';
-import { notificationsScreen as copy } from '@/strings/en';
+import { notificationsScreen as copy } from '@/strings';
 
 import { daySection, notificationsApi, type AppNotification, type NotificationsApi } from './api';
 

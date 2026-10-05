@@ -5,7 +5,7 @@ import { useKeyboardState } from 'react-native-keyboard-controller';
 import { TabBar, type TabItem } from '@/components/TabBar';
 import { useQuadStatus } from '@/features/quad/cache';
 import { usePushHandling } from '@/lib/push';
-import { tabs } from '@/strings/en';
+import { tabs } from '@/strings';
 
 type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>>[0];
 

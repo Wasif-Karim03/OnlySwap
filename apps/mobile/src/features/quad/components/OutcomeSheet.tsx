@@ -7,7 +7,7 @@ import { Icon } from '@/components/icons/Icon';
 import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
 import { fill } from '@/lib/format';
-import { quad as copy } from '@/strings/en';
+import { quad as copy } from '@/strings';
 
 import { blockedKey, heldKey, offersListing } from '../logic';
 

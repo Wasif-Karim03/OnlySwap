@@ -4,7 +4,7 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 import { StyleSheet } from 'react-native-unistyles';
 import { create } from 'zustand';
 
-import { toast as toastCopy } from '@/strings/en';
+import { toast as toastCopy } from '@/strings';
 
 import { Icon } from './icons/Icon';
 import { Tappable } from './Tappable';

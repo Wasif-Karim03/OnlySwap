@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { errorCopy, toAppError } from '@/lib/errors';
-import { sheet as sheetCopy } from '@/strings/en';
+import { sheet as sheetCopy } from '@/strings';
 
 import { Button } from './Button';
 import { Sheet } from './Sheet';

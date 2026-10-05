@@ -8,7 +8,7 @@ import { ActionSheet } from '@/components/Sheet';
 import { useToastStore } from '@/components/Toast';
 import { track } from '@/lib/analytics';
 import { errorText, toAppError } from '@/lib/errors';
-import { quad as copy } from '@/strings/en';
+import { quad as copy } from '@/strings';
 
 import type { QuadApi, QuadPoll, QuadPost, QuadReply, QuadReportReason } from './api';
 import { dropPost, patchPost, patchReply, quadKeys } from './cache';

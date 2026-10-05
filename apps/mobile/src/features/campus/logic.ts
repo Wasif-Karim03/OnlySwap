@@ -1,5 +1,5 @@
-import { fill } from '@/lib/format';
-import { campus as copy } from '@/strings/en';
+import { fill, money } from '@/lib/format';
+import { campus as copy } from '@/strings';
 
 import type { FeedCursor, FeedItem } from '../feed/logic';
 import {
@@ -120,9 +120,7 @@ export function canAnswer(item: Pick<CampusItem, 'kind' | 'is_own' | 'status'>):
 /** "Up to $40", or "Any budget". */
 export function budgetLabel(cents: number | null): string {
   if (cents === null || cents === undefined) return copy.anyBudget;
-  const dollars = cents / 100;
-  const price = `$${Number.isInteger(dollars) ? dollars.toLocaleString('en-US') : dollars.toFixed(2)}`;
-  return fill(copy.upTo, { price });
+  return fill(copy.upTo, { price: money(cents) });
 }
 
 /** The founding sellers card: open spots, or your own badge. Hidden when neither. */

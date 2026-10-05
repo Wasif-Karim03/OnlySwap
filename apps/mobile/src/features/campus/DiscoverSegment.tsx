@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { SegmentedControl } from '@/components/SegmentedControl';
-import { campus as copy } from '@/strings/en';
+import { campus as copy } from '@/strings';
 
 type View_ = 'swipe' | 'campus';
 

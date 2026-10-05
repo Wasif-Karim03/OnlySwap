@@ -10,7 +10,7 @@ import { ErrorState } from '@/components/ErrorState';
 import { GroupedList, ListRow } from '@/components/ListRow';
 import { Text } from '@/components/Text';
 import { errorCopy, toAppError } from '@/lib/errors';
-import { reverify as copy, states } from '@/strings/en';
+import { reverify as copy, states, intlLocale } from '@/strings';
 
 import { authApi, type AuthApi } from './api';
 import { AuthStep } from './AuthStep';
@@ -21,7 +21,7 @@ const deviceTz = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 export function formatDueDate(iso: string): string {
   const [y, m, d] = iso.split('-').map(Number);
   if (!y || !m || !d) return iso;
-  return new Date(y, m - 1, d).toLocaleDateString('en-US', {
+  return new Date(y, m - 1, d).toLocaleDateString(intlLocale, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',

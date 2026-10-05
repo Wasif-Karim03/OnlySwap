@@ -15,7 +15,7 @@ import { Text } from '@/components/Text';
 import { useToastStore } from '@/components/Toast';
 import { getEnv } from '@/lib/env';
 import { errorText, toAppError } from '@/lib/errors';
-import { quad as copy } from '@/strings/en';
+import { quad as copy } from '@/strings';
 
 import { quadApi, type QuadApi, type QuadReply } from './api';
 import { patchPost, quadKeys, type ThreadData } from './cache';

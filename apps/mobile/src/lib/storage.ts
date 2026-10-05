@@ -11,6 +11,8 @@ import { createMMKV, type MMKV } from 'react-native-mmkv';
 
 export type StorageSchema = {
   'theme.mode': 'system' | 'light' | 'dark';
+  /** Language setting (P17-FEAT-03); read once at startup by strings/index.ts. */
+  'settings.language': 'system' | 'en' | 'es';
   'privacy.analyticsOptOut': boolean;
   'privacy.crashOptOut': boolean;
   'onboarding.swipeCoachSeen': boolean;

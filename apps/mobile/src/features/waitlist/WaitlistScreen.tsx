@@ -17,7 +17,7 @@ import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
 import { registerForPush } from '@/lib/push';
 import { getStorage } from '@/lib/storage';
-import { waitlist as copy } from '@/strings/en';
+import { waitlist as copy } from '@/strings';
 
 import { authApi, type AuthApi } from '../auth/api';
 import { useGateHandoff } from '../auth/useAppGate';

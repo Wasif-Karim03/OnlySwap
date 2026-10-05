@@ -19,7 +19,7 @@ import { TextArea } from '@/components/TextArea';
 import { errorText, toAppError } from '@/lib/errors';
 import { fill } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
-import { offers as copy } from '@/strings/en';
+import { offers as copy } from '@/strings';
 
 import { feedApi, type FeedApi } from '../feed/api';
 import { listingKey } from '../feed/ListingScreen';

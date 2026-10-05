@@ -9,7 +9,7 @@ import { SegmentedControl } from '@/components/SegmentedControl';
 import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
 import { Toggle } from '@/components/Toggle';
-import { search as copy, sell as sellCopy } from '@/strings/en';
+import { search as copy, sell as sellCopy } from '@/strings';
 
 import type { Category, Condition } from '../sell/logic';
 import {

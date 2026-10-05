@@ -17,7 +17,7 @@ import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { getEnv } from '@/lib/env';
 import { toAppError } from '@/lib/errors';
-import { quad as copy } from '@/strings/en';
+import { quad as copy } from '@/strings';
 
 import { quadApi, type QuadApi, type QuadCursor, type QuadSort } from './api';
 import { quadKeys, useQuadStatus } from './cache';

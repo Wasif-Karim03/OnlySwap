@@ -10,7 +10,7 @@ import {
 import { StyleSheet } from 'react-native-unistyles';
 
 import { fill } from '@/lib/format';
-import { photo as photoCopy } from '@/strings/en';
+import { photo as photoCopy } from '@/strings';
 
 import { Photo } from './Photo';
 import { Text } from './Text';

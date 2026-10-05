@@ -1,5 +1,5 @@
-import { fill } from '@/lib/format';
-import { offers as copy } from '@/strings/en';
+import { fill, money as formatMoney } from '@/lib/format';
+import { offers as copy } from '@/strings';
 
 export type OfferStatus =
   'pending' | 'countered' | 'accepted' | 'declined' | 'expired' | 'withdrawn' | 'auto_declined';
@@ -76,8 +76,7 @@ export function isLowOffer(amountCents: number, askCents: number): boolean {
 
 /** "$35" or "$35.50" for display. */
 export function money(cents: number): string {
-  const d = cents / 100;
-  return `$${Number.isInteger(d) ? d.toLocaleString('en-US') : d.toFixed(2)}`;
+  return formatMoney(cents);
 }
 
 // ---------------------------------------------------------------------------

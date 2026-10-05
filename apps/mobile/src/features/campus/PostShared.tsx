@@ -10,7 +10,7 @@ import { Text } from '@/components/Text';
 import { errorText, toAppError } from '@/lib/errors';
 import type { PickedPhoto } from '@/lib/media';
 import { primerStep, type OsApi } from '@/lib/permissions';
-import { campus as copy } from '@/strings/en';
+import { campus as copy } from '@/strings';
 
 import type { PostedListing, SellApi } from '../sell/api';
 import { mediaUrl } from '../sell/logic';

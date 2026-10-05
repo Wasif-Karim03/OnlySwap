@@ -16,7 +16,7 @@ import { SkeletonList } from '@/components/Skeleton';
 import { Text } from '@/components/Text';
 import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
-import { campus as copy, feed as feedCopy, saved as savedCopy } from '@/strings/en';
+import { campus as copy, feed as feedCopy, saved as savedCopy } from '@/strings';
 
 import type { FeedCursor } from '../feed/logic';
 import { answerWanted, getDraftStore, type DraftState } from '../sell/draft';

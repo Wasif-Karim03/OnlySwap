@@ -2,7 +2,7 @@ import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { fill } from '@/lib/format';
-import { chat as copy } from '@/strings/en';
+import { chat as copy } from '@/strings';
 
 import { Icon } from './icons/Icon';
 import { Photo } from './Photo';

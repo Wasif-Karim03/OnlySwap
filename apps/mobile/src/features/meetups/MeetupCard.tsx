@@ -10,7 +10,7 @@ import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
-import { meetup as copy } from '@/strings/en';
+import { meetup as copy } from '@/strings';
 
 import type { MeetupsApi } from './api';
 import { placeOf, whenLabel, type Meetup } from './logic';

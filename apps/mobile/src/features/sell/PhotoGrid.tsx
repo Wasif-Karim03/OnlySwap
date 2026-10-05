@@ -9,7 +9,7 @@ import { Photo } from '@/components/Photo';
 import { ProgressBar } from '@/components/Progress';
 import { Text } from '@/components/Text';
 import { fill } from '@/lib/format';
-import { sell as copy } from '@/strings/en';
+import { sell as copy } from '@/strings';
 import { animateTo, resolveMotion } from '@/theme/motion';
 import { useReducedMotion } from '@/theme/reducedMotion';
 

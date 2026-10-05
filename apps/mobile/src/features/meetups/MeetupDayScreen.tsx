@@ -18,7 +18,7 @@ import { useToastStore } from '@/components/Toast';
 import { getEnv } from '@/lib/env';
 import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
-import { meetup as copy } from '@/strings/en';
+import { meetup as copy } from '@/strings';
 
 import { directionsUrl } from '../sell/logic';
 import { meetupsApi, type MeetupsApi } from './api';

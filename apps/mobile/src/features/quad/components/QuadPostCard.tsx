@@ -8,7 +8,7 @@ import { Tag } from '@/components/Tag';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { fill } from '@/lib/format';
-import { quad as copy } from '@/strings/en';
+import { quad as copy } from '@/strings';
 
 import { agoLabel } from '../../feed/logic';
 import { mediaUrl } from '../../sell/logic';

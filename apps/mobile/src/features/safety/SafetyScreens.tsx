@@ -19,7 +19,7 @@ import { Text } from '@/components/Text';
 import { TextArea } from '@/components/TextArea';
 import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
-import { safety as copy } from '@/strings/en';
+import { safety as copy, intlLocale } from '@/strings';
 
 import { authApi, type AuthApi } from '../auth/api';
 import { SpotsMap } from '../meetups/SpotsMap';
@@ -45,7 +45,7 @@ export function ReportUpdateScreen({ id, api = safetyApi }: { id: string; api?: 
               {t.event === 'reviewed' ? copy.reportReviewed : copy.reportReceived}
             </Text>
             <Text variant="meta" tone="ink2">
-              {new Date(t.at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              {new Date(t.at).toLocaleDateString(intlLocale, { month: 'short', day: 'numeric' })}
             </Text>
           </View>
         ))}

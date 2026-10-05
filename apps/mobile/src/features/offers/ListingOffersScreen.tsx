@@ -9,7 +9,7 @@ import { NavBar } from '@/components/NavBar';
 import { SkeletonList } from '@/components/Skeleton';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
-import { offers as copy } from '@/strings/en';
+import { offers as copy } from '@/strings';
 
 import { offersApi, type OffersApi } from './api';
 import { money, offerView } from './logic';

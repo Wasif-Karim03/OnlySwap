@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { usePermissionPrimer, type PermissionKind } from '@/lib/permissions';
-import { primer as primerCopy } from '@/strings/en';
+import { primer as primerCopy } from '@/strings';
 
 import { Button } from './Button';
 import { GlyphTile } from './EmptyState';

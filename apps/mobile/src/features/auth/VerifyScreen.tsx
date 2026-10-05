@@ -10,7 +10,7 @@ import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { errorCopy, toAppError } from '@/lib/errors';
 import { haptic } from '@/lib/haptics';
-import { signIn as copy } from '@/strings/en';
+import { signIn as copy } from '@/strings';
 
 import { authApi, type AuthApi } from './api';
 import { AuthStep } from './AuthStep';
