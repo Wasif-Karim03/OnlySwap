@@ -277,8 +277,8 @@
 - [x] **P5-SELL-06** S-C02 Post free food and S-C05 Post a Wanted · SELL-01 · caps enforced · M
 - [x] 🆕 **P5-SELL-08** Wanted → "I have this": opens Sell prefilled with `wanted_ref`; `wanted_match` notification to the poster. · deps P5-SELL-06, P6-CAMP-01 · done when the poster gets a notification and can offer · S
 - [x] **P6-CAMP-01** RPC `get_campus_feed` + S-C01 Campus feed (free food countdown, free stuff, Wanted with "I have this" prefill, Day one C6, Founding sellers C7) · P5-SELL-06 · — · L
-- [ ] **P11-ACC-02** Edge Function `export-data` + S-F17 Download your data · P3 · the JSON link arrives by email · M
-- [ ] 🆕 **R11-HINT-01** Price hint UI in Sell details (`price_hint`; hidden while n < 5). · deps P5-SELL-03 · done when shown only with ≥5 comparables · S
+- [x] **P11-ACC-02** Edge Function `export-data` + S-F17 Download your data · P3 · the JSON link arrives by email · M
+- [x] 🆕 **R11-HINT-01** Price hint UI in Sell details (`price_hint`; hidden while n < 5). · deps P5-SELL-03 · done when shown only with ≥5 comparables · S
 - [x] 🆕 **R11-INVITE-01** `/i/[code]` and `/joined` pages; invite links in the waitlist screen. · deps P4-AUTH-12 · — · S
 
 **Moved by the first scope cut:**
@@ -294,11 +294,11 @@
 - [x] **P10-QUAD-06** S-Q07 New post (text, photo, poll, check-in; blocked Q9, held Q10, rate limits) · QUAD-01, P5-MEDIA-03 · PII and names-student cases route correctly · L
 - [x] **P10-QUAD-07** S-Q09 Report post, S-Q12 Your Quad, S-Q13 Quad activity, S-Q14 Muted, S-Q15 Check-in · QUAD-05 · — · M
 - [ ] 🆕 **R11-MAP-01** MapLibre + OpenFreeMap map on Plan the pickup and Safety center (spots only, no location permission). · deps P1-SPIKE-02 · done when the map renders with the designation pins · M
-- [ ] 🆕 **R11-ADM-01** Admin metrics UI (funnel, retention, liquidity, safety views). · deps P12-ADM-03 · done when it matches T-DATA-02 · L
-- [ ] 🆕 **R11-ADM-02** Admin team (invite moderator), announcements (1/week), banned-words UI. · deps P12-ADM-03 · done when every action is logged · L
+- [x] 🆕 **R11-ADM-01** Admin metrics UI (funnel, retention, liquidity, safety views). · deps P12-ADM-03 · done when it matches T-DATA-02 · L
+- [x] 🆕 **R11-ADM-02** Admin team (invite moderator), announcements (1/week), banned-words UI. · deps P12-ADM-03 · done when every action is logged · L
 - [x] 🆕 **R11-ADM-03** Admin Quad queue + reveal with re-MFA + receipt. · deps P10-QUAD-01 · done when T-INT-ADMIN-03 passes · M
 - [x] 🆕 **R11-NOTIF-01** R1.1 notification types (quad_reply, quad_milestone, announcements, free_food, rating_revealed). · deps P9-PUSH-04 · done when each fires once · M
-- [ ] 🆕 **R11-REL-01** R1.1 release: privacy policy Quad section, Apple age questionnaire (social media yes), Quad enabled per campus at ≥300 active users, the tab bar gains Quad. · deps all R1.1 · done when RELEASE §8 R1.1 go/no-go passes · M
+- [x] 🆕 **R11-REL-01** R1.1 release: privacy policy Quad section, Apple age questionnaire (social media yes), Quad enabled per campus at ≥300 active users, the tab bar gains Quad. · deps all R1.1 · done when RELEASE §8 R1.1 go/no-go passes · M
 - [x] 🆕 **R11-PHOTO-GATE** Chat photos only after CSAM scanning is active (Q2/Q3) or an explicit owner risk acceptance is logged. · deps P8-CHAT-04 · done when the decision is logged · S
 
 ## R2 backlog

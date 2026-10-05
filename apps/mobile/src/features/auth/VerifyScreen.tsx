@@ -14,6 +14,7 @@ import { signIn as copy } from '@/strings/en';
 
 import { authApi, type AuthApi } from './api';
 import { AuthStep } from './AuthStep';
+import { clearInviteCode, sendCodeWithInvite } from './invite';
 import { useGateHandoff } from './useAppGate';
 import {
   formatCountdown,
@@ -83,7 +84,7 @@ export function VerifyScreen({
   const resend = async (reason: 'manual' | 'expired') => {
     setBusy(true);
     try {
-      await api.sendCode(email);
+      await (reverify ? api.sendCode(email) : sendCodeWithInvite(api, email));
       setState(recordResend(current, now()));
       setCode('');
       setWrongFlash(false);
@@ -105,6 +106,8 @@ export function VerifyScreen({
     setMessage(null);
     try {
       await api.verifyCode(email, value);
+      // The account exists now; an invite code was used (or not) at creation.
+      if (!reverify) clearInviteCode();
       track('email_verified');
       verifyStore.clear(email);
     } catch (e) {

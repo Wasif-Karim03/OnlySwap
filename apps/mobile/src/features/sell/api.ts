@@ -4,7 +4,15 @@ import { createRpc, type RpcClient } from '@/lib/rpc';
 import { getSupabase } from '@/lib/supabase';
 import { uploadApi } from '@/lib/uploadApi';
 
-import type { AnyListingKind, Category, CreateListingArgs, Spot } from './logic';
+import {
+  parsePriceHint,
+  type AnyListingKind,
+  type Category,
+  type Condition,
+  type CreateListingArgs,
+  type PriceHint,
+  type Spot,
+} from './logic';
 
 /**
  * Sell calls (P5-SELL-01, P5-SELL-02). `sellApi` is the app's instance;
@@ -36,6 +44,8 @@ export type SellApi = {
   /** Short campus name for the share card ("Ohio State"). */
   campusName: () => Promise<string | null>;
   createListing: (args: CreateListingArgs) => Promise<PostedListing>;
+  /** R11-HINT-01: sold prices for this category and condition on the campus; null under 5. */
+  priceHint: (categoryId: number, condition: Condition) => Promise<PriceHint | null>;
   /** Uploads the rendered share card (JPEG) and records it on the listing. */
   uploadShareCard: (listingId: string, uri: string) => Promise<void>;
 };
@@ -104,6 +114,9 @@ export const sellApi: SellApi = {
     const { data } = await getSupabase().from('campuses').select('short_name').limit(1);
     return ((data?.[0]?.short_name as string | undefined) ?? null) || null;
   },
+
+  priceHint: async (categoryId, condition) =>
+    parsePriceHint(await rpc<unknown>('price_hint', { category_id: categoryId, condition })),
 
   createListing: (args) => rpc<PostedListing>('create_listing', args),
 

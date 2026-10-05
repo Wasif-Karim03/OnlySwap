@@ -15,10 +15,12 @@ import {
   ProfileTabScreen,
   RelistScreen,
 } from '../src/features/me/MeScreens';
+import { createExportApi, functionsError, type ExportApi } from '../src/features/me/exportData';
 import {
   AboutScreen,
   AppearanceScreen,
   ChangeSchoolScreen,
+  DataExportScreen,
   PrivacyScreen,
   SettingsScreen,
 } from '../src/features/me/SettingsScreens';
@@ -280,6 +282,127 @@ describe('F10-F18 settings', () => {
     // P14-LEGAL-01: the terms open from the bundled copy, offline.
     fireEvent.press(screen.getByText(settings.terms));
     expect(await screen.findByTestId('screen-legal-terms')).toBeTruthy();
-    expect(screen.getByText('Version 2026-10')).toBeTruthy();
+    expect(screen.getByText('Version 2026-11')).toBeTruthy();
+  });
+});
+
+describe('P11-ACC-02 F17 Download your data', () => {
+  const httpError = (status: number, body: unknown) => ({
+    name: 'FunctionsHttpError',
+    message: 'Edge Function returned a non-2xx status code',
+    context: { status, json: async () => body },
+  });
+  const exportApi = (impl: ExportApi['requestExport']): ExportApi => ({
+    requestExport: jest.fn(impl),
+  });
+  const setNet = (online: boolean) => {
+    const netinfo = jest.requireMock('@react-native-community/netinfo') as {
+      useNetInfo: jest.Mock;
+    };
+    netinfo.useNetInfo.mockReturnValue({
+      type: online ? 'cellular' : 'none',
+      isConnected: online,
+      isInternetReachable: online,
+    });
+  };
+  afterEach(() => setNet(true));
+
+  it('POSTs to export-data and reads the queued answer', async () => {
+    const invoke = jest.fn(async () => ({
+      data: { status: 'queued', expires_at: '2026-10-11T12:00:00Z' },
+      error: null,
+    }));
+    await expect(createExportApi(invoke).requestExport()).resolves.toEqual({
+      status: 'queued',
+      expiresAt: '2026-10-11T12:00:00Z',
+    });
+    expect(invoke).toHaveBeenCalledWith('export-data', { body: {} });
+  });
+
+  it('turns the function errors into app errors (RATE_LIMITED keeps its time)', async () => {
+    const limited = await functionsError(
+      httpError(429, { error: 'RATE_LIMITED:export_data:2026-10-05T18:00:00Z' }),
+    );
+    expect(limited).toMatchObject({ code: 'RATE_LIMITED', action: 'export_data' });
+    expect(limited.retryAt?.toISOString()).toBe('2026-10-05T18:00:00.000Z');
+    expect(await functionsError(httpError(401, { error: 'NOT_AUTHENTICATED' }))).toMatchObject({
+      code: 'NOT_AUTHENTICATED',
+    });
+    expect(await functionsError(httpError(500, { error: 'UNKNOWN' }))).toMatchObject({
+      code: 'UNKNOWN',
+    });
+    expect(
+      await functionsError({ name: 'FunctionsFetchError', message: 'Failed to send a request' }),
+    ).toMatchObject({ code: 'ERR_OFFLINE' });
+    const invoke = jest.fn(async () => ({
+      data: null,
+      error: httpError(429, { error: 'RATE_LIMITED:export_data:2026-10-05T18:00:00Z' }),
+    }));
+    await expect(createExportApi(invoke).requestExport()).rejects.toMatchObject({
+      code: 'RATE_LIMITED',
+    });
+  });
+
+  it('Settings opens it; the old "email us, 30 days" copy is gone', async () => {
+    render(
+      {
+        settings: () => <SettingsScreen auth={{ signOut: jest.fn() }} />,
+        'settings/data': () => <Stub id="screen-data-stub" />,
+      },
+      '/settings',
+    );
+    fireEvent.press(await screen.findByText(settings.data));
+    expect(await screen.findByTestId('screen-data-stub')).toBeTruthy();
+    expect(JSON.stringify(settings)).not.toMatch(/within 30 days/);
+  });
+
+  it('explains what is in it and shows the email note after the tap', async () => {
+    const a = exportApi(async () => ({ status: 'queued', expiresAt: null }));
+    render({ 'settings/data': () => <DataExportScreen api={a} /> }, '/settings/data');
+    expect(await screen.findByText(settings.dataIntro)).toBeTruthy();
+    expect(screen.getByText(`\u2022 ${settings.dataIncludes[0]}`)).toBeTruthy();
+    fireEvent.press(screen.getByTestId('data-export-send'));
+    expect(await screen.findByText(settings.dataSent)).toBeTruthy();
+    expect(settings.dataSent).toBe(
+      'Check your school email in a few minutes. The link works for 7 days.',
+    );
+    expect(a.requestExport).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId('data-export-send')).toBeNull();
+  });
+
+  it('once a day: says when it opens again', async () => {
+    const a = exportApi(async () => {
+      throw await functionsError(
+        httpError(429, { error: 'RATE_LIMITED:export_data:2026-10-05T18:00:00Z' }),
+      );
+    });
+    render(
+      { 'settings/data': () => <DataExportScreen api={a} timeZone="America/New_York" /> },
+      '/settings/data',
+    );
+    fireEvent.press(await screen.findByTestId('data-export-send'));
+    expect(
+      await screen.findByText(
+        'You already asked in the last day. You can ask again after Mon 2:00 PM.',
+      ),
+    ).toBeTruthy();
+    expect(screen.getByTestId('data-export-send')).toBeTruthy();
+  });
+
+  it('other errors show the error copy and the button stays for a retry', async () => {
+    const a = exportApi(async () => {
+      throw await functionsError(httpError(500, { error: 'UNKNOWN' }));
+    });
+    render({ 'settings/data': () => <DataExportScreen api={a} /> }, '/settings/data');
+    fireEvent.press(await screen.findByTestId('data-export-send'));
+    expect(await screen.findByText('Something went wrong. Try again.')).toBeTruthy();
+  });
+
+  it('offline: says so and the button is off', async () => {
+    setNet(false);
+    const a = exportApi(async () => ({ status: 'queued', expiresAt: null }));
+    render({ 'settings/data': () => <DataExportScreen api={a} /> }, '/settings/data');
+    expect(await screen.findByText(settings.dataOffline)).toBeTruthy();
+    expect(screen.getByTestId('data-export-send')).toBeDisabled();
   });
 });

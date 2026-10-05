@@ -132,6 +132,7 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 | `get_saved` | — | `(FeedItem & {price_at_save, saved_at})[]` | active, hold, sold (DEC 59) | — |
 | `get_profile` | `user_id` | profile + listings + reviews, or `{id, access}` | access ok, me, blocked, gone (DEC 59) | 600/h |
 | `price_hint` | `category_id` | `{p25,p50,p75}` or null | n≥5 | — |
+| `price_hint` **[R1.1]** | `category_id, condition` | `{median_cents, p25_cents, p75_cents, n, scope}` or null | n≥5 for that condition, else the whole category (DEC 81) | — |
 | `check_text` | `text, scope` | `{result, term}` | inline UX only | 600/h |
 | `reserve_listing_id` | — | `uuid` | — | 30/day |
 | `create_listing` | `id, kind, title, description, category_id, condition, price_cents, open_to_offers, photos jsonb, meet_spot_ids, meet_note, availability, wanted_max_cents, wanted_ref, food_minutes, pickup_by` | listing | id must be reserved by the caller; **idempotent** (`on conflict (id) do nothing`, returns existing); photos 1–8 (sale/free), 0–1 (wanted/food); path prefix check; `BANNED_TERM`; review → `held_review`; price ≤ 200000; food ≤ 180 min; `pickup_by` (free only, today…+14 d) sets the expiry (DEC 54) | 20/day (3 in first 24 h); wanted 5/day; food 3/day |

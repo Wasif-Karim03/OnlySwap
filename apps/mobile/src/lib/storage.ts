@@ -23,6 +23,8 @@ export type StorageSchema = {
   'search.recent': unknown;
   /** Last time we asked for an App Store / Play review (ISO), X26. */
   'review.lastAskedAt': string;
+  /** Invite code from an /i/{code} link, sent with the sign-up (features/auth/invite.ts). */
+  'auth.inviteCode': { code: string; savedAt: string };
 };
 
 export type StorageKey = keyof StorageSchema;

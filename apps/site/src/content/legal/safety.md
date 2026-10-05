@@ -1,7 +1,7 @@
 ---
 title: Safety
 description: How to buy and sell safely on campus.
-version: '2026-10'
+version: '2026-11'
 order: 5
 ---
 
@@ -11,6 +11,7 @@ order: 5
 
 - Keep the chat in OnlySwap. Don't move to other apps before the deal.
 - Check the listing photos and ask questions.
+- Don't send photos of your ID, your room number or anything with your address.
 - Plan the meetup in the app so you both see the time and place.
 - Send the meetup link to a friend.
 

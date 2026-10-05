@@ -128,7 +128,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         {
           action: 'VIEW',
           autoVerify: true,
-          data: [{ scheme: 'https', host: WEB_HOST, pathPrefix: '/l/' }],
+          // Listing shares and invites (R11-INVITE-01); must match APP_PATHS in
+          // apps/site/scripts/well-known.mjs.
+          data: [
+            { scheme: 'https', host: WEB_HOST, pathPrefix: '/l/' },
+            { scheme: 'https', host: WEB_HOST, pathPrefix: '/i/' },
+          ],
           category: ['BROWSABLE', 'DEFAULT'],
         },
       ],

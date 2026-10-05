@@ -1,3 +1,4 @@
+import { useNetInfo } from '@react-native-community/netinfo';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
@@ -5,7 +6,7 @@ import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
-import { Banner } from '@/components/Banner';
+import { Banner, isOffline } from '@/components/Banner';
 import { Button } from '@/components/Button';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { ErrorState } from '@/components/ErrorState';
@@ -17,7 +18,7 @@ import { SkeletonList } from '@/components/Skeleton';
 import { Text } from '@/components/Text';
 import { Toggle } from '@/components/Toggle';
 import { setAnalyticsOptOut } from '@/lib/analytics';
-import { errorText } from '@/lib/errors';
+import { deviceTz, errorText, toAppError } from '@/lib/errors';
 import { fill } from '@/lib/format';
 import { unregisterPush } from '@/lib/push';
 import { setCrashOptOut } from '@/lib/sentry';
@@ -27,6 +28,7 @@ import { THEME_MODES, useThemeModeStore, type ThemeMode } from '@/theme/mode';
 
 import { authApi, type AuthApi } from '../auth/api';
 import { meApi, type Me, type MeApi } from './api';
+import { exportApi, type ExportApi } from './exportData';
 import { meKey } from './MeScreens';
 
 function useLeave(fallback: '/profile' | '/settings') {
@@ -79,6 +81,11 @@ export function SettingsScreen({
             label={copy.blocked}
             icon="ban"
             onPress={() => router.push('/settings/blocked')}
+          />
+          <ListRow
+            label={copy.data}
+            icon="download"
+            onPress={() => router.push('/settings/data')}
           />
           <ListRow label={copy.about} icon="info" onPress={() => router.push('/settings/about')} />
         </GroupedList>
@@ -253,15 +260,103 @@ export function AboutScreen() {
           <ListRow label={copy.rules} onPress={() => router.push('/legal/rules')} />
           <ListRow label={copy.licenses} onPress={() => setLicenses((v) => !v)} />
           <ListRow label={copy.contact} onPress={() => router.push('/help')} />
+          <ListRow label={copy.data} onPress={() => router.push('/settings/data')} />
         </GroupedList>
         {licenses ? (
           <Text variant="meta" tone="ink2" testID="about-licenses">
             {copy.licensesBody}
           </Text>
         ) : null}
+      </ScrollView>
+    </View>
+  );
+}
+
+/** "Sat 3:00 PM" in the given zone: the export limit can end tomorrow. */
+export function exportRetryTime(date: Date, timeZone: string = deviceTz()): string {
+  return new Intl.DateTimeFormat('en-US', {
+    weekday: 'short',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone,
+  }).format(date);
+}
+
+type ExportState = { kind: 'idle' } | { kind: 'sent' } | { kind: 'error'; message: string };
+
+/**
+ * F17 Download your data (P11-ACC-02). One tap asks `export-data`; the file's
+ * link arrives by email (7 days). Once a day: RATE_LIMITED carries the time
+ * it opens again.
+ */
+export function DataExportScreen({
+  api = exportApi,
+  timeZone,
+}: {
+  api?: ExportApi;
+  timeZone?: string;
+}) {
+  const leave = useLeave('/settings');
+  const offline = isOffline(useNetInfo());
+  const [busy, setBusy] = useState(false);
+  const [state, setState] = useState<ExportState>({ kind: 'idle' });
+  const send = async () => {
+    setBusy(true);
+    setState({ kind: 'idle' });
+    try {
+      await api.requestExport();
+      setState({ kind: 'sent' });
+    } catch (e) {
+      const err = toAppError(e);
+      setState({
+        kind: 'error',
+        message:
+          err.code === 'RATE_LIMITED' && err.retryAt
+            ? fill(copy.dataRateLimited, { time: exportRetryTime(err.retryAt, timeZone) })
+            : errorText(err, timeZone),
+      });
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <View style={styles.root} testID="screen-data-export">
+      <NavBar title={copy.dataTitle} onLeading={leave} />
+      <ScrollView contentContainerStyle={styles.body}>
+        <Text variant="body">{copy.dataIntro}</Text>
+        <View style={styles.list}>
+          <Text variant="label" tone="ink2" accessibilityRole="header">
+            {copy.dataIncludesTitle}
+          </Text>
+          {copy.dataIncludes.map((line) => (
+            <Text key={line} variant="body">
+              {`\u2022 ${line}`}
+            </Text>
+          ))}
+        </View>
         <Text variant="meta" tone="ink2">
-          {copy.dataBody}
+          {`${copy.dataOthers} ${copy.dataOncePerDay}`}
         </Text>
+        {state.kind === 'sent' ? (
+          <View testID="data-export-sent" style={styles.list}>
+            <Text variant="bodyStrong" accessibilityRole="header">
+              {copy.dataSentTitle}
+            </Text>
+            <Banner kind="info" message={copy.dataSent} />
+          </View>
+        ) : (
+          <>
+            {offline ? <Banner kind="offline" message={copy.dataOffline} /> : null}
+            {state.kind === 'error' ? <Banner kind="error" message={state.message} /> : null}
+            <Button
+              label={copy.dataButton}
+              loading={busy}
+              disabled={offline}
+              onPress={() => void send()}
+              testID="data-export-send"
+            />
+          </>
+        )}
       </ScrollView>
     </View>
   );
@@ -270,4 +365,5 @@ export function AboutScreen() {
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   body: { padding: theme.space.screen, gap: theme.space.lg },
+  list: { gap: theme.space.xs },
 }));

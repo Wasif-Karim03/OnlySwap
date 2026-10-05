@@ -1,10 +1,11 @@
+import { useNetInfo } from '@react-native-community/netinfo';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
-import { Banner } from '@/components/Banner';
+import { Banner, isOffline } from '@/components/Banner';
 import { Button } from '@/components/Button';
 import { ChipGroup } from '@/components/Chip';
 import { ErrorState } from '@/components/ErrorState';
@@ -24,8 +25,10 @@ import { sellApi, type SellApi } from './api';
 import { getDraftStore, useDraft, type DraftState } from './draft';
 import {
   categoryLabel,
+  centsToPrice,
   cleanPrice,
   DESCRIPTION_MAX,
+  dollars,
   TITLE_MAX,
   validateDetails,
   type Category,
@@ -33,11 +36,54 @@ import {
   type DetailsError,
   type ListingKind,
   type PickupBy,
+  type PriceHint,
 } from './logic';
 import { SellStep } from './SellStep';
 
 const CONDITIONS: Condition[] = ['new', 'like_new', 'good', 'fair'];
 const PICKUPS: PickupBy[] = ['tomorrow', 'sunday', 'week'];
+
+/** Category and condition settle for this long before the price hint is asked for. */
+export const PRICE_HINT_DEBOUNCE_MS = 400;
+
+function useDebounced<T>(value: T, ms: number): T {
+  const [settled, setSettled] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setSettled(value), ms);
+    return () => clearTimeout(t);
+  }, [value, ms]);
+  return settled;
+}
+
+/**
+ * R11-HINT-01 (D02 variant): one quiet line under the price with a chip that
+ * fills the typical price. It never blocks posting: while there are under 5
+ * comparables (null), on any error and offline it simply isn't there.
+ */
+function PriceHintLine({ hint, onUse }: { hint: PriceHint; onUse: (price: string) => void }) {
+  const typical = dollars(hint.medianCents);
+  return (
+    <View style={styles.hint} testID="sell-price-hint">
+      <Text variant="meta" tone="ink2" style={styles.flex}>
+        {fill(copy.priceHint, {
+          low: dollars(hint.p25Cents),
+          high: dollars(hint.p75Cents),
+          typical,
+        })}
+      </Text>
+      {/* A small secondary button (chip-sized) so screen readers hear a button, not a checkbox. */}
+      <Button
+        label={fill(copy.priceHintUse, { price: typical })}
+        variant="secondary"
+        size="S"
+        fullWidth={false}
+        accessibilityHint={fill(copy.priceHintUseHint, { price: typical })}
+        onPress={() => onUse(centsToPrice(hint.medianCents))}
+        testID="sell-price-hint-use"
+      />
+    </View>
+  );
+}
 
 /** Banned-word hits from the server check, tied to the text that was checked. */
 type Banned = {
@@ -67,7 +113,8 @@ export function errorText(e: DetailsError): string {
  * D02 Sell · details (P5-SELL-03; board D2, D3, D4). Next shows every problem
  * at once next to its field, with a count on top, and keeps Next disabled
  * until they're fixed. "Give it away" hides category and price and asks for a
- * pickup day instead (DEC 54). No price hint in R1.0.
+ * pickup day instead (DEC 54). The price hint (R11-HINT-01) shows once a
+ * category and condition are picked for a sale.
  */
 export function SellDetailsScreen({
   api = sellApi,
@@ -89,6 +136,31 @@ export function SellDetailsScreen({
     queryFn: api.categories,
     staleTime: Infinity,
   });
+  const net = useNetInfo();
+  const offline = isOffline(net);
+  const hintArgs = useDebounced(
+    draft.kind === 'sale' && draft.categoryId !== null && draft.condition
+      ? { categoryId: draft.categoryId, condition: draft.condition }
+      : null,
+    PRICE_HINT_DEBOUNCE_MS,
+  );
+  const hintKey = hintArgs ? `${hintArgs.categoryId}:${hintArgs.condition}` : null;
+  const hint = useQuery({
+    queryKey: ['price_hint', hintArgs?.categoryId ?? null, hintArgs?.condition ?? null],
+    queryFn: () => api.priceHint(hintArgs!.categoryId, hintArgs!.condition),
+    enabled: hintArgs !== null && !offline,
+    staleTime: 10 * 60_000,
+    retry: false,
+  });
+  // Only the settled choice that's on screen now; never a stale or failed answer.
+  const currentKey =
+    draft.kind === 'sale' && draft.categoryId !== null && draft.condition
+      ? `${draft.categoryId}:${draft.condition}`
+      : null;
+  const shownHint =
+    !offline && hintKey !== null && hintKey === currentKey && !hint.isError
+      ? (hint.data ?? null)
+      : null;
 
   const bannedErrors = (): DetailsError[] => {
     const out: DetailsError[] = [];
@@ -283,6 +355,9 @@ export function SellDetailsScreen({
             error={errorFor('price')}
             testID="sell-price"
           />
+          {shownHint ? (
+            <PriceHintLine hint={shownHint} onUse={(price) => update({ price })} />
+          ) : null}
           <Toggle
             label={copy.offersLabel}
             description={copy.offersBody}
@@ -349,6 +424,12 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: error ? theme.colors.redBg : theme.colors.card,
   }),
   sheetList: { maxHeight: 420 },
+  hint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: theme.space.sm,
+  },
   option: (child: boolean) => ({
     minHeight: theme.size.hit,
     flexDirection: 'row',

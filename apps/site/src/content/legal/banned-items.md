@@ -1,7 +1,7 @@
 ---
 title: Banned items
 description: What can't be listed on OnlySwap.
-version: '2026-10'
+version: '2026-11'
 order: 4
 ---
 

@@ -1,7 +1,7 @@
 ---
 title: Cookies
 description: What this website stores in your browser.
-version: '2026-10'
+version: '2026-11'
 order: 6
 ---
 

@@ -680,6 +680,7 @@ describe('Q09 ReportSheet for Quad targets', () => {
         'sexual',
         'spam',
         'self_harm',
+        'minor_safety',
         'other',
       ]);
       for (const r of reportReasons(target)) expect(allowed.has(r)).toBe(true);

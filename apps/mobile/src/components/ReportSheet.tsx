@@ -45,6 +45,8 @@ const QUAD_REASONS: ReportReason[] = [
   'sexual',
   'spam',
   'self_harm',
+  // Play child safety standard: an in-app way to report it everywhere.
+  'minor_safety',
   'other',
 ];
 

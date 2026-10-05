@@ -15,6 +15,7 @@ import { signIn as copy } from '@/strings/en';
 
 import { authApi, type AuthApi } from './api';
 import { AuthStep } from './AuthStep';
+import { sendCodeWithInvite } from './invite';
 import { emailDomain, normalizeEmail } from './logic';
 import { useSchoolLookup } from './useSchoolLookup';
 import { setLoginIntent } from './loginIntent';
@@ -46,7 +47,8 @@ export function EmailScreen({ api = authApi }: { api?: AuthApi }) {
         await api.signInReviewer(normalized, password);
         return { normalized, reviewer: true };
       }
-      await api.sendCode(normalized);
+      // R11-INVITE-01: a code from an /i/ link credits the inviter on sign-up.
+      await sendCodeWithInvite(api, normalized);
       setLoginIntent(params.mode === 'login');
       track('signup_started');
       return { normalized, reviewer: false };

@@ -730,6 +730,10 @@ export const sell = {
   pricePlaceholder: '$0',
   offersLabel: 'Open to offers',
   offersBody: 'People can offer less than your price. You decide.',
+  // R11-HINT-01 price hint (D02 variant)
+  priceHint: 'Similar items here sold for {low} to {high} (typical {typical})',
+  priceHintUse: 'Use {price}',
+  priceHintUseHint: 'Puts {price} in the price field',
   pickupLabel: 'Pick up by',
   pickup: { tomorrow: 'Tomorrow', sunday: 'Sunday', week: 'This week' },
   freeTitle: 'Goes on the Free shelf',
@@ -1491,7 +1495,7 @@ export const settings = {
   appearance: 'Appearance',
   school: 'Change school email',
   blocked: 'Blocked accounts',
-  data: 'Download my data',
+  data: 'Download your data',
   about: 'About',
   signOut: 'Sign out',
   signOutAll: 'Sign out of all devices',
@@ -1526,7 +1530,27 @@ export const settings = {
   licensesBody:
     'OnlySwap is built with open source software including React Native, Expo, Supabase and others, each under its own license.',
   contact: 'Contact us',
-  dataBody: 'Ask for a copy of your data and we will email it within 30 days.',
+  // F17 Download your data (P11-ACC-02)
+  dataTitle: 'Download your data',
+  dataIntro:
+    'We put a copy of your account data in one file and email you a link to it. The link works for 7 days.',
+  dataIncludesTitle: "What's in it",
+  dataIncludes: [
+    'Your profile and settings',
+    'Your listings and their photos',
+    'Offers you made and got',
+    'Your chats and messages',
+    'Ratings, saved items and saved searches',
+    'Blocks, reports and notifications',
+    'Your Quad posts and replies',
+  ],
+  dataOthers: 'Other people show up only by their display name.',
+  dataOncePerDay: 'You can ask once a day.',
+  dataButton: 'Email me my data',
+  dataSentTitle: 'On its way',
+  dataSent: 'Check your school email in a few minutes. The link works for 7 days.',
+  dataRateLimited: 'You already asked in the last day. You can ask again after {time}.',
+  dataOffline: "You're offline. Connect to ask for your data.",
 } as const;
 
 export const system = {

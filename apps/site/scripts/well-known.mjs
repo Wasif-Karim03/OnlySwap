@@ -9,8 +9,12 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const BUNDLE_ID = 'app.onlyswap';
-/** Paths the app opens; everything else stays on the web. */
-export const APP_PATHS = ['/l/*'];
+/**
+ * Paths the app opens; everything else stays on the web. /i/* invites
+ * (R11-INVITE-01) open the app when it's installed; the web page is the
+ * fallback. Keep in step with the Android intent filters in apps/mobile/app.config.ts.
+ */
+export const APP_PATHS = ['/l/*', '/i/*'];
 
 export function appleAssociation(teamId) {
   return {

@@ -7,6 +7,11 @@ import { Text, View } from 'react-native';
 import type { AuthApi } from '../src/features/auth/api';
 import { AgeScreen, PICKER_START_YEARS_AGO } from '../src/features/auth/AgeScreen';
 import { EmailScreen } from '../src/features/auth/EmailScreen';
+import {
+  clearInviteCode,
+  pendingInviteCode,
+  rememberInviteCode,
+} from '../src/features/auth/invite';
 import { VerifyScreen } from '../src/features/auth/VerifyScreen';
 import { hadLoginIntent, setLoginIntent } from '../src/features/auth/loginIntent';
 import { CODE_TTL_MS, verifyStore } from '../src/features/auth/verifyLogic';
@@ -398,5 +403,33 @@ describe('A03 login mode with an address that has no account yet', () => {
     setLoginIntent(false);
     setup('/age', fakeApi(), { age: { ageModule: noSignal, device: ios26 } });
     expect(await screen.findByText(ageCopy.body)).toBeTruthy();
+  });
+});
+
+describe('R11-INVITE-01 an invite code from an /i/ link goes out with the sign-up', () => {
+  afterEach(() => clearInviteCode());
+
+  it('Send code carries the kept code; a verified code spends it', async () => {
+    rememberInviteCode('ABCD2345');
+    const api = fakeApi();
+    const router = setup('/email', api);
+    await typeEmail('aisha@osu.edu');
+    expect(await screen.findByText(osu.school.name)).toBeTruthy();
+    fireEvent.press(screen.getByTestId('email-send'));
+    await waitFor(() => expect(router.getPathname()).toBe('/verify'));
+    expect(api.sendCode).toHaveBeenCalledWith('aisha@osu.edu', { inviteCode: 'ABCD2345' });
+    fireEvent.changeText(await screen.findByTestId('otp-input'), '123456');
+    await waitFor(() => expect(api.verifyCode).toHaveBeenCalled());
+    await waitFor(() => expect(pendingInviteCode()).toBeUndefined());
+  });
+
+  it('without a link, sendCode gets the email only', async () => {
+    const api = fakeApi();
+    const router = setup('/email', api);
+    await typeEmail('aisha@osu.edu');
+    expect(await screen.findByText(osu.school.name)).toBeTruthy();
+    fireEvent.press(screen.getByTestId('email-send'));
+    await waitFor(() => expect(router.getPathname()).toBe('/verify'));
+    expect(api.sendCode).toHaveBeenCalledWith('aisha@osu.edu');
   });
 });

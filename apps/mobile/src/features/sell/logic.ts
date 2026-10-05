@@ -438,6 +438,50 @@ export function priceLabel(kind: AnyListingKind, cents: number, free: string): s
   return `$${Number.isInteger(dollars) ? dollars.toLocaleString('en-US') : dollars.toFixed(2)}`;
 }
 
+/** R11-HINT-01: what price_hint(category_id, condition) answers, in cents. */
+export type PriceHint = {
+  medianCents: number;
+  p25Cents: number;
+  p75Cents: number;
+  n: number;
+  scope: 'condition' | 'category';
+};
+
+/** Fewer sold comparables than this and the server answers null. */
+export const PRICE_HINT_MIN_N = 5;
+
+/** Normalizes the RPC answer; anything incomplete or under 5 comparables is null. */
+export function parsePriceHint(raw: unknown): PriceHint | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const r = raw as Record<string, unknown>;
+  const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+  const median = num(r.median_cents ?? r.p50);
+  const p25 = num(r.p25_cents ?? r.p25);
+  const p75 = num(r.p75_cents ?? r.p75);
+  const n = num(r.n);
+  if (median === null || p25 === null || p75 === null || n === null) return null;
+  if (n < PRICE_HINT_MIN_N || median <= 0) return null;
+  return {
+    medianCents: median,
+    p25Cents: p25,
+    p75Cents: p75,
+    n,
+    scope: r.scope === 'condition' ? 'condition' : 'category',
+  };
+}
+
+/** "$45", "$12.50": dollars for the hint line (never "Free"). */
+export function dollars(cents: number): string {
+  const d = cents / 100;
+  return `$${Number.isInteger(d) ? d.toLocaleString('en-US') : d.toFixed(2)}`;
+}
+
+/** The price field's text for a cents value ("45", "12.50"). */
+export function centsToPrice(cents: number): string {
+  const d = cents / 100;
+  return Number.isInteger(d) ? String(d) : d.toFixed(2);
+}
+
 /** {SITE}/l/{id} (E2E-18); the site serves the preview with the share card. */
 export function listingLink(site: string, id: string): string {
   return `${site.replace(/\/+$/, '')}/l/${id}`;

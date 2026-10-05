@@ -1,7 +1,7 @@
 ---
 title: Terms of Service
 description: The agreement between you and OnlySwap.
-version: '2026-10'
+version: '2026-11'
 order: 1
 ---
 
@@ -26,7 +26,7 @@ You can't list, offer or ask for anything on the [banned items list](/banned-ite
 
 ## 4. Your content
 
-You own the photos, text and messages you post. You give us a worldwide, non-exclusive, royalty-free license to host, store, copy, resize, display and share that content only to run, improve and promote OnlySwap (for example, showing your listing to students at your school or making a share card when you tap Share). This license ends when you delete the content or your account, except for copies we must keep as described in the [Privacy Policy](/privacy).
+You own the photos, text, messages and Quad posts you post. You give us a worldwide, non-exclusive, royalty-free license to host, store, copy, resize, display and share that content only to run, improve and promote OnlySwap (for example, showing your listing to students at your school or making a share card when you tap Share). This license ends when you delete the content or your account, except for copies we must keep as described in the [Privacy Policy](/privacy).
 
 You promise you have the rights to what you post and that it's accurate.
 
@@ -50,30 +50,44 @@ You can appeal a strike, a removal or a suspension in the app. We review each ap
 
 Meet only in public places. OnlySwap suggests Meetup spots on campus. Some are marked "Police-designated" only when campus police have confirmed them, with the date they did. No place is guaranteed to be safe, and we can't control what other people do. Use your own judgment, bring a friend if you want, and leave if anything feels off. In an emergency, call 911.
 
-## 8. Ending your account
+## 8. The Quad and photos in chat
+
+The Quad is a board for students at your school. Other students don't see who wrote a post or reply, but OnlySwap keeps that link to enforce these terms. We may reveal who wrote something only when the law requires it or someone's safety is at serious risk, as described in the [Privacy Policy](/privacy). In the Quad you must not:
+
+- name, describe or target another student, or post anything that could identify them,
+- threaten, harass, bully or post hate about anyone,
+- post sexual content, or anything involving someone under 18,
+- share anyone's phone number, email, address, room number or social handle,
+- spam, advertise or sell (use listings for that).
+
+Posts and replies that other students vote down to a score of -5 are hidden and sent to a person for review. Posts that break these rules are removed and can lead to a strike, a suspension or a ban, like any other rule break (section 6).
+
+When photos in chat are on, you must not send nudity or sexual images, photos of other people without their consent, or photos of ID cards, student IDs or other documents. Photos may be checked automatically for illegal content.
+
+## 9. Ending your account
 
 You can delete your account at any time in the app (Profile, Settings, Delete account) or on the web at [/delete](/delete). We can suspend or end your account if you break these terms, if the law requires it, or if we stop offering OnlySwap at your school.
 
-## 9. Disclaimers
+## 10. Disclaimers
 
 OnlySwap is provided "as is" and "as available". To the fullest extent the law allows, we disclaim all warranties, express or implied, including merchantability, fitness for a particular purpose and non-infringement. We don't promise that the service will be uninterrupted or error free, that listings are accurate, or that any user is who they say they are beyond their school email check.
 
-## 10. Limitation of liability
+## 11. Limitation of liability
 
 To the fullest extent the law allows, OnlySwap and its owner won't be liable for any indirect, incidental, special, consequential or punitive damages, or for any loss arising from items, meetups, payments or dealings between users. Our total liability for any claim about OnlySwap is limited to $50. Some places don't allow these limits, so they may not apply to you.
 
-## 11. Indemnity
+## 12. Indemnity
 
 You agree to defend and hold OnlySwap and its owner harmless from claims, losses and costs (including reasonable legal fees) that come from your content, your deals with other users, or your breaking these terms or the law.
 
-## 12. Governing law
+## 13. Governing law
 
 These terms are governed by the laws of the State of Ohio, USA, without regard to conflict of law rules. Any dispute will be brought in the state or federal courts located in Franklin County, Ohio, and you and we consent to their jurisdiction.
 
-## 13. Changes to these terms
+## 14. Changes to these terms
 
 We may update these terms. When the change matters, the app will ask you to read and accept the new version before you keep using OnlySwap. The version and date are at the top of this page.
 
-## 14. Contact
+## 15. Contact
 
 Questions about these terms: use the [Help page](/help).

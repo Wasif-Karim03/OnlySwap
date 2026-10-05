@@ -8,9 +8,12 @@ import { ErrorState } from '@/components/ErrorState';
 import { Mark } from '@/components/Mark';
 import { launch as copy } from '@/strings/en';
 
+import { clearInviteCode } from './invite';
 import { launchStartedAt } from './launchTiming';
 import { GATE_HREF } from './logic';
 import { useAppGate } from './useAppGate';
+
+const SIGNED_OUT_ROUTES = new Set<string>(['welcome', 'maintenance', 'update']);
 
 /** Native splash icon width (app.config.ts `imageWidth`), so the handoff doesn't jump. */
 const SPLASH_MARK = 88;
@@ -29,6 +32,9 @@ export function LaunchScreen() {
   useEffect(() => {
     if (!gate.route || routed.current) return;
     routed.current = true;
+    // Signed in (anything past Welcome and the system screens): an invite
+    // link only opens the app, so a kept code is dropped (R11-INVITE-01).
+    if (!SIGNED_OUT_ROUTES.has(gate.route)) clearInviteCode();
     router.replace(GATE_HREF[gate.route] as Href);
     void SplashScreen.hideAsync().catch(() => {});
     if (__DEV__ && launchStartedAt.ms && process.env.NODE_ENV !== 'test') {

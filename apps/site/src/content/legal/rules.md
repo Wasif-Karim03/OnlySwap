@@ -1,7 +1,7 @@
 ---
 title: Community Rules
-description: The four rules everyone on OnlySwap agrees to.
-version: '2026-10'
+description: The rules everyone on OnlySwap agrees to.
+version: '2026-11'
 order: 3
 ---
 
@@ -22,6 +22,25 @@ No alcohol, vapes, meds, weapons, fakes, tickets, meal swipes or coursework. See
 ## 4. Keep chats about the deal
 
 No harassment, threats, hate, sexual messages, or calling out other students. Anything creepy gets reported and looked at by a real person.
+
+## In the Quad
+
+The Quad is anonymous to other students, not to OnlySwap.
+
+- Talk about campus, not about people. Don't name, rate or call out another student, even without their full name.
+- No threats, harassment, bullying or hate.
+- No sexual content.
+- No phone numbers, emails, addresses, room numbers or social handles, yours or anyone else's.
+- No selling or ads. Post a listing instead.
+
+Posts voted down to -5 are hidden and checked by a person. Posts that break these rules come down and can mean a strike.
+
+## Photos in chat
+
+- Only photos of the item or the meetup spot.
+- No nudity or sexual images.
+- No photos of other people without their OK.
+- No photos of ID cards, student IDs or other documents.
 
 ## Also
 

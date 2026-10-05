@@ -7,7 +7,7 @@ describe('P14-LEGAL-01 bundled legal text', () => {
     expect(Object.keys(LEGAL).sort()).toEqual(
       ['banned-items', 'child-safety', 'cookies', 'privacy', 'rules', 'safety', 'terms'].sort(),
     );
-    for (const d of Object.values(LEGAL)) expect(d.version).toBe('2026-10');
+    for (const d of Object.values(LEGAL)) expect(d.version).toBe('2026-11');
   });
 
   it('parses headings, lists, tables and inline marks', () => {

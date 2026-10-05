@@ -1,14 +1,25 @@
-// P13-WEB-01 / P11-STATE-02: the association files open /l/* in the app.
+// P13-WEB-01 / P11-STATE-02 / R11-INVITE-01: the association files open /l/* and /i/* in the app.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 // @ts-expect-error: plain JS build script
-import { appleAssociation, assetLinks, BUNDLE_ID } from '../scripts/well-known.mjs';
+import { APP_PATHS, appleAssociation, assetLinks, BUNDLE_ID } from '../scripts/well-known.mjs';
 
-test('AASA lists the app id and only the listing paths', () => {
+test('AASA lists the app id and only the listing and invite paths', () => {
   const a = appleAssociation('ABCDE12345');
   assert.deepEqual(a.applinks.details[0].appIDs, [`ABCDE12345.${BUNDLE_ID}`]);
-  assert.deepEqual(a.applinks.details[0].components, [{ '/': '/l/*' }]);
+  assert.deepEqual(a.applinks.details[0].components, [{ '/': '/l/*' }, { '/': '/i/*' }]);
+});
+
+test('the Android intent filters cover every app path', async () => {
+  const { readFileSync } = await import('node:fs');
+  const config = readFileSync(new URL('../../mobile/app.config.ts', import.meta.url), 'utf8');
+  for (const p of APP_PATHS) {
+    assert.ok(
+      config.includes(`pathPrefix: '${p.replace('*', '')}'`),
+      `${p} missing in app.config.ts`,
+    );
+  }
 });
 
 test('assetlinks delegates handle_all_urls to the package', () => {

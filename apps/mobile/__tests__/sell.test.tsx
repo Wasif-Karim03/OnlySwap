@@ -10,11 +10,14 @@ import {
   ago,
   categoryLabel,
   cellAt,
+  centsToPrice,
   cleanPrice,
+  dollars,
   DRAFT_VERSION,
   emptyDraft,
   listingPriceCents,
   moveItem,
+  parsePriceHint,
   parseStoredDraft,
   photosState,
   pickupDate,
@@ -23,7 +26,7 @@ import {
   type DraftPhoto,
   type SellDraft,
 } from '../src/features/sell/logic';
-import { SellDetailsScreen } from '../src/features/sell/SellDetailsScreen';
+import { PRICE_HINT_DEBOUNCE_MS, SellDetailsScreen } from '../src/features/sell/SellDetailsScreen';
 import { agoText, SellPhotosScreen } from '../src/features/sell/SellPhotosScreen';
 import type { OsApi } from '../src/lib/permissions';
 import { primer, sell } from '../src/strings/en';
@@ -259,6 +262,7 @@ function fakeApi(over: Partial<Record<keyof SellApi, jest.Mock>> = {}) {
       { id: 3, name: 'Tech', parentId: null },
       { id: 31, name: 'Monitors', parentId: 3 },
     ]),
+    priceHint: jest.fn(async () => null),
     ...over,
   };
   return api as unknown as SellApi & typeof api;
@@ -476,5 +480,137 @@ describe('P5-SELL-03 D02 Sell · details', () => {
     tap('sell-details-next');
     expect(await screen.findByText(sell.errors.checkFailed)).toBeTruthy();
     expect(router.getPathname()).toBe('/sell/details');
+  });
+});
+
+describe('R11-HINT-01 price hint (D02 variant)', () => {
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => jest.useRealTimers());
+
+  const HINT = { medianCents: 4500, p25Cents: 3000, p75Cents: 6050, n: 7, scope: 'condition' };
+  const routes = (api: SellApi, store: ReturnType<typeof createDraftStore>) => ({
+    'sell/details': () => <SellDetailsScreen api={api} store={store} />,
+    'sell/meetup': () => <Stub id="screen-meetup-stub" />,
+  });
+  const settle = () =>
+    act(() => {
+      jest.advanceTimersByTime(PRICE_HINT_DEBOUNCE_MS + 50);
+    });
+  const pickCategoryAndCondition = async (condition = sell.conditions.good) => {
+    await screen.findByTestId('sell-category');
+    tap('sell-category');
+    tap('sell-category-31');
+    fireEvent.press(screen.getByLabelText(condition));
+    settle();
+  };
+
+  it('parses the RPC answer and drops anything under 5 comparables', () => {
+    expect(
+      parsePriceHint({
+        median_cents: 4500,
+        p25_cents: 3000,
+        p75_cents: 6050,
+        n: 7,
+        scope: 'condition',
+      }),
+    ).toEqual(HINT);
+    // The one-argument legacy shape still reads.
+    expect(parsePriceHint({ p25: 1000, p50: 2000, p75: 3000, n: 5 })).toEqual({
+      medianCents: 2000,
+      p25Cents: 1000,
+      p75Cents: 3000,
+      n: 5,
+      scope: 'category',
+    });
+    expect(parsePriceHint(null)).toBeNull();
+    expect(
+      parsePriceHint({ median_cents: 4500, p25_cents: 3000, p75_cents: 6050, n: 4 }),
+    ).toBeNull();
+    expect(parsePriceHint({ median_cents: 'x', n: 9 })).toBeNull();
+    expect(dollars(4500)).toBe('$45');
+    expect(dollars(6050)).toBe('$60.50');
+    expect(dollars(120000)).toBe('$1,200');
+    expect(centsToPrice(4500)).toBe('45');
+    expect(centsToPrice(1250)).toBe('12.50');
+  });
+
+  it('is not asked for until category and condition are both picked, and stays hidden on null', async () => {
+    const api = fakeApi();
+    const store = createDraftStore(memoryStorage(), { now: () => NOW });
+    setup('/sell/details', routes(api, store));
+    await screen.findByTestId('sell-category');
+    tap('sell-category');
+    tap('sell-category-31');
+    settle();
+    expect(api.priceHint).not.toHaveBeenCalled();
+    fireEvent.press(screen.getByLabelText(sell.conditions.good));
+    settle();
+    await waitFor(() => expect(api.priceHint).toHaveBeenCalledWith(31, 'good'));
+    expect(screen.queryByTestId('sell-price-hint')).toBeNull();
+  });
+
+  it('shows the range and typical price, and Use fills the price', async () => {
+    const api = fakeApi({ priceHint: jest.fn(async () => HINT) });
+    const store = createDraftStore(memoryStorage(), { now: () => NOW });
+    setup('/sell/details', routes(api, store));
+    await pickCategoryAndCondition();
+    expect(
+      await screen.findByText('Similar items here sold for $30 to $60.50 (typical $45)'),
+    ).toBeTruthy();
+    tap('sell-price-hint-use');
+    expect(store.getState().draft.price).toBe('45');
+    expect(screen.getByTestId('sell-price').props.value).toBe('45');
+  });
+
+  it('asks again when the condition changes (debounced to the last choice)', async () => {
+    const api = fakeApi({ priceHint: jest.fn(async () => HINT) });
+    const store = createDraftStore(memoryStorage(), { now: () => NOW });
+    setup('/sell/details', routes(api, store));
+    await pickCategoryAndCondition();
+    await screen.findByTestId('sell-price-hint');
+    expect(api.priceHint).toHaveBeenCalledTimes(1);
+    // Two quick changes: only the last one is asked for.
+    fireEvent.press(screen.getByLabelText(sell.conditions.like_new));
+    fireEvent.press(screen.getByLabelText(sell.conditions.fair));
+    // The old answer doesn't stay on screen for the new condition.
+    expect(screen.queryByTestId('sell-price-hint')).toBeNull();
+    settle();
+    await waitFor(() => expect(api.priceHint).toHaveBeenLastCalledWith(31, 'fair'));
+    expect(api.priceHint).toHaveBeenCalledTimes(2);
+    expect(await screen.findByTestId('sell-price-hint')).toBeTruthy();
+  });
+
+  it('stays hidden on an error, and posting is never blocked', async () => {
+    const api = fakeApi({ priceHint: jest.fn().mockRejectedValue(new Error('boom')) });
+    const store = createDraftStore(memoryStorage(), { now: () => NOW });
+    const router = setup('/sell/details', routes(api, store));
+    await pickCategoryAndCondition();
+    await waitFor(() => expect(api.priceHint).toHaveBeenCalled());
+    expect(screen.queryByTestId('sell-price-hint')).toBeNull();
+    fireEvent.changeText(screen.getByTestId('sell-title'), 'Dell monitor');
+    fireEvent.changeText(screen.getByTestId('sell-price'), '60');
+    tap('sell-details-next');
+    await waitFor(() => expect(router.getPathname()).toBe('/sell/meetup'));
+  });
+
+  it('is not asked for offline', async () => {
+    const netinfo = jest.requireMock('@react-native-community/netinfo') as {
+      useNetInfo: jest.Mock;
+    };
+    netinfo.useNetInfo.mockReturnValue({ isConnected: false, isInternetReachable: false });
+    try {
+      const api = fakeApi({ priceHint: jest.fn(async () => HINT) });
+      const store = createDraftStore(memoryStorage(), { now: () => NOW });
+      setup('/sell/details', routes(api, store));
+      await pickCategoryAndCondition();
+      expect(api.priceHint).not.toHaveBeenCalled();
+      expect(screen.queryByTestId('sell-price-hint')).toBeNull();
+    } finally {
+      netinfo.useNetInfo.mockReturnValue({
+        type: 'cellular',
+        isConnected: true,
+        isInternetReachable: true,
+      });
+    }
   });
 });

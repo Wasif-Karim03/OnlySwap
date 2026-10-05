@@ -59,12 +59,15 @@ export function ActionButton({
   onDone,
   kind,
   needsReason = true,
+  confirm,
 }: {
   label: string;
   run: (reason: string) => Promise<unknown>;
   onDone?: () => void;
   kind?: 'danger' | 'secondary';
   needsReason?: boolean;
+  /** Asked first with OK / Cancel (for removals). */
+  confirm?: string;
 }) {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
@@ -74,6 +77,7 @@ export function ActionButton({
         className={kind}
         disabled={busy}
         onClick={async () => {
+          if (confirm && !window.confirm(confirm)) return;
           const reason = needsReason
             ? window.prompt(`${label}: reason (saved to the audit log)`)
             : '';
@@ -106,4 +110,43 @@ export function money(cents: number | null | undefined): string {
   return cents === null || cents === undefined
     ? ''
     : `$${(cents / 100).toFixed(cents % 100 ? 2 : 0)}`;
+}
+
+export type CampusOption = {
+  id: string;
+  name: string;
+  short_name: string;
+  status: string;
+  is_demo: boolean;
+};
+
+/** Campus picker fed by admin_list_campuses (moderators only get their own campus back). */
+export function CampusSelect({
+  campuses,
+  value,
+  onChange,
+  allLabel,
+  label = 'Campus',
+}: {
+  campuses: CampusOption[];
+  value: string;
+  onChange: (id: string) => void;
+  /** Adds an "all campuses" option with value '' when set. */
+  allLabel?: string;
+  label?: string;
+}) {
+  return (
+    <label>
+      {label}
+      <select value={value} onChange={(e) => onChange(e.target.value)}>
+        {allLabel ? <option value="">{allLabel}</option> : null}
+        {campuses.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.name}
+            {c.is_demo ? ' (demo)' : ''}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
 }
