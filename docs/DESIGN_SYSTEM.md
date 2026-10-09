@@ -37,6 +37,9 @@ App code never uses raw hex values, font sizes or spacing numbers.
 | `red` / `redBg` | #E8432A / #FCEBE7 | #FF5A40 / #2C1511 | destructive, errors |
 | `green` / `greenBg` | #17804A / #E5F3EA | #3DD68C / #0F2A1C | verified, success |
 | `amber` / `amberBg` | #9A6200 / #FBF0DA | #F5B84B / #2A2110 | warnings, held |
+| `sky` / `skyBg` | #1A5FA6 / #E2F0FF | #8CC3FF / #13263A | meetups (DEC 90) |
+| `peach` / `peachBg` | #9A4414 / #FFE9D9 | #FFB58A / #36200F | free food (DEC 90) |
+| `lilac` / `lilacBg` | #5B45C4 / #ECE7FF | #B9A9FF / #231D40 | the Quad (DEC 90) |
 | `overlay` | rgba(0,0,0,.45) | rgba(0,0,0,.6) | sheet scrim |
 
 **Accent options** (owner picks one; the rest are not user settings): Pistachio #C8E27D, Butter #FFD95A, Tangerine #FF9A4D, Coral #FF7B67, Bubblegum #FFA3D1, Sky #7CC0FF, Cobalt #2B45E8 (`onAccent` #FFFFFF).
@@ -46,6 +49,7 @@ App code never uses raw hex values, font sizes or spacing numbers.
 - `ink2` on `bg` ≥ 4.5:1.
 - `ink3` only for text ≥ 17 pt or non-essential meta.
 - `onAccent` on `accent` ≥ 4.5:1.
+- `sky`, `peach`, `lilac` text and `ink` on their `*Bg` ≥ 4.5:1.
 - **`accent` as text or icon on `bg` is banned** (UX-03).
 
 ## 3. Typography

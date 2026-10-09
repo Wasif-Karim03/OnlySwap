@@ -95,6 +95,10 @@ test('T-UNIT-TOK-01 required contrast pairs pass in light and dark for every acc
     assert.ok(contrast(c.ink, c.bg) >= 7, `${mode} ink/bg`);
     assert.ok(contrast(c.ink, c.bg2) >= 7, `${mode} ink/bg2`);
     assert.ok(contrast(c.ink2, c.bg) >= 4.5, `${mode} ink2/bg`);
+    for (const t of ['sky', 'peach', 'lilac']) {
+      assert.ok(contrast(c[t], c[`${t}Bg`]) >= 4.5, `${mode} ${t}/${t}Bg`);
+      assert.ok(contrast(c.ink, c[`${t}Bg`]) >= 4.5, `${mode} ink/${t}Bg`);
+    }
     for (const [name, a] of Object.entries(tokens.color.accents)) {
       const on = mode === 'light' ? a.onAccentLight : a.onAccentDark;
       assert.ok(
