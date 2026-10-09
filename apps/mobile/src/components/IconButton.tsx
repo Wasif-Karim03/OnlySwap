@@ -1,6 +1,8 @@
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { liftShadow } from '@/theme/shadow';
+
 import { Icon, type IconName } from './icons/Icon';
 import type { TextTone } from './Text';
 import { Tappable } from './Tappable';
@@ -13,8 +15,14 @@ type Props = {
   onPress?: () => void;
   disabled?: boolean;
   filled?: boolean;
+  /**
+   * Fill color when `filled`: `bg2` (default) on white screens, `card` with a
+   * soft shadow over photos and on grey screens, `accent` for an "on" state
+   * such as Saved (DEC 90). The icon follows the fill.
+   */
+  surface?: 'bg2' | 'card' | 'accent';
   /** `onPhoto` for controls over photos or the dark photo viewer. */
-  tone?: Extract<TextTone, 'ink' | 'onPhoto'>;
+  tone?: Extract<TextTone, 'ink' | 'ink3' | 'onPhoto'>;
   testID?: string;
 };
 
@@ -26,6 +34,7 @@ export function IconButton({
   onPress,
   disabled,
   filled,
+  surface = 'bg2',
   tone = 'ink',
   testID,
 }: Props) {
@@ -39,21 +48,22 @@ export function IconButton({
       disabled={disabled}
       onPress={onPress}
     >
-      <View style={styles.hit(!!filled, !!disabled)}>
-        <Icon name={icon} tone={tone} />
+      <View style={styles.hit(!!filled, !!disabled, surface)}>
+        <Icon name={icon} tone={filled && surface === 'accent' ? 'onAccent' : tone} />
       </View>
     </Tappable>
   );
 }
 
 const styles = StyleSheet.create((theme) => ({
-  hit: (filled: boolean, disabled: boolean) => ({
+  hit: (filled: boolean, disabled: boolean, surface: 'bg2' | 'card' | 'accent') => ({
     width: theme.size.hit,
     height: theme.size.hit,
     borderRadius: theme.radius.chip,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: filled ? theme.colors.bg2 : 'transparent',
+    backgroundColor: filled ? theme.colors[surface] : 'transparent',
     opacity: disabled ? 0.35 : 1,
+    ...(filled && surface !== 'bg2' ? liftShadow() : null),
   }),
 }));

@@ -113,6 +113,36 @@ export function mergeCampusPages(pages: CampusPage[]): CampusItem[] {
 }
 
 /** "I have this" shows on other people's open Wanted posts only. */
+/** One feed row: a full-width food or Wanted card, or up to two listing tiles side by side. */
+export type CampusRow =
+  | { key: string; kind: 'wide'; item: CampusItem }
+  | { key: string; kind: 'pair'; items: CampusItem[] };
+
+/**
+ * Groups the feed for the Around campus layout (DEC 90 mock screen 5): food
+ * and Wanted posts span the width; listings (sale and free) pair up into a
+ * two-column grid, keeping the server's order.
+ */
+export function campusRows(items: CampusItem[]): CampusRow[] {
+  const rows: CampusRow[] = [];
+  let pair: CampusItem[] = [];
+  const flush = () => {
+    if (pair.length) rows.push({ key: pair.map((p) => p.id).join('+'), kind: 'pair', items: pair });
+    pair = [];
+  };
+  for (const item of items) {
+    if (item.kind === 'food' || item.kind === 'wanted') {
+      flush();
+      rows.push({ key: item.id, kind: 'wide', item });
+    } else {
+      pair.push(item);
+      if (pair.length === 2) flush();
+    }
+  }
+  flush();
+  return rows;
+}
+
 export function canAnswer(item: Pick<CampusItem, 'kind' | 'is_own' | 'status'>): boolean {
   return item.kind === 'wanted' && !item.is_own && item.status === 'active';
 }

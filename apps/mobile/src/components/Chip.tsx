@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
-import { Icon } from './icons/Icon';
+import { Icon, type IconName } from './icons/Icon';
 import { Tappable } from './Tappable';
 import { Text } from './Text';
 
@@ -13,6 +13,10 @@ type ChipProps = {
   onRemove?: () => void;
   onPress?: () => void;
   removeLabel?: string;
+  /** Small glyph before the label (Around campus filters, DEC 90). */
+  icon?: IconName;
+  /** Off-state fill: `bg2` on white screens, `card` on grey screens. */
+  surface?: 'bg2' | 'card';
 };
 
 /** Chip: filter / choice / removable. On = ink fill (DESIGN_SYSTEM §6). */
@@ -23,6 +27,8 @@ export function Chip({
   onRemove,
   onPress,
   removeLabel,
+  icon,
+  surface = 'bg2',
 }: ChipProps) {
   const removable = !!onRemove;
   return (
@@ -34,7 +40,8 @@ export function Chip({
       onPress={removable ? onRemove : onPress}
       guard={false}
     >
-      <View style={styles.chip(selected, disabled)}>
+      <View style={styles.chip(selected, disabled, surface)}>
+        {icon ? <Icon name={icon} size={16} tone={selected ? 'inverse' : 'ink'} /> : null}
         <Text variant="label" tone={selected ? 'inverse' : 'ink'}>
           {label}
         </Text>
@@ -86,14 +93,14 @@ export function ChipGroup<T extends string>({
 }
 
 const styles = StyleSheet.create((theme) => ({
-  chip: (selected: boolean, disabled: boolean) => ({
+  chip: (selected: boolean, disabled: boolean, surface: 'bg2' | 'card' = 'bg2') => ({
     minHeight: theme.size.buttonS,
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.space.xs,
     paddingHorizontal: theme.space.md + theme.space.xs,
     borderRadius: theme.radius.chip,
-    backgroundColor: selected ? theme.colors.ink : theme.colors.bg2,
+    backgroundColor: selected ? theme.colors.ink : theme.colors[surface],
     opacity: disabled ? 0.35 : 1,
   }),
   group: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },

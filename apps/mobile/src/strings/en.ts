@@ -841,7 +841,10 @@ export const feed = {
   undoOffer: 'Opened the offer',
   saveFailed: "Couldn't save that. Try again.",
   coachTitle: 'Swipe to shop',
-  coachBody: 'Swipe right or tap $ to make an offer. Left skips. Tap a card to see more.',
+  coachBody: 'Swipe right or tap Make an offer. Left skips. Tap a card to see more.',
+  offerShort: 'Offer',
+  notifications: 'Notifications',
+  meetupSpot: 'Meetup spot',
   coachOk: 'Got it',
   endTitle: "You've seen everything for now",
   endBody: 'New stuff usually shows up in the evening.',
@@ -899,6 +902,7 @@ export const search = {
   cancel: 'Cancel',
   recent: 'Recent',
   clearRecent: 'Clear',
+  removeRecent: 'Remove {q}',
   trending: 'Popular right now',
   searchFor: 'Search for "{q}"',
   suggestionsLabel: 'Suggestions',
@@ -947,7 +951,7 @@ export const saved = {
   unsave: 'Remove {title} from saved',
   unsaveAction: 'Remove from saved',
   emptyItemsTitle: 'Nothing saved yet',
-  emptyItemsBody: 'Tap the bookmark on anything you like and it shows up here.',
+  emptyItemsBody: 'Tap the heart on anything you like and it shows up here.',
   emptySearchesTitle: 'No saved searches',
   emptySearchesBody: 'Save a search and we will tell you when something new matches.',
   goDiscover: 'Start swiping',
@@ -1804,7 +1808,7 @@ export const quad = {
 export const campus = {
   // D19 segment on Discover
   segmentLabel: 'Discover view',
-  segmentSwipe: 'Swipe',
+  segmentSwipe: 'For you',
   segmentCampus: 'Around campus',
   // C01 feed
   title: 'Around campus',
@@ -1838,6 +1842,8 @@ export const campus = {
   wantedLabel: 'Wanted: {title}. {budget}. {who}',
   listingLabel: '{title}, {price}. {meta}',
   byLine: '{name} · {ago}',
+  lookingFor: '{name} is looking for',
+  someoneLookingFor: 'Someone is looking for',
   loadingMore: 'Loading more',
   empty: {
     all: {

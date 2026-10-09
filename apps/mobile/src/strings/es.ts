@@ -833,7 +833,10 @@ const feed: Strings['feed'] = {
   saveFailed: 'No se pudo guardar. Intenta de nuevo.',
   coachTitle: 'Desliza para comprar',
   coachBody:
-    'Desliza a la derecha o toca $ para ofertar. A la izquierda saltas. Toca una tarjeta para ver más.',
+    'Desliza a la derecha o toca Hacer una oferta. A la izquierda saltas. Toca una tarjeta para ver más.',
+  offerShort: 'Ofertar',
+  notifications: 'Notificaciones',
+  meetupSpot: 'Punto de encuentro',
   coachOk: 'Entendido',
   endTitle: 'Ya viste todo por ahora',
   endBody: 'Lo nuevo suele aparecer en la tarde.',
@@ -888,6 +891,7 @@ const search: Strings['search'] = {
   cancel: 'Cancelar',
   recent: 'Recientes',
   clearRecent: 'Borrar',
+  removeRecent: 'Quitar {q}',
   trending: 'Popular ahora',
   searchFor: 'Buscar "{q}"',
   suggestionsLabel: 'Sugerencias',
@@ -934,7 +938,7 @@ const saved: Strings['saved'] = {
   unsave: 'Quitar {title} de guardados',
   unsaveAction: 'Quitar de guardados',
   emptyItemsTitle: 'Todavía no guardas nada',
-  emptyItemsBody: 'Toca el marcador en lo que te guste y aparecerá aquí.',
+  emptyItemsBody: 'Toca el corazón en lo que te guste y aparecerá aquí.',
   emptySearchesTitle: 'No hay búsquedas guardadas',
   emptySearchesBody: 'Guarda una búsqueda y te avisamos cuando aparezca algo nuevo.',
   goDiscover: 'Empieza a deslizar',
@@ -1744,7 +1748,7 @@ const quad: Strings['quad'] = {
 
 const campus: Strings['campus'] = {
   segmentLabel: 'Vista de Explorar',
-  segmentSwipe: 'Deslizar',
+  segmentSwipe: 'Para ti',
   segmentCampus: 'En el campus',
   title: 'En el campus',
   filtersLabel: 'Mostrar',
@@ -1777,6 +1781,8 @@ const campus: Strings['campus'] = {
   wantedLabel: 'Se busca: {title}. {budget}. {who}',
   listingLabel: '{title}, {price}. {meta}',
   byLine: '{name} · {ago}',
+  lookingFor: '{name} está buscando',
+  someoneLookingFor: 'Alguien está buscando',
   loadingMore: 'Cargando más',
   empty: {
     all: {

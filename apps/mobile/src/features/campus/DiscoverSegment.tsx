@@ -8,11 +8,18 @@ import { campus as copy } from '@/strings';
 type View_ = 'swipe' | 'campus';
 
 /**
- * D19: "Swipe | Around campus" under the Discover title. Both sides live in
- * the Discover stack (B01 index, C01 campus); switching replaces the screen
- * so Back never bounces between them.
+ * D19: "For you | Around campus" under the Discover title (DEC 90). Both
+ * sides live in the Discover stack (B01 index, C01 campus); switching
+ * replaces the screen so Back never bounces between them.
  */
-export function DiscoverSegment({ value }: { value: View_ }) {
+export function DiscoverSegment({
+  value,
+  surface = 'bg2',
+}: {
+  value: View_;
+  /** `bg3` on the grey Around campus screen. */
+  surface?: 'bg2' | 'bg3';
+}) {
   const router = useRouter();
   return (
     <View style={styles.wrap} testID="discover-segment">
@@ -23,6 +30,7 @@ export function DiscoverSegment({ value }: { value: View_ }) {
           { value: 'campus', label: copy.segmentCampus },
         ]}
         value={value}
+        surface={surface}
         onChange={(next) => {
           if (next === value) return;
           router.replace(next === 'campus' ? '/discover/campus' : '/discover');
