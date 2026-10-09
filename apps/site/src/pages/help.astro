@@ -29,8 +29,13 @@ const faq = [
 ---
 
 <Base title="Help | OnlySwap" description="Answers to common questions and a way to reach the OnlySwap team.">
-  <h1>Help</h1>
-  <div class="card">
+  <section class="pagehead"><div class="w">
+    <p class="kick"><i></i>Support</p>
+    <h1>Help</h1>
+    <p>Answers to common questions, and a way to reach a real person.</p>
+  </div></section>
+  <div class="prose">
+  <div class="card tint">
     <p><strong>If you are in danger, call 911 right away.</strong></p>
     <p class="muted">Then read the <a href="/safety">safety tips</a> and report the account in the app.</p>
   </div>
@@ -39,16 +44,14 @@ const faq = [
   {
     faq.map((f) => (
       <details class="card">
-        <summary>
-          <strong>{f.q}</strong>
-        </summary>
+        <summary>{f.q}</summary>
         <p class="muted">{f.a}</p>
       </details>
     ))
   }
 
-  <h2>Contact us</h2>
-  <form id="support" novalidate>
+  <h2 id="contact">Contact us</h2>
+  <form id="support" class="form" novalidate>
     <label>
       Your email
       <input type="email" name="email" autocomplete="email" required />
@@ -71,6 +74,7 @@ const faq = [
     <button type="submit">Send</button>
     <p id="support-msg" role="status"></p>
   </form>
+  </div>
 </Base>
 
 <script>

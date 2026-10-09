@@ -1,15 +1,13 @@
 ---
-import '@onlyswap/tokens/tokens.css';
 import '../styles/site.css';
-import Icons from '../components/Icons.astro';
-import Logo from '../components/Logo.astro';
+import Sprite from '../components/Sprite.astro';
 
 interface Props {
   title: string;
   description?: string;
   noindex?: boolean;
   path?: string;
-  /** Full-width sections (landing). Content pages get a readable column. */
+  /** Landing page: full-bleed sections. Inner pages get the page header. */
   wide?: boolean;
 }
 const {
@@ -20,7 +18,6 @@ const {
   wide = false,
 } = Astro.props;
 const canonical = new URL(path, Astro.site).toString();
-const webApp = (import.meta.env.PUBLIC_WEB_APP_URL as string | undefined) || 'https://onlyswap-web.pages.dev';
 const year = new Date().getFullYear();
 ---
 
@@ -31,71 +28,92 @@ const year = new Date().getFullYear();
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta name="theme-color" content="#ffffff" />
     <link rel="canonical" href={canonical} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content={new URL('/img/og.png', Astro.site).toString()} />
+    <meta name="twitter:card" content="summary_large_image" />
     {noindex && <meta name="robots" content="noindex" />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   </head>
   <body>
-    <Icons />
+    <Sprite />
     <a class="skip" href="#main">Skip to content</a>
     <header class="nav">
-      <div class="nav-in">
-        <a href="/" class="brand" aria-label="OnlySwap home"><Logo size={34} /><span>onlyswap</span></a>
-        <nav aria-label="Main" class="nav-links">
+      <span class="sprog" id="sprog"></span>
+      <div class="w">
+        <a class="logo" href="/" aria-label="OnlySwap home"
+          ><span class="mk"><svg aria-hidden="true"><use href="#lg"></use></svg></span>onlyswap</a
+        >
+        <nav class="links" aria-label="Main">
           <a href="/#how">How it works</a>
-          <a href="/safety">Safety</a>
-          <a href="/#quad">The Quad</a>
-          <a href="/#schools">Schools</a>
+          <a href="/#more">Features</a>
+          <a href="/#safety">Safety</a>
+          <a href="/help">Help</a>
         </nav>
-        <div class="nav-end">
-          <a href={webApp} class="nav-login">Log in</a>
-          <a href="/#get" class="btn">Get the app</a>
-        </div>
+        <a class="navcta" href="/#check">Check your school</a>
       </div>
     </header>
     <main id="main" class={wide ? 'wide' : 'page'}>
       <slot />
     </main>
-    <footer class="foot">
-      <div class="foot-in">
-        <div class="foot-brand">
-          <a href="/" class="brand" aria-label="OnlySwap home"><Logo size={30} /><span>onlyswap</span></a>
-          <p>The marketplace for students at your school.</p>
+    <footer>
+      <div class="w">
+        <div class="cols">
+          <div>
+            <a class="logo" href="/" style="font-size:16px;margin-bottom:10px"
+              ><span class="mk"><svg aria-hidden="true"><use href="#lg"></use></svg></span>onlyswap</a
+            >
+            <span style="display:block;max-width:30ch"
+              >For current students 18 and older. OnlySwap does not handle payments.</span
+            >
+          </div>
+          <nav aria-label="Safety">
+            <h6>Safety</h6>
+            <a href="/safety">Safety tips</a>
+            <a href="/rules">Community rules</a>
+            <a href="/banned-items">Banned items</a>
+          </nav>
+          <nav aria-label="Support">
+            <h6>Support</h6>
+            <a href="/help">Help</a>
+            <a href="/help#contact">Contact</a>
+            <a href="/delete">Delete account</a>
+          </nav>
+          <nav aria-label="Legal">
+            <h6>Legal</h6>
+            <a href="/terms">Terms</a>
+            <a href="/privacy">Privacy</a>
+            <a href="/cookies">Cookies</a>
+          </nav>
         </div>
-        <nav aria-label="Product">
-          <h2>Product</h2>
-          <a href="/#how">How it works</a>
-          <a href="/#quad">The Quad</a>
-          <a href="/#schools">Schools</a>
-          <a href={webApp}>Use it in your browser</a>
-        </nav>
-        <nav aria-label="Safety">
-          <h2>Safety</h2>
-          <a href="/safety">Safety tips</a>
-          <a href="/rules">Community rules</a>
-          <a href="/banned-items">Banned items</a>
-          <a href="/child-safety">Child safety</a>
-        </nav>
-        <nav aria-label="Support">
-          <h2>Support</h2>
-          <a href="/help">Help and contact</a>
-          <a href="/delete">Delete account</a>
-        </nav>
-        <nav aria-label="Legal">
-          <h2>Legal</h2>
-          <a href="/terms">Terms</a>
-          <a href="/privacy">Privacy</a>
-          <a href="/cookies">Cookies</a>
-        </nav>
-      </div>
-      <div class="foot-bottom">
-        <span>© {year} OnlySwap. Not affiliated with or endorsed by any university.</span>
+        <div class="bot">
+          <span>Copyright © {year} OnlySwap. Not affiliated with or endorsed by any university.</span><span
+            >United States</span
+          >
+        </div>
       </div>
     </footer>
   </body>
 </html>
+
+<script>
+  // Scroll progress under the nav, and the active section on the landing page.
+  const bar = document.getElementById('sprog');
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('.links a[href^="/#"]')];
+  const onScroll = () => {
+    const max = document.documentElement.scrollHeight - innerHeight;
+    if (bar) bar.style.transform = `scaleX(${max > 0 ? scrollY / max : 0})`;
+    let current: HTMLAnchorElement | null = null;
+    for (const a of links) {
+      const target = document.getElementById(a.hash.slice(1));
+      if (target && target.getBoundingClientRect().top < innerHeight * 0.4) current = a;
+    }
+    links.forEach((a) => a.classList.toggle('act', a === current));
+  };
+  addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+</script>
