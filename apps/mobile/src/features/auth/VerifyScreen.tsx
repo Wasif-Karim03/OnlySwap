@@ -15,6 +15,7 @@ import { signIn as copy } from '@/strings';
 import { authApi, type AuthApi } from './api';
 import { AuthStep } from './AuthStep';
 import { clearInviteCode, sendCodeWithInvite } from './invite';
+import { hadLoginIntent } from './loginIntent';
 import { useGateHandoff } from './useAppGate';
 import {
   formatCountdown,
@@ -149,11 +150,20 @@ export function VerifyScreen({
     ? copy.locked.replace('{time}', formatCountdown(lockedFor(current, now())))
     : null;
 
+  const [sentBefore, sentAfter = ''] = copy.sentTo.split('{email}');
+
   return (
     <AuthStep
       testID="screen-verify"
       title={copy.verifyTitle}
-      body={copy.sentTo.replace('{email}', email)}
+      step={reverify || hadLoginIntent() ? undefined : 2}
+      body={
+        <Text variant="body" tone="ink2" style={styles.body} testID="verify-sent-to">
+          {sentBefore}
+          <Text variant="bodyStrong">{email}</Text>
+          {sentAfter}
+        </Text>
+      }
       dock={
         locked ? (
           <Button
@@ -190,9 +200,12 @@ export function VerifyScreen({
         </Text>
       ) : null}
 
-      {!locked ? (
-        resendSeconds > 0 ? (
-          <Text variant="meta" tone="ink2" testID="verify-resend-timer">
+      {/* Resend countdown (or the resend link) and Change email on one row (DEC 90). */}
+      <View style={styles.row} testID="verify-links">
+        {locked ? (
+          <View />
+        ) : resendSeconds > 0 ? (
+          <Text variant="label" tone="ink2" style={styles.regular} testID="verify-resend-timer">
             {copy.resendIn.replace('{time}', formatCountdown(resendSeconds))}
           </Text>
         ) : (
@@ -204,14 +217,9 @@ export function VerifyScreen({
             style={styles.link}
             testID="verify-resend"
           >
-            <Text variant="label" style={styles.underline}>
-              {copy.resend}
-            </Text>
+            <Text variant="label">{copy.resend}</Text>
           </Tappable>
-        )
-      ) : null}
-
-      <View>
+        )}
         {!reverify ? (
           <Tappable
             accessibilityRole="button"
@@ -220,28 +228,42 @@ export function VerifyScreen({
             style={styles.link}
             testID="verify-different-email"
           >
-            <Text variant="label" style={styles.underline}>
-              {copy.differentEmail}
-            </Text>
+            <Text variant="label">{copy.differentEmail}</Text>
           </Tappable>
         ) : null}
-        <Tappable
-          accessibilityRole="link"
-          accessibilityLabel={copy.cantAccessEmail}
-          onPress={() => router.push('/help/email-access')}
-          style={styles.link}
-          testID="verify-cant-access"
-        >
-          <Text variant="label" style={styles.underline}>
-            {copy.cantAccessEmail}
-          </Text>
-        </Tappable>
       </View>
+
+      <Text variant="label" tone="ink2" style={[styles.regular, styles.spam]}>
+        {copy.spamHint}
+      </Text>
+
+      <Tappable
+        accessibilityRole="link"
+        accessibilityLabel={copy.cantAccessEmail}
+        onPress={() => router.push('/help/email-access')}
+        style={styles.link}
+        testID="verify-cant-access"
+      >
+        <Text variant="label" tone="ink2" style={styles.underline}>
+          {copy.cantAccessEmail}
+        </Text>
+      </Tappable>
     </AuthStep>
   );
 }
 
 const styles = StyleSheet.create((theme) => ({
+  body: { marginTop: theme.space.sm },
+  row: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    columnGap: theme.space.md,
+    minHeight: theme.size.hit,
+  },
   link: { minHeight: theme.size.hit, justifyContent: 'center', alignSelf: 'flex-start' },
+  spam: { marginTop: theme.space.md },
+  regular: { fontWeight: '400' },
   underline: { textDecorationLine: 'underline' },
 }));

@@ -128,11 +128,7 @@ export function ProfileSetupScreen({
       title={copy.title}
       body={copy.body}
       leading="none"
-      trailing={
-        <Text variant="meta" tone="ink2">
-          {copy.step}
-        </Text>
-      }
+      step={4}
       dock={
         <Button
           label={copy.continue}
@@ -243,6 +239,7 @@ export function ProfileSetupScreen({
 
       <Input
         label={copy.firstName}
+        inlineLabel
         value={first}
         onChangeText={(v) => {
           setFirst(v);
@@ -260,6 +257,7 @@ export function ProfileSetupScreen({
       <Input
         ref={lastRef}
         label={copy.lastName}
+        inlineLabel
         value={last}
         onChangeText={setLast}
         autoCapitalize="words"
@@ -269,12 +267,12 @@ export function ProfileSetupScreen({
         maxLength={30}
         testID="profile-last"
       />
-      <Text variant="meta" tone="ink2" testID="profile-shown-as">
+      <Text variant="meta" tone="ink3" testID="profile-shown-as">
         {preview ? copy.shownAs.replace('{name}', preview) : copy.lastNameHint}
       </Text>
 
       <View style={styles.yearBlock}>
-        <Text variant="label" tone="ink2">
+        <Text variant="label" tone="ink3">
           {copy.year}
         </Text>
         <ChipGroup

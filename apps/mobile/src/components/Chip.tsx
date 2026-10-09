@@ -17,6 +17,11 @@ type ChipProps = {
   icon?: IconName;
   /** Off-state fill: `bg2` on white screens, `card` on grey screens. */
   surface?: 'bg2' | 'card';
+  /**
+   * `tab`: one of a row of chips that switches a view, e.g. the Quad sorts
+   * (DEC 90); read as a selected tab instead of a checkbox.
+   */
+  role?: 'choice' | 'tab';
   testID?: string;
 };
 
@@ -30,14 +35,18 @@ export function Chip({
   removeLabel,
   icon,
   surface = 'bg2',
+  role = 'choice',
   testID,
 }: ChipProps) {
   const removable = !!onRemove;
+  const tab = role === 'tab' && !removable;
   return (
     <Tappable
-      accessibilityRole={removable ? 'button' : 'checkbox'}
+      accessibilityRole={removable ? 'button' : tab ? 'tab' : 'checkbox'}
       accessibilityLabel={removable && removeLabel ? `${label}, ${removeLabel}` : label}
-      accessibilityState={removable ? { disabled } : { checked: selected, disabled }}
+      accessibilityState={
+        removable ? { disabled } : tab ? { selected, disabled } : { checked: selected, disabled }
+      }
       disabled={disabled}
       onPress={removable ? onRemove : onPress}
       guard={false}

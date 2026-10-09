@@ -88,12 +88,14 @@ export function EmailScreen({ api = authApi }: { api?: AuthApi }) {
 
   const canSend = school !== null && (!reviewer || password.length > 0) && !send.isPending;
   const domain = emailDomain(email);
+  const login = params.mode === 'login';
 
   return (
     <AuthStep
       testID="screen-email"
-      title={params.mode === 'login' ? copy.titleSignIn : copy.titleSignUp}
+      title={login ? copy.titleSignIn : copy.titleSignUp}
       body={copy.body}
+      step={login ? undefined : 1}
       dock={
         <Button
           label={reviewer ? copy.signInReviewer : copy.sendCode}
@@ -106,7 +108,7 @@ export function EmailScreen({ api = authApi }: { api?: AuthApi }) {
     >
       <Input
         label={copy.emailLabel}
-        hideLabel
+        inlineLabel
         kind="email"
         placeholder={copy.emailPlaceholder}
         value={email}
@@ -123,12 +125,12 @@ export function EmailScreen({ api = authApi }: { api?: AuthApi }) {
       />
 
       {school ? (
+        // The matched school as one plain line with a green check (DEC 90).
         <View style={styles.detected} testID="email-school" accessible accessibilityRole="text">
-          <Icon name="building" size={18} />
-          <Text variant="bodyStrong" style={styles.flex}>
+          <Icon name="check" size={16} tone="green" strokeWidth={2.4} />
+          <Text variant="label" style={styles.flex}>
             {reviewer ? copy.reviewAccount.replace('{school}', school.name) : school.name}
           </Text>
-          <Icon name="check" size={18} tone="green" />
         </View>
       ) : null}
 
@@ -190,6 +192,10 @@ export function EmailScreen({ api = authApi }: { api?: AuthApi }) {
           {sendErrorText}
         </Text>
       ) : null}
+
+      <Text variant="meta" tone="ink3" testID="email-legal">
+        {copy.legal}
+      </Text>
     </AuthStep>
   );
 }
@@ -199,11 +205,9 @@ const styles = StyleSheet.create((theme) => ({
   detected: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.space.sm,
-    minHeight: theme.size.hit,
-    paddingHorizontal: theme.space.lg,
-    borderRadius: theme.radius.control,
-    backgroundColor: theme.colors.greenBg,
+    gap: theme.space.xs,
+    marginTop: -theme.space.xs,
+    paddingHorizontal: theme.space.xs,
   },
   card: {
     gap: theme.space.xs,

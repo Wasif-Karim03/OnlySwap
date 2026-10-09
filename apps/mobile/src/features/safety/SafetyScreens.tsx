@@ -13,7 +13,6 @@ import { Input } from '@/components/Input';
 import { NavBar } from '@/components/NavBar';
 import { SkeletonList } from '@/components/Skeleton';
 import { SuccessCheck } from '@/components/SuccessCheck';
-import { Tag } from '@/components/Tag';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { TextArea } from '@/components/TextArea';
@@ -85,19 +84,55 @@ export function SafetyCenterScreen({
     <View style={styles.root} testID="screen-safety">
       <NavBar title={copy.centerTitle} onLeading={leave} />
       <ScrollView contentContainerStyle={styles.body}>
-        <View style={styles.emergency}>
-          <Text variant="bodyStrong">{copy.emergencyBody}</Text>
-          <Button
-            label={copy.emergency}
-            variant="destructive"
-            onPress={() => void openUrl('tel:911')}
-            testID="safety-911"
-          />
+        {/* DEC 90 mock screen 18: the emergency action first. No campus police
+            number is on file, so 911 is the one call button. */}
+        <View style={styles.emergency} testID="safety-emergency">
+          <Text variant="heading" accessibilityRole="header">
+            {copy.emergencyTitle}
+          </Text>
+          <Text variant="label" style={styles.regular}>
+            {copy.emergencyBody}
+          </Text>
+          <View style={styles.emergencyRow}>
+            <Button
+              label={copy.emergency}
+              variant="destructive"
+              size="M"
+              onPress={() => void openUrl('tel:911')}
+              testID="safety-911"
+            />
+          </View>
         </View>
-        <Text variant="heading" accessibilityRole="header">
+
+        <Text variant="heading" accessibilityRole="header" style={styles.section}>
+          {copy.tipsTitle}
+        </Text>
+        <View>
+          {copy.tipItems.map((t, i) => (
+            <View
+              key={t.title}
+              style={styles.tip(i > 0)}
+              accessible
+              accessibilityLabel={`${i + 1}. ${t.title}. ${t.body}`}
+              testID={`safety-tip-${i}`}
+            >
+              <Text variant="bodyStrong" tone="ink3" style={styles.num}>
+                {String(i + 1)}
+              </Text>
+              <View style={styles.flex}>
+                <Text variant="bodyStrong">{t.title}</Text>
+                <Text variant="label" tone="ink2" style={styles.regular}>
+                  {t.body}
+                </Text>
+              </View>
+            </View>
+          ))}
+        </View>
+
+        <Text variant="heading" accessibilityRole="header" style={styles.section}>
           {copy.spotsTitle}
         </Text>
-        <Text variant="meta" tone="ink2">
+        <Text variant="label" tone="ink2" style={styles.regular}>
           {copy.spotsBody}
         </Text>
         {q.isPending ? <SkeletonList rows={3} /> : null}
@@ -122,9 +157,9 @@ export function SafetyCenterScreen({
                 </Text>
               ) : null}
               {s.police ? (
-                <View style={styles.tagRow}>
-                  <Tag label={copy.police} tone="green" />
-                </View>
+                <Text variant="meta" tone="green" style={styles.police}>
+                  {copy.police}
+                </Text>
               ) : null}
             </View>
             <IconButton
@@ -134,18 +169,10 @@ export function SafetyCenterScreen({
             />
           </View>
         ))}
-        <Text variant="heading" accessibilityRole="header">
-          {copy.tipsTitle}
-        </Text>
-        {copy.tips.map((t) => (
-          <Text key={t} variant="body">
-            {`• ${t}`}
-          </Text>
-        ))}
-        <Text variant="heading" accessibilityRole="header">
+        <Text variant="heading" accessibilityRole="header" style={styles.section}>
           {copy.bannedTitle}
         </Text>
-        <Text variant="body" tone="ink2">
+        <Text variant="label" tone="ink2" style={styles.regular}>
           {copy.bannedIntro}
         </Text>
         {copy.banned.map((b) => (
@@ -282,11 +309,23 @@ const styles = StyleSheet.create((theme) => ({
     borderColor: theme.colors.line,
   },
   emergency: {
-    gap: theme.space.sm,
+    gap: theme.space.xs,
     padding: theme.space.lg,
     borderRadius: theme.radius.card,
     backgroundColor: theme.colors.redBg,
   },
+  emergencyRow: { marginTop: theme.space.sm },
+  regular: { fontWeight: '400' },
+  section: { marginTop: theme.space.md },
+  tip: (divided: boolean) => ({
+    flexDirection: 'row',
+    gap: theme.space.md,
+    paddingVertical: theme.space.md,
+    borderTopWidth: divided ? 1 : 0,
+    borderTopColor: theme.colors.line,
+  }),
+  num: { minWidth: theme.space.lg },
+  police: { fontWeight: '700', marginTop: theme.space.xs },
   row: (selected: boolean) => ({
     flexDirection: 'row',
     alignItems: 'center',

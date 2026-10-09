@@ -58,6 +58,7 @@ export function SettingsScreen({
 }) {
   const router = useRouter();
   const leave = useLeave('/profile');
+  const themeMode = useThemeModeStore((st) => st.mode);
   const [confirmAll, setConfirmAll] = useState(false);
   const signOut = async (scope: 'local' | 'global') => {
     await beforeSignOut().catch(() => {});
@@ -65,49 +66,83 @@ export function SettingsScreen({
     router.replace('/welcome');
   };
   return (
-    <View style={styles.root} testID="screen-settings">
-      <NavBar title={copy.title} onLeading={leave} />
+    <View style={styles.grey} testID="screen-settings">
+      <NavBar onLeading={leave} />
       <ScrollView contentContainerStyle={styles.body}>
-        <GroupedList header={copy.account}>
+        {/* DEC 90 mock screen 17: grey page, large title, white inset groups
+            with the small colored icon tiles people know from iOS Settings. */}
+        <Text variant="display" accessibilityRole="header">
+          {copy.title}
+        </Text>
+        <GroupedList surface="card">
           <ListRow
             label={copy.notifications}
             icon="bell"
+            iconTile="red"
             onPress={() => router.push('/settings/notifications')}
           />
           <ListRow
             label={copy.privacy}
             icon="lock"
+            iconTile="sky"
             onPress={() => router.push('/settings/privacy')}
           />
           <ListRow
             label={copy.appearance}
             icon="eye"
+            iconTile="ink"
+            value={copy.modes[themeMode]}
             onPress={() => router.push('/settings/appearance')}
           />
           <ListRow
             label={copy.language}
             icon="chat"
+            iconTile="green"
             value={copy.languages[getLanguagePref()]}
             onPress={() => router.push('/settings/language')}
           />
+        </GroupedList>
+        <GroupedList surface="card">
           <ListRow
-            label={copy.school}
-            icon="mail"
-            onPress={() => router.push('/settings/school')}
+            label={copy.safety}
+            icon="shield"
+            iconTile="lilac"
+            onPress={() => router.push('/safety')}
           />
           <ListRow
             label={copy.blocked}
             icon="ban"
+            iconTile="ink3"
             onPress={() => router.push('/settings/blocked')}
+          />
+          <ListRow
+            label={copy.help}
+            icon="help"
+            iconTile="peach"
+            onPress={() => router.push('/help')}
+          />
+          <ListRow
+            label={copy.about}
+            icon="info"
+            iconTile="amber"
+            onPress={() => router.push('/settings/about')}
+          />
+        </GroupedList>
+        <GroupedList surface="card">
+          <ListRow
+            label={copy.school}
+            icon="mail"
+            iconTile="sky"
+            onPress={() => router.push('/settings/school')}
           />
           <ListRow
             label={copy.data}
             icon="download"
+            iconTile="ink3"
             onPress={() => router.push('/settings/data')}
           />
-          <ListRow label={copy.about} icon="info" onPress={() => router.push('/settings/about')} />
         </GroupedList>
-        <GroupedList>
+        <GroupedList surface="card">
           <ListRow label={copy.signOut} onPress={() => void signOut('local')} />
           <ListRow label={copy.signOutAll} onPress={() => setConfirmAll(true)} />
           <ListRow
@@ -445,6 +480,7 @@ export function DataExportScreen({
 
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
+  grey: { flex: 1, backgroundColor: theme.colors.bg2 },
   body: { ...readableColumn, padding: theme.space.screen, gap: theme.space.lg },
   list: { gap: theme.space.xs },
 }));

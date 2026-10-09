@@ -275,7 +275,11 @@ describe('T-UNIT-I18N-05 Language setting (P17-FEAT-03)', () => {
       },
       { initialUrl: '/settings' },
     );
-    expect(await screen.findByText(settings.languages.system)).toBeTruthy();
+    expect(
+      await screen.findByRole('button', {
+        name: `${settings.language}, ${settings.languages.system}`,
+      }),
+    ).toBeTruthy();
     fireEvent.press(screen.getByText(settings.language));
     expect(await screen.findByTestId('screen-language-stub')).toBeTruthy();
   });

@@ -173,11 +173,7 @@ export function AgeScreen({
       title={copy.title}
       body={hadLoginIntent() ? `${copy.newFromSignIn} ${copy.body}` : copy.body}
       leading="none"
-      trailing={
-        <Text variant="meta" tone="ink2">
-          {copy.step}
-        </Text>
-      }
+      step={3}
       dock={
         <Button
           label={copy.continue}
@@ -193,7 +189,7 @@ export function AgeScreen({
       {isWebPlatform() ? (
         // Web app (P13-WEB-07): the browser's date field instead of the wheels.
         <View style={styles.webField}>
-          <Text variant="label" tone="ink2">
+          <Text variant="label" tone="ink3">
             {copy.fieldLabel}
           </Text>
           <WebDateInput
@@ -216,10 +212,10 @@ export function AgeScreen({
           testID="age-field"
         >
           <View style={styles.field(pickerOpen && Platform.OS === 'ios')}>
-            <Text variant="label" tone="ink2">
+            <Text variant="meta" tone="ink3" style={styles.fieldLabel}>
               {copy.fieldLabel}
             </Text>
-            <Text variant="body" tone={date ? 'ink' : 'ink3'}>
+            <Text variant="bodyStrong" tone={date ? 'ink' : 'ink3'}>
               {date
                 ? date.toLocaleDateString(undefined, {
                     month: 'long',
@@ -252,7 +248,7 @@ export function AgeScreen({
         </Text>
       ) : null}
 
-      <Text variant="meta" tone="ink2">
+      <Text variant="meta" tone="ink3">
         {copy.privacy}
       </Text>
     </AuthStep>
@@ -269,12 +265,14 @@ const styles = StyleSheet.create((theme) => ({
   webField: { gap: theme.space.xs },
   field: (focused: boolean) => ({
     gap: theme.space.xs,
-    padding: theme.space.lg,
+    paddingHorizontal: theme.space.lg,
+    paddingVertical: theme.space.md,
     borderRadius: theme.radius.control,
     borderWidth: 2,
     borderColor: focused ? theme.colors.ink : 'transparent',
-    backgroundColor: theme.colors.bg2,
+    backgroundColor: focused ? theme.colors.card : theme.colors.bg2,
   }),
+  fieldLabel: { fontWeight: '600' },
   blocked: { flex: 1, backgroundColor: theme.colors.bg, paddingHorizontal: theme.space.screen },
   blockedBody: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: theme.space.md },
   center: { textAlign: 'center' },

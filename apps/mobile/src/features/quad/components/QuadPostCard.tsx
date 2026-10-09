@@ -8,9 +8,10 @@ import { Tag } from '@/components/Tag';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { fill } from '@/lib/format';
-import { quad as copy } from '@/strings';
+import { intlLocale, quad as copy } from '@/strings';
 
 import { agoLabel } from '../../feed/logic';
+import { shortAgo } from '../../offers/logic';
 import { mediaUrl } from '../../sell/logic';
 import type { QuadPoll, QuadPost } from '../api';
 import { pollPercents, thumbPath, timeLeft } from '../logic';
@@ -98,8 +99,20 @@ type Props = {
   onOpen?: () => void;
   /** Thread view: the full photo instead of the thumbnail. */
   full?: boolean;
+  /**
+   * `card`: the feed's white card on the grey page (DEC 90): votes on the
+   * left, and the kind, replies and time as one quiet line under the text.
+   * `row` (default): the thread's plain row with votes on the right.
+   */
+  variant?: 'row' | 'card';
   testID?: string;
 };
+
+/** "Poll · 12 replies · 2h": the quiet line under a feed card (kind only for polls and check-ins). */
+export function cardMetaLine(post: Pick<QuadPost, 'kind' | 'reply_count'>, time: string): string {
+  const kind = post.kind === 'poll' || post.kind === 'checkin' ? copy.modes[post.kind] : null;
+  return [kind, repliesLabel(post.reply_count), time].filter(Boolean).join(' · ');
+}
 
 /**
  * QuadPostCard (Q2, Q6): no names or avatars, only time, place for
@@ -115,8 +128,10 @@ export function QuadPostCard({
   onOptions,
   onOpen,
   full = false,
+  variant = 'row',
   testID,
 }: Props) {
+  const card = variant === 'card';
   const live = post.status === 'live';
   const time = agoLabel(new Date(post.created_at), now);
   const photo = post.photo_path
@@ -135,12 +150,20 @@ export function QuadPostCard({
 
   const content = (
     <View style={styles.content}>
-      <View style={styles.meta}>
-        {post.status === 'held' ? <Tag label={copy.underReview} tone="amber" /> : null}
-        <Text variant="meta" tone="ink2">
-          {time}
-        </Text>
-      </View>
+      {card ? (
+        post.status === 'held' ? (
+          <View style={styles.meta}>
+            <Tag label={copy.underReview} tone="amber" />
+          </View>
+        ) : null
+      ) : (
+        <View style={styles.meta}>
+          {post.status === 'held' ? <Tag label={copy.underReview} tone="amber" /> : null}
+          <Text variant="meta" tone="ink2">
+            {time}
+          </Text>
+        </View>
+      )}
       {post.place ? (
         <View style={styles.place}>
           <Icon name="pin" size={16} tone="ink2" />
@@ -154,7 +177,7 @@ export function QuadPostCard({
           ) : null}
         </View>
       ) : null}
-      <Text variant="body" numberOfLines={full ? undefined : 8}>
+      <Text variant={card ? 'bodyStrong' : 'body'} numberOfLines={full ? undefined : 8}>
         {post.body}
       </Text>
       {photo ? (
@@ -168,8 +191,24 @@ export function QuadPostCard({
     </View>
   );
 
+  const vote = (
+    <VoteControl
+      score={post.score}
+      myVote={post.my_vote}
+      onVote={onVote}
+      readOnly={post.is_mine || !live}
+      readOnlyLabel={
+        post.is_mine
+          ? fill(copy.ownScore, { points: pointsLabel(post.score) })
+          : pointsLabel(post.score)
+      }
+      testID={testID ? `${testID}-vote` : undefined}
+    />
+  );
+
   return (
-    <View style={styles.card} testID={testID}>
+    <View style={card ? styles.whiteCard : styles.card} testID={testID}>
+      {card ? vote : null}
       <View style={styles.flex}>
         {onOpen ? (
           <Tappable
@@ -197,30 +236,20 @@ export function QuadPostCard({
           />
         ) : null}
         <View style={styles.footer}>
-          <Icon name="chat" size={16} tone="ink2" />
-          <Text variant="meta" tone="ink2" style={styles.flex}>
-            {replies}
+          {card ? null : <Icon name="chat" size={16} tone="ink2" />}
+          <Text variant="meta" tone={card ? 'ink3' : 'ink2'} style={styles.flex}>
+            {card ? cardMetaLine(post, shortAgo(post.created_at, now, intlLocale)) : replies}
           </Text>
           <IconButton
             icon="more"
             accessibilityLabel={copy.options}
             onPress={onOptions}
+            tone={card ? 'ink3' : 'ink'}
             testID={testID ? `${testID}-more` : undefined}
           />
         </View>
       </View>
-      <VoteControl
-        score={post.score}
-        myVote={post.my_vote}
-        onVote={onVote}
-        readOnly={post.is_mine || !live}
-        readOnlyLabel={
-          post.is_mine
-            ? fill(copy.ownScore, { points: pointsLabel(post.score) })
-            : pointsLabel(post.score)
-        }
-        testID={testID ? `${testID}-vote` : undefined}
-      />
+      {card ? null : vote}
     </View>
   );
 }
@@ -232,6 +261,15 @@ const styles = StyleSheet.create((theme) => ({
     paddingVertical: theme.space.md,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.line,
+  },
+  whiteCard: {
+    flexDirection: 'row',
+    gap: theme.space.xs,
+    paddingTop: theme.space.sm,
+    paddingLeft: theme.space.xs,
+    paddingRight: theme.space.sm,
+    borderRadius: theme.radius.card,
+    backgroundColor: theme.colors.card,
   },
   flex: { flex: 1 },
   content: { gap: theme.space.sm },

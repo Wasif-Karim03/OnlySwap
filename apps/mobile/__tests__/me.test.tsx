@@ -13,7 +13,9 @@ import {
   ListingStatsScreen,
   MyListingsScreen,
   ProfileTabScreen,
+  profileStats,
   RelistScreen,
+  splitAround,
 } from '../src/features/me/MeScreens';
 import { createExportApi, functionsError, type ExportApi } from '../src/features/me/exportData';
 import {
@@ -123,16 +125,57 @@ describe('F01-F08 profile', () => {
     expect(listingTab('held_review')).toBe('other');
   });
 
-  it('F01: header, counts, sell nudge with no active listings, menu', async () => {
+  it('F01: header, year at school, one line of real numbers, grid, menu (DEC 90)', async () => {
     render(
       { profile: () => <ProfileTabScreen api={api()} mediaBase={() => 'http://m'} /> },
       '/profile',
     );
     expect(await screen.findByText('Aisha A.')).toBeTruthy();
-    expect(screen.getByText('Verified at Ohio State')).toBeTruthy();
-    expect(screen.getByTestId('profile-sell-nudge')).toBeTruthy();
+    expect(screen.getByText('Junior at The Ohio State University')).toBeTruthy();
+    // Sold, swaps, thumbs up (rated) and the month joined: nothing invented.
+    const stats = profileStats(ME, 'en-US');
+    expect(stats.map((st) => st.key)).toEqual(['sold', 'swaps', 'thumbs', 'joined']);
+    expect(stats[2]!.value).toBe('100');
+    // Active and Sold as a photo grid with price tags.
+    expect(await screen.findByTestId('profile-listing-a')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Item a, $15' })).toBeTruthy();
+    expect(screen.queryByTestId('profile-listing-b')).toBeNull();
+    fireEvent.press(screen.getByRole('tab', { name: `${meCopy.tabs.sold} 1` }));
+    expect(await screen.findByTestId('profile-listing-b')).toBeTruthy();
     fireEvent.press(screen.getByText(meCopy.myListings));
     expect(await screen.findByTestId('screen-listings-stub')).toBeTruthy();
+  });
+
+  it('F01: sell nudge when nothing is active; no thumbs before a rating; school without a year', async () => {
+    render(
+      {
+        profile: () => (
+          <ProfileTabScreen
+            api={api({
+              me: jest.fn(async () => ({
+                ...ME,
+                year: null,
+                counts: { ...ME.counts, thumbs_up: 0, thumbs_total: 0 },
+              })),
+              listings: jest.fn(async () => []),
+            })}
+            mediaBase={() => 'http://m'}
+          />
+        ),
+      },
+      '/profile',
+    );
+    expect(await screen.findByTestId('profile-sell-nudge')).toBeTruthy();
+    expect(screen.getByText('Verified at The Ohio State University')).toBeTruthy();
+    expect(screen.queryByText(/thumbs up/)).toBeNull();
+    expect(screen.getByLabelText(meCopy.settings)).toBeTruthy();
+    expect(screen.getByLabelText(meCopy.notifications)).toBeTruthy();
+    expect(screen.getByLabelText(meCopy.saved)).toBeTruthy();
+  });
+
+  it('splitAround puts the number apart for bold', () => {
+    expect(splitAround('{n} sold', 'n')).toEqual(['', ' sold']);
+    expect(splitAround('{pct}% thumbs up', 'pct')).toEqual(['', '% thumbs up']);
   });
 
   it('F02: edits the name and year', async () => {

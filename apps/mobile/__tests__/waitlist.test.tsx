@@ -150,18 +150,29 @@ describe('A09 Waitlist screen', () => {
       '/waitlist',
     );
 
-  it('shows the count, your place, the link and how many joined with it', async () => {
+  it('shows the campus, how many are left, your place, the link and how many joined with it', async () => {
     open(fakeApi());
-    expect(await screen.findByText('Ohio State opens at 500 students')).toBeTruthy();
-    expect(screen.getByTestId('waitlist-count').props.children).toBe('488 / 500');
-    expect(screen.getByTestId('waitlist-progress').props.accessibilityLabel).toBe(
-      '488 of 500 students joined',
-    );
+    expect(await screen.findByText(waitlist.listTitle)).toBeTruthy();
+    expect(screen.getByTestId('waitlist-campus').props.children).toBe('The Ohio State University');
+    expect(screen.getByText('OnlySwap opens at your school when 500 students join.')).toBeTruthy();
+    expect(screen.getByTestId('waitlist-count').props.children).toBe('12 more to go');
+    const ring = screen.getByTestId('waitlist-progress');
+    expect(ring.props.accessibilityLabel).toBe('488 of 500 students joined');
+    expect(ring.props.accessibilityValue).toEqual({ min: 0, max: 100, now: 98 });
+    expect(screen.getByText('488')).toBeTruthy();
+    expect(screen.getByText('of 500')).toBeTruthy();
     expect(screen.getByTestId('waitlist-position').props.children).toContain('number 488');
     expect(screen.getByTestId('waitlist-link').props.children).toBe(`${SITE}/i/WASIF7`);
     expect(screen.getByText('3 people joined with your link.')).toBeTruthy();
-    expect(screen.getByTestId('waitlist-tour')).toBeTruthy();
-    expect(screen.getByText(waitlist.nextTitle)).toBeTruthy();
+    expect(screen.getByText(waitlist.notifyLine)).toBeTruthy();
+    // DEC 90: no "what happens next" or tour blocks.
+    expect(screen.queryByTestId('waitlist-tour')).toBeNull();
+  });
+
+  it('at the threshold it says it opens any minute', async () => {
+    open(fakeApi({ position: jest.fn(async () => info({ members: 500 })) }));
+    expect(await screen.findByText(waitlist.almost)).toBeTruthy();
+    expect(screen.queryByTestId('waitlist-position')).toBeNull();
   });
 
   it('Copy puts the link on the clipboard', async () => {
@@ -201,11 +212,11 @@ describe('A09 Waitlist screen', () => {
       .mockResolvedValueOnce(info())
       .mockResolvedValue(info({ members: 495 }));
     open(fakeApi({ position }));
-    await screen.findByText('488 / 500');
+    await screen.findByText('12 more to go');
     await act(async () => {
       jest.advanceTimersByTime(61_000);
     });
-    expect(await screen.findByText('495 / 500')).toBeTruthy();
+    expect(await screen.findByText('5 more to go')).toBeTruthy();
   });
 
   it('error with retry', async () => {
