@@ -32,6 +32,12 @@ url=$(gh pr view "$branch" --json url -q .url)
 say "Pull request: $url"
 
 say "Waiting for checks (this can take a few minutes)"
+# GitHub takes a few seconds to register the CI run on a new PR; wait for it.
+for i in $(seq 1 12); do
+  gh pr checks "$branch" >/dev/null 2>&1; rc=$?
+  [ $rc -ne 0 ] && gh pr checks "$branch" 2>&1 | grep -q "no checks reported" || break
+  sleep 10
+done
 if gh pr checks "$branch" --watch --interval 20 2>&1 | tee -a "$LOG"; then
   say "All checks passed"
 else
