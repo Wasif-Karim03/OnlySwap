@@ -31,20 +31,25 @@ fi
 url=$(gh pr view "$branch" --json url -q .url)
 say "Pull request: $url"
 
-say "Waiting for checks (this can take a few minutes)"
-# GitHub takes a few seconds to register the CI run on a new PR; wait for it.
-for i in $(seq 1 12); do
-  gh pr checks "$branch" >/dev/null 2>&1; rc=$?
-  [ $rc -ne 0 ] && gh pr checks "$branch" 2>&1 | grep -q "no checks reported" || break
+say "Waiting for CI on this commit (a few minutes)"
+sha=$(git rev-parse HEAD)
+run=""
+for i in $(seq 1 30); do
+  run=$(gh run list --branch "$branch" --workflow CI --json databaseId,headSha \
+    -q "map(select(.headSha == \"$sha\")) | .[0].databaseId // empty" 2>/dev/null)
+  [ -n "$run" ] && break
   sleep 10
 done
-if gh pr checks "$branch" --watch --interval 20 2>&1 | tee -a "$LOG"; then
+if [ -z "$run" ]; then
+  say "CI didn't start within 5 minutes. Paste pr.log to Claude."
+  exit 1
+fi
+if gh run watch "$run" --exit-status --interval 20 2>&1 | tail -25 | tee -a "$LOG"; then
   say "All checks passed"
 else
-  say "A check failed or there are no checks. Paste pr.log to Claude."
-  [ "$1" = "--no-merge" ] && exit 1
-  read -rp "Merge anyway? (y/N) " ok
-  [ "$ok" = "y" ] || exit 1
+  say "CI failed. Paste pr.log to Claude (details: gh run view $run --log-failed)."
+  gh run view "$run" --log-failed 2>&1 | tail -60 >> "$LOG"
+  exit 1
 fi
 
 [ "$1" = "--no-merge" ] && { say "Not merging (--no-merge)"; exit 0; }
