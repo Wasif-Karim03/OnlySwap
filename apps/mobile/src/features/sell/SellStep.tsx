@@ -7,7 +7,6 @@ import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { NavBar } from '@/components/NavBar';
 import { StepIndicator } from '@/components/Progress';
 import { Text } from '@/components/Text';
-import { fill } from '@/lib/format';
 import { sell as copy } from '@/strings';
 import { readableColumn, useLayout } from '@/theme/layout';
 
@@ -30,8 +29,8 @@ type Props = {
 };
 
 /**
- * Frame for the Sell steps (board D1 to D5): "New listing" with the step
- * count, one bar per step, scrolling content and Next docked above the
+ * Frame for the Sell steps (board D1 to D5; DEC 90): "New listing", a thin
+ * bar per step, scrolling content and Next docked above the
  * keyboard (T-QA-KB).
  */
 export function SellStep({
@@ -59,16 +58,8 @@ export function SellStep({
   const insets = useSafeAreaInsets();
   return (
     <View style={styles.root} testID={testID}>
-      <NavBar
-        title={copy.title}
-        leading={leading}
-        onLeading={onLeading}
-        trailing={
-          <Text variant="label" tone="ink2">
-            {fill(copy.stepCount, { step, total: SELL_STEPS })}
-          </Text>
-        }
-      />
+      {/* The step count is read out by the bar below ("Step 1 of 3"); no extra label (DEC 90). */}
+      <NavBar title={copy.title} leading={leading} onLeading={onLeading} />
       <View style={styles.steps}>
         <StepIndicator step={step} total={SELL_STEPS} />
       </View>

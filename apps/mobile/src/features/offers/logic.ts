@@ -158,3 +158,89 @@ export function inboxSections(inbox: Pick<Inbox, 'incoming' | 'outgoing'>) {
   const recent = all.filter((o) => !isOpen(o.status));
   return { mine, toYou, youMade, recent };
 }
+
+// ---------------------------------------------------------------------------
+// Inbox by side (DEC 90): Buying / Selling, "Needs you" first, then earlier.
+
+export type InboxSide = 'buying' | 'selling';
+
+export type InboxRow =
+  | { kind: 'offer'; id: string; at: string; needsYou: boolean; offer: Offer }
+  | { kind: 'chat'; id: string; at: string; needsYou: boolean; chat: ChatSummary };
+
+const byNewest = (a: InboxRow, b: InboxRow) => Date.parse(b.at) - Date.parse(a.at);
+
+/**
+ * Offers and chats on one side of the inbox. Buying is where I'm the buyer,
+ * Selling where I'm the seller. Needs you: an open offer waiting on my answer,
+ * or a chat with unread messages. Everything else is Earlier. Newest first.
+ */
+export function inboxRows(
+  inbox: Inbox,
+  side: InboxSide,
+): { needsYou: InboxRow[]; earlier: InboxRow[] } {
+  const role: Role = side === 'buying' ? 'buyer' : 'seller';
+  const rows: InboxRow[] = [
+    ...[...inbox.incoming, ...inbox.outgoing]
+      .filter((o) => o.role === role)
+      .map((o): InboxRow => ({
+        kind: 'offer',
+        id: o.id,
+        at: o.responded_at ?? o.created_at,
+        needsYou: isOpen(o.status) && o.role !== o.last_actor,
+        offer: o,
+      })),
+    ...inbox.chats
+      .filter((c) => c.role === role)
+      .map((c): InboxRow => ({
+        kind: 'chat',
+        id: c.id,
+        at: c.last_message?.created_at ?? c.last_message_at,
+        needsYou: c.unread,
+        chat: c,
+      })),
+  ];
+  return {
+    needsYou: rows.filter((r) => r.needsYou).sort(byNewest),
+    earlier: rows.filter((r) => !r.needsYou).sort(byNewest),
+  };
+}
+
+/** How many rows need me on each side, for the segment badges. */
+export function needsYouCounts(inbox: Inbox): Record<InboxSide, number> {
+  return {
+    buying: inboxRows(inbox, 'buying').needsYou.length,
+    selling: inboxRows(inbox, 'selling').needsYou.length,
+  };
+}
+
+/** Where an offer stands, in a few plain words for an inbox row. */
+export function offerStatusShort(
+  o: Pick<Offer, 'status' | 'role' | 'last_actor' | 'amount_cents' | 'listing'>,
+): string {
+  const amount = money(o.amount_cents);
+  if (isOpen(o.status)) {
+    const myTurn = o.role !== o.last_actor;
+    if (o.status === 'pending') {
+      return fill(myTurn ? copy.inboxStatus.offered : copy.inboxStatus.sent, { amount });
+    }
+    return fill(myTurn ? copy.inboxStatus.countered : copy.inboxStatus.youCountered, { amount });
+  }
+  if (o.status === 'accepted') return fill(copy.inboxStatus.accepted, { amount });
+  if (o.status === 'auto_declined') {
+    return o.listing?.status === 'hold' ? copy.status.hold_other : copy.status.auto_declined;
+  }
+  return copy.status[o.status];
+}
+
+/** "now", "12m", "3h", then the weekday within a week, then the date. */
+export function shortAgo(iso: string, now: Date, locale: string): string {
+  const then = new Date(iso);
+  const mins = Math.max(0, Math.floor((now.getTime() - then.getTime()) / 60_000));
+  if (mins < 1) return copy.timeNow;
+  if (mins < 60) return fill(copy.timeMinutes, { n: mins });
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return fill(copy.timeHours, { n: hours });
+  if (hours < 24 * 7) return then.toLocaleDateString(locale, { weekday: 'short' });
+  return then.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
+}

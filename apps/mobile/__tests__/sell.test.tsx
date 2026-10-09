@@ -449,11 +449,17 @@ describe('P5-SELL-03 D02 Sell · details', () => {
 
     fireEvent.changeText(screen.getByTestId('sell-title'), 'Dell 24" monitor');
     fireEvent.changeText(screen.getByTestId('sell-price'), '60');
-    tap('sell-category');
+    tap('sell-category-3');
     tap('sell-category-31');
     await waitFor(() => expect(screen.queryByTestId('sell-details-fix-banner')).toBeNull());
     expect(store.getState().draft.categoryId).toBe(31);
-    expect(screen.getByText('Tech / Monitors')).toBeTruthy();
+    // Category chips (DEC 90): Tech is on and its sub-categories show, Monitors picked.
+    expect(screen.getByTestId('sell-category-3').props.accessibilityState).toMatchObject({
+      checked: true,
+    });
+    expect(screen.getByTestId('sell-category-31').props.accessibilityState).toMatchObject({
+      checked: true,
+    });
     tap('sell-details-next');
     await waitFor(() => expect(router.getPathname()).toBe('/sell/meetup'));
   });
@@ -498,7 +504,7 @@ describe('R11-HINT-01 price hint (D02 variant)', () => {
     });
   const pickCategoryAndCondition = async (condition = sell.conditions.good) => {
     await screen.findByTestId('sell-category');
-    tap('sell-category');
+    tap('sell-category-3');
     tap('sell-category-31');
     fireEvent.press(screen.getByLabelText(condition));
     settle();
@@ -539,7 +545,7 @@ describe('R11-HINT-01 price hint (D02 variant)', () => {
     const store = createDraftStore(memoryStorage(), { now: () => NOW });
     setup('/sell/details', routes(api, store));
     await screen.findByTestId('sell-category');
-    tap('sell-category');
+    tap('sell-category-3');
     tap('sell-category-31');
     settle();
     expect(api.priceHint).not.toHaveBeenCalled();
@@ -555,8 +561,11 @@ describe('R11-HINT-01 price hint (D02 variant)', () => {
     setup('/sell/details', routes(api, store));
     await pickCategoryAndCondition();
     expect(
-      await screen.findByText('Similar items here sold for $30 to $60.50 (typical $45)'),
+      await screen.findByLabelText('Similar items here sold for $30 to $60.50 (typical $45)'),
     ).toBeTruthy();
+    // Shown as a lead line and the range in bold, right next to the price (DEC 90).
+    expect(screen.getByText(sell.priceHintLead)).toBeTruthy();
+    expect(screen.getByText('$30 to $60.50')).toBeTruthy();
     tap('sell-price-hint-use');
     expect(store.getState().draft.price).toBe('45');
     expect(screen.getByTestId('sell-price').props.value).toBe('45');

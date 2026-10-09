@@ -17,6 +17,7 @@ type ChipProps = {
   icon?: IconName;
   /** Off-state fill: `bg2` on white screens, `card` on grey screens. */
   surface?: 'bg2' | 'card';
+  testID?: string;
 };
 
 /** Chip: filter / choice / removable. On = ink fill (DESIGN_SYSTEM §6). */
@@ -29,6 +30,7 @@ export function Chip({
   removeLabel,
   icon,
   surface = 'bg2',
+  testID,
 }: ChipProps) {
   const removable = !!onRemove;
   return (
@@ -39,6 +41,7 @@ export function Chip({
       disabled={disabled}
       onPress={removable ? onRemove : onPress}
       guard={false}
+      testID={testID}
     >
       <View style={styles.chip(selected, disabled, surface)}>
         {icon ? <Icon name={icon} size={16} tone={selected ? 'inverse' : 'ink'} /> : null}

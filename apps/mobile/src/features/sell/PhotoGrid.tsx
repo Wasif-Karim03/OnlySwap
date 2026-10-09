@@ -13,10 +13,12 @@ import { sell as copy } from '@/strings';
 import { animateTo, resolveMotion } from '@/theme/motion';
 import { useReducedMotion } from '@/theme/reducedMotion';
 
-import { cellAt, MAX_PHOTOS, type DraftPhoto } from './logic';
+import { heroCellAt, heroRect, heroRows, HERO_COLUMNS, MAX_PHOTOS, type DraftPhoto } from './logic';
 
-export const COLUMNS = 3;
+export const COLUMNS = HERO_COLUMNS;
 const GAP = 8;
+/** The cover block (big slot plus the two beside it) is always drawn whole. */
+const HERO_SLOTS = 3;
 
 type Props = {
   photos: DraftPhoto[];
@@ -32,10 +34,11 @@ type Props = {
 };
 
 /**
- * Sell step 1 grid (board D1, X15): 3 columns, the first photo is the cover.
- * Hold and drag a photo to reorder; screen readers get Move earlier / Move
- * later / Make cover actions instead (CLAUDE.md rule 10). No haptics here
- * (DESIGN_SYSTEM §5 budget).
+ * Sell step 1 grid (board D1, X15; DEC 90): the cover is a big slot spanning
+ * two rows, the next photos sit beside it and then in rows of 3, and the add
+ * tiles follow the photos. Hold and drag a photo to reorder; screen readers get
+ * Move earlier / Move later / Make cover actions instead (CLAUDE.md rule 10).
+ * No haptics here (DESIGN_SYSTEM §5 budget).
  */
 export function PhotoGrid({
   photos,
@@ -50,64 +53,73 @@ export function PhotoGrid({
   const [width, setWidth] = useState(0);
   const cell = width > 0 ? (width - GAP * (COLUMNS - 1)) / COLUMNS : 0;
   const room = photos.length < MAX_PHOTOS;
-  const used = photos.length + (room ? (onCamera ? 2 : 1) : 0);
-  const blanks = Math.max(0, Math.max(COLUMNS * 2, Math.ceil(used / COLUMNS) * COLUMNS) - used);
+  const adds = room ? (onCamera ? 2 : 1) : 0;
+  const used = photos.length + adds;
+  const slots = Math.max(HERO_SLOTS, used);
+  const rows = heroRows(slots);
+  const height = cell > 0 ? rows * cell + (rows - 1) * GAP : 0;
+  const at = (i: number) => {
+    const r = heroRect(i, cell, GAP);
+    return { left: r.x, top: r.y, width: r.size, height: r.size };
+  };
 
   return (
     <View
-      style={styles.grid}
+      style={[styles.grid, { height }]}
       onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
       testID="sell-photo-grid"
     >
-      {photos.map((p, i) => (
-        <PhotoTile
-          key={p.id}
-          photo={p}
-          index={i}
-          count={photos.length}
-          cell={cell}
-          progress={progress[p.id] ?? 0}
-          source={sourceOf(p)}
-          onRemove={() => onRemove(p.id)}
-          onRetry={() => onRetry(p.id)}
-          onMove={onMove}
-        />
-      ))}
-      {room ? (
-        <>
-          {onCamera ? (
-            <AddTile
-              cell={cell}
-              icon="camera"
-              label={copy.camera}
-              onPress={onCamera}
-              testID="sell-add-camera"
-            />
-          ) : null}
-          <AddTile
+      <>
+        {photos.map((p, i) => (
+          <PhotoTile
+            key={p.id}
+            photo={p}
+            index={i}
+            count={photos.length}
             cell={cell}
+            progress={progress[p.id] ?? 0}
+            source={sourceOf(p)}
+            onRemove={() => onRemove(p.id)}
+            onRetry={() => onRetry(p.id)}
+            onMove={onMove}
+          />
+        ))}
+        {room && onCamera ? (
+          <AddTile
+            frame={at(photos.length)}
+            icon="camera"
+            label={copy.camera}
+            onPress={onCamera}
+            testID="sell-add-camera"
+          />
+        ) : null}
+        {room ? (
+          <AddTile
+            frame={at(photos.length + (onCamera ? 1 : 0))}
             icon="image"
             label={copy.library}
             onPress={onLibrary}
             testID="sell-add-library"
           />
-        </>
-      ) : null}
-      {Array.from({ length: blanks }, (_, i) => (
-        <View key={`blank-${i}`} style={[styles.blank, { width: cell, height: cell }]} />
-      ))}
+        ) : null}
+        {Array.from({ length: slots - used }, (_, i) => (
+          <View key={`blank-${i}`} style={[styles.blank, at(used + i)]} />
+        ))}
+      </>
     </View>
   );
 }
 
+type Frame = { left: number; top: number; width: number; height: number };
+
 function AddTile({
-  cell,
+  frame,
   icon,
   label,
   onPress,
   testID,
 }: {
-  cell: number;
+  frame: Frame;
   icon: 'camera' | 'image';
   label: string;
   onPress: () => void;
@@ -119,7 +131,7 @@ function AddTile({
       accessibilityLabel={label}
       onPress={onPress}
       testID={testID}
-      style={[styles.add, { width: cell, height: cell }]}
+      style={[styles.add, frame]}
     >
       <Icon name={icon} size={24} tone="ink2" />
       <Text variant="meta" tone="ink2">
@@ -155,13 +167,12 @@ function PhotoTile({
   const dy = useSharedValue(0);
   const lifted = useSharedValue(0);
   const settle = resolveMotion('fade', reduced);
-  const col = index % COLUMNS;
-  const row = Math.floor(index / COLUMNS);
-  const originX = col * (cell + GAP) + cell / 2;
-  const originY = row * (cell + GAP) + cell / 2;
+  const rect = heroRect(index, cell, GAP);
+  const originX = rect.x + rect.size / 2;
+  const originY = rect.y + rect.size / 2;
 
   const drop = (x: number, y: number) => {
-    const to = cellAt(x, y, cell, GAP, COLUMNS, count);
+    const to = heroCellAt(x, y, cell, GAP, count);
     if (to !== index) onMove(index, to);
   };
 
@@ -213,7 +224,13 @@ function PhotoTile({
 
   return (
     <GestureDetector gesture={drag}>
-      <Animated.View style={[{ width: cell, height: cell }, moving]}>
+      <Animated.View
+        style={[
+          styles.slot,
+          { left: rect.x, top: rect.y, width: rect.size, height: rect.size },
+          moving,
+        ]}
+      >
         <Pressable
           testID={`sell-photo-${index}`}
           accessibilityRole={photo.status === 'failed' ? 'button' : 'image'}
@@ -224,11 +241,15 @@ function PhotoTile({
           style={styles.tile}
         >
           <View style={styles.photo(photo.status === 'failed')}>
-            <Photo source={source} blurhash={photo.blurhash} rounded="thumb" />
+            <Photo
+              source={source}
+              blurhash={photo.blurhash}
+              rounded={index === 0 ? 'card' : 'thumb'}
+            />
           </View>
           {index === 0 ? (
             <View style={styles.cover}>
-              <Text variant="meta" tone="inverse">
+              <Text variant="meta" tone="ink" style={styles.coverText}>
                 {copy.cover}
               </Text>
             </View>
@@ -263,28 +284,36 @@ function PhotoTile({
 }
 
 const styles = StyleSheet.create((theme) => ({
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: GAP },
+  grid: { position: 'relative' },
+  slot: { position: 'absolute' },
   tile: { flex: 1 },
   photo: (faded: boolean) => ({ flex: 1, opacity: faded ? 0.45 : 1 }),
-  blank: { borderRadius: theme.radius.thumb, backgroundColor: theme.colors.bg2 },
-  add: {
+  blank: {
+    position: 'absolute',
     borderRadius: theme.radius.thumb,
-    borderWidth: 1.5,
+    backgroundColor: theme.colors.bg2,
+  },
+  add: {
+    position: 'absolute',
+    borderRadius: theme.radius.thumb,
+    borderWidth: 2,
     borderStyle: 'dashed',
     borderColor: theme.colors.line2,
     alignItems: 'center',
     justifyContent: 'center',
     gap: theme.space.xs,
   },
+  // A white pill on the cover photo (white in both modes, like text on photos).
   cover: {
     position: 'absolute',
-    left: theme.space.xs,
-    bottom: theme.space.xs,
+    left: theme.space.sm,
+    top: theme.space.sm,
     paddingHorizontal: theme.space.sm,
     paddingVertical: 2,
     borderRadius: theme.radius.chip,
-    backgroundColor: theme.colors.ink,
+    backgroundColor: theme.colors.onPhoto,
   },
+  coverText: { color: theme.colors.photoBg },
   progress: {
     position: 'absolute',
     left: theme.space.sm,

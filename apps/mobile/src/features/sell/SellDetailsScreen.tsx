@@ -2,17 +2,15 @@ import { useNetInfo } from '@react-native-community/netinfo';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { Banner, isOffline } from '@/components/Banner';
 import { Button } from '@/components/Button';
-import { ChipGroup } from '@/components/Chip';
+import { Chip, ChipGroup } from '@/components/Chip';
 import { ErrorState } from '@/components/ErrorState';
-import { Icon } from '@/components/icons/Icon';
 import { Input } from '@/components/Input';
 import { SegmentedControl } from '@/components/SegmentedControl';
-import { Sheet } from '@/components/Sheet';
 import { SkeletonList } from '@/components/Skeleton';
 import { Text } from '@/components/Text';
 import { TextArea } from '@/components/TextArea';
@@ -24,7 +22,6 @@ import { sell as copy } from '@/strings';
 import { sellApi, type SellApi } from './api';
 import { getDraftStore, useDraft, type DraftState } from './draft';
 import {
-  categoryLabel,
   centsToPrice,
   cleanPrice,
   DESCRIPTION_MAX,
@@ -56,21 +53,23 @@ function useDebounced<T>(value: T, ms: number): T {
 }
 
 /**
- * R11-HINT-01 (D02 variant): one quiet line under the price with a chip that
- * fills the typical price. It never blocks posting: while there are under 5
- * comparables (null), on any error and offline it simply isn't there.
+ * R11-HINT-01 (D02 variant; DEC 90): what similar items sold for, right next
+ * to the price, with a small button that fills the typical price. It never
+ * blocks posting: while there are under 5 comparables (null), on any error and
+ * offline it simply isn't there.
  */
 function PriceHintLine({ hint, onUse }: { hint: PriceHint; onUse: (price: string) => void }) {
   const typical = dollars(hint.medianCents);
+  const low = dollars(hint.p25Cents);
+  const high = dollars(hint.p75Cents);
   return (
     <View style={styles.hint} testID="sell-price-hint">
-      <Text variant="meta" tone="ink2" style={styles.flex}>
-        {fill(copy.priceHint, {
-          low: dollars(hint.p25Cents),
-          high: dollars(hint.p75Cents),
-          typical,
-        })}
-      </Text>
+      <View accessible accessibilityLabel={fill(copy.priceHint, { low, high, typical })}>
+        <Text variant="meta" tone="ink3">
+          {copy.priceHintLead}
+        </Text>
+        <Text variant="bodyStrong">{fill(copy.priceHintRange, { low, high })}</Text>
+      </View>
       {/* A small secondary button (chip-sized) so screen readers hear a button, not a checkbox. */}
       <Button
         label={fill(copy.priceHintUse, { price: typical })}
@@ -82,6 +81,66 @@ function PriceHintLine({ hint, onUse }: { hint: PriceHint; onUse: (price: string
         testID="sell-price-hint-use"
       />
     </View>
+  );
+}
+
+/**
+ * Category as chips (DEC 90): the top-level categories, and once one with
+ * sub-categories is picked (Tech), its sub-categories on a second row.
+ * Tapping the picked sub-category again goes back to the parent.
+ */
+function CategoryChips({
+  list,
+  value,
+  onPick,
+}: {
+  list: Category[];
+  value: number | null;
+  onPick: (id: number) => void;
+}) {
+  const picked = list.find((c) => c.id === value) ?? null;
+  const parentId = picked ? (picked.parentId ?? picked.id) : null;
+  const parent = list.find((c) => c.id === parentId) ?? null;
+  const children = parentId === null ? [] : list.filter((c) => c.parentId === parentId);
+  return (
+    <>
+      <View
+        accessibilityRole="radiogroup"
+        accessibilityLabel={copy.categoryLabel}
+        style={styles.chips}
+      >
+        {list
+          .filter((c) => c.parentId === null)
+          .map((c) => (
+            <Chip
+              key={c.id}
+              label={c.name}
+              selected={parentId === c.id}
+              onPress={() => onPick(c.id)}
+              testID={`sell-category-${c.id}`}
+            />
+          ))}
+      </View>
+      {parent && children.length > 0 ? (
+        <View
+          accessibilityRole="radiogroup"
+          accessibilityLabel={parent.name}
+          style={styles.chips}
+          testID="sell-subcategories"
+        >
+          {children.map((c) => (
+            <Chip
+              key={c.id}
+              label={c.name}
+              selected={value === c.id}
+              surface="card"
+              onPress={() => onPick(value === c.id ? parent.id : c.id)}
+              testID={`sell-category-${c.id}`}
+            />
+          ))}
+        </View>
+      ) : null}
+    </>
   );
 }
 
@@ -130,7 +189,6 @@ export function SellDetailsScreen({
   const [banned, setBanned] = useState<Banned>({});
   const [checking, setChecking] = useState(false);
   const [checkFailed, setCheckFailed] = useState(false);
-  const [picking, setPicking] = useState(false);
   const categories = useQuery({
     queryKey: ['categories'],
     queryFn: api.categories,
@@ -228,47 +286,6 @@ export function SellDetailsScreen({
           testID="sell-details-next"
         />
       }
-      overlay={
-        <Sheet
-          visible={picking}
-          onClose={() => setPicking(false)}
-          title={copy.categoriesTitle}
-          testID="sheet-sell-category"
-        >
-          {categories.isPending ? (
-            <SkeletonList rows={6} />
-          ) : categories.isError ? (
-            <ErrorState
-              layout="inline"
-              error={categories.error}
-              onRetry={() => void categories.refetch()}
-            />
-          ) : (
-            <ScrollView style={styles.sheetList}>
-              {list
-                .filter((c) => c.parentId === null)
-                .flatMap((parent) => [parent, ...list.filter((c) => c.parentId === parent.id)])
-                .map((c: Category) => (
-                  <Pressable
-                    key={c.id}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: draft.categoryId === c.id }}
-                    accessibilityLabel={categoryLabel(list, c.id) ?? c.name}
-                    testID={`sell-category-${c.id}`}
-                    onPress={() => {
-                      update({ categoryId: c.id });
-                      setPicking(false);
-                    }}
-                    style={styles.option(c.parentId !== null)}
-                  >
-                    <Text variant={c.parentId === null ? 'bodyStrong' : 'body'}>{c.name}</Text>
-                    {draft.categoryId === c.id ? <Icon name="check" size={18} /> : null}
-                  </Pressable>
-                ))}
-            </ScrollView>
-          )}
-        </Sheet>
-      }
     >
       <SegmentedControl<ListingKind>
         label={copy.modeLabel}
@@ -298,42 +315,27 @@ export function SellDetailsScreen({
         error={errorFor('title')}
         testID="sell-title"
       />
-
       {sale ? (
-        <View style={styles.field}>
-          <Text variant="label" tone="ink2">
-            {copy.categoryLabel}
-          </Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={copy.categoryLabel}
-            accessibilityValue={{
-              text: categoryLabel(list, draft.categoryId) ?? copy.categoryPlaceholder,
-            }}
-            accessibilityHint={errorFor('category')}
-            onPress={() => setPicking(true)}
-            testID="sell-category"
-            style={styles.picker(Boolean(errorFor('category')))}
-          >
-            <Text
-              variant="body"
-              tone={draft.categoryId === null ? 'ink3' : 'ink'}
-              style={styles.flex}
-            >
-              {categoryLabel(list, draft.categoryId) ?? copy.categoryPlaceholder}
-            </Text>
-            <Icon name="chev" size={18} tone="ink2" />
-          </Pressable>
-          {errorFor('category') ? (
-            <Text variant="meta" tone="red" accessibilityLiveRegion="polite">
-              {errorFor('category')}
-            </Text>
+        <View style={styles.priceRow}>
+          <View style={styles.priceField}>
+            <Input
+              label={copy.priceLabel}
+              kind="price"
+              placeholder="0"
+              value={draft.price}
+              onChangeText={(t) => update({ price: cleanPrice(t) })}
+              error={errorFor('price')}
+              testID="sell-price"
+            />
+          </View>
+          {shownHint ? (
+            <PriceHintLine hint={shownHint} onUse={(price) => update({ price })} />
           ) : null}
         </View>
       ) : null}
 
       <View style={styles.field}>
-        <Text variant="label" tone="ink2">
+        <Text variant="label" tone="ink3">
           {copy.conditionLabel}
         </Text>
         <SegmentedControl<Condition | ''>
@@ -346,29 +348,46 @@ export function SellDetailsScreen({
 
       {sale ? (
         <>
-          <Input
-            label={copy.priceLabel}
-            kind="price"
-            placeholder="0"
-            value={draft.price}
-            onChangeText={(t) => update({ price: cleanPrice(t) })}
-            error={errorFor('price')}
-            testID="sell-price"
-          />
-          {shownHint ? (
-            <PriceHintLine hint={shownHint} onUse={(price) => update({ price })} />
-          ) : null}
-          <Toggle
-            label={copy.offersLabel}
-            description={copy.offersBody}
-            value={draft.openToOffers}
-            onChange={(openToOffers) => update({ openToOffers })}
-          />
+          <View style={styles.field}>
+            <Text variant="label" tone="ink3">
+              {copy.categoryLabel}
+            </Text>
+            {categories.isPending ? (
+              <SkeletonList rows={2} />
+            ) : categories.isError ? (
+              <ErrorState
+                layout="inline"
+                error={categories.error}
+                onRetry={() => void categories.refetch()}
+              />
+            ) : (
+              <View style={styles.field} testID="sell-category">
+                <CategoryChips
+                  list={list}
+                  value={draft.categoryId}
+                  onPick={(categoryId) => update({ categoryId })}
+                />
+              </View>
+            )}
+            {errorFor('category') ? (
+              <Text variant="meta" tone="red" accessibilityLiveRegion="polite">
+                {errorFor('category')}
+              </Text>
+            ) : null}
+          </View>
+          <View style={styles.list}>
+            <Toggle
+              label={copy.offersLabel}
+              description={copy.offersBody}
+              value={draft.openToOffers}
+              onChange={(openToOffers) => update({ openToOffers })}
+            />
+          </View>
         </>
       ) : (
         <>
           <View style={styles.field}>
-            <Text variant="label" tone="ink2">
+            <Text variant="label" tone="ink3">
               {copy.pickupLabel}
             </Text>
             <ChipGroup<PickupBy>
@@ -382,11 +401,8 @@ export function SellDetailsScreen({
               }}
             />
           </View>
-          <View style={styles.freeCard}>
-            <View style={styles.freeIcon}>
-              <Icon name="gift" size={20} tone="onAccent" />
-            </View>
-            <View style={styles.flex}>
+          <View style={styles.list}>
+            <View style={styles.freeRow}>
               <Text variant="bodyStrong">{copy.freeTitle}</Text>
               <Text variant="meta" tone="ink2">
                 {copy.freeBody}
@@ -410,46 +426,24 @@ export function SellDetailsScreen({
 }
 
 const styles = StyleSheet.create((theme) => ({
-  flex: { flex: 1 },
-  field: { gap: theme.space.xs },
-  picker: (error: boolean) => ({
-    minHeight: theme.size.buttonL,
+  field: { gap: theme.space.sm },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
+  priceRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.space.sm,
-    paddingHorizontal: theme.space.md,
-    borderRadius: theme.radius.control,
-    borderWidth: error ? 1.5 : 1,
-    borderColor: error ? theme.colors.red : theme.colors.line,
-    backgroundColor: error ? theme.colors.redBg : theme.colors.card,
-  }),
-  sheetList: { maxHeight: 420 },
-  hint: {
-    flexDirection: 'row',
-    alignItems: 'center',
     flexWrap: 'wrap',
-    gap: theme.space.sm,
-  },
-  option: (child: boolean) => ({
-    minHeight: theme.size.hit,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingLeft: child ? theme.space.lg : 0,
-  }),
-  freeCard: {
-    flexDirection: 'row',
+    alignItems: 'flex-end',
     gap: theme.space.md,
-    padding: theme.space.md,
-    borderRadius: theme.radius.control,
-    backgroundColor: theme.colors.bg2,
   },
-  freeIcon: {
-    width: theme.size.hit,
-    height: theme.size.hit,
-    borderRadius: theme.radius.control,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.accent,
+  priceField: { flexGrow: 1, flexBasis: '40%' },
+  hint: { flexGrow: 1.3, flexBasis: '45%', gap: theme.space.xs, alignItems: 'flex-start' },
+  // A plain grouped list (DEC 90): hairline border, rows inside.
+  list: {
+    paddingHorizontal: theme.space.lg,
+    paddingVertical: theme.space.xs,
+    borderRadius: theme.radius.card,
+    borderWidth: 1,
+    borderColor: theme.colors.line,
+    backgroundColor: theme.colors.card,
   },
+  freeRow: { gap: theme.space.xs, paddingVertical: theme.space.md },
 }));

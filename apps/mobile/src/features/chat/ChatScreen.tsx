@@ -38,17 +38,26 @@ import { money } from '../offers/logic';
 import { profileApi, type ProfileApi } from '../profiles/api';
 import { mediaUrl } from '../sell/logic';
 import { chatApi, type ChatApi } from './api';
-import { bubbleAspect, chatPhotoUrl, newContactFromItems, scamHint, type ChatItem } from './logic';
+import {
+  bubbleAspect,
+  chatKey,
+  chatPhotoUrl,
+  newContactFromItems,
+  scamHint,
+  type ChatItem,
+} from './logic';
 import { useChat, type ChatState } from './useChat';
 
-export const chatKey = (id: string) => ['chat', id] as const;
+export { chatKey };
 
 type PhotoSource = 'camera' | 'library';
 type Primer = { kind: 'camera' | 'photos'; step: 'primer' | 'settings'; busy: boolean };
 
 /**
- * E03 Chat (P8-CHAT-03): bubbles, system rows, deal bar, first-message
- * safety tip, pending/failed, scam hints, blocked (X18) and closed read-only.
+ * E03 Chat (P8-CHAT-03; DEC 90): white header with the name and the item
+ * pinned under it, a grey message area with the meetup as one blue card, ink
+ * bubbles for me and white for them, system rows as small pills, first-message
+ * safety line, pending/failed, scam hints, blocked (X18) and closed read-only.
  */
 export function ChatScreen({
   id,
@@ -193,10 +202,51 @@ export function ChatScreen({
     void state.send(body);
   };
 
+  const planButton =
+    !readOnly && !meetupQ.data ? (
+      <Button
+        label={copy.planMeetup}
+        size="S"
+        variant="dark"
+        fullWidth={false}
+        onPress={() => router.push({ pathname: '/chat/[id]/meetup', params: { id } })}
+        testID="chat-plan-meetup"
+      />
+    ) : null;
+  const soldButton =
+    !readOnly &&
+    meetupQ.data &&
+    (meetupQ.data.status === 'confirmed' || meetupQ.data.status === 'completed') &&
+    !(c.role === 'seller' ? c.seller_outcome : c.buyer_outcome) ? (
+      <Button
+        label={copy.didItSell}
+        size="S"
+        variant="dark"
+        fullWidth={false}
+        onPress={() => router.push({ pathname: '/chat/[id]/deal', params: { id } })}
+        testID="chat-did-it-sell"
+      />
+    ) : null;
+  const extra =
+    !readOnly && extraActions ? extraActions({ role: c.role, listingId: c.listing_id }) : null;
+  const actions =
+    planButton || soldButton || extra ? (
+      <>
+        {planButton}
+        {soldButton}
+        {extra}
+      </>
+    ) : null;
+
   const renderItem = ({ item }: { item: ChatItem }) => {
     if (item.kind === 'system' || item.kind === 'meetup') {
       return (
-        <MessageBubble kind="system" body={item.body ?? ''} testID={`msg-${String(item.id)}`} />
+        <MessageBubble
+          kind="system"
+          body={item.body ?? ''}
+          surface="card"
+          testID={`msg-${String(item.id)}`}
+        />
       );
     }
     const mine = item.mine === true;
@@ -242,6 +292,7 @@ export function ChatScreen({
         onRetry={item.state === 'failed' ? () => void state.retry(item.client_id!) : undefined}
         photo={photo}
         onLongPress={!mine && sentId !== null ? () => setReportId(sentId) : undefined}
+        surface="card"
         testID={`msg-${item.id ?? item.client_id}`}
       />
     );
@@ -249,56 +300,47 @@ export function ChatScreen({
 
   return (
     <View style={styles.root} testID="screen-chat">
-      <NavBar
-        title={name}
-        leading={pane ? 'none' : 'back'}
-        onLeading={leave}
-        trailing={
-          <IconButton
-            icon="more"
-            accessibilityLabel={copy.details}
-            onPress={() => router.push({ pathname: '/chat/[id]/details', params: { id } })}
-            testID="chat-details"
-          />
-        }
-      />
-      <View style={styles.deal} testID="chat-deal-bar">
-        <View style={styles.thumb}>
-          <Photo
-            source={c.listing_thumb_path ? mediaUrl(base, c.listing_thumb_path) : null}
-            rounded="thumb"
-          />
+      <View style={styles.header}>
+        <NavBar
+          title={name}
+          leading={pane ? 'none' : 'back'}
+          onLeading={leave}
+          trailing={
+            <IconButton
+              icon="more"
+              accessibilityLabel={copy.details}
+              onPress={() => router.push({ pathname: '/chat/[id]/details', params: { id } })}
+              testID="chat-details"
+            />
+          }
+        />
+        {/* The item stays pinned under the name (DEC 90). */}
+        <View style={styles.deal} testID="chat-deal-bar">
+          <View style={styles.thumb}>
+            <Photo
+              source={c.listing_thumb_path ? mediaUrl(base, c.listing_thumb_path) : null}
+              rounded="thumb"
+            />
+          </View>
+          <View style={styles.flex}>
+            <Text variant="bodyStrong" numberOfLines={1}>
+              {c.listing_title}
+            </Text>
+            <Text variant="meta" tone="ink3">
+              {fill(copy.inPerson, { amount: money(c.agreed_cents) })}
+            </Text>
+          </View>
+          {c.status === 'open' && !readOnly ? (
+            <Text variant="label" tone="green" testID="chat-deal-status">
+              {copy.accepted}
+            </Text>
+          ) : null}
         </View>
-        <View style={styles.flex}>
-          <Text variant="bodyStrong" numberOfLines={1}>
-            {c.listing_title}
-          </Text>
-          <Text variant="meta" tone="ink2">
-            {fill(copy.agreed, { amount: money(c.agreed_cents) })}
-          </Text>
-        </View>
-        {!readOnly && !meetupQ.data ? (
-          <Button
-            label={copy.planMeetup}
-            size="S"
-            variant="dark"
-            onPress={() => router.push({ pathname: '/chat/[id]/meetup', params: { id } })}
-            testID="chat-plan-meetup"
-          />
+        {actions ? (
+          <View style={styles.dealActions} testID="chat-deal-actions">
+            {actions}
+          </View>
         ) : null}
-        {!readOnly &&
-        meetupQ.data &&
-        (meetupQ.data.status === 'confirmed' || meetupQ.data.status === 'completed') &&
-        !(c.role === 'seller' ? c.seller_outcome : c.buyer_outcome) ? (
-          <Button
-            label={copy.didItSell}
-            size="S"
-            variant="dark"
-            onPress={() => router.push({ pathname: '/chat/[id]/deal', params: { id } })}
-            testID="chat-did-it-sell"
-          />
-        ) : null}
-        {!readOnly && extraActions ? extraActions({ role: c.role, listingId: c.listing_id }) : null}
       </View>
       {meetupQ.data ? (
         <MeetupCard
@@ -320,9 +362,12 @@ export function ChatScreen({
           onEndReachedThreshold={0.3}
           ListFooterComponent={
             c.my_first_message && !readOnly ? (
+              // One plain line instead of a tip box (DEC 90).
               <View style={styles.tip} testID="chat-safety-tip">
-                <Text variant="bodyStrong">{copy.safetyTitle}</Text>
-                <Text variant="meta" tone="ink2">
+                <Text variant="meta" tone="ink2" style={styles.center}>
+                  <Text variant="meta" style={styles.strong}>
+                    {copy.safetyTitle}.
+                  </Text>{' '}
                   {copy.safetyBody}
                 </Text>
               </View>
@@ -376,6 +421,7 @@ export function ChatScreen({
               disabled={!text.trim()}
               onPress={send}
               filled
+              surface="accent"
               testID="chat-send"
             />
           </View>
@@ -466,29 +512,38 @@ export function ChatScreen({
 }
 
 const styles = StyleSheet.create((theme, rt) => ({
-  root: { flex: 1, backgroundColor: theme.colors.bg },
+  // White header and composer around a grey message area (DEC 90).
+  root: { flex: 1, backgroundColor: theme.colors.bg2 },
   flex: { flex: 1 },
+  header: {
+    backgroundColor: theme.colors.bg,
+    borderBottomWidth: 1,
+    borderColor: theme.colors.line,
+  },
   deal: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.space.md,
     paddingHorizontal: theme.space.screen,
-    paddingVertical: theme.space.sm,
-    borderBottomWidth: 1,
-    borderColor: theme.colors.line,
+    paddingTop: theme.space.xs,
+    paddingBottom: theme.space.md,
+  },
+  dealActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.space.sm,
+    paddingHorizontal: theme.space.screen,
+    paddingBottom: theme.space.md,
   },
   thumb: { width: theme.size.hit, height: theme.size.hit },
   list: { paddingVertical: theme.space.md, gap: theme.space.sm },
-  tip: {
-    margin: theme.space.screen,
-    padding: theme.space.lg,
-    gap: theme.space.xs,
-    borderRadius: theme.radius.card,
-    backgroundColor: theme.colors.bg2,
-  },
+  tip: { paddingHorizontal: theme.space['2xl'], paddingVertical: theme.space.md },
+  center: { textAlign: 'center' },
+  strong: { fontWeight: theme.type.label.fontWeight },
   primer: { ...StyleSheet.absoluteFillObject, backgroundColor: theme.colors.bg },
   viewer: { flex: 1, backgroundColor: theme.colors.photoBg },
   readOnly: {
+    backgroundColor: theme.colors.bg,
     padding: theme.space.screen,
     paddingBottom: Math.max(rt.insets.bottom, theme.space.md),
   },
@@ -501,6 +556,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingBottom: Math.max(rt.insets.bottom, theme.space.sm),
     borderTopWidth: 1,
     borderColor: theme.colors.line,
+    backgroundColor: theme.colors.bg,
   },
   input: {
     flex: 1,
@@ -508,7 +564,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     maxHeight: theme.size.hit * 3,
     paddingHorizontal: theme.space.md,
     paddingVertical: theme.space.sm,
-    borderRadius: theme.radius.control,
+    borderRadius: theme.radius.card,
     backgroundColor: theme.colors.bg2,
     color: theme.colors.ink,
     fontSize: theme.type.body.fontSize,

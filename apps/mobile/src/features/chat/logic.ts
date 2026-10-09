@@ -1,3 +1,6 @@
+/** Query key for one chat's details (get_chat); shared by the chat and meetup screens. */
+export const chatKey = (id: string) => ['chat', id] as const;
+
 /** A chat message from the server (private.message_json). */
 export type Message = {
   id: number;

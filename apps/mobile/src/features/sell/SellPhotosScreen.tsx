@@ -7,7 +7,6 @@ import { StyleSheet } from 'react-native-unistyles';
 import { track } from '@/lib/analytics';
 import { devTrace } from '@/lib/devTrace';
 import { Button } from '@/components/Button';
-import { Icon } from '@/components/icons/Icon';
 import { PermissionPrimerView } from '@/components/PermissionPrimer';
 import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
@@ -292,11 +291,6 @@ export function SellPhotosScreen({
         onRetry={retry}
         onMove={(from, to) => update((d) => ({ photos: moveItem(d.photos, from, to) }))}
       />
-      {draft.photos.length > 1 ? (
-        <Text variant="meta" tone="ink2">
-          {copy.reorderHint}
-        </Text>
-      ) : null}
       {status ? (
         <Text
           variant="meta"
@@ -307,32 +301,28 @@ export function SellPhotosScreen({
           {status}
         </Text>
       ) : null}
-      <View style={styles.tip}>
-        <Icon name="info" size={18} tone="ink2" />
-        <Text variant="meta" tone="ink2" style={styles.tipText}>
-          {copy.tip}
-        </Text>
-      </View>
+      {/* One plain line of advice instead of a tip box (DEC 90). */}
+      <Text variant="meta" tone="ink2" testID="sell-photos-tip">
+        {draft.photos.length > 1 ? `${copy.tip} ${copy.reorderHint}` : copy.tip}
+      </Text>
       {draft.wantedRef ? null : (
         <View style={styles.more} testID="sell-campus-entries">
-          <View style={styles.half}>
-            <Button
-              label={campusCopy.postFood}
-              variant="secondary"
-              size="M"
-              onPress={() => router.push('/sell/food')}
-              testID="sell-post-food"
-            />
-          </View>
-          <View style={styles.half}>
-            <Button
-              label={campusCopy.askFor}
-              variant="secondary"
-              size="M"
-              onPress={() => router.push('/sell/wanted')}
-              testID="sell-ask-wanted"
-            />
-          </View>
+          <Button
+            label={campusCopy.postFood}
+            variant="text"
+            size="S"
+            fullWidth={false}
+            onPress={() => router.push('/sell/food')}
+            testID="sell-post-food"
+          />
+          <Button
+            label={campusCopy.askFor}
+            variant="text"
+            size="S"
+            fullWidth={false}
+            onPress={() => router.push('/sell/wanted')}
+            testID="sell-ask-wanted"
+          />
         </View>
       )}
     </SellStep>
@@ -343,14 +333,6 @@ const styles = StyleSheet.create((theme) => ({
   row: { flexDirection: 'row', gap: theme.space.sm, marginTop: theme.space.md },
   half: { flex: 1 },
   primer: { ...StyleSheet.absoluteFillObject, backgroundColor: theme.colors.bg },
-  tip: {
-    flexDirection: 'row',
-    gap: theme.space.sm,
-    padding: theme.space.md,
-    borderRadius: theme.radius.control,
-    backgroundColor: theme.colors.bg2,
-  },
-  tipText: { flex: 1 },
   answering: {
     gap: theme.space.xs,
     padding: theme.space.md,
@@ -360,5 +342,12 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.card,
   },
   start: { flexDirection: 'row' },
-  more: { flexDirection: 'row', gap: theme.space.sm },
+  more: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    columnGap: theme.space.lg,
+    paddingTop: theme.space.sm,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.line,
+  },
 }));

@@ -212,7 +212,7 @@ describe('B05 Offer sheet', () => {
       },
       '/listing/l1/offer',
     );
-    fireEvent.press(await screen.findByText(`$32 · ${offers.quickLess.replace('{pct}', '20')}`));
+    fireEvent.press(await screen.findByText('$32'));
     fireEvent.press(screen.getByText(offers.quickNotes.today));
     fireEvent.press(screen.getByTestId('offer-send'));
     await waitFor(() =>
@@ -370,10 +370,10 @@ describe('E01 Inbox', () => {
       });
     render({ inbox: () => <InboxScreen api={api({ inbox })} realtime={realtime} /> }, '/inbox');
     expect(await screen.findByTestId('inbox-offer-a')).toBeTruthy();
-    expect(screen.getByTestId('inbox-mine')).toBeTruthy();
+    expect(screen.getByTestId('inbox-needs-you')).toBeTruthy();
     await act(async () => ping());
     expect(await screen.findByTestId('inbox-offer-b')).toBeTruthy();
-    fireEvent.press(screen.getByText(offers.tabChats));
+    fireEvent.press(screen.getByText(offers.tabBuying));
     expect(await screen.findByTestId('unread-c1')).toBeTruthy();
     fireEvent.press(screen.getByTestId('inbox-chat-c1'));
     expect(await screen.findByTestId('screen-chat')).toBeTruthy();
