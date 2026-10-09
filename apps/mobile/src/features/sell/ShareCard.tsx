@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { Mark } from '@/components/Mark';
+import { imageStyles } from '@/components/Photo';
 import { Text } from '@/components/Text';
 
 /** Rendered at half size and captured at 1200 × 630 (MOB-06, board "W · Share image"). */
@@ -41,7 +42,7 @@ export const ShareCard = forwardRef<View, Props>(function ShareCard(
             <Image
               source={photo}
               accessibilityIgnoresInvertColors
-              style={styles.fill}
+              style={imageStyles.image}
               contentFit="cover"
               onLoad={onReady}
               onError={onReady}
@@ -86,7 +87,6 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.bg,
   },
   photo: { width: CARD_H, height: CARD_H, backgroundColor: theme.colors.photoBg },
-  fill: { width: '100%', height: '100%' },
   side: { flex: 1, padding: theme.space.xl, justifyContent: 'space-between' },
   brand: { flexDirection: 'row', alignItems: 'center', gap: theme.space.sm },
   bottom: { gap: theme.space.xs },

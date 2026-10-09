@@ -1,6 +1,6 @@
 import { Image, type ImageSource } from 'expo-image';
 import { useState } from 'react';
-import { View } from 'react-native';
+import { StyleSheet as RNStyleSheet, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { motion } from '@onlyswap/tokens';
@@ -27,6 +27,8 @@ export type PhotoProps = {
   accessibilityLabel?: string;
   /** Width / height. Defaults to square. */
   aspectRatio?: number;
+  /** Fill the parent (absolutely positioned) instead of keeping an aspect ratio. */
+  fill?: boolean;
   rounded?: 'none' | 'thumb' | 'card';
   contentFit?: 'cover' | 'contain';
   /** Neutral fill behind the photo; off in the dark full-screen viewer. */
@@ -50,6 +52,7 @@ export function Photo({
   blurhash,
   accessibilityLabel,
   aspectRatio = 1,
+  fill = false,
   rounded = 'none',
   contentFit = 'cover',
   backdrop = true,
@@ -82,7 +85,7 @@ export function Photo({
           : accessibilityLabel
       }
       importantForAccessibility={accessibilityLabel ? 'yes' : 'no-hide-descendants'}
-      style={styles.frame(aspectRatio, rounded, backdrop)}
+      style={styles.frame(aspectRatio, rounded, backdrop, fill)}
     >
       {state === 'error' ? (
         <View testID={testID ? `${testID}-error` : undefined} style={styles.placeholder}>
@@ -108,7 +111,7 @@ export function Photo({
           }}
           accessible={false}
           accessibilityIgnoresInvertColors
-          style={styles.image}
+          style={imageStyles.image}
         />
       )}
     </View>
@@ -116,14 +119,17 @@ export function Photo({
 }
 
 const styles = StyleSheet.create((theme) => ({
-  frame: (aspectRatio: number, rounded: 'none' | 'thumb' | 'card', backdrop: boolean) => ({
-    width: '100%',
-    aspectRatio,
+  frame: (
+    aspectRatio: number,
+    rounded: 'none' | 'thumb' | 'card',
+    backdrop: boolean,
+    fill: boolean,
+  ) => ({
+    ...(fill ? { ...StyleSheet.absoluteFillObject } : { width: '100%' as const, aspectRatio }),
     overflow: 'hidden',
     backgroundColor: backdrop ? theme.colors.bg2 : 'transparent',
     borderRadius: rounded === 'none' ? 0 : theme.radius[rounded],
   }),
-  image: { width: '100%', height: '100%' },
   placeholder: {
     flex: 1,
     alignItems: 'center',
@@ -131,3 +137,13 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.bg2,
   },
 }));
+
+/**
+ * Plain React Native styles for the expo-image element itself. On web,
+ * Unistyles styles on expo-image's root are not applied, so the image kept
+ * a 0 px height and every photo was invisible (DEC 90). Plain objects work
+ * on every platform, and these hold no theme values.
+ */
+export const imageStyles = RNStyleSheet.create({
+  image: { width: '100%', height: '100%' },
+});

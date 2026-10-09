@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Platform, Pressable, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { imageStyles } from '@/components/Photo';
 import { Text } from '@/components/Text';
 import { Toggle } from '@/components/Toggle';
 import { useToastStore } from '@/components/Toast';
@@ -80,11 +81,13 @@ export function AppIconPicker({
               testID={`app-icon-${choice}`}
             >
               <View style={styles.ring(on)}>
-                <Image
-                  source={PREVIEWS[choice]}
-                  style={styles.icon}
-                  accessibilityIgnoresInvertColors
-                />
+                <View style={styles.icon}>
+                  <Image
+                    source={PREVIEWS[choice]}
+                    style={imageStyles.image}
+                    accessibilityIgnoresInvertColors
+                  />
+                </View>
               </View>
               <Text variant="meta" tone={on ? 'ink' : 'ink2'}>
                 {copy.appIcons[choice]}
@@ -155,5 +158,6 @@ const styles = StyleSheet.create((theme) => ({
     width: theme.size.avatarL,
     height: theme.size.avatarL,
     borderRadius: theme.radius.thumb + theme.space.xs,
+    overflow: 'hidden',
   },
 }));

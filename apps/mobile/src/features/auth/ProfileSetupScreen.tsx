@@ -7,6 +7,7 @@ import { Button } from '@/components/Button';
 import { ChipGroup } from '@/components/Chip';
 import { Icon } from '@/components/icons/Icon';
 import { Input } from '@/components/Input';
+import { imageStyles } from '@/components/Photo';
 import { ProgressBar } from '@/components/Progress';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
@@ -154,12 +155,14 @@ export function ProfileSetupScreen({
         >
           <View style={styles.avatar}>
             {hasPhoto ? (
-              <Image
-                source={{ uri: photo.uri }}
-                style={styles.avatarImage}
-                contentFit="cover"
-                accessibilityIgnoresInvertColors
-              />
+              <View style={styles.avatarClip}>
+                <Image
+                  source={{ uri: photo.uri }}
+                  style={imageStyles.image}
+                  contentFit="cover"
+                  accessibilityIgnoresInvertColors
+                />
+              </View>
             ) : (
               <Icon name="user" size={32} tone="ink2" />
             )}
@@ -302,10 +305,11 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarImage: {
-    width: theme.size.avatarL,
-    height: theme.size.avatarL,
+  avatarClip: {
+    width: '100%',
+    height: '100%',
     borderRadius: theme.radius.avatar,
+    overflow: 'hidden',
   },
   cameraBadge: {
     position: 'absolute',

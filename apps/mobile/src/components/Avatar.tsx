@@ -2,6 +2,7 @@ import { Image } from 'expo-image';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { imageStyles } from './Photo';
 import { Text } from './Text';
 
 export type AvatarSize = 'S' | 'M' | 'L';
@@ -34,7 +35,7 @@ export function Avatar({ name, uri, size = 'M' }: Props) {
       {uri ? (
         <Image
           source={{ uri }}
-          style={styles.photo}
+          style={imageStyles.image}
           contentFit="cover"
           transition={150}
           accessibilityIgnoresInvertColors
@@ -61,5 +62,4 @@ const styles = StyleSheet.create((theme) => ({
     justifyContent: 'center',
     backgroundColor: [theme.colors.bg2, theme.colors.bg3, theme.colors.accent][shade],
   }),
-  photo: { width: '100%', height: '100%' },
 }));
