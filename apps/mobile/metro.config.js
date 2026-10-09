@@ -3,7 +3,9 @@
 const path = require('path');
 const { getSentryExpoConfig } = require('@sentry/react-native/metro');
 
-const config = getSentryExpoConfig(__dirname);
+// We never record replays (src/lib/analytics.ts), so Sentry's web replay code is
+// left out of the bundle (Perf-07, DEC 88).
+const config = getSentryExpoConfig(__dirname, { includeWebReplay: false });
 
 /**
  * Web app (P13-WEB-07): packages with no browser build are swapped for small
