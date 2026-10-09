@@ -478,16 +478,21 @@ const launch: Strings['launch'] = {
 
 const welcome: Strings['welcome'] = {
   wordmark: 'onlyswap',
-  title: 'Compra y vende con estudiantes de tu universidad.',
-  body: 'Cosas para tu cuarto, libros, tecnología. Vénganse a ver entre clases y paguen en persona.',
+  title: 'Todo lo que se vende en tu campus.',
+  body: 'Solo estudiantes verificados. Véanse entre clases y paguen en persona.',
   continue: 'Seguir con correo universitario',
   signIn: 'Ya tengo una cuenta',
   signInHint: 'Inicia sesión con el código que enviamos a tu correo universitario',
-  samples: [
-    { title: 'Minirrefri', price: '$40', place: 'Residencias norte' },
-    { title: 'Libros de química', price: '$25', place: 'Biblioteca central' },
-    { title: 'Monitor de 27 pulgadas', price: '$90', place: 'Edificio este' },
-  ],
+  wall: {
+    prices: ['$45', '$120', '$30', '$60', '$8', '$35', '$15', '$20'],
+    notes: [
+      'Llegó la semana de mudanza',
+      'Libros a mitad de precio',
+      'Sofá gratis, solo hoy',
+      'Las bicis vuelan',
+      'Cosas para tu cuarto por menos de $20',
+    ],
+  },
 };
 
 const signIn: Strings['signIn'] = {

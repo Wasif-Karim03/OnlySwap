@@ -478,17 +478,23 @@ export const launch = {
 
 export const welcome = {
   wordmark: 'onlyswap',
-  title: 'Buy and sell with students at your school.',
-  body: 'Dorm stuff, textbooks, tech. Meet between classes and pay in person.',
+  title: 'Everything your campus is selling.',
+  body: 'Only verified students. Meet between classes, pay in person.',
   continue: 'Continue with school email',
   signIn: 'I already have an account',
   signInHint: 'Signs in with the code we email to your school address',
-  /** Floating sample listings on the hero photo (decorative, hidden from screen readers). */
-  samples: [
-    { title: 'Mini fridge', price: '$40', place: 'North dorms' },
-    { title: 'Chem textbooks', price: '$25', place: 'Main library' },
-    { title: '27 inch monitor', price: '$90', place: 'East hall' },
-  ],
+  /** The moving wall behind the headline (decorative, hidden from screen readers). */
+  wall: {
+    /** One price per photo in welcomeAssets.ts, same order. */
+    prices: ['$45', '$120', '$30', '$60', '$8', '$35', '$15', '$20'],
+    notes: [
+      'Move-out week is here',
+      'Textbooks, half price',
+      'Free couch, today only',
+      'Bikes are going fast',
+      'Dorm stuff under $20',
+    ],
+  },
 } as const;
 
 /** S-A03 School email, S-A04 Verify code (boards A3, A4, A5, A6, X1, X2). */
