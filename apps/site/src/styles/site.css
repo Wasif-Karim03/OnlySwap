@@ -1774,7 +1774,6 @@ button.danger {
 .ts {
   display: flex;
   justify-content: center;
-  margin-top: 14px;
 }
 .ts .meta {
   font-size: 12.5px;
