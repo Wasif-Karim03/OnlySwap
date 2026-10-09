@@ -64,4 +64,24 @@ describe('P1-ENV-01 env validation', () => {
       parseEnv({ ...valid, EXPO_PUBLIC_SUPABASE_ANON_KEY: 'sb_secret_test_only_not_a_real_key' }),
     ).toThrow(/is a secret key/);
   });
+
+  it('treats empty telemetry values as not set and checks set ones', () => {
+    const env = parseEnv({
+      ...valid,
+      EXPO_PUBLIC_SENTRY_DSN: '',
+      EXPO_PUBLIC_POSTHOG_KEY: '',
+      EXPO_PUBLIC_POSTHOG_HOST: '',
+    });
+    expect(env.EXPO_PUBLIC_SENTRY_DSN).toBeUndefined();
+    expect(env.EXPO_PUBLIC_POSTHOG_KEY).toBeUndefined();
+    expect(
+      parseEnv({ ...valid, EXPO_PUBLIC_POSTHOG_KEY: 'phc_abc123' }).EXPO_PUBLIC_POSTHOG_KEY,
+    ).toBe('phc_abc123');
+    expect(() => parseEnv({ ...valid, EXPO_PUBLIC_POSTHOG_KEY: 'sk_live_x' })).toThrow(
+      /EXPO_PUBLIC_POSTHOG_KEY/,
+    );
+    expect(() => parseEnv({ ...valid, EXPO_PUBLIC_SENTRY_DSN: 'not a url' })).toThrow(
+      /EXPO_PUBLIC_SENTRY_DSN/,
+    );
+  });
 });

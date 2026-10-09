@@ -15,3 +15,19 @@ peerDependencyRules:
   allowedVersions:
     # The plugin works with ESLint 9 flat config; its peer range predates ESLint 9.
     eslint-plugin-react-native-a11y>eslint: '9'
+
+# Security patches for transitive dependencies (DEC 88). Same major as the
+# original, so the parents keep working.
+overrides:
+  shell-quote: ^1.11.0
+  source-map-js: ^1.2.2
+
+# Advisories with no fixed release yet (DEC 88). All four run only at dev or
+# build time on our own machines and CI, never in the app, site or Workers.
+# Re-check monthly; remove each line when a fix ships.
+auditConfig:
+  ignoreGhsas:
+    - GHSA-86w9-cpqp-85rv # node-forge, Expo CLI dev server certificates
+    - GHSA-ch52-4w7c-c8xp # http-cache-semantics, Astro build image fetch
+    - GHSA-vfj7-8cjw-p6xm # braces, Jest file matching
+    - GHSA-hp3w-g68c-fv3c # sprintf-js, Jest coverage config (moderate)

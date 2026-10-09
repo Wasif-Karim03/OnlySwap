@@ -103,6 +103,7 @@ const BLOCKED = [
   'android.permission.SCHEDULE_EXACT_ALARM',
   'android.permission.USE_EXACT_ALARM',
   'android.permission.SYSTEM_ALERT_WINDOW',
+  'android.permission.FOREGROUND_SERVICE',
   'com.google.android.gms.permission.AD_ID',
   // Launcher badge permissions added by ShortcutBadger (via expo-notifications).
   // Android 8+ shows notification dots without them; blocked to keep the
@@ -178,6 +179,10 @@ const EXPECTED_PLIST_KEYS = [
   // R2 (DEC 76, 84): iPad orientations, widgets and Live Activities.
   'UISupportedInterfaceOrientations~ipad',
   'NSSupportsLiveActivities',
+  // Added by the expo-widgets plugin: widget push updates and the scene manifest
+  // it needs (DEC 88).
+  'ExpoWidgets_EnablePushNotifications',
+  'UIApplicationSceneManifest',
   'NSSupportsLiveActivitiesFrequentUpdates',
   'ExpoWidgetsAppGroupIdentifier',
   ...(VARIANT === 'development' ? DEV_ONLY_PLIST_KEYS : []),
@@ -240,7 +245,14 @@ if (!existsSync(iosDir)) {
   check('ios/ exists (run `npx expo prebuild --no-install` first)', false);
   finish();
 }
-const target = readdirSync(iosDir).find((d) => existsSync(join(iosDir, d, 'Info.plist')));
+// The app target is named after the .xcodeproj; widget targets also have an Info.plist.
+const project = readdirSync(iosDir)
+  .find((d) => d.endsWith('.xcodeproj'))
+  ?.replace(/\.xcodeproj$/, '');
+const target =
+  project && existsSync(join(iosDir, project, 'Info.plist'))
+    ? project
+    : readdirSync(iosDir).find((d) => existsSync(join(iosDir, d, 'Info.plist')));
 const plist = parsePlist(readFileSync(join(iosDir, target, 'Info.plist'), 'utf8'));
 const plistKeys = Object.keys(plist);
 const plistCore = plistKeys.filter((k) => !OPTIONAL_PLIST_KEYS.includes(k));
