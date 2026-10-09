@@ -25,6 +25,11 @@ const Content = page.mod.Content;
 ---
 
 <Base title={`${title} | OnlySwap`} description={description}>
+  <section class="pagehead"><div class="w">
+    <p class="kick"><i></i>Policies</p>
+    <h1>{title}</h1>
+    <p>Version {version}</p>
+  </div></section>
   <div class="legal">
     <nav aria-label="Policies">
       {
@@ -35,9 +40,7 @@ const Content = page.mod.Content;
         ))
       }
     </nav>
-    <article>
-      <h1>{title}</h1>
-      <p class="meta">Version {version}</p>
+    <article class="prose">
       <Content />
     </article>
   </div>

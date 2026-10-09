@@ -1,20 +1,24 @@
 ---
-import '@onlyswap/tokens/tokens.css';
 import '../styles/site.css';
+import Sprite from '../components/Sprite.astro';
 
 interface Props {
   title: string;
   description?: string;
   noindex?: boolean;
   path?: string;
+  /** Landing page: full-bleed sections. Inner pages get the page header. */
+  wide?: boolean;
 }
 const {
   title,
   description = 'Buy and sell with verified students at your school. Meet on campus, pay in person.',
   noindex = false,
   path = Astro.url.pathname,
+  wide = false,
 } = Astro.props;
 const canonical = new URL(path, Astro.site).toString();
+const year = new Date().getFullYear();
 ---
 
 <!doctype html>
@@ -24,38 +28,92 @@ const canonical = new URL(path, Astro.site).toString();
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta name="theme-color" content="#ffffff" />
     <link rel="canonical" href={canonical} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content={new URL('/img/og.png', Astro.site).toString()} />
+    <meta name="twitter:card" content="summary_large_image" />
     {noindex && <meta name="robots" content="noindex" />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   </head>
   <body>
+    <Sprite />
     <a class="skip" href="#main">Skip to content</a>
-    <header class="top">
-      <a href="/" class="brand">OnlySwap</a>
-      <nav aria-label="Main">
-        <a href="/safety">Safety</a>
-        <a href="/help">Help</a>
-      </nav>
+    <header class="nav">
+      <span class="sprog" id="sprog"></span>
+      <div class="w">
+        <a class="logo" href="/" aria-label="OnlySwap home"
+          ><span class="mk"><svg aria-hidden="true"><use href="#lg"></use></svg></span>onlyswap</a
+        >
+        <nav class="links" aria-label="Main">
+          <a href="/#how">How it works</a>
+          <a href="/#more">Features</a>
+          <a href="/#safety">Safety</a>
+          <a href="/help">Help</a>
+        </nav>
+        <a class="navcta" href="/#check">Check your school</a>
+      </div>
     </header>
-    <main id="main">
+    <main id="main" class={wide ? 'wide' : 'page'}>
       <slot />
     </main>
-    <footer class="foot">
-      <nav aria-label="Legal">
-        <a href="/terms">Terms</a>
-        <a href="/privacy">Privacy</a>
-        <a href="/rules">Community Rules</a>
-        <a href="/banned-items">Banned items</a>
-        <a href="/cookies">Cookies</a>
-        <a href="/child-safety">Child safety</a>
-        <a href="/delete">Delete account</a>
-      </nav>
-      <span>OnlySwap is not affiliated with any school.</span>
+    <footer>
+      <div class="w">
+        <div class="cols">
+          <div>
+            <a class="logo" href="/" style="font-size:16px;margin-bottom:10px"
+              ><span class="mk"><svg aria-hidden="true"><use href="#lg"></use></svg></span>onlyswap</a
+            >
+            <span style="display:block;max-width:30ch"
+              >For current students 18 and older. OnlySwap does not handle payments.</span
+            >
+          </div>
+          <nav aria-label="Safety">
+            <h6>Safety</h6>
+            <a href="/safety">Safety tips</a>
+            <a href="/rules">Community rules</a>
+            <a href="/banned-items">Banned items</a>
+          </nav>
+          <nav aria-label="Support">
+            <h6>Support</h6>
+            <a href="/help">Help</a>
+            <a href="/help#contact">Contact</a>
+            <a href="/delete">Delete account</a>
+          </nav>
+          <nav aria-label="Legal">
+            <h6>Legal</h6>
+            <a href="/terms">Terms</a>
+            <a href="/privacy">Privacy</a>
+            <a href="/cookies">Cookies</a>
+          </nav>
+        </div>
+        <div class="bot">
+          <span>Copyright © {year} OnlySwap. Not affiliated with or endorsed by any university.</span><span
+            >United States</span
+          >
+        </div>
+      </div>
     </footer>
   </body>
 </html>
+
+<script>
+  // Scroll progress under the nav, and the active section on the landing page.
+  const bar = document.getElementById('sprog');
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('.links a[href^="/#"]')];
+  const onScroll = () => {
+    const max = document.documentElement.scrollHeight - innerHeight;
+    if (bar) bar.style.transform = `scaleX(${max > 0 ? scrollY / max : 0})`;
+    let current: HTMLAnchorElement | null = null;
+    for (const a of links) {
+      const target = document.getElementById(a.hash.slice(1));
+      if (target && target.getBoundingClientRect().top < innerHeight * 0.4) current = a;
+    }
+    links.forEach((a) => a.classList.toggle('act', a === current));
+  };
+  addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+</script>

@@ -10,7 +10,12 @@ import Base from '../layouts/Base.astro';
   title="Delete your account | OnlySwap"
   description="Delete your OnlySwap account and its data from the web."
 >
-  <h1>Delete your account</h1>
+  <section class="pagehead"><div class="w">
+    <p class="kick"><i></i>Account</p>
+    <h1>Delete your account</h1>
+    <p>Takes about a minute. We email you a code to make sure it's you.</p>
+  </div></section>
+  <div class="prose">
   <p class="muted">
     This deletes your profile, listings, photos and saves, and signs you out everywhere. Chats you were
     in close, and the other person keeps their copy without your name. Reports stay for 180 days for safety, and backups roll off within 30 days. See the <a
@@ -18,7 +23,7 @@ import Base from '../layouts/Base.astro';
     >.
   </p>
 
-  <form id="step-email" novalidate>
+  <form id="step-email" class="form" novalidate>
     <label>
       Your school email
       <input type="email" name="email" autocomplete="email" required />
@@ -26,7 +31,7 @@ import Base from '../layouts/Base.astro';
     <button type="submit">Email me a code</button>
   </form>
 
-  <form id="step-code" novalidate hidden>
+  <form id="step-code" class="form" novalidate hidden>
     <label>
       6-digit code
       <input name="code" inputmode="numeric" autocomplete="one-time-code" required />
@@ -34,7 +39,7 @@ import Base from '../layouts/Base.astro';
     <button type="submit">Continue</button>
   </form>
 
-  <form id="step-confirm" novalidate hidden>
+  <form id="step-confirm" class="form" novalidate hidden>
     <p><strong>This can't be undone.</strong> Type DELETE to confirm.</p>
     <label>
       Confirm
@@ -44,6 +49,7 @@ import Base from '../layouts/Base.astro';
   </form>
 
   <p id="delete-msg" role="status"></p>
+  </div>
 </Base>
 
 <script>

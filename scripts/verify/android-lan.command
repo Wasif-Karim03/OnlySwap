@@ -8,7 +8,11 @@ export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 caffeinate -dimsu -t 10800 &
 {
   echo "== $(date)"
-  IP=$(ipconfig getifaddr en0 || ipconfig getifaddr en1)
+  # Prefer an iPhone Personal Hotspot link (USB cable or Wi-Fi, always
+  # 172.20.10.x): it works on networks that block phone-to-laptop traffic.
+  # PHONE_IP=... overrides everything.
+  IP="${PHONE_IP:-$(ifconfig | awk '/inet 172\.20\.10\./ {print $2; exit}')}"
+  [ -z "$IP" ] && IP=$(ipconfig getifaddr en0 || ipconfig getifaddr en1)
   [ -z "$IP" ] && { echo "no Wi-Fi address found"; exit 1; }
   echo "mac ip: $IP"
   sed -i '' -E "s#^EXPO_PUBLIC_SUPABASE_URL=.*#EXPO_PUBLIC_SUPABASE_URL=http://$IP:54321#; s#^EXPO_PUBLIC_MEDIA_URL=.*#EXPO_PUBLIC_MEDIA_URL=http://$IP:54321/storage/v1/object/public/onlyswap-media#" apps/mobile/.env.local

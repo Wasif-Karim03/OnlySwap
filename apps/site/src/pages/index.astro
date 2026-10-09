@@ -2,145 +2,153 @@
 import Turnstile from '../components/Turnstile.astro';
 import Base from '../layouts/Base.astro';
 
-// W01 landing (P13-WEB-02). Store links come from the build (set once the store
-// pages exist); until then the buttons point at /download.
-const appStore = (import.meta.env.PUBLIC_APP_STORE_URL as string | undefined) || '/download';
-const playStore = (import.meta.env.PUBLIC_PLAY_STORE_URL as string | undefined) || '/download';
+// W01 landing (P13-WEB-02), built 1:1 from the approved mock
+// (design/website-mock.html, DEC 87). Campus numbers come from
+// public_campus_progress; the school check joins the waitlist for real.
+const appStore = (import.meta.env.PUBLIC_APP_STORE_URL as string | undefined) || '';
+const playStore = (import.meta.env.PUBLIC_PLAY_STORE_URL as string | undefined) || '';
+const webApp = (import.meta.env.PUBLIC_WEB_APP_URL as string | undefined) || 'https://onlyswap-web.pages.dev';
+
+type Item = [string, string, string, string];
+const items: Item[] = [
+  ['desk-lamp', '$12', 'Desk lamp', 'North Hall'],
+  ['bicycle', '$120', 'City bike', 'Student union'],
+  ['headphones', '$45', 'Headphones', 'Library'],
+  ['sneakers', '$30', 'Running shoes, 10', 'Rec center'],
+  ['film-camera', '$85', 'Film camera', 'Art building'],
+  ['acoustic-guitar', '$140', 'Acoustic guitar', 'West Hall'],
+  ['textbooks', 'Free', 'Econ textbooks', 'Library'],
+  ['backpack', '$20', 'Backpack', 'South Hall'],
+  ['skateboard', '$35', 'Cruiser board', 'Quad'],
+  ['coffee-maker', '$15', 'Coffee maker', 'North Hall'],
+];
+const rev = [...items].reverse();
 ---
 
-<Base title="OnlySwap: buy and sell with students at your school">
-  <section class="hero">
-    <h1>Buy and sell with students at your school.</h1>
-    <p class="muted">
-      Swipe through what people on campus are selling, make an offer, and meet at a Meetup spot. Pay in
-      person. Only verified students 18 and older can join.
-    </p>
-    <div class="row">
-      <a class="btn" href={appStore}>Get it on the App Store</a>
-      <a class="btn secondary" href={playStore}>Get it on Google Play</a>
+<Base title="OnlySwap: buy and sell with students at your school" wide>
+
+<!-- HERO: the phone plays the whole swap on a loop -->
+<section class="hero">
+  <div class="hgrid">
+    <div class="hcopy">
+      <span class="pill rv"><i></i>Opening campus by campus<span>· join the waitlist</span></span>
+      <h1 class="h1"><span class="words" id="h1">Sell it to someone</span><span class="rot" id="rot"><span class="on">in your <em>dorm.</em></span><span>in your <em>class.</em></span><span>in your <em>club.</em></span><span>on your <em>floor.</em></span><span>on your <em>campus.</em></span></span></h1>
+      <p class="lead rv" style="transition-delay:.35s">OnlySwap is the marketplace for verified students at your school. Swipe, make an offer, meet between classes, pay in person.</p>
+      <form class="hjoin rv" style="transition-delay:.5s" id="heroForm" novalidate><input type="email" name="email" autocomplete="email" placeholder="you@school.edu" aria-label="School email"><button type="submit">Check your school</button></form>
+      <div class="ticks rv" style="transition-delay:.6s"><span><svg><use href="#i-check"/></svg>Free</span><span><svg><use href="#i-check"/></svg>Verified students, 18+</span><span><svg><use href="#i-check"/></svg>No fees, ever</span></div>
+      <a class="more hmore rv" style="transition-delay:.7s" href="#how">See how it works <span>›</span></a>
     </div>
-  </section>
+    <div class="stage" id="stage">
+      <div class="rings"><i></i><i></i><i></i></div>
+      <div class="pulse"></div><div class="pulse b"></div>
+      <div class="orbit">
+        <div class="sat" style="left:-300px;top:-170px" data-d="18"><div><img src="/img/items/desk-lamp.webp" alt=""><span>$12<em>2 min</em></span></div></div>
+        <div class="sat sm" style="left:-320px;top:230px" data-d="26"><div><img src="/img/items/sneakers.webp" alt=""><span>$30<em>5 min</em></span></div></div>
+        <div class="sat" style="left:305px;top:-110px" data-d="-20"><div><img src="/img/items/headphones.webp" alt=""><span>$45<em>3 min</em></span></div></div>
+        <div class="sat sm" style="left:300px;top:150px" data-d="-28"><div><img src="/img/items/film-camera.webp" alt=""><span>$85<em>6 min</em></span></div></div>
+        <div class="sat sm" style="left:215px;top:-285px" data-d="12"><div><img src="/img/items/bicycle.webp" alt=""><span>$120<em>8 min</em></span></div></div>
+        <div class="sat sm" style="left:-215px;top:-300px" data-d="-14"><div><img src="/img/items/textbooks.webp" alt=""><span>Free<em>4 min</em></span></div></div>
+      </div>
+      <div class="phone" id="heroPhone"><div class="screen" id="heroScreen">
+        <img src="/img/app/swipe.webp" alt="The Discover screen with a listing to swipe" class="on"><img src="/img/app/drag.webp" alt="Swiping right on a mini fridge"><img src="/img/app/offer.webp" alt="Making a $35 offer"><img src="/img/app/chat.webp" alt="A chat after an accepted offer"><img src="/img/app/live.webp" alt="A meetup reminder on the lock screen">
+      </div></div>
+      <div class="note" id="note"><span class="ic"><svg><use href="#i-pin" id="noteIcon"/></svg></span><div><b id="noteT">Mini fridge, $40</b><small id="noteS">North Hall · 4 min walk</small></div><span class="tm">now</span></div>
+      <div class="chips" id="chips"><button class="on">Browse<span class="bar"></span></button><button>Swipe right<span class="bar"></span></button><button>Offer<span class="bar"></span></button><button>Chat<span class="bar"></span></button><button>Meet<span class="bar"></span></button></div>
+    </div>
+  </div>
+</section>
 
-  <section aria-labelledby="how">
-    <h2 id="how">How it works</h2>
-    <div class="steps">
-      <div class="card">
-        <h3>Swipe</h3>
-        <p class="muted">Right to make an offer, left to skip, save anything you want to watch.</p>
-      </div>
-      <div class="card">
-        <h3>Offer</h3>
-        <p class="muted">Chat opens once the seller accepts. No spam, no strangers.</p>
-      </div>
-      <div class="card">
-        <h3>Meet and pay</h3>
-        <p class="muted">Pick a Meetup spot on campus, check the item, pay in person.</p>
+<!-- MARQUEE: what people sell -->
+<section class="mq">
+  <div class="w mq-head"><h2 class="h2 rv" style="font-size:clamp(28px,3.2vw,40px)">Dorm stuff, textbooks, tech.<br><span style="color:var(--ink3)">Whatever your campus is clearing out.</span></h2><p class="rv">Example listings</p></div>
+  <div class="track" id="t1">{[...items, ...items].map(([img, price, title, place]) => (
+    <div class="tile">
+      <img src={`/img/items/${img}.webp`} alt="" loading="lazy" width="190" height="190" />
+      <div class="row"><b class={price === 'Free' ? 'free' : ''}>{price}</b><span>{place}</span></div>
+      <p>{title}</p>
+    </div>
+  ))}</div>
+  <div class="track rev" id="t2">{[...rev, ...rev].map(([img, price, title, place]) => (
+    <div class="tile">
+      <img src={`/img/items/${img}.webp`} alt="" loading="lazy" width="190" height="190" />
+      <div class="row"><b class={price === 'Free' ? 'free' : ''}>{price}</b><span>{place}</span></div>
+      <p>{title}</p>
+    </div>
+  ))}</div>
+</section>
+
+<!-- STORY: sticky phone, steps scroll past -->
+<section class="story" id="how">
+  <div class="pin"><div class="w grid">
+    <div>
+      <p class="kick"><i></i>How it works</p>
+      <div class="steps">
+        <div class="rail"><i id="rail"></i></div>
+        <div class="step on"><h3>Swipe what's nearby.</h3><p>Right to make an offer, left to skip. Everything is posted by someone at your school.</p></div>
+        <div class="step"><h3>Offer, don't DM.</h3><p>Buyers send an offer, not a message. A chat only opens if the seller says yes.</p></div>
+        <div class="step"><h3>Meet between classes.</h3><p>Pick a Meetup spot on campus and a time. Check the item, pay in person. No fees.</p></div>
       </div>
     </div>
-  </section>
+    <div style="position:relative">
+      <div class="phone"><div class="screen" id="storyScreen"><img src="/img/app/drag.webp" alt="Swiping right on a mini fridge" class="on"><img src="/img/app/incoming.webp" alt="A seller reviewing an offer"><img src="/img/app/pickup.webp" alt="Planning the pickup at a Meetup spot"></div></div>
+      <div class="badge" id="badge"><small>Seller</small>Accept $50?</div>
+    </div>
+  </div></div>
+</section>
 
-  <section aria-labelledby="schools">
-    <h2 id="schools">Schools</h2>
-    <div id="progress" aria-live="polite"><p class="meta">Loading schools…</p></div>
-  </section>
+<!-- FEATURES: auto-advancing tabs -->
+<section class="feats" id="more">
+  <div class="w">
+    <div class="fgrid">
+      <div>
+      <h2 class="h2 rv" style="margin-bottom:34px">There's more to campus than buying and selling.</h2>
+      <div class="tabs" id="tabs">
+        <button class="tab on" data-i="0"><h4><span class="ti"><svg><use href="#i-camera"/></svg></span>Sell in a minute</h4><p>Snap a few photos, set a price, see what similar things sold for at your school.</p><span class="prog"><i></i></span></button>
+        <button class="tab" data-i="1"><h4><span class="ti"><svg><use href="#i-gift"/></svg></span>Free stuff and free food</h4><p>Moving out? Give things away in two taps. Leftover pizza after a club meeting? Post it.</p><span class="prog"><i></i></span></button>
+        <button class="tab" data-i="2"><h4><span class="ti"><svg><use href="#i-quad"/></svg></span>The Quad</h4><p>A campus board without your name on it. Lost and found, polls, study spots. Moderated.</p><span class="prog"><i></i></span></button>
+        <button class="tab" data-i="3"><h4><span class="ti"><svg><use href="#i-chat"/></svg></span>One inbox for every deal</h4><p>Offers you sent, offers you got, and every chat, all in one place.</p><span class="prog"><i></i></span></button>
+      </div>
+      </div>
+      <div class="fphone rv"><div class="phone"><div class="screen" id="featScreen"><img src="/img/app/sell.webp" alt="Adding photos to a new listing" class="on"><img src="/img/app/campus.webp" alt="Free stuff and free food on campus"><img src="/img/app/quad.webp" alt="The Quad campus board"><img src="/img/app/inbox.webp" alt="The inbox with offers"></div></div></div>
+    </div>
+  </div>
+</section>
 
-  <section aria-labelledby="check" class="card">
-    <h2 id="check">Is your school on OnlySwap?</h2>
-    <p class="muted">
-      Enter your school email. If your school isn't open yet, we'll email you once when it is. Nothing
-      else.
-    </p>
-    <form id="waitlist" novalidate>
-      <label>
-        School email
-        <input type="email" name="email" autocomplete="email" required />
-      </label>
-      <Turnstile />
-      <button type="submit">Check my school</button>
-      <p id="waitlist-msg" role="status"></p>
-    </form>
-  </section>
+<!-- TRUST -->
+<section class="trust" id="safety">
+  <div class="w">
+    <h2 class="h2 rv">Only students. Only your campus.</h2>
+    <div class="tg" id="tg">
+      <div><svg viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.1-7.5 9.5-4.3-1.4-7.5-4.9-7.5-9.5V6zM9 12l2.2 2.2L15.5 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Verified and 18+</b><span>School email to join, checked again every year.</span></div>
+      <div><svg viewBox="0 0 24 24"><path d="M12 21s7-6.1 7-11.4A7 7 0 0 0 5 9.6C5 14.9 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="9.6" r="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><b>Meet in public</b><span>Meetup spots on every listing. Share your meetup with a friend.</span></div>
+      <div><svg viewBox="0 0 24 24"><path d="M3.5 12.3V4.5a1 1 0 0 1 1-1h7.8l8.7 8.7a1 1 0 0 1 0 1.4l-7.4 7.4a1 1 0 0 1-1.4 0z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><b>No fees</b><span>Pay each other in person. We never touch the money.</span></div>
+      <div><svg viewBox="0 0 24 24"><path d="M5.5 21V4.5h11l-2.2 4 2.2 4h-11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Real people review reports</b><span>Report or block from any screen.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- CHECK -->
+<section class="check" id="check">
+  <div class="w">
+    <h2 class="h2 words" id="h2c">Is your school on OnlySwap?</h2>
+    <p class="lead rv" style="max-width:40ch;margin:18px auto 0">Each campus opens once enough students join. Check yours, or help it open.</p>
+    <form class="field rv" id="checkForm" novalidate><input type="email" name="email" autocomplete="email" placeholder="you@school.edu" aria-label="School email" required><button type="submit">Check</button></form>
+    <div class="ts"><Turnstile /></div>
+    <div class="result" id="result" aria-live="polite">
+      <svg class="ring" viewBox="0 0 76 76"><circle class="bg" cx="38" cy="38" r="32"/><circle class="fg" id="ringfg" cx="38" cy="38" r="32"/></svg>
+      <div><b id="rTitle"></b><span id="rText"></span><a id="rLink" class="rlink" href="/joined" hidden>See your school's progress ›</a></div>
+    </div>
+    <p class="small" id="checkMsg" role="status">School emails only. We email you once when your school opens. Nothing else.</p>
+    <div class="stores rv">
+      {appStore ? <a class="store" href={appStore}><svg><use href="#i-apple"/></svg><span><small>Download on the</small>App Store</span></a> : <span class="store"><svg><use href="#i-apple"/></svg><span><small>Coming soon to the</small>App Store</span></span>}
+      {playStore ? <a class="store" href={playStore}><svg><use href="#i-play"/></svg><span><small>Get it on</small>Google Play</span></a> : <span class="store"><svg><use href="#i-play"/></svg><span><small>Coming soon to</small>Google Play</span></span>}
+      <a class="store" href={webApp}><svg><use href="#i-globe"/></svg><span><small>Or use it on the</small>Web</span></a>
+    </div>
+  </div>
+</section>
+
 </Base>
 
 <script>
-  import {
-    campusProgress,
-    friendly,
-    joinedHref,
-    joinedTarget,
-    joinWaitlist,
-    OPEN_NOW_LINE,
-    progressLine,
-    schoolEmailProblem,
-  } from '../lib/client';
-
-  const env = {
-    url: import.meta.env.PUBLIC_SUPABASE_URL as string,
-    key: import.meta.env.PUBLIC_SUPABASE_ANON_KEY as string,
-  };
-  const box = document.getElementById('progress')!;
-  if (!env.url || !env.key) {
-    box.innerHTML = '';
-  } else {
-    campusProgress(env)
-      .then((rows) => {
-        box.replaceChildren(
-          ...rows.map((c) => {
-            const { text, percent } = progressLine(c);
-            const el = document.createElement('div');
-            el.className = 'card';
-            const p = document.createElement('p');
-            p.textContent = text;
-            const bar = document.createElement('div');
-            bar.className = 'bar';
-            bar.setAttribute('role', 'progressbar');
-            bar.setAttribute('aria-valuenow', String(percent));
-            bar.setAttribute('aria-valuemin', '0');
-            bar.setAttribute('aria-valuemax', '100');
-            bar.setAttribute('aria-label', text);
-            const fill = document.createElement('span');
-            fill.style.width = `${percent}%`;
-            bar.append(fill);
-            el.append(p, bar);
-            return el;
-          }),
-        );
-        if (!rows.length) box.innerHTML = '<p class="meta">Schools are coming soon.</p>';
-      })
-      .catch(() => {
-        box.innerHTML = '<p class="meta">We couldn’t load schools right now.</p>';
-      });
-  }
-
-  const form = document.getElementById('waitlist') as HTMLFormElement;
-  const msg = document.getElementById('waitlist-msg')!;
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const data = new FormData(form);
-    const email = String(data.get('email') ?? '');
-    const problem = schoolEmailProblem(email);
-    msg.className = 'error';
-    if (problem) {
-      msg.textContent = problem;
-      return;
-    }
-    const button = form.querySelector('button')!;
-    button.disabled = true;
-    try {
-      await joinWaitlist(env, email, String(data.get('turnstile') ?? ''));
-      // R11-INVITE-01: waitlist campuses go to /joined (campus slug only in the URL).
-      const target = await joinedTarget(env, email);
-      if (target.kind === 'live') {
-        msg.className = 'ok';
-        msg.textContent = OPEN_NOW_LINE(target.name);
-        form.reset();
-      } else {
-        window.location.assign(joinedHref(target));
-      }
-    } catch (err) {
-      msg.textContent = friendly(err);
-    } finally {
-      button.disabled = false;
-    }
-  });
+  import '../scripts/landing';
 </script>

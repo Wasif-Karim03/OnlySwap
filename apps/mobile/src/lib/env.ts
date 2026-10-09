@@ -14,15 +14,18 @@ const supabaseKey = z
     message: 'is a secret key; use the anon or publishable key',
   });
 
-const httpsOrLocalUrl = z
-  .url()
-  .refine(
-    (v) =>
-      /^https:\/\//.test(v) || /^http:\/\/(localhost|127\.0\.0\.1|10\.0\.2\.2|192\.168\.)/.test(v),
-    {
-      message: 'must be https (http is allowed only for local development hosts)',
-    },
-  );
+const httpsOrLocalUrl = z.url().refine(
+  (v) =>
+    /^https:\/\//.test(v) ||
+    // Local dev only: loopback, the Android emulator host and private LAN
+    // ranges (RFC 1918) so a phone on the same Wi-Fi can reach the Mac.
+    /^http:\/\/(localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(
+      v,
+    ),
+  {
+    message: 'must be https (http is allowed only for local development hosts)',
+  },
+);
 
 export const envSchema = z.object({
   EXPO_PUBLIC_APP_ENV: z.enum(['local', 'staging', 'production']),
