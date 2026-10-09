@@ -3,6 +3,7 @@ import { renderRouter } from 'expo-router/testing-library';
 import { View } from 'react-native';
 
 import WelcomeRoute from '../app/(auth)/welcome';
+import { laneTiles } from '../src/features/auth/WelcomeScreen';
 import { welcome } from '../src/strings/en';
 
 // The email step is its own screen (signInScreens.test); a stub keeps this test about Welcome.
@@ -34,12 +35,23 @@ describe('P4-AUTH-04 S-A02 Welcome (board A2)', () => {
     expect(router.getSearchParams()).toEqual({ mode: 'login' });
   });
 
-  it('the hero photo and sample cards are hidden from screen readers', async () => {
+  it('the listing wall is decoration, hidden from screen readers', async () => {
     renderRouter(routes, { initialUrl: '/welcome' });
     await screen.findByTestId('screen-welcome');
-    expect(screen.queryByText(welcome.samples[0].title)).toBeNull();
-    expect(
-      screen.getByText(welcome.samples[0].title, { includeHiddenElements: true }),
-    ).toBeTruthy();
+    const note = welcome.wall.notes[4];
+    expect(screen.queryAllByText(note)).toHaveLength(0);
+    expect(screen.getAllByText(note, { includeHiddenElements: true }).length).toBeGreaterThan(0);
+  });
+
+  it('each wall column loops two copies of mixed photos and notes', () => {
+    const tiles = laneTiles(0, 120);
+    expect(tiles).toHaveLength(6);
+    expect(tiles.some((t) => t.kind === 'note')).toBe(true);
+    for (const t of tiles) {
+      expect(t.height).toBeGreaterThan(0);
+      if (t.kind === 'photo') expect(welcome.wall.prices).toContain(t.price);
+    }
+    // Every photo has a price (same order as welcomeAssets).
+    expect(welcome.wall.prices).toHaveLength(8);
   });
 });

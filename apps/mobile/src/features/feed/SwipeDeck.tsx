@@ -25,8 +25,7 @@ import Animated, {
 import { StyleSheet } from 'react-native-unistyles';
 
 import { motion } from '@onlyswap/tokens';
-import { Button } from '@/components/Button';
-import { IconButton } from '@/components/IconButton';
+import { Icon } from '@/components/icons/Icon';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { useScreenReader } from '@/lib/a11y';
@@ -34,6 +33,7 @@ import { haptic } from '@/lib/haptics';
 import { feed as copy } from '@/strings';
 import { LAYOUT, gridCellWidth, gridColumns } from '@/theme/layout';
 import { useReducedMotion } from '@/theme/reducedMotion';
+import { liftShadow } from '@/theme/shadow';
 
 import {
   FLY_MS,
@@ -152,38 +152,78 @@ export function SwipeDeck({
           )
           .reverse()}
       </View>
-      <View style={styles.actions}>
-        <IconButton
-          icon="x"
-          accessibilityLabel={copy.skip}
-          filled
-          disabled={!top}
-          onPress={() => fly.current?.('left')}
-          testID={`${testID}-skip`}
-        />
-        <IconButton
-          icon="bookmark"
-          accessibilityLabel={copy.save}
-          filled
-          disabled={!top}
-          onPress={() => fly.current?.('save')}
-          testID={`${testID}-save`}
-        />
-        <Tappable
-          accessibilityRole="button"
-          accessibilityLabel={copy.offer}
-          accessibilityState={{ disabled: !top }}
-          disabled={!top}
-          onPress={() => fly.current?.('right')}
-          testID={`${testID}-offer`}
-        >
-          <View style={styles.offerButton}>
-            <Text variant="heading" tone="onAccent">
-              $
-            </Text>
-          </View>
-        </Tappable>
-      </View>
+      <DeckActions
+        size="L"
+        disabled={!top}
+        onSkip={() => fly.current?.('left')}
+        onOffer={() => fly.current?.('right')}
+        onSave={() => fly.current?.('save')}
+        testID={testID}
+      />
+    </View>
+  );
+}
+
+type ActionsProps = {
+  /** `L` under the deck, `M` under list and grid tiles. */
+  size: 'L' | 'M';
+  /** Narrow grid tiles say "Offer" instead of "Make an offer". */
+  short?: boolean;
+  disabled?: boolean;
+  onSkip: () => void;
+  onOffer: () => void;
+  onSave: () => void;
+  testID: string;
+};
+
+/**
+ * Pass, Make an offer, Save (DEC 90 mock screen 4): a white circle, the ink
+ * pill and an accent circle. The offer pill is ink because the accent is
+ * already the Save button.
+ */
+function DeckActions({ size, short, disabled, onSkip, onOffer, onSave, testID }: ActionsProps) {
+  const icon = size === 'L' ? 26 : 22;
+  return (
+    <View style={styles.actions(size)}>
+      <Tappable
+        accessibilityRole="button"
+        accessibilityLabel={copy.skip}
+        accessibilityState={{ disabled: !!disabled }}
+        disabled={disabled}
+        onPress={onSkip}
+        testID={`${testID}-skip`}
+      >
+        <View style={[styles.circle(size, !!disabled), styles.passCircle]}>
+          <Icon name="x" size={icon} />
+        </View>
+      </Tappable>
+      <Tappable
+        accessibilityRole="button"
+        accessibilityLabel={copy.offer}
+        accessibilityState={{ disabled: !!disabled }}
+        disabled={disabled}
+        onPress={onOffer}
+        style={size === 'M' ? styles.offerFlex : undefined}
+        testID={`${testID}-offer`}
+      >
+        <View style={styles.offerPill(size, !!disabled)}>
+          <Text variant={size === 'L' ? 'bodyStrong' : 'label'} tone="inverse" numberOfLines={1}>
+            {short ? copy.offerShort : copy.offer}
+          </Text>
+        </View>
+      </Tappable>
+      <Tappable
+        accessibilityRole="button"
+        accessibilityLabel={copy.save}
+        accessibilityState={{ disabled: !!disabled }}
+        disabled={disabled}
+        onPress={onSave}
+        testID={`${testID}-save`}
+      >
+        <View style={[styles.circle(size, !!disabled), styles.saveCircle]}>
+          <Icon name="heart" size={icon} tone="onAccent" />
+        </View>
+      </Tappable>
     </View>
   );
 }
@@ -392,30 +432,18 @@ function DeckList({ cards, onSwipe, onOpen, gridWidth, testID }: ListProps) {
               onPress={() => onOpen(card)}
               testID={`deck-item-${card.id}`}
             >
-              <View style={styles.listCard}>
-                <SwipeCard card={card} />
+              <View style={styles.listCard(cellWidth !== undefined)}>
+                <SwipeCard card={card} compact={cellWidth !== undefined} />
               </View>
             </Tappable>
-            <View style={styles.listButtons} importantForAccessibility="no-hide-descendants">
-              <Button
-                label={copy.skip}
-                variant="secondary"
+            <View importantForAccessibility="no-hide-descendants">
+              <DeckActions
                 size="M"
-                onPress={() => onSwipe(card, 'left')}
-                testID={`deck-item-${card.id}-skip`}
-              />
-              <Button
-                label={copy.save}
-                variant="secondary"
-                size="M"
-                onPress={() => onSwipe(card, 'save')}
-                testID={`deck-item-${card.id}-save`}
-              />
-              <Button
-                label={copy.offer}
-                size="M"
-                onPress={() => onSwipe(card, 'right')}
-                testID={`deck-item-${card.id}-offer`}
+                short={cellWidth !== undefined}
+                onSkip={() => onSwipe(card, 'left')}
+                onOffer={() => onSwipe(card, 'right')}
+                onSave={() => onSwipe(card, 'save')}
+                testID={`deck-item-${card.id}`}
               />
             </View>
           </View>
@@ -441,21 +469,39 @@ const styles = StyleSheet.create((theme) => ({
   stampRight: { right: theme.space.xl, transform: [{ rotate: '10deg' }] },
   stampCenter: { alignSelf: 'center' },
   stampDark: { backgroundColor: theme.colors.ink },
-  actions: {
+  actions: (size: 'L' | 'M') => ({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: theme.space.xl,
-    paddingVertical: theme.space.lg,
-  },
-  offerButton: {
-    width: theme.size.buttonL,
-    height: theme.size.buttonL,
+    gap: size === 'L' ? theme.space.lg : theme.space.sm,
+    paddingVertical: size === 'L' ? theme.space.lg : 0,
+  }),
+  circle: (size: 'L' | 'M', disabled: boolean) => ({
+    width: size === 'L' ? theme.size.buttonL : theme.size.hit,
+    height: size === 'L' ? theme.size.buttonL : theme.size.hit,
     borderRadius: theme.radius.chip,
-    backgroundColor: theme.colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
+    opacity: disabled ? 0.35 : 1,
+  }),
+  passCircle: {
+    backgroundColor: theme.colors.card,
+    borderWidth: 1,
+    borderColor: theme.colors.line,
+    ...liftShadow(),
   },
+  saveCircle: { backgroundColor: theme.colors.accent },
+  offerFlex: { flex: 1 },
+  offerPill: (size: 'L' | 'M', disabled: boolean) => ({
+    height: size === 'L' ? theme.size.buttonL : theme.size.hit,
+    minWidth: size === 'L' ? theme.size.buttonL * 3 : undefined,
+    paddingHorizontal: size === 'L' ? theme.space.xl : theme.space.md,
+    borderRadius: theme.radius.chip,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.ink,
+    opacity: disabled ? 0.35 : 1,
+  }),
   list: {
     padding: theme.space.screen,
     gap: theme.space.xl,
@@ -471,6 +517,7 @@ const styles = StyleSheet.create((theme) => ({
     rowGap: theme.space.xl,
   },
   listItem: { gap: theme.space.md },
-  listCard: { aspectRatio: 3 / 4 },
-  listButtons: { flexDirection: 'row', gap: theme.space.sm, flexWrap: 'wrap' },
+  // The card is photo plus a white text block; narrow grid tiles get a taller
+  // shape so the photo keeps most of the tile.
+  listCard: (grid: boolean) => ({ aspectRatio: grid ? 0.6 : 3 / 4 }),
 }));

@@ -45,6 +45,12 @@ type Props = {
   photo?: BubblePhoto;
   /** Long press (and the screen-reader action) on incoming messages: report. */
   onLongPress?: () => void;
+  /**
+   * The chat background under the bubbles. `bg` (the default) is a white
+   * screen: theirs on bg2, system rows as plain text. `card` is a grey message
+   * area (DEC 90): theirs on white, system rows as small white pills.
+   */
+  surface?: 'bg' | 'card';
   testID?: string;
 };
 
@@ -58,9 +64,21 @@ export function MessageBubble({
   onRetry,
   photo,
   onLongPress,
+  surface = 'bg',
   testID,
 }: Props) {
   if (kind === 'system') {
+    if (surface === 'card') {
+      return (
+        <View style={styles.systemRow} testID={testID} accessibilityRole="text">
+          <View style={styles.pill}>
+            <Text variant="meta" tone="ink2" style={styles.center}>
+              {body}
+            </Text>
+          </View>
+        </View>
+      );
+    }
     return (
       <View style={styles.system} testID={testID} accessibilityRole="text">
         <Text variant="meta" tone="ink2" style={styles.center}>
@@ -132,7 +150,7 @@ export function MessageBubble({
 
   const inner = (
     <View
-      style={[styles.bubble(mine, state), photo ? styles.photoBubble : null]}
+      style={[styles.bubble(mine, state, surface), photo ? styles.photoBubble : null]}
       accessible={!retrying && !pressable}
       accessibilityLabel={label}
     >
@@ -212,12 +230,16 @@ const styles = StyleSheet.create((theme) => ({
     gap: theme.space.xs,
     paddingHorizontal: theme.space.screen,
   }),
-  bubble: (mine: boolean, state: BubbleState) => ({
+  bubble: (mine: boolean, state: BubbleState, surface: 'bg' | 'card' = 'bg') => ({
     maxWidth: '80%',
     paddingHorizontal: theme.space.md,
     paddingVertical: theme.space.sm,
     borderRadius: theme.radius.card,
-    backgroundColor: mine ? theme.colors.ink : theme.colors.bg2,
+    backgroundColor: mine
+      ? theme.colors.ink
+      : surface === 'card'
+        ? theme.colors.card
+        : theme.colors.bg2,
     opacity: state === 'pending' ? 0.6 : 1,
   }),
   // Photo bubbles: the photo runs to the edges, the caption keeps the padding.
@@ -248,6 +270,17 @@ const styles = StyleSheet.create((theme) => ({
   },
   caption: { paddingHorizontal: theme.space.md, paddingVertical: theme.space.sm },
   system: { paddingHorizontal: theme.space['2xl'], paddingVertical: theme.space.sm },
+  systemRow: {
+    alignItems: 'center',
+    paddingHorizontal: theme.space['2xl'],
+    paddingVertical: theme.space.xs,
+  },
+  pill: {
+    paddingHorizontal: theme.space.md,
+    paddingVertical: theme.space.xs,
+    borderRadius: theme.radius.chip,
+    backgroundColor: theme.colors.card,
+  },
   center: { textAlign: 'center' },
   row: { flexDirection: 'row', alignItems: 'center', gap: theme.space.xs },
   hint: {

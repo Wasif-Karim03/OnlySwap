@@ -205,6 +205,53 @@ export function cellAt(
   return Math.min(row * columns + col, Math.max(count - 1, 0));
 }
 
+/**
+ * Sell photo grid with a big cover (DEC 90): 3 columns, the cover spans two
+ * columns and two rows, the next two slots sit beside it, then rows of 3.
+ */
+export type GridSlot = { col: number; row: number; span: 1 | 2 };
+
+export const HERO_COLUMNS = 3;
+
+export function heroSlot(i: number): GridSlot {
+  if (i <= 0) return { col: 0, row: 0, span: 2 };
+  if (i <= 2) return { col: 2, row: i - 1, span: 1 };
+  const k = i - 3;
+  return { col: k % HERO_COLUMNS, row: 2 + Math.floor(k / HERO_COLUMNS), span: 1 };
+}
+
+/** Rows the first `count` slots take up (the cover block alone is 2). */
+export function heroRows(count: number): number {
+  if (count <= 0) return 0;
+  const last = heroSlot(count - 1);
+  return Math.max(2, last.row + last.span);
+}
+
+/** Top-left corner and side of slot `i` for a given small-cell size and gap. */
+export function heroRect(i: number, cell: number, gap: number) {
+  const s = heroSlot(i);
+  const step = cell + gap;
+  return { x: s.col * step, y: s.row * step, size: s.span * cell + (s.span - 1) * gap };
+}
+
+/** Slot under a point (drag-to-reorder in the cover grid), clamped to the photos. */
+export function heroCellAt(x: number, y: number, cell: number, gap: number, count: number): number {
+  let best = 0;
+  let bestDist = Infinity;
+  for (let i = 0; i < Math.max(count, 1); i += 1) {
+    const r = heroRect(i, cell, gap);
+    if (x >= r.x && x <= r.x + r.size && y >= r.y && y <= r.y + r.size) return i;
+    const dx = x - (r.x + r.size / 2);
+    const dy = y - (r.y + r.size / 2);
+    const d = dx * dx + dy * dy;
+    if (d < bestDist) {
+      bestDist = d;
+      best = i;
+    }
+  }
+  return best;
+}
+
 export function mediaUrl(base: string, key: string): string {
   return `${base.replace(/\/+$/, '')}/${key}`;
 }

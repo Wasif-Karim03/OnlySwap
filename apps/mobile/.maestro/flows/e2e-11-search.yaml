@@ -19,7 +19,8 @@ tags: [search, reviewer]
     id: toast
 - back
 - back
-- tapOn:
-    id: discover-saved
+# Saved moved off the Discover header (DEC 90); it lives under Profile.
+- tapOn: Profile
+- tapOn: Saved
 - assertVisible:
     id: 'search-row-.*'

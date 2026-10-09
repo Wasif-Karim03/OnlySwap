@@ -38,8 +38,6 @@ tags: [sell]
     id: sell-title
 - inputText: E2E mini fridge
 - tapOn:
-    id: sell-category
-- tapOn:
     id: 'sell-category-.*'
     index: 0
 - tapOn:

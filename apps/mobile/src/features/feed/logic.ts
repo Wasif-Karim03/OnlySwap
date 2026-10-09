@@ -1,5 +1,5 @@
 import { fill } from '@/lib/format';
-import { feed as copy, sell as sellCopy } from '@/strings';
+import { feed as copy, profileView, sell as sellCopy } from '@/strings';
 
 import { ago, mediaUrl, priceLabel, type AnyListingKind, type Condition } from '../sell/logic';
 import type { SwipeDir } from './deckMath';
@@ -81,6 +81,13 @@ export function sellerName(item: Pick<FeedItem, 'seller'>): string {
   return item.seller.display_name ?? '';
 }
 
+/** "Junior" for a known class year; nothing for an unknown or missing one. */
+export function yearLabel(year: string | null | undefined): string | null {
+  if (!year) return null;
+  const years: Record<string, string> = profileView.years;
+  return years[year] ?? null;
+}
+
 export function toDeckCard(item: FeedItem, mediaBase: string, now: Date): DeckCard {
   return {
     id: item.id,
@@ -89,6 +96,7 @@ export function toDeckCard(item: FeedItem, mediaBase: string, now: Date): DeckCa
     meta: metaLine(item, now),
     sellerName: sellerName(item),
     sellerAvatar: item.seller.avatar_path ? mediaUrl(mediaBase, item.seller.avatar_path) : null,
+    sellerYear: yearLabel(item.seller.year),
     photos: item.photos.map((p) => ({ uri: mediaUrl(mediaBase, p.path), blurhash: p.blurhash })),
     saveCount: item.save_count,
   };

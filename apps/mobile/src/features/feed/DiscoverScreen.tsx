@@ -8,18 +8,17 @@ import { track } from '@/lib/analytics';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
-import { IconButton } from '@/components/IconButton';
-import { NavBar } from '@/components/NavBar';
 import { SkeletonCard } from '@/components/Skeleton';
 import { Text } from '@/components/Text';
 import { useToastStore } from '@/components/Toast';
 import { getEnv } from '@/lib/env';
 import { isWebPlatform } from '@/lib/platform';
 import { getStorage } from '@/lib/storage';
-import { feed as copy, saved as savedCopy } from '@/strings';
+import { feed as copy } from '@/strings';
 import { LAYOUT, useLayout } from '@/theme/layout';
 
-import { DiscoverSegment } from '../campus/DiscoverSegment';
+import { DiscoverHeader } from '../campus/DiscoverHeader';
+import type { Me } from '../me/api';
 import { feedApi, type FeedApi } from './api';
 import type { SwipeDir } from './deckMath';
 import {
@@ -56,12 +55,15 @@ export function DiscoverScreen({
   coach = defaultCoach,
   mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
   now = () => new Date(),
+  loadMe,
 }: {
   api?: FeedApi;
   swipes?: StoreApi<SwipeState>;
   coach?: CoachStorage;
   mediaBase?: () => string;
   now?: () => Date;
+  /** The signed-in student, for the campus name in the header. */
+  loadMe?: () => Promise<Me>;
 }) {
   const router = useRouter();
   // iPad, wide window: a grid instead of swiping, beside the sidebar (board N5).
@@ -177,28 +179,7 @@ export function DiscoverScreen({
     [router],
   );
 
-  const header = (
-    <NavBar
-      variant="large"
-      title={copy.title}
-      trailing={
-        <View style={styles.row}>
-          <IconButton
-            icon="bookmark"
-            accessibilityLabel={savedCopy.open}
-            onPress={() => router.push('/saved')}
-            testID="discover-saved"
-          />
-          <IconButton
-            icon="search"
-            accessibilityLabel={copy.search}
-            onPress={() => router.push('/search')}
-            testID="discover-search"
-          />
-        </View>
-      }
-    />
-  );
+  const header = <DiscoverHeader value="swipe" loadMe={loadMe} />;
 
   let body;
   if (phase === 'loading') {
@@ -254,7 +235,6 @@ export function DiscoverScreen({
   return (
     <View style={styles.root} testID="screen-discover">
       {header}
-      <DiscoverSegment value="swipe" />
       {body}
     </View>
   );
@@ -263,7 +243,6 @@ export function DiscoverScreen({
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   flex: { flex: 1 },
-  row: { flexDirection: 'row' },
   deck: { flex: 1, width: '100%', maxWidth: LAYOUT.deckMax, alignSelf: 'center' },
   stage: { flex: 1, margin: theme.space.screen },
   coach: {

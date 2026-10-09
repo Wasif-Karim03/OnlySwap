@@ -13,11 +13,13 @@ import { fill } from '@/lib/format';
 import { meetup as copy } from '@/strings';
 
 import type { MeetupsApi } from './api';
-import { placeOf, whenLabel, type Meetup } from './logic';
+import { placeOf, whenLabel, whenParts, type Meetup } from './logic';
 
 /**
- * MeetupCard (P8-MEET-04; DESIGN_SYSTEM §6): proposed / confirmed / changed /
- * cancelled, with inline Accept and Suggest another for the other side.
+ * MeetupCard (P8-MEET-04; DESIGN_SYSTEM §6; DEC 90): proposed / confirmed /
+ * changed / cancelled, with inline Accept and Suggest another for the other
+ * side. A confirmed meetup is a blue card: "Meetup today, 3:00 PM" and the
+ * place, tap to open the meetup screen.
  */
 export function MeetupCard({
   meetup: m,
@@ -38,7 +40,9 @@ export function MeetupCard({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const when = whenLabel(m.starts_at, now());
+  const parts = whenParts(m.starts_at, now());
   const place = placeOf(m);
+  const set = m.status === 'confirmed';
 
   const title =
     m.status === 'proposed'
@@ -46,7 +50,7 @@ export function MeetupCard({
         ? fill(copy.youSuggested, { when, place, name: otherName })
         : fill(copy.theySuggested, { name: otherName, when, place })
       : m.status === 'confirmed'
-        ? fill(copy.cardConfirmed, { when })
+        ? fill(copy.cardConfirmedAt, { day: parts.day, time: parts.time })
         : m.status === 'cancelled'
           ? copy.cardCancelled
           : m.status === 'completed'
@@ -67,21 +71,21 @@ export function MeetupCard({
   };
 
   const body = (
-    <View style={styles.card} testID={`meetup-card-${m.status}`}>
+    <View style={styles.card(set)} testID={`meetup-card-${m.status}`}>
       <View style={styles.row}>
-        <Icon name="pin" size={20} tone="ink" />
-        <Text variant="bodyStrong" style={styles.flex}>
-          {title}
-        </Text>
-      </View>
-      {m.status === 'confirmed' || m.status === 'proposed' ? (
-        <View style={styles.row}>
-          <Text variant="meta" tone="ink2" style={styles.flex}>
-            {place}
-          </Text>
-          {m.spot?.police ? <Tag label={copy.police} tone="green" /> : null}
+        <View style={styles.flex}>
+          <Text variant="bodyStrong">{title}</Text>
+          {m.status === 'confirmed' || m.status === 'proposed' ? (
+            <Text variant="label" tone={set ? 'sky' : 'ink2'}>
+              {place}
+            </Text>
+          ) : null}
         </View>
-      ) : null}
+        {m.spot?.police && (m.status === 'confirmed' || m.status === 'proposed') ? (
+          <Tag label={copy.police} tone="green" />
+        ) : null}
+        {set ? <Icon name="chev" size={16} tone="ink2" /> : null}
+      </View>
       {error ? (
         <Text variant="meta" tone="red">
           {error}
@@ -130,16 +134,17 @@ export function MeetupCard({
 }
 
 const styles = StyleSheet.create((theme) => ({
-  card: {
+  // A set meetup is the one blue card in the chat (DEC 90); the rest are white.
+  card: (set: boolean) => ({
     marginHorizontal: theme.space.screen,
-    marginVertical: theme.space.sm,
-    padding: theme.space.md,
+    marginTop: theme.space.md,
+    marginBottom: theme.space.xs,
+    paddingHorizontal: theme.space.lg,
+    paddingVertical: theme.space.md,
     gap: theme.space.sm,
     borderRadius: theme.radius.card,
-    borderWidth: 1,
-    borderColor: theme.colors.line,
-    backgroundColor: theme.colors.card,
-  },
+    backgroundColor: set ? theme.colors.skyBg : theme.colors.card,
+  }),
   row: { flexDirection: 'row', alignItems: 'center', gap: theme.space.sm },
   actions: { flexDirection: 'row', gap: theme.space.sm },
   flex: { flex: 1 },

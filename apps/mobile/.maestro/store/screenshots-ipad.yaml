@@ -29,7 +29,7 @@ tags: [store, ipad]
 - back
 # 3. Two-pane Inbox with the first chat open.
 - tapOn: Inbox
-- tapOn: Chats
+- tapOn: Buying
 - runFlow:
     when:
       visible:

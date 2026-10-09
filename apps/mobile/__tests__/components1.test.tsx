@@ -69,6 +69,23 @@ describe('P2-CMP-01 Button', () => {
     expect(shape(toJSON())).toEqual(idle);
   });
 
+  it('onAccent variants keep fixed colors on an accent screen (Welcome, DEC 89)', () => {
+    const { lightTheme, darkTheme } = jest.requireActual('../src/theme/themes');
+    // On the accent the text stays near-black in dark mode too (not the light ink).
+    expect(darkTheme.colors.onAccent).not.toBe(darkTheme.colors.ink);
+    expect(lightTheme.colors.onPhoto).toBe(darkTheme.colors.onPhoto);
+    render(
+      <>
+        <Button label="Continue" variant="onAccent" onPress={() => {}} />
+        <Button label="Sign in" variant="textOnAccent" onPress={() => {}} />
+      </>,
+    );
+    const label = (name: string) =>
+      StyleSheet.flatten(screen.getByText(name).props.style) as { color?: string };
+    expect(label('Continue').color).toBe(lightTheme.colors.onPhoto);
+    expect(label('Sign in').color).toBe(lightTheme.colors.onAccent);
+  });
+
   it('fires the success haptic only when asked (haptics budget)', () => {
     const Haptics = jest.requireMock('expo-haptics');
     Haptics.notificationAsync.mockClear();

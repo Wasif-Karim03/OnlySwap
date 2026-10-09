@@ -15,7 +15,8 @@ type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>
 const ITEMS: Record<string, Omit<TabItem, 'key'>> = {
   discover: { label: tabs.discover, icon: 'cards' },
   quad: { label: tabs.quad, icon: 'quad' },
-  sell: { label: tabs.sell, icon: 'plussq' },
+  // DEC 90: the center Sell tab is an accent rounded rectangle with a plus.
+  sell: { label: tabs.sell, icon: 'plus', prominent: true },
   inbox: { label: tabs.inbox, icon: 'chat' },
   profile: { label: tabs.profile, icon: 'user' },
 };

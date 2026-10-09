@@ -1,8 +1,8 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ScrollView, View } from 'react-native';
-import { StyleSheet } from 'react-native-unistyles';
+import { ScrollView, TextInput, View } from 'react-native';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 import { pctBucket, track } from '@/lib/analytics';
 import { Banner } from '@/components/Banner';
@@ -10,12 +10,13 @@ import { Button } from '@/components/Button';
 import { Chip } from '@/components/Chip';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
-import { Input } from '@/components/Input';
 import { NavBar } from '@/components/NavBar';
+import { Photo } from '@/components/Photo';
 import { SkeletonList } from '@/components/Skeleton';
 import { SuccessCheck } from '@/components/SuccessCheck';
 import { Text } from '@/components/Text';
 import { TextArea } from '@/components/TextArea';
+import { getEnv } from '@/lib/env';
 import { errorText, toAppError } from '@/lib/errors';
 import { fill } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
@@ -26,22 +27,30 @@ import { feedApi, type FeedApi } from '../feed/api';
 import { listingKey } from '../feed/ListingScreen';
 import { isVisible, sellerName } from '../feed/logic';
 import { dollarsToCents } from '../search/logic';
+import { centsToPrice, cleanPrice, mediaUrl } from '../sell/logic';
 import { offersApi, type OffersApi } from './api';
 import { isLowOffer, money, quickAmounts } from './logic';
 
 const QUICK_NOTES = ['today', 'campus', 'available', 'cash'] as const;
 
-/** B05 Make an offer (P7-OFF-02, P7-OFF-07): amount, quick chips, notes, low-offer warning, limits, success. */
+/**
+ * B05 Make an offer (P7-OFF-02, P7-OFF-07; DEC 90): the item, a big offer
+ * number, quick picks, a note, one plain line about paying in person, and the
+ * ink Send offer button. Low-offer warning, limits and success are unchanged.
+ */
 export function OfferSheetScreen({
   listingId,
   api = offersApi,
   listings = feedApi,
+  mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
 }: {
   listingId: string;
   api?: OffersApi;
   listings?: Pick<FeedApi, 'getListing'>;
+  mediaBase?: () => string;
 }) {
   const router = useRouter();
+  const { theme } = useUnistyles();
   const qc = useQueryClient();
   const query = useQuery({
     queryKey: listingKey(listingId),
@@ -144,52 +153,97 @@ export function OfferSheetScreen({
 
   const valid = free || cents >= 100;
 
+  const thumb = (item.photos ?? [])[0]?.thumb_path ?? null;
+  const shown = amount ?? centsToPrice(ask);
+
   return (
     <View style={styles.root} testID="screen-offer">
       <NavBar leading="close" onLeading={close} title={free ? copy.askTitle : copy.sheetTitle} />
       <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-        <Text variant="heading">{item.title}</Text>
+        <View style={styles.item}>
+          <View style={styles.thumb}>
+            <Photo source={thumb ? mediaUrl(mediaBase(), thumb) : null} rounded="thumb" />
+          </View>
+          <View style={styles.flex}>
+            <Text variant="bodyStrong" numberOfLines={2}>
+              {item.title}
+            </Text>
+            <Text variant="meta" tone="ink3" numberOfLines={1}>
+              {free ? name : `${fill(copy.asking, { price: money(ask) })} · ${name}`}
+            </Text>
+          </View>
+        </View>
         {free ? (
-          <Text variant="body" tone="ink2">
+          <Text variant="body" tone="ink2" style={styles.center}>
             {copy.askBody}
           </Text>
         ) : (
-          <>
-            <Text variant="meta" tone="ink2">
-              {fill(copy.asking, { price: money(ask) })}
+          <View style={styles.amountBlock}>
+            <Text variant="label" tone="ink3" style={styles.center}>
+              {copy.amountLabel}
             </Text>
             {firm ? (
-              <Text variant="body" tone="ink2">
-                {copy.firmNote}
-              </Text>
+              <>
+                <Text
+                  style={[styles.center, styles.big]}
+                  accessibilityLabel={`${copy.amountLabel}: ${money(ask)}`}
+                >
+                  {money(ask)}
+                </Text>
+                <Text variant="meta" tone="ink2" style={styles.center}>
+                  {copy.firmNote}
+                </Text>
+              </>
             ) : (
               <>
-                <Input
-                  kind="price"
-                  label={copy.amountLabel}
-                  value={amount ?? String(ask / 100)}
-                  onChangeText={setAmount}
+                {/* The number itself is the field (DEC 90): big, centered, the $ kept in front. */}
+                <TextInput
+                  value={`$${shown}`}
+                  onChangeText={(t) => setAmount(cleanPrice(t))}
+                  keyboardType="decimal-pad"
+                  accessibilityLabel={copy.amountLabel}
+                  selectionColor={theme.colors.ink}
                   // Enter sends from the keyboard on the web app (P13-WEB-07).
                   onSubmitEditing={() => valid && void send()}
+                  style={[styles.big, styles.bigInput]}
                   testID="offer-amount"
                 />
-                <View style={styles.chips}>
-                  {quickAmounts(ask).map((q) => (
+                <View style={styles.quick}>
+                  {[...quickAmounts(ask)].reverse().map((q) => (
                     <Chip
                       key={q.cents}
-                      label={`${money(q.cents)}${q.label === 'ask' ? ` · ${copy.quickAsk}` : ` · ${fill(copy.quickLess, { pct: q.label })}`}`}
+                      label={
+                        q.label === 'ask'
+                          ? fill(copy.asking, { price: money(q.cents) })
+                          : money(q.cents)
+                      }
                       selected={cents === q.cents}
-                      onPress={() => setAmount(String(q.cents / 100))}
+                      onPress={() => setAmount(centsToPrice(q.cents))}
                     />
                   ))}
                 </View>
                 {isLowOffer(cents, ask) ? (
-                  <Banner kind="warning" message={copy.lowWarning} />
+                  <Text
+                    variant="meta"
+                    tone="amber"
+                    style={styles.center}
+                    accessibilityLiveRegion="polite"
+                  >
+                    {copy.lowWarning}
+                  </Text>
                 ) : null}
               </>
             )}
-          </>
+          </View>
         )}
+        <TextArea
+          label={copy.notesLabel}
+          placeholder={copy.notePlaceholder}
+          value={note}
+          onChangeText={setNote}
+          maxLength={140}
+          testID="offer-note"
+        />
         <View style={styles.chips}>
           {QUICK_NOTES.map((n) => (
             <Chip
@@ -202,19 +256,16 @@ export function OfferSheetScreen({
             />
           ))}
         </View>
-        <TextArea
-          label={copy.notesLabel}
-          placeholder={copy.notePlaceholder}
-          value={note}
-          onChangeText={setNote}
-          maxLength={140}
-          testID="offer-note"
-        />
         {error ? <Banner kind="error" message={error} /> : null}
+        <Text variant="meta" tone="ink2" style={styles.center} testID="offer-pay-in-person">
+          {copy.payInPerson}
+        </Text>
       </ScrollView>
       <View style={styles.dock}>
         <Button
-          label={free ? copy.sendAsk : `${copy.send} · ${money(cents)}`}
+          label={free ? copy.sendAsk : copy.send}
+          variant="dark"
+          accessibilityHint={free ? undefined : money(cents)}
           loading={sending}
           disabled={!valid}
           onPress={send}
@@ -227,7 +278,25 @@ export function OfferSheetScreen({
 
 const styles = StyleSheet.create((theme, rt) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
-  body: { ...readableColumn, padding: theme.space.screen, gap: theme.space.md },
+  body: { ...readableColumn, padding: theme.space.screen, gap: theme.space.lg },
+  flex: { flex: 1 },
+  item: { flexDirection: 'row', alignItems: 'center', gap: theme.space.md },
+  thumb: {
+    width: theme.size.avatarM + theme.space.sm,
+    height: theme.size.avatarM + theme.space.sm,
+  },
+  amountBlock: { gap: theme.space.sm, paddingTop: theme.space.md },
+  // The offer number: the display style at almost twice the size (DEC 90).
+  big: {
+    fontSize: theme.type.display.fontSize * 1.85,
+    lineHeight: theme.type.display.fontSize * 2.2,
+    fontWeight: theme.type.display.fontWeight,
+    letterSpacing: theme.type.display.letterSpacing * 1.85,
+    color: theme.colors.ink,
+    fontVariant: ['tabular-nums'],
+  },
+  bigInput: { textAlign: 'center', paddingVertical: 0 },
+  quick: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: theme.space.sm },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
   center: { textAlign: 'center' },
   success: {

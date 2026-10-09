@@ -9,7 +9,19 @@ type Props = {
   name: IconName;
   size?: number;
   /** Theme color key. Never `accent` on light backgrounds (UX-03). */
-  tone?: 'ink' | 'ink2' | 'ink3' | 'red' | 'green' | 'amber' | 'onAccent' | 'inverse' | 'onPhoto';
+  tone?:
+    | 'ink'
+    | 'ink2'
+    | 'ink3'
+    | 'red'
+    | 'green'
+    | 'amber'
+    | 'sky'
+    | 'peach'
+    | 'lilac'
+    | 'onAccent'
+    | 'inverse'
+    | 'onPhoto';
   /** Stroke width; 2.2 marks the selected tab (board tab bar). */
   strokeWidth?: number;
 };

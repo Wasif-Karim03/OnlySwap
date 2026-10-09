@@ -15,6 +15,12 @@
   --color-greenBg: #E5F3EA;
   --color-amber: #9A6200;
   --color-amberBg: #FBF0DA;
+  --color-sky: #1A5FA6;
+  --color-skyBg: #E2F0FF;
+  --color-peach: #9A4414;
+  --color-peachBg: #FFE9D9;
+  --color-lilac: #5B45C4;
+  --color-lilacBg: #ECE7FF;
   --color-overlay: rgba(0,0,0,0.45);
   --color-onPhoto: #FFFFFF;
   --color-photoBg: #000000;
@@ -71,6 +77,12 @@
     --color-greenBg: #0F2A1C;
     --color-amber: #F5B84B;
     --color-amberBg: #2A2110;
+    --color-sky: #8CC3FF;
+    --color-skyBg: #13263A;
+    --color-peach: #FFB58A;
+    --color-peachBg: #36200F;
+    --color-lilac: #B9A9FF;
+    --color-lilacBg: #231D40;
     --color-overlay: rgba(0,0,0,0.6);
     --color-onPhoto: #FFFFFF;
     --color-photoBg: #000000;
@@ -94,6 +106,12 @@
   --color-greenBg: #0F2A1C;
   --color-amber: #F5B84B;
   --color-amberBg: #2A2110;
+  --color-sky: #8CC3FF;
+  --color-skyBg: #13263A;
+  --color-peach: #FFB58A;
+  --color-peachBg: #36200F;
+  --color-lilac: #B9A9FF;
+  --color-lilacBg: #231D40;
   --color-overlay: rgba(0,0,0,0.6);
   --color-onPhoto: #FFFFFF;
   --color-photoBg: #000000;

@@ -17,6 +17,8 @@ export type DeckCard = {
   meta: string;
   sellerName: string;
   sellerAvatar: string | null;
+  /** "Junior", when the seller shared their class year. */
+  sellerYear?: string | null;
   photos: { uri: string; blurhash: string | null }[];
   saveCount: number;
 };
@@ -36,59 +38,65 @@ export function savedLine(n: number): string | null {
   return n === 1 ? copy.savedByOne : fill(copy.savedBy, { n });
 }
 
-type Props = { card: DeckCard; testID?: string };
+type Props = {
+  card: DeckCard;
+  /** Narrow grid tiles: the seller's name only, no year or saves line. */
+  compact?: boolean;
+  testID?: string;
+};
 
 /**
- * The card face (P6-FEED-02): almost all photo, price as the biggest text,
- * a hairline instead of a shadow (DESIGN_SYSTEM §4). Stamps and motion live
- * in SwipeDeck; this stays a plain view so list mode can reuse it.
+ * The card face (P6-FEED-02, DEC 90 mock screen 4): the photo on top, then on
+ * white below it the title and price on one line, the meta line and the
+ * seller with a small avatar. Nothing is written on the photo except the
+ * photo count bars. Stamps and motion live in SwipeDeck; this stays a plain
+ * view so list and grid mode can reuse it.
  */
-export function SwipeCard({ card, testID }: Props) {
+export function SwipeCard({ card, compact = false, testID }: Props) {
   const cover = card.photos[0];
   const saved = savedLine(card.saveCount);
+  const sellerMeta = compact
+    ? ''
+    : [card.sellerYear, saved].filter(Boolean).join(copy.metaSeparator);
   return (
     <View style={styles.card} testID={testID}>
       <View style={styles.photo}>
-        <Photo
-          source={cover?.uri ?? null}
-          blurhash={cover?.blurhash ?? null}
-          aspectRatio={3 / 4}
-          backdrop
-        />
+        <Photo source={cover?.uri ?? null} blurhash={cover?.blurhash ?? null} fill backdrop />
+        {card.photos.length > 1 ? (
+          <View style={styles.segments} importantForAccessibility="no-hide-descendants">
+            {card.photos.map((p, i) => (
+              <View key={`${p.uri}-${i}`} style={styles.segment(i === 0)} />
+            ))}
+          </View>
+        ) : null}
       </View>
-      {card.photos.length > 1 ? (
-        <View style={styles.segments} importantForAccessibility="no-hide-descendants">
-          {card.photos.map((p, i) => (
-            <View key={`${p.uri}-${i}`} style={styles.segment(i === 0)} />
-          ))}
-        </View>
-      ) : null}
-      {saved ? (
-        <View style={styles.pill}>
-          <Text variant="meta" tone="onPhoto">
-            {saved}
+      <View style={styles.body}>
+        <View style={styles.titleRow}>
+          <Text variant="heading" numberOfLines={1} style={styles.title}>
+            {card.title}
+          </Text>
+          <Text variant="heading" numberOfLines={1} style={styles.price}>
+            {card.price}
           </Text>
         </View>
-      ) : null}
-      <View style={styles.scrim} />
-      <View style={styles.body}>
-        <Text variant="price" tone="onPhoto" numberOfLines={1}>
-          {card.price}
-        </Text>
-        <Text variant="heading" tone="onPhoto" numberOfLines={2}>
-          {card.title}
-        </Text>
         {card.meta ? (
-          <Text variant="meta" tone="onPhoto" numberOfLines={1}>
+          <Text variant="meta" tone="ink2" numberOfLines={1}>
             {card.meta}
           </Text>
         ) : null}
-        <View style={styles.seller}>
-          <Avatar name={card.sellerName} uri={card.sellerAvatar} size="S" />
-          <Text variant="label" tone="onPhoto" numberOfLines={1} style={styles.sellerName}>
-            {card.sellerName}
-          </Text>
-        </View>
+        {card.sellerName ? (
+          <View style={styles.seller}>
+            <Avatar name={card.sellerName} uri={card.sellerAvatar} size="S" />
+            <Text variant="label" numberOfLines={1} style={styles.sellerName}>
+              {card.sellerName}
+            </Text>
+            {sellerMeta ? (
+              <Text variant="meta" tone="ink3" numberOfLines={1} style={styles.sellerMeta}>
+                {sellerMeta}
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
       </View>
     </View>
   );
@@ -99,11 +107,11 @@ const styles = StyleSheet.create((theme) => ({
     flex: 1,
     borderRadius: theme.radius.card,
     overflow: 'hidden',
-    backgroundColor: theme.colors.photoBg,
+    backgroundColor: theme.colors.card,
     borderWidth: 1,
     borderColor: theme.colors.line,
   },
-  photo: { ...StyleSheet.absoluteFillObject },
+  photo: { flex: 1, backgroundColor: theme.colors.bg2 },
   segments: {
     position: 'absolute',
     top: theme.space.md,
@@ -117,39 +125,25 @@ const styles = StyleSheet.create((theme) => ({
     height: 3,
     borderRadius: theme.radius.chip,
     backgroundColor: theme.colors.onPhoto,
-    opacity: on ? 1 : 0.4,
+    opacity: on ? 1 : 0.5,
   }),
-  pill: {
-    position: 'absolute',
-    top: theme.space.xl,
-    right: theme.space.md,
-    paddingHorizontal: theme.space.md,
-    paddingVertical: theme.space.xs,
-    borderRadius: theme.radius.chip,
-    backgroundColor: theme.colors.overlay,
-  },
-  // A soft fade into the text (found on the Simulator: a flat block cut the
-  // photo in half). RN's native gradients, no extra package.
-  scrim: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: '55%',
-    experimental_backgroundImage: `linear-gradient(to bottom, transparent 0%, ${theme.colors.overlay} 45%, ${theme.colors.photoBg} 100%)`,
-  },
   body: {
-    position: 'absolute',
-    left: theme.space.lg,
-    right: theme.space.lg,
-    bottom: theme.space.lg,
+    paddingHorizontal: theme.space.lg,
+    paddingTop: theme.space.md,
+    paddingBottom: theme.space.lg,
     gap: theme.space.xs,
   },
+  titleRow: { flexDirection: 'row', alignItems: 'baseline', gap: theme.space.sm },
+  title: { flex: 1 },
+  // Heading size with the price weight (DESIGN_SYSTEM §3 `price`), so it sits on the title's line.
+  price: { fontWeight: theme.type.price.fontWeight },
   seller: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.space.sm,
-    marginTop: theme.space.xs,
+    marginTop: theme.space.sm,
   },
-  sellerName: { flexShrink: 1 },
+  // First name and initial stay whole; the year and saves line gives way.
+  sellerName: { flexShrink: 0, maxWidth: '60%' },
+  sellerMeta: { flex: 1, minWidth: 0 },
 }));

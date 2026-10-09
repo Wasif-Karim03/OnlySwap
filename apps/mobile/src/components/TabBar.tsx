@@ -16,6 +16,11 @@ export type TabItem = {
   icon: IconName;
   /** Unread count; 0 or undefined hides the badge. */
   badge?: number;
+  /**
+   * The center Sell tab (DEC 90): an accent-filled rounded rectangle with the
+   * icon and no visible label. Screen readers still hear the label.
+   */
+  prominent?: boolean;
 };
 
 export type TabBarVariant = 'ios' | 'android';
@@ -51,7 +56,9 @@ type Props = {
 
 /**
  * Bottom tabs (P2-CMP-09). Tabs never slide or buzz (haptics budget, UX-09).
- * Labels are capped at 1.4x Dynamic Type so four tabs always fit.
+ * Labels are capped at 1.4x Dynamic Type so four tabs always fit. DEC 90:
+ * white bar with a hairline on top, ink when on and ink3 when off, and the
+ * prominent (Sell) tab as an accent rounded rectangle in the middle.
  */
 export function TabBar({
   items,
@@ -91,12 +98,15 @@ export function TabBar({
             onLongPress={onLongPress ? () => onLongPress(item.key) : undefined}
             style={styles.item}
           >
-            <View style={styles.iconWrap(android, active)}>
+            <View
+              style={item.prominent ? styles.prominent : styles.iconWrap(android, active)}
+              testID={item.prominent && testID ? `${testID}-${item.key}-prominent` : undefined}
+            >
               <Icon
                 name={item.icon}
                 size={size.tabIcon}
-                tone={android && active ? 'onAccent' : active ? 'ink' : 'ink2'}
-                strokeWidth={active ? 2.2 : 1.8}
+                tone={item.prominent || (android && active) ? 'onAccent' : active ? 'ink' : 'ink3'}
+                strokeWidth={active || item.prominent ? 2.2 : 1.8}
               />
               {badge ? (
                 <View style={styles.badge(android)}>
@@ -106,9 +116,17 @@ export function TabBar({
                 </View>
               ) : null}
             </View>
-            <Text variant="meta" tone={active ? 'ink' : 'ink2'} overlay numberOfLines={1}>
-              {item.label}
-            </Text>
+            {item.prominent ? null : (
+              <Text
+                variant="meta"
+                tone={active ? 'ink' : 'ink3'}
+                overlay
+                numberOfLines={1}
+                style={styles.label}
+              >
+                {item.label}
+              </Text>
+            )}
           </Pressable>
         );
       })}
@@ -222,10 +240,19 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingTop: android ? theme.space.md : theme.space.sm,
     paddingBottom:
       (safeBottom ? rt.insets.bottom : 0) + (android ? theme.space.md : theme.space.xs),
-    backgroundColor: android ? theme.colors.bg2 : theme.colors.bg,
-    borderTopWidth: android ? 0 : 1,
+    backgroundColor: theme.colors.bg,
+    borderTopWidth: 1,
     borderTopColor: theme.colors.line,
   }),
+  label: { fontWeight: '600' },
+  prominent: {
+    width: theme.size.tabPillH + theme.space.md + theme.space.xs,
+    height: theme.size.tabPillH + theme.space.xs,
+    borderRadius: theme.radius.thumb,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.accent,
+  },
   item: {
     flex: 1,
     alignItems: 'center',

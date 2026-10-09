@@ -1,16 +1,16 @@
 /**
- * Welcome (A02) imagery. The board calls for a real campus photo with no
- * university names or marks (CLAUDE.md rule 11) and real item photos; the
- * owner supplies them (OWNER_TODO). Until then the hero shows the neutral
- * photo backdrop and the items use the kit's drawn stand-ins.
- *
- * To add the hero: put the photo at assets/images/welcome/hero.jpg and set
- * WELCOME_HERO = require('../../../assets/images/welcome/hero.jpg').
+ * Welcome (A02) wall photos (DEC 89). Example items from the website set
+ * (CC0 / public domain, Openverse, DEC 87); swap for the owner's own photos
+ * before launch by replacing the files in assets/images/welcome/ (same names).
+ * Order matches `welcome.wall` prices in src/strings/en.ts.
  */
-export const WELCOME_HERO: number | null = null;
-
 export const WELCOME_ITEMS: readonly number[] = [
-  require('../../../assets/images/welcome/item-fridge.jpg') as number,
-  require('../../../assets/images/welcome/item-books.jpg') as number,
-  require('../../../assets/images/welcome/item-monitor.jpg') as number,
+  require('../../../assets/images/welcome/headphones.webp') as number,
+  require('../../../assets/images/welcome/bicycle.webp') as number,
+  require('../../../assets/images/welcome/textbooks.webp') as number,
+  require('../../../assets/images/welcome/film-camera.webp') as number,
+  require('../../../assets/images/welcome/desk-lamp.webp') as number,
+  require('../../../assets/images/welcome/sneakers.webp') as number,
+  require('../../../assets/images/welcome/coffee-maker.webp') as number,
+  require('../../../assets/images/welcome/backpack.webp') as number,
 ];

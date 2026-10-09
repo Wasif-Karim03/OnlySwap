@@ -6,7 +6,12 @@ import { haptic, type HapticKind } from '@/lib/haptics';
 import { Tappable } from './Tappable';
 import { Text, type TextTone } from './Text';
 
-export type ButtonVariant = 'primary' | 'dark' | 'secondary' | 'text' | 'destructive';
+/**
+ * `onAccent` and `textOnAccent` sit on an accent-filled screen (Welcome, DEC 89):
+ * they keep the same colors in light and dark mode because the accent does.
+ */
+export type ButtonVariant =
+  'primary' | 'dark' | 'secondary' | 'text' | 'destructive' | 'onAccent' | 'textOnAccent';
 export type ButtonSize = 'L' | 'M' | 'S';
 
 export type ButtonProps = {
@@ -29,6 +34,8 @@ const TONE: Record<ButtonVariant, TextTone> = {
   secondary: 'ink',
   text: 'ink',
   destructive: 'inverse',
+  onAccent: 'onPhoto',
+  textOnAccent: 'onAccent',
 };
 
 /**
@@ -54,7 +61,11 @@ export function Button({
       ? theme.colors.onAccent
       : variant === 'dark'
         ? theme.colors.bg
-        : theme.colors.ink;
+        : variant === 'onAccent'
+          ? theme.colors.onPhoto
+          : variant === 'textOnAccent'
+            ? theme.colors.onAccent
+            : theme.colors.ink;
 
   return (
     <Tappable
@@ -116,7 +127,9 @@ const styles = StyleSheet.create((theme) => ({
             ? theme.colors.bg2
             : variant === 'destructive'
               ? theme.colors.red
-              : 'transparent',
+              : variant === 'onAccent'
+                ? theme.colors.onAccent
+                : 'transparent',
   }),
   hidden: { opacity: 0 },
   shown: { opacity: 1 },

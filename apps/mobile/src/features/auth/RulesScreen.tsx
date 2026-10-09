@@ -8,7 +8,6 @@ import { track } from '@/lib/analytics';
 import { Button } from '@/components/Button';
 import { ErrorState } from '@/components/ErrorState';
 import { Icon } from '@/components/icons/Icon';
-import type { IconName } from '@/components/icons/Icon';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { errorCopy, toAppError } from '@/lib/errors';
@@ -108,13 +107,7 @@ export function RulesScreen({
       title={isUpdate ? copy.updatedTitle : copy.title}
       body={isUpdate ? copy.updatedBody : copy.body}
       leading="none"
-      trailing={
-        isUpdate ? undefined : (
-          <Text variant="meta" tone="ink2">
-            {copy.step}
-          </Text>
-        )
-      }
+      step={isUpdate ? undefined : 5}
       dock={
         <Button
           label={copy.agree}
@@ -143,15 +136,16 @@ export function RulesScreen({
         </View>
       ) : null}
 
+      {/* A plain numbered list, like the Safety tips (DEC 90: no icon tiles). */}
       <View style={styles.rules}>
-        {copy.items.map((rule) => (
-          <View key={rule.title} style={styles.rule} accessible>
-            <View style={styles.ruleIcon}>
-              <Icon name={rule.icon as IconName} size={20} tone="ink" />
-            </View>
+        {copy.items.map((rule, i) => (
+          <View key={rule.title} style={styles.rule(i > 0)} accessible testID={`rules-item-${i}`}>
+            <Text variant="bodyStrong" tone="ink3" style={styles.num}>
+              {String(i + 1)}
+            </Text>
             <View style={styles.flex}>
               <Text variant="bodyStrong">{rule.title}</Text>
-              <Text variant="meta" tone="ink2">
+              <Text variant="label" tone="ink2" style={styles.ruleBody}>
                 {rule.body}
               </Text>
             </View>
@@ -210,16 +204,17 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.bg2,
   },
   changeRow: { flexDirection: 'row', gap: theme.space.sm },
-  rules: { gap: theme.space.lg },
-  rule: { flexDirection: 'row', gap: theme.space.md, alignItems: 'flex-start' },
-  ruleIcon: {
-    width: theme.size.hit,
-    height: theme.size.hit,
-    borderRadius: theme.radius.control,
-    backgroundColor: theme.colors.bg2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  rules: {},
+  rule: (divided: boolean) => ({
+    flexDirection: 'row',
+    gap: theme.space.md,
+    alignItems: 'flex-start',
+    paddingVertical: theme.space.md,
+    borderTopWidth: divided ? 1 : 0,
+    borderTopColor: theme.colors.line,
+  }),
+  num: { minWidth: theme.space.lg },
+  ruleBody: { fontWeight: '400', marginTop: theme.space.xs / 2 },
   flex: { flex: 1 },
   agreeRow: {
     flexDirection: 'row',

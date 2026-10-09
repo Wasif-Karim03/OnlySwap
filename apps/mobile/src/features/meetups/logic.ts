@@ -52,6 +52,30 @@ export function whenLabel(iso: string, now: Date): string {
   return `${dayLabel} ${time}`;
 }
 
+/**
+ * The day and time apart, for "Meetup today, 3:00 PM" and the big time on
+ * the meetup screen (DEC 90). `day` is lower case ("today", "tomorrow") or
+ * the short weekday; `dayTitle` is the same in sentence case.
+ */
+export function whenParts(
+  iso: string,
+  now: Date,
+): { day: string; dayTitle: string; time: string; isToday: boolean } {
+  const d = new Date(iso);
+  const dayOf = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const diff = Math.round((dayOf(d) - dayOf(now)) / 86_400_000);
+  const time = d.toLocaleTimeString(intlLocale, { hour: 'numeric', minute: '2-digit' });
+  if (diff === 0) return { day: copy.todayLower, dayTitle: copy.today, time, isToday: true };
+  if (diff === 1) return { day: copy.tomorrowLower, dayTitle: copy.tomorrow, time, isToday: false };
+  const weekday = d.toLocaleDateString(intlLocale, { weekday: 'short' });
+  const long = d.toLocaleDateString(intlLocale, {
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric',
+  });
+  return { day: weekday, dayTitle: long, time, isToday: false };
+}
+
 /** The next 7 days as picker chips. */
 export function dayOptions(now: Date): { key: string; label: string; date: Date }[] {
   return Array.from({ length: 7 }, (_, i) => {
@@ -116,6 +140,24 @@ export function meetupActions(m: Meetup, now: Date) {
       t >= start + 20 * 60_000 &&
       !m.my_noshow_report,
   };
+}
+
+/**
+ * The other person's name on the meetup screen: from the meetup's chat
+ * (get_chat) once it loads, else the name the opener passed along (the
+ * `?name=` param, a first paint only), else "Deleted user" for a deleted
+ * account. Empty while nothing is known yet.
+ */
+export function meetupOtherName(
+  chat: { other_deleted?: boolean; other: { display_name: string | null } | null } | null,
+  passed: string,
+  deleted: string,
+): string {
+  if (chat) {
+    if (chat.other_deleted || !chat.other) return deleted;
+    if (chat.other.display_name) return chat.other.display_name;
+  }
+  return passed;
 }
 
 export function shareUrl(site: string, token: string): string {

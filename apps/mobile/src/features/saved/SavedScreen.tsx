@@ -7,21 +7,20 @@ import { StyleSheet } from 'react-native-unistyles';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { IconButton } from '@/components/IconButton';
-import { ListingTile } from '@/components/ListingTile';
 import { NavBar } from '@/components/NavBar';
+import { Photo } from '@/components/Photo';
 import { SegmentedControl } from '@/components/SegmentedControl';
-import { SkeletonGrid, SkeletonList } from '@/components/Skeleton';
-import { Tag } from '@/components/Tag';
+import { SkeletonList } from '@/components/Skeleton';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { Toggle } from '@/components/Toggle';
 import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
-import { feed as feedCopy, saved as copy } from '@/strings';
-import { gridCellWidth, gridColumns, useLayout } from '@/theme/layout';
+import { feed as feedCopy, saved as copy, search as searchCopy } from '@/strings';
+import { readableColumn } from '@/theme/layout';
 
 import { feedApi, type FeedApi } from '../feed/api';
-import type { FeedItem } from '../feed/logic';
+import { metaLine, type FeedItem } from '../feed/logic';
 import { searchApi, type SearchApi } from '../search/api';
 import { encodeFilters, type SavedSearch } from '../search/logic';
 import { mediaUrl, priceLabel } from '../sell/logic';
@@ -42,23 +41,25 @@ export function searchTitle(s: Pick<SavedSearch, 'query'>): string {
 
 type Tab = 'items' | 'searches';
 
-/** B09 Saved (P6-SAVE-01): Items and Searches tabs, alerts toggles, empty states (X38). */
+/**
+ * B09 Saved (P6-SAVE-01): Items and Searches tabs, alerts toggles, empty
+ * states (X38). DEC 90 mock screen 8: a large title and plain rows, with a
+ * price drop in green and on hold or sold as plain words (sold rows faded).
+ */
 export function SavedScreen({
   items = getSaved,
   api = feedApi,
   searches = searchApi,
   mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
+  now = () => new Date(),
 }: {
   items?: () => Promise<SavedItem[]>;
   api?: Pick<FeedApi, 'unsave'>;
   searches?: SearchApi;
   mediaBase?: () => string;
+  now?: () => Date;
 }) {
   const router = useRouter();
-  // More columns on iPad; every cell the same width, even in a short last row.
-  const { width } = useLayout();
-  const columns = gridColumns(width);
-  const cell = { width: gridCellWidth(width, columns) };
   const qc = useQueryClient();
   const [tab, setTab] = useState<Tab>('items');
   const itemsQ = useQuery({ queryKey: ['saved', 'items'], queryFn: items });
@@ -102,7 +103,7 @@ export function SavedScreen({
 
   let body;
   if (tab === 'items') {
-    if (itemsQ.isPending) body = <SkeletonGrid />;
+    if (itemsQ.isPending) body = <SkeletonList />;
     else if (itemsQ.isError)
       body = <ErrorState error={itemsQ.error} onRetry={() => itemsQ.refetch()} />;
     else if (itemsQ.data.length === 0)
@@ -118,37 +119,73 @@ export function SavedScreen({
     else
       body = (
         <FlatList
-          key={`cols-${columns}`}
           data={itemsQ.data}
-          numColumns={columns}
           keyExtractor={(i) => i.id}
-          columnWrapperStyle={styles.columns}
-          contentContainerStyle={styles.grid}
-          renderItem={({ item }) => (
-            <View style={cell}>
-              <ListingTile
-                title={item.title}
-                price={priceLabel(item.kind, item.price_cents, feedCopy.free)}
-                photo={item.photos[0] ? mediaUrl(base, item.photos[0].thumb_path) : null}
-                blurhash={item.photos[0]?.blurhash}
-                state={
-                  item.status === 'sold' ? 'sold' : item.status === 'hold' ? 'hold' : 'default'
-                }
-                note={priceDropped(item) ? copy.priceDropped : null}
-                onPress={() => router.push({ pathname: '/listing/[id]', params: { id: item.id } })}
-                testID={`saved-${item.id}`}
-              />
-              <View style={styles.unsave}>
+          contentContainerStyle={styles.list}
+          renderItem={({ item }) => {
+            const price = priceLabel(item.kind, item.price_cents, feedCopy.free);
+            const dropped = priceDropped(item);
+            const status =
+              item.status === 'sold'
+                ? searchCopy.tileSold
+                : item.status === 'hold'
+                  ? searchCopy.tileHold
+                  : dropped
+                    ? copy.priceDropped
+                    : null;
+            const label = [fill(searchCopy.tileLabel, { title: item.title, price }), status]
+              .filter(Boolean)
+              .join('. ');
+            return (
+              <View style={styles.itemRow(item.status === 'sold')}>
+                <Tappable
+                  accessibilityRole="button"
+                  accessibilityLabel={label}
+                  onPress={() =>
+                    router.push({ pathname: '/listing/[id]', params: { id: item.id } })
+                  }
+                  style={styles.flex}
+                  testID={`saved-${item.id}`}
+                >
+                  <View style={styles.itemHit}>
+                    <View style={styles.thumb}>
+                      <Photo
+                        source={item.photos[0] ? mediaUrl(base, item.photos[0].thumb_path) : null}
+                        blurhash={item.photos[0]?.blurhash}
+                        rounded="thumb"
+                      />
+                    </View>
+                    <View style={styles.itemText}>
+                      <Text variant="bodyStrong" numberOfLines={2}>
+                        {item.title}
+                      </Text>
+                      <Text variant="meta" tone="ink3" numberOfLines={1}>
+                        {metaLine(item, now())}
+                      </Text>
+                      {status ? (
+                        <Text
+                          variant="label"
+                          tone={status === copy.priceDropped ? 'green' : 'ink2'}
+                        >
+                          {status}
+                        </Text>
+                      ) : null}
+                    </View>
+                    <Text variant="bodyStrong" style={styles.price}>
+                      {price}
+                    </Text>
+                  </View>
+                </Tappable>
                 <IconButton
                   icon="x"
-                  filled
+                  tone="ink3"
                   accessibilityLabel={fill(copy.unsave, { title: item.title })}
                   onPress={() => void unsave(item.id)}
                   testID={`unsave-${item.id}`}
                 />
               </View>
-            </View>
-          )}
+            );
+          }}
         />
       );
   } else {
@@ -195,7 +232,11 @@ export function SavedScreen({
                       </View>
                     </Tappable>
                   </View>
-                  {n > 0 ? <Tag label={fill(copy.newCount, { n })} tone="accent" /> : null}
+                  {n > 0 ? (
+                    <Text variant="label" tone="green">
+                      {fill(copy.newCount, { n })}
+                    </Text>
+                  ) : null}
                   <IconButton
                     icon="trash"
                     accessibilityLabel={fill(copy.deleteSearch, { q })}
@@ -218,10 +259,12 @@ export function SavedScreen({
   return (
     <View style={styles.root} testID="screen-saved">
       <NavBar
-        title={copy.title}
         onLeading={() => (router.canGoBack() ? router.back() : router.replace('/discover'))}
       />
       <View style={styles.tabs}>
+        <Text variant="display" accessibilityRole="header">
+          {copy.title}
+        </Text>
         <SegmentedControl
           label={copy.title}
           segments={[
@@ -239,16 +282,40 @@ export function SavedScreen({
 
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
-  tabs: { paddingHorizontal: theme.space.screen, paddingBottom: theme.space.md },
-  grid: { padding: theme.space.screen, gap: theme.space.lg },
-  columns: { gap: theme.space.md },
-  unsave: { position: 'absolute', top: 0, right: 0 },
-  list: { padding: theme.space.screen, gap: theme.space.md },
+  tabs: {
+    ...readableColumn,
+    gap: theme.space.md,
+    paddingHorizontal: theme.space.screen,
+    paddingBottom: theme.space.sm,
+  },
+  list: {
+    ...readableColumn,
+    paddingHorizontal: theme.space.screen,
+    paddingBottom: theme.space['2xl'],
+  },
+  itemRow: (sold: boolean) => ({
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderColor: theme.colors.line,
+    opacity: sold ? 0.5 : 1,
+  }),
+  itemHit: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.space.md,
+    paddingVertical: theme.space.sm + theme.space.xs / 2,
+  },
+  thumb: {
+    width: theme.size.avatarL - theme.space.xs,
+    height: theme.size.avatarL - theme.space.xs,
+  },
+  itemText: { flex: 1, gap: theme.space.xs / 2 },
+  price: { fontWeight: theme.type.price.fontWeight },
   searchRow: {
-    padding: theme.space.lg,
-    gap: theme.space.sm,
-    borderRadius: theme.radius.card,
-    borderWidth: 1,
+    paddingVertical: theme.space.sm,
+    gap: theme.space.xs,
+    borderBottomWidth: 1,
     borderColor: theme.colors.line,
   },
   row: { flexDirection: 'row', alignItems: 'center', gap: theme.space.sm },

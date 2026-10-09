@@ -2,6 +2,7 @@ import { Image } from 'expo-image';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { imageStyles } from './Photo';
 import { Text } from './Text';
 
 export type AvatarSize = 'S' | 'M' | 'L';
@@ -21,30 +22,36 @@ export function avatarShade(name: string): 0 | 1 | 2 {
   return (h % 3) as 0 | 1 | 2;
 }
 
-type Props = { name: string; uri?: string | null; size?: AvatarSize };
+type Props = {
+  name: string;
+  uri?: string | null;
+  size?: AvatarSize;
+  /** `accent`: always the accent fill, e.g. your own profile (DEC 90). */
+  fill?: 'shade' | 'accent';
+  /** How many initials to show without a photo (2 by default). */
+  letters?: 1 | 2;
+};
 
 /** Photo avatar, or initials on a token surface. Decorative: the name is read by the row. */
-export function Avatar({ name, uri, size = 'M' }: Props) {
+export function Avatar({ name, uri, size = 'M', fill = 'shade', letters = 2 }: Props) {
+  const shade = fill === 'accent' ? 2 : avatarShade(name);
   return (
     <View
-      style={styles.circle(size, avatarShade(name))}
+      style={styles.circle(size, shade)}
       accessible={false}
       importantForAccessibility="no-hide-descendants"
     >
       {uri ? (
         <Image
           source={{ uri }}
-          style={styles.photo}
+          style={imageStyles.image}
           contentFit="cover"
           transition={150}
           accessibilityIgnoresInvertColors
         />
       ) : (
-        <Text
-          variant={size === 'L' ? 'heading' : 'label'}
-          tone={avatarShade(name) === 2 ? 'onAccent' : 'ink'}
-        >
-          {initials(name)}
+        <Text variant={size === 'L' ? 'heading' : 'label'} tone={shade === 2 ? 'onAccent' : 'ink'}>
+          {initials(name).slice(0, letters)}
         </Text>
       )}
     </View>
@@ -61,5 +68,4 @@ const styles = StyleSheet.create((theme) => ({
     justifyContent: 'center',
     backgroundColor: [theme.colors.bg2, theme.colors.bg3, theme.colors.accent][shade],
   }),
-  photo: { width: '100%', height: '100%' },
 }));

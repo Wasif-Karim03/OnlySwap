@@ -31,8 +31,19 @@ type Props = {
   autoFocus?: boolean;
 };
 
+/** How a cell looks: the one being typed into, a filled digit, or still empty. */
+export type OtpCellState = 'active' | 'filled' | 'empty';
+
+export function otpCellState(index: number, value: string, disabled: boolean): OtpCellState {
+  if (!disabled && index === Math.min(value.length, OTP_LENGTH - 1) && value.length < OTP_LENGTH)
+    return 'active';
+  return value[index] ? 'filled' : 'empty';
+}
+
 /**
  * 6 cells over one hidden input with `oneTimeCode` autofill (DESIGN_SYSTEM §6).
+ * Six large boxes across the width (DEC 90): filled ones white with a hairline
+ * border, the active one with the ink border, empty ones soft grey.
  * Error shakes (a fade with reduce motion) and fires the warning haptic.
  */
 export function OTPInput({
@@ -63,16 +74,14 @@ export function OTPInput({
     );
   }, [error, reduced, shake]);
 
-  const focusIndex = Math.min(value.length, OTP_LENGTH - 1);
-
   return (
     <Pressable accessibilityRole="none" onPress={() => input.current?.focus()} disabled={disabled}>
       <Animated.View style={shakeStyle}>
         <View style={styles.row}>
           {Array.from({ length: OTP_LENGTH }, (_, i) => (
-            <View key={i} style={styles.cell(i === focusIndex && !disabled, error, disabled)}>
+            <View key={i} style={styles.cell(otpCellState(i, value, disabled), error, disabled)}>
               {/* Fixed-size cells: digits follow Dynamic Type up to the 1.4x overlay cap. */}
-              <Text variant="title" overlay>
+              <Text variant="title" overlay testID={`otp-cell-${i}`}>
                 {value[i] ?? ''}
               </Text>
             </View>
@@ -104,15 +113,26 @@ export function OTPInput({
 
 const styles = StyleSheet.create((theme) => ({
   row: { flexDirection: 'row', gap: theme.space.sm, justifyContent: 'center' },
-  cell: (focused: boolean, error: boolean, disabled: boolean) => ({
-    width: theme.size.otpCell - theme.space.sm,
+  cell: (state: OtpCellState, error: boolean, disabled: boolean) => ({
+    flex: 1,
+    maxWidth: theme.size.otpCell + theme.space.lg,
     height: theme.size.otpCell + theme.space.sm,
     borderRadius: theme.radius.control,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: error ? theme.colors.red : focused ? theme.colors.ink : 'transparent',
-    backgroundColor: error ? theme.colors.redBg : theme.colors.bg2,
+    borderColor: error
+      ? theme.colors.red
+      : state === 'active'
+        ? theme.colors.ink
+        : state === 'filled'
+          ? theme.colors.line
+          : 'transparent',
+    backgroundColor: error
+      ? theme.colors.redBg
+      : state === 'empty'
+        ? theme.colors.bg2
+        : theme.colors.card,
     opacity: disabled ? 0.35 : 1,
   }),
   hidden: { position: 'absolute', opacity: 0, width: 1, height: 1 },

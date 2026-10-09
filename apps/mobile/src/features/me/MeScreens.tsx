@@ -13,11 +13,15 @@ import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { Input } from '@/components/Input';
 import { ListingTile } from '@/components/ListingTile';
+import { IconButton } from '@/components/IconButton';
+import { Icon } from '@/components/icons/Icon';
 import { GroupedList, ListRow } from '@/components/ListRow';
 import { NavBar } from '@/components/NavBar';
+import { Photo } from '@/components/Photo';
 import { SegmentedControl } from '@/components/SegmentedControl';
 import { SkeletonList } from '@/components/Skeleton';
 import { Tag } from '@/components/Tag';
+import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { TextArea } from '@/components/TextArea';
 import { Toggle } from '@/components/Toggle';
@@ -35,7 +39,7 @@ import { isVisible } from '../feed/logic';
 import type { ClassYear } from '../profiles/api';
 import { centsToDollars, dollarsToCents } from '../search/logic';
 import { mediaUrl, priceLabel } from '../sell/logic';
-import { listingTab, meApi, type MeApi, type MyListing } from './api';
+import { listingTab, meApi, type Me, type MeApi, type MyListing } from './api';
 
 export const meKey = ['me'] as const;
 const YEARS: ClassYear[] = ['freshman', 'sophomore', 'junior', 'senior', 'grad', 'other'];
@@ -59,7 +63,47 @@ function Screen({
   );
 }
 
-/** F01 Profile tab (P11-SET-01): header, counts, sell nudge, menu. */
+/** Splits a one-placeholder template ("{n} sold") around its value, for a bold number. */
+export function splitAround(template: string, key: string): [string, string] {
+  const [before = '', after = ''] = template.split(`{${key}}`);
+  return [before, after];
+}
+
+/**
+ * The one inline line of real numbers under the name (DEC 90: no stat boxes,
+ * nothing invented): sold, swaps, thumbs up only once someone rated, and the
+ * month you joined.
+ */
+export function profileStats(m: Pick<Me, 'counts' | 'created_at'>, locale: string) {
+  const out: { key: string; value: string; template: string; name: string }[] = [
+    { key: 'sold', value: String(m.counts.sold), template: copy.statsSold, name: 'n' },
+    { key: 'swaps', value: String(m.counts.swaps), template: copy.statsSwaps, name: 'n' },
+  ];
+  if (m.counts.thumbs_total > 0) {
+    const pct = Math.round((m.counts.thumbs_up / m.counts.thumbs_total) * 100);
+    out.push({ key: 'thumbs', value: String(pct), template: profileView.thumbs, name: 'pct' });
+  }
+  const joined = new Date(m.created_at);
+  if (!Number.isNaN(joined.getTime())) {
+    out.push({
+      key: 'joined',
+      value: '',
+      template: fill(profileView.memberSince, {
+        date: joined.toLocaleDateString(locale, { month: 'short', year: 'numeric' }),
+      }),
+      name: '',
+    });
+  }
+  return out;
+}
+
+/**
+ * F01 Profile tab (P11-SET-01; DEC 90 mock screen 15): your initial on the
+ * accent, name, year and school with a check, one inline line of real
+ * numbers, Edit profile, then Active and Sold as a three-column photo grid
+ * with small white price tags. Notifications, Saved and Settings sit top
+ * right; My listings and your public profile are plain rows under the grid.
+ */
 export function ProfileTabScreen({
   api = meApi,
   mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
@@ -71,26 +115,101 @@ export function ProfileTabScreen({
 }) {
   const router = useRouter();
   const q = useQuery({ queryKey: meKey, queryFn: () => api.me() });
+  const mine = useQuery({ queryKey: ['my-listings'], queryFn: () => api.listings() });
+  const [tab, setTab] = useState<'active' | 'sold'>('active');
   let body;
   if (q.isPending) body = <SkeletonList rows={5} />;
   else if (q.isError) body = <ErrorState error={q.error} onRetry={() => q.refetch()} />;
   else {
     const m = q.data;
     const name = m.display_name ?? '';
+    const base = mediaBase();
+    const school = m.campus
+      ? m.year
+        ? fill(copy.yearAt, { year: profileView.years[m.year], campus: m.campus.name })
+        : fill(copy.verifiedAt, { campus: m.campus.name })
+      : null;
+    const stats = profileStats(m, intlLocale);
+    const items = (mine.data ?? []).filter((l) => listingTab(l.status) === tab);
+    const counts = {
+      active: (mine.data ?? []).filter((l) => listingTab(l.status) === 'active').length,
+      sold: (mine.data ?? []).filter((l) => listingTab(l.status) === 'sold').length,
+    };
+    let grid;
+    if (mine.isPending) grid = <SkeletonList rows={2} />;
+    else if (mine.isError)
+      grid = <ErrorState error={mine.error} onRetry={() => mine.refetch()} layout="inline" />;
+    else if (items.length === 0)
+      grid =
+        tab === 'active' ? (
+          <View style={styles.emptyGrid} testID="profile-sell-nudge">
+            <Text variant="bodyStrong">{copy.sellNudgeTitle}</Text>
+            <Text variant="label" tone="ink2" style={styles.regular}>
+              {copy.sellNudgeBody}
+            </Text>
+            <Button
+              label={copy.sellNudge}
+              size="M"
+              fullWidth={false}
+              onPress={() => router.push('/sell')}
+            />
+          </View>
+        ) : (
+          <Text variant="label" tone="ink2" style={styles.emptyGrid} testID="profile-sold-empty">
+            {copy.soldEmpty}
+          </Text>
+        );
+    else
+      grid = (
+        <View style={styles.photoGrid} testID="profile-grid">
+          {items.map((l) => {
+            const price = priceLabel(l.kind, l.price_cents, feedCopy.free);
+            return (
+              <Tappable
+                key={l.id}
+                accessibilityRole="button"
+                accessibilityLabel={`${l.title}, ${price}`}
+                onPress={() => router.push({ pathname: '/listing/[id]', params: { id: l.id } })}
+                style={styles.gridCell}
+                testID={`profile-listing-${l.id}`}
+              >
+                <View style={styles.gridPhoto}>
+                  <Photo
+                    source={l.photos[0] ? mediaUrl(base, l.photos[0].thumb_path) : null}
+                    fill
+                  />
+                  <View style={styles.priceTag}>
+                    <Text variant="meta" overlay style={styles.priceText}>
+                      {price}
+                    </Text>
+                  </View>
+                </View>
+              </Tappable>
+            );
+          })}
+        </View>
+      );
     body = (
       <ScrollView contentContainerStyle={styles.body}>
         <View style={styles.head}>
           <Avatar
             name={name}
-            uri={m.avatar_path ? mediaUrl(mediaBase(), m.avatar_path) : null}
+            uri={m.avatar_path ? mediaUrl(base, m.avatar_path) : null}
             size="L"
+            fill="accent"
+            letters={1}
           />
           <View style={styles.flex}>
-            <Text variant="heading">{name}</Text>
-            {m.campus ? (
-              <Text variant="meta" tone="ink2">
-                {fill(copy.verifiedAt, { campus: m.campus.short_name })}
-              </Text>
+            <Text variant="title" accessibilityRole="header">
+              {name}
+            </Text>
+            {school ? (
+              <View style={styles.school} accessible testID="profile-school">
+                <Text variant="label" tone="ink2" style={styles.regular}>
+                  {school}
+                </Text>
+                <Icon name="check" size={14} tone="green" strokeWidth={2.4} />
+              </View>
             ) : null}
             {m.founding_seller ? (
               <View style={styles.tagRow}>
@@ -99,11 +218,23 @@ export function ProfileTabScreen({
             ) : null}
           </View>
         </View>
-        <View style={styles.stats}>
-          <Text variant="label">{fill(copy.statsActive, { n: m.counts.active })}</Text>
-          <Text variant="label">{fill(copy.statsSold, { n: m.counts.sold })}</Text>
-          <Text variant="label">{fill(copy.statsSwaps, { n: m.counts.swaps })}</Text>
-        </View>
+        <Text variant="label" tone="ink2" style={styles.stats} testID="profile-stats">
+          {stats.map((st, i) => {
+            const [before, after] = st.name ? splitAround(st.template, st.name) : [st.template, ''];
+            return (
+              <Text key={st.key} variant="label" tone="ink2" style={styles.regular}>
+                {i > 0 ? '   ' : ''}
+                {before}
+                {st.value ? (
+                  <Text variant="label" tone="ink">
+                    {st.value}
+                  </Text>
+                ) : null}
+                {after}
+              </Text>
+            );
+          })}
+        </Text>
         <Button
           label={copy.edit}
           variant="secondary"
@@ -111,45 +242,56 @@ export function ProfileTabScreen({
           onPress={() => router.push('/profile/edit')}
           testID="profile-edit"
         />
-        {m.counts.active === 0 ? (
-          <View style={styles.nudge} testID="profile-sell-nudge">
-            <Text variant="bodyStrong">{copy.sellNudgeTitle}</Text>
-            <Text variant="meta" tone="ink2">
-              {copy.sellNudgeBody}
-            </Text>
-            <Button label={copy.sellNudge} size="M" onPress={() => router.push('/sell')} />
-          </View>
-        ) : null}
-        <GroupedList>
-          <ListRow
-            label={copy.myListings}
-            icon="tag"
-            onPress={() => router.push('/profile/listings')}
+        <View style={styles.segment}>
+          <SegmentedControl
+            label={copy.listingsTitle}
+            segments={[
+              { value: 'active', label: `${copy.tabs.active} ${counts.active}` },
+              { value: 'sold', label: `${copy.tabs.sold} ${counts.sold}` },
+            ]}
+            value={tab}
+            onChange={setTab}
           />
-          <ListRow label={copy.saved} icon="bookmark" onPress={() => router.push('/saved')} />
-          <ListRow
-            label={copy.notifications}
-            icon="bell"
-            onPress={() => router.push('/notifications')}
-          />
-          <ListRow
-            label={copy.viewProfile}
-            icon="user"
-            onPress={() => router.push({ pathname: '/user/[id]', params: { id: m.id } })}
-          />
-        </GroupedList>
-        <GroupedList>
-          <ListRow label={copy.settings} icon="gear" onPress={() => router.push('/settings')} />
-          <ListRow label={copy.safety} icon="shield" onPress={() => router.push('/safety')} />
-          <ListRow label={copy.help} icon="help" onPress={() => router.push('/help')} />
-        </GroupedList>
+        </View>
+        {grid}
+        <View style={styles.links}>
+          <GroupedList>
+            <ListRow label={copy.myListings} onPress={() => router.push('/profile/listings')} />
+            <ListRow
+              label={copy.viewProfile}
+              onPress={() => router.push({ pathname: '/user/[id]', params: { id: m.id } })}
+            />
+          </GroupedList>
+        </View>
         {devLinks}
       </ScrollView>
     );
   }
   return (
     <View style={styles.root} testID="screen-profile">
-      <NavBar variant="large" title={copy.title} />
+      <View style={styles.topBar}>
+        <IconButton
+          icon="bell"
+          filled
+          accessibilityLabel={copy.notifications}
+          onPress={() => router.push('/notifications')}
+          testID="profile-open-notifications"
+        />
+        <IconButton
+          icon="bookmark"
+          filled
+          accessibilityLabel={copy.saved}
+          onPress={() => router.push('/saved')}
+          testID="profile-open-saved"
+        />
+        <IconButton
+          icon="gear"
+          filled
+          accessibilityLabel={copy.settings}
+          onPress={() => router.push('/settings')}
+          testID="profile-open-settings"
+        />
+      </View>
       {body}
     </View>
   );
@@ -615,8 +757,38 @@ export function RelistScreen({ id, api = meApi }: { id: string; api?: MeApi }) {
   );
 }
 
-const styles = StyleSheet.create((theme) => ({
+const styles = StyleSheet.create((theme, rt) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: theme.space.sm,
+    paddingTop: rt.insets.top + theme.space.xs,
+    paddingHorizontal: theme.space.lg,
+  },
+  regular: { fontWeight: '400' },
+  school: { flexDirection: 'row', alignItems: 'center', gap: theme.space.xs, flexWrap: 'wrap' },
+  segment: { marginTop: theme.space.xs },
+  links: { marginTop: theme.space.md },
+  emptyGrid: { gap: theme.space.sm, paddingVertical: theme.space.md, alignItems: 'flex-start' },
+  photoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.xs },
+  gridCell: { width: '32.3%' },
+  gridPhoto: {
+    aspectRatio: 1,
+    borderRadius: theme.radius.thumb,
+    overflow: 'hidden',
+    backgroundColor: theme.colors.bg2,
+  },
+  priceTag: {
+    position: 'absolute',
+    left: theme.space.sm,
+    bottom: theme.space.sm,
+    paddingHorizontal: theme.space.sm,
+    paddingVertical: theme.space.xs / 2,
+    borderRadius: theme.radius.chip,
+    backgroundColor: theme.colors.card,
+  },
+  priceText: { fontWeight: '700' },
   body: {
     ...readableColumn,
     padding: theme.space.screen,
@@ -626,13 +798,7 @@ const styles = StyleSheet.create((theme) => ({
   head: { flexDirection: 'row', alignItems: 'center', gap: theme.space.md },
   flex: { flex: 1 },
   tagRow: { flexDirection: 'row', marginTop: theme.space.xs },
-  stats: { flexDirection: 'row', gap: theme.space.lg },
-  nudge: {
-    gap: theme.space.sm,
-    padding: theme.space.lg,
-    borderRadius: theme.radius.card,
-    backgroundColor: theme.colors.bg2,
-  },
+  stats: { marginTop: -theme.space.xs },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
   tabs: { paddingHorizontal: theme.space.screen, paddingBottom: theme.space.md },
   grid: {

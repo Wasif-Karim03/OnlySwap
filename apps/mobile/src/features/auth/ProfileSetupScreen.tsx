@@ -7,6 +7,7 @@ import { Button } from '@/components/Button';
 import { ChipGroup } from '@/components/Chip';
 import { Icon } from '@/components/icons/Icon';
 import { Input } from '@/components/Input';
+import { imageStyles } from '@/components/Photo';
 import { ProgressBar } from '@/components/Progress';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
@@ -127,11 +128,7 @@ export function ProfileSetupScreen({
       title={copy.title}
       body={copy.body}
       leading="none"
-      trailing={
-        <Text variant="meta" tone="ink2">
-          {copy.step}
-        </Text>
-      }
+      step={4}
       dock={
         <Button
           label={copy.continue}
@@ -154,12 +151,14 @@ export function ProfileSetupScreen({
         >
           <View style={styles.avatar}>
             {hasPhoto ? (
-              <Image
-                source={{ uri: photo.uri }}
-                style={styles.avatarImage}
-                contentFit="cover"
-                accessibilityIgnoresInvertColors
-              />
+              <View style={styles.avatarClip}>
+                <Image
+                  source={{ uri: photo.uri }}
+                  style={imageStyles.image}
+                  contentFit="cover"
+                  accessibilityIgnoresInvertColors
+                />
+              </View>
             ) : (
               <Icon name="user" size={32} tone="ink2" />
             )}
@@ -240,6 +239,7 @@ export function ProfileSetupScreen({
 
       <Input
         label={copy.firstName}
+        inlineLabel
         value={first}
         onChangeText={(v) => {
           setFirst(v);
@@ -257,6 +257,7 @@ export function ProfileSetupScreen({
       <Input
         ref={lastRef}
         label={copy.lastName}
+        inlineLabel
         value={last}
         onChangeText={setLast}
         autoCapitalize="words"
@@ -266,12 +267,12 @@ export function ProfileSetupScreen({
         maxLength={30}
         testID="profile-last"
       />
-      <Text variant="meta" tone="ink2" testID="profile-shown-as">
+      <Text variant="meta" tone="ink3" testID="profile-shown-as">
         {preview ? copy.shownAs.replace('{name}', preview) : copy.lastNameHint}
       </Text>
 
       <View style={styles.yearBlock}>
-        <Text variant="label" tone="ink2">
+        <Text variant="label" tone="ink3">
           {copy.year}
         </Text>
         <ChipGroup
@@ -302,10 +303,11 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarImage: {
-    width: theme.size.avatarL,
-    height: theme.size.avatarL,
+  avatarClip: {
+    width: '100%',
+    height: '100%',
     borderRadius: theme.radius.avatar,
+    overflow: 'hidden',
   },
   cameraBadge: {
     position: 'absolute',

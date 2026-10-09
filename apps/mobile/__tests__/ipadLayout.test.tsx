@@ -180,7 +180,7 @@ describe('T-UNIT-IPAD-03 Inbox two panes on wide iPad (board N6)', () => {
     expect(screen.getByTestId('inbox-chat-pane')).toBeTruthy();
     expect(screen.getByTestId('inbox-pane-empty')).toBeTruthy();
     expect(screen.getByText(offers.paneEmptyTitle)).toBeTruthy();
-    fireEvent.press(screen.getByText(offers.tabChats));
+    fireEvent.press(screen.getByText(offers.tabBuying));
     fireEvent.press(await screen.findByTestId('inbox-chat-c1'));
     expect(await screen.findByTestId('pane-chat-c1')).toBeTruthy();
     expect(screen.getByTestId('inbox-chat-c1').props.accessibilityState).toMatchObject({
@@ -197,7 +197,7 @@ describe('T-UNIT-IPAD-03 Inbox two panes on wide iPad (board N6)', () => {
     for (const size of [PHONE, IPAD_PORTRAIT]) {
       setWindow(size);
       const view = render({ inbox }, '/inbox');
-      fireEvent.press(await screen.findByText(offers.tabChats));
+      fireEvent.press(await screen.findByText(offers.tabBuying));
       expect(screen.queryByTestId('inbox-list-pane')).toBeNull();
       expect(screen.queryByTestId('inbox-chat-pane')).toBeNull();
       fireEvent.press(await screen.findByTestId('inbox-chat-c1'));

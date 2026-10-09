@@ -10,22 +10,24 @@ import { Button } from '@/components/Button';
 import { Chip } from '@/components/Chip';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
-import { IconButton } from '@/components/IconButton';
-import { NavBar } from '@/components/NavBar';
+import { Icon, type IconName } from '@/components/icons/Icon';
 import { SkeletonList } from '@/components/Skeleton';
+import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
-import { campus as copy, feed as feedCopy, saved as savedCopy } from '@/strings';
+import { campus as copy } from '@/strings';
 import { feedColumn } from '@/theme/layout';
 
 import type { FeedCursor } from '../feed/logic';
 import { answerWanted, getDraftStore, type DraftState } from '../sell/draft';
 import { campusApi, campusKeys, type CampusApi } from './api';
+import type { Me } from '../me/api';
 import { CampusCard } from './CampusCards';
-import { DiscoverSegment } from './DiscoverSegment';
+import { DiscoverHeader } from './DiscoverHeader';
 import {
   CAMPUS_FILTERS,
+  campusRows,
   dayOneBody,
   foundingState,
   isCampusFilter,
@@ -33,13 +35,18 @@ import {
   type CampusFilter,
   type CampusItem,
   type CampusPage,
+  type CampusRow,
 } from './logic';
+
+const FILTER_ICON: Partial<Record<CampusFilter, IconName>> = { food: 'food', free: 'gift' };
 
 type Deps = {
   api?: CampusApi;
   store?: StoreApi<DraftState>;
   mediaBase?: () => string;
   now?: () => Date;
+  /** The signed-in student, for the campus name in the header. */
+  loadMe?: () => Promise<Me>;
 };
 
 /**
@@ -53,6 +60,7 @@ export function CampusFeedScreen({
   store = getDraftStore(),
   mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
   now = () => new Date(),
+  loadMe,
 }: Deps) {
   const router = useRouter();
   const params = useLocalSearchParams<{ kind?: string }>();
@@ -78,38 +86,61 @@ export function CampusFeedScreen({
 
   const header = (
     <>
-      <NavBar
-        variant="large"
-        title={feedCopy.title}
-        trailing={
-          <View style={styles.row}>
-            <IconButton
-              icon="bookmark"
-              accessibilityLabel={savedCopy.open}
-              onPress={() => router.push('/saved')}
-            />
-            <IconButton
-              icon="search"
-              accessibilityLabel={feedCopy.search}
-              onPress={() => router.push('/search')}
-            />
-          </View>
-        }
-      />
-      <DiscoverSegment value="campus" />
+      <DiscoverHeader value="campus" surface="card" loadMe={loadMe} />
+      {/*
+        A horizontal ScrollView grows to fill a column by default; flexGrow 0
+        keeps the chip row to its own height (DEC 90 fix: it left a ~300 pt
+        gap above the feed).
+      */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        style={styles.chipRow}
         contentContainerStyle={styles.chips}
         accessibilityLabel={copy.filtersLabel}
         testID="campus-filters"
       >
         {CAMPUS_FILTERS.map((f) => (
-          <Chip key={f} label={copy.filters[f]} selected={kind === f} onPress={() => setKind(f)} />
+          <Chip
+            key={f}
+            label={copy.filters[f]}
+            icon={FILTER_ICON[f]}
+            surface="card"
+            selected={kind === f}
+            onPress={() => setKind(f)}
+          />
         ))}
       </ScrollView>
     </>
   );
+
+  const renderRow = (row: CampusRow) =>
+    row.kind === 'wide' ? (
+      <CampusCard
+        item={row.item}
+        now={now}
+        mediaBase={base}
+        onOpen={() => open(row.item)}
+        onAnswer={() => answer(row.item)}
+        testID={`campus-item-${row.item.id}`}
+      />
+    ) : (
+      <View style={styles.pair}>
+        {row.items.map((item) => (
+          <View key={item.id} style={styles.flex}>
+            <CampusCard
+              item={item}
+              now={now}
+              mediaBase={base}
+              onOpen={() => open(item)}
+              onAnswer={() => answer(item)}
+              testID={`campus-item-${item.id}`}
+            />
+          </View>
+        ))}
+        {row.items.length === 1 ? <View style={styles.flex} /> : null}
+      </View>
+    );
 
   let body;
   if (q.isPending) {
@@ -123,13 +154,12 @@ export function CampusFeedScreen({
   } else {
     const pages = q.data?.pages ?? [];
     const first = pages[0];
-    const items = mergeCampusPages(pages);
+    const rows = campusRows(mergeCampusPages(pages));
     const founding = foundingState(first?.founding);
-    const t = now;
     body = (
       <FlashList
-        data={items}
-        keyExtractor={(i) => i.id}
+        data={rows}
+        keyExtractor={(r) => r.key}
         contentContainerStyle={styles.list}
         refreshing={q.isRefetching && !q.isFetchingNextPage}
         onRefresh={() => void q.refetch()}
@@ -176,24 +206,13 @@ export function CampusFeedScreen({
               </View>
             ) : null}
             <View style={styles.row}>
-              <View style={styles.flex}>
-                <Button
-                  label={copy.postFood}
-                  variant="secondary"
-                  size="M"
-                  onPress={postFood}
-                  testID="campus-post-food"
-                />
-              </View>
-              <View style={styles.flex}>
-                <Button
-                  label={copy.askFor}
-                  variant="secondary"
-                  size="M"
-                  onPress={askFor}
-                  testID="campus-ask"
-                />
-              </View>
+              <PostPill
+                icon="food"
+                label={copy.postFood}
+                onPress={postFood}
+                testID="campus-post-food"
+              />
+              <PostPill icon="plus" label={copy.askFor} onPress={askFor} testID="campus-ask" />
             </View>
           </View>
         }
@@ -219,16 +238,7 @@ export function CampusFeedScreen({
             </View>
           ) : null
         }
-        renderItem={({ item }) => (
-          <CampusCard
-            item={item}
-            now={t}
-            mediaBase={base}
-            onOpen={() => open(item)}
-            onAnswer={() => answer(item)}
-            testID={`campus-item-${item.id}`}
-          />
-        )}
+        renderItem={({ item }) => renderRow(item)}
         testID="campus-feed"
       />
     );
@@ -248,15 +258,49 @@ function Gap() {
   return <View style={styles.gap} />;
 }
 
+/** "Post free food" and "Ask for something": quiet white pills, not main actions. */
+function PostPill({
+  icon,
+  label,
+  onPress,
+  testID,
+}: {
+  icon: IconName;
+  label: string;
+  onPress: () => void;
+  testID: string;
+}) {
+  return (
+    <Tappable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      style={styles.flex}
+      testID={testID}
+    >
+      <View style={styles.pill}>
+        <Icon name={icon} size={18} />
+        <Text variant="label" numberOfLines={2} style={styles.pillText}>
+          {label}
+        </Text>
+      </View>
+    </Tappable>
+  );
+}
+
 const styles = StyleSheet.create((theme) => ({
-  root: { flex: 1, backgroundColor: theme.colors.bg },
+  // Grey page, white cards (DEC 90 mock screen 5).
+  root: { flex: 1, backgroundColor: theme.colors.bg2 },
   row: { flexDirection: 'row', gap: theme.space.sm },
   flex: { flex: 1 },
   pad: { padding: theme.space.screen },
+  chipRow: { flexGrow: 0, flexShrink: 0 },
   chips: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: theme.space.sm,
     paddingHorizontal: theme.space.screen,
+    paddingTop: theme.space.xs,
     paddingBottom: theme.space.md,
   },
   list: { paddingHorizontal: theme.space.screen, paddingBottom: theme.space['2xl'] },
@@ -265,8 +309,21 @@ const styles = StyleSheet.create((theme) => ({
     gap: theme.space.sm,
     padding: theme.space.lg,
     borderRadius: theme.radius.card,
-    backgroundColor: theme.colors.bg2,
+    backgroundColor: theme.colors.card,
   },
+  pair: { flexDirection: 'row', gap: theme.space.md },
+  pill: {
+    minHeight: theme.size.hit,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.space.xs,
+    paddingHorizontal: theme.space.md,
+    paddingVertical: theme.space.xs,
+    borderRadius: theme.radius.chip,
+    backgroundColor: theme.colors.card,
+  },
+  pillText: { flexShrink: 1, textAlign: 'center' },
   gap: { height: theme.space.md },
   more: { paddingVertical: theme.space.lg, alignItems: 'center' },
 }));
