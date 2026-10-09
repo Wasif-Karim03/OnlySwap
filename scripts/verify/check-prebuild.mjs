@@ -103,6 +103,7 @@ const BLOCKED = [
   'android.permission.SCHEDULE_EXACT_ALARM',
   'android.permission.USE_EXACT_ALARM',
   'android.permission.SYSTEM_ALERT_WINDOW',
+  'android.permission.FOREGROUND_SERVICE',
   'com.google.android.gms.permission.AD_ID',
   // Launcher badge permissions added by ShortcutBadger (via expo-notifications).
   // Android 8+ shows notification dots without them; blocked to keep the

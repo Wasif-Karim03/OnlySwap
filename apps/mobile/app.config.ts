@@ -39,6 +39,10 @@ export const BLOCKED_ANDROID_PERMISSIONS = [
   'android.permission.SCHEDULE_EXACT_ALARM',
   'android.permission.USE_EXACT_ALARM',
   'android.permission.SYSTEM_ALERT_WINDOW',
+  // WorkManager (androidx.work 2.8.1, pinned in DEC 86) declares this for
+  // long-running workers. Nothing in the app runs a foreground service, and
+  // Play needs a declared service type for it at target SDK 34+ (DEC 88).
+  'android.permission.FOREGROUND_SERVICE',
   'com.google.android.gms.permission.AD_ID',
   // Launcher badge permissions added by ShortcutBadger (via expo-notifications).
   // Android 8+ shows notification dots without them; blocked to keep the
