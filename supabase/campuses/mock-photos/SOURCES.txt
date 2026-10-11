@@ -1,0 +1,23 @@
+Photos for the staging mock listings (DEC 92). Square crops re-encoded to WebP
+(<name>_full.webp up to 900 px, <name>_thumb.webp 400 px), no EXIF.
+
+From the public site's item set (apps/site/public/img/items, CC0/public domain via Openverse, DEC 87):
+acoustic-guitar, backpack, bicycle, coffee-maker, desk-lamp, film-camera, headphones, skateboard, sneakers, textbooks
+
+Found on Openverse (openverse.org) with a CC0 or Public Domain Mark license:
+bagels: CC0 1.0, https://www.flickr.com/photos/89882948@N05/22518837754
+basketball: Public Domain Mark 1.0, https://www.flickr.com/photos/10511576@N00/4760590775
+bonsai: CC0 1.0, https://www.flickr.com/photos/73080909@N03/14564004742
+calculator: Public Domain Mark 1.0, https://www.flickr.com/photos/151282803@N06/36255921466
+desk: Public Domain Mark 1.0, https://www.flickr.com/photos/9539790@N04/5643674744
+floor-fan: CC0 1.0, https://www.rawpixel.com/image/5901123/photo-image-public-domain-table-free
+laptop: CC0 1.0, https://www.flickr.com/photos/132795455@N08/17652700524
+microwave: Public Domain Mark 1.0, https://www.flickr.com/photos/44642876@N00/27395909855
+monitor: Public Domain Mark 1.0, https://www.flickr.com/photos/98552965@N05/24346301003
+pizza: Public Domain Mark 1.0, https://www.flickr.com/photos/123529748@N03/18092872879
+rice-cooker: CC0 1.0, https://www.flickr.com/photos/137343926@N06/36847485461
+speaker: CC0 1.0, https://www.flickr.com/photos/185514373@N06/49063943941
+tea-kettle: Public Domain Mark 1.0, https://collections.museumsvictoria.com.au/items/1487038
+tennis-racket: CC0 1.0, https://stocksnap.io/photo/tennis-racket-8ODE0WIMD9
+toaster: CC0 1.0, https://stocksnap.io/photo/toaster-toast-0UTZ00FWC6
+yoga-mat: CC0 1.0, https://www.rawpixel.com/image/11515790/teal-yoga-mat

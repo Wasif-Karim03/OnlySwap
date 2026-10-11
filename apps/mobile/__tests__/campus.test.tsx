@@ -862,15 +862,15 @@ describe('R11-NOTIF-01 Around campus notifications', () => {
   it.each([
     [
       { type: 'wanted_match', listing_id: 'L2', wanted_id: 'W1' },
-      { pathname: '/listing/[id]', params: { id: 'L2' } },
+      { pathname: '/listing/[id]', params: { id: 'L2', from: 'notification' } },
     ],
     [
       { type: 'wanted_match', wanted_id: 'W1' },
-      { pathname: '/listing/[id]', params: { id: 'W1' } },
+      { pathname: '/listing/[id]', params: { id: 'W1', from: 'notification' } },
     ],
     [
       { type: 'free_food', listing_id: 'F1', url: '/listing/F1' },
-      { pathname: '/listing/[id]', params: { id: 'F1' } },
+      { pathname: '/listing/[id]', params: { id: 'F1', from: 'notification' } },
     ],
     [{ type: 'free_food' }, { pathname: '/discover/campus', params: { kind: 'food' } }],
     [{ type: 'campus_unlocked', url: '/unlocked', campus_id: 'c1' }, '/unlocked'],

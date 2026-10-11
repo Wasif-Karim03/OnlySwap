@@ -1,10 +1,11 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Platform, ScrollView, Share, View } from 'react-native';
+import { AppState, Platform, ScrollView, Share, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
-import { track } from '@/lib/analytics';
+import { track as trackActivity, type ActivitySource } from '@/lib/activity';
+import { track, type AnalyticsEvents } from '@/lib/analytics';
 import { Avatar } from '@/components/Avatar';
 import { Banner } from '@/components/Banner';
 import { Button } from '@/components/Button';
@@ -61,8 +62,16 @@ export const listingKey = (id: string) => ['listing', id] as const;
  * B02 Listing (P6-LIST-01) with the options sheet and report (B03, P6-LIST-02).
  * Buyer, owner, on hold ("Tell me"), sold, and gone / blocked / other campus.
  */
+/** PostHog's coarser source enum for the same `from` (PRD §5.4). */
+function analyticsSource(from?: ActivitySource): AnalyticsEvents['listing_viewed']['source'] {
+  if (from === 'discover') return 'feed';
+  if (from === 'campus' || !from) return 'other';
+  return from;
+}
+
 export function ListingScreen({
   id,
+  from,
   api = feedApi,
   spots = () => sellApi.spots(),
   mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
@@ -72,6 +81,8 @@ export function ListingScreen({
   draftStore = getDraftStore(),
 }: {
   id: string;
+  /** Where it was opened from (route param `from`), for the activity event (DEC 93). */
+  from?: ActivitySource;
   api?: FeedApi;
   spots?: () => Promise<Spot[]>;
   mediaBase?: () => string;
@@ -95,9 +106,36 @@ export function ListingScreen({
     if (data?.access === 'buyer' && !viewed.current) {
       viewed.current = true;
       api.recordView(id).catch(() => {});
-      track('listing_viewed', { source: 'other' });
+      track('listing_viewed', { source: analyticsSource(from) });
     }
-  }, [data, api, id]);
+  }, [data, api, id, from]);
+
+  // listing_viewed activity (DEC 93): one event, stamped when the listing
+  // opened, with the time on the page, sent when the student leaves it or the
+  // app goes to the background. Buyers only, like the view count.
+  const buyer = data?.access === 'buyer';
+  useEffect(() => {
+    if (!buyer) return;
+    const opened = Date.now();
+    let sent = false;
+    const send = () => {
+      if (sent) return;
+      sent = true;
+      trackActivity('listing_viewed', {
+        listingId: id,
+        source: from,
+        dwellMs: Date.now() - opened,
+        at: new Date(opened),
+      });
+    };
+    const sub = AppState.addEventListener('change', (s) => {
+      if (s === 'background') send();
+    });
+    return () => {
+      sub.remove();
+      send();
+    };
+  }, [buyer, id, from]);
 
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/discover'));
 
@@ -145,6 +183,7 @@ export function ListingScreen({
     try {
       const n = was ? await api.unsave(id) : await api.save(id);
       setItem({ saved: !was, save_count: n });
+      trackActivity(was ? 'unsaved' : 'saved', { listingId: id, source: from });
     } catch {
       setItem({ saved: was });
       useToastStore.getState().show('error', copy.saveFailed);

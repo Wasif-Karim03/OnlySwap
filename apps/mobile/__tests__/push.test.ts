@@ -24,7 +24,7 @@ describe('P9-PUSH-02 tap routing', () => {
     ],
     [
       { type: 'price_drop', listing_id: 'l1' },
-      { pathname: '/listing/[id]', params: { id: 'l1' } },
+      { pathname: '/listing/[id]', params: { id: 'l1', from: 'notification' } },
     ],
     [{ type: 'account_notice' }, '/account-status'],
     [

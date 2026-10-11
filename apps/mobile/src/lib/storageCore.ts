@@ -19,6 +19,8 @@ export type StorageSchema = {
   'sell.draft': unknown;
   /** Swipes not yet sent to record_swipes (features/feed/swipes.ts), newest 200. */
   'feed.swipeQueue': unknown;
+  /** Activity events not yet sent to track_events, with their owner (lib/activity.ts PersistedQueue). */
+  'activity.queue': unknown;
   /** Recent search text, newest first (features/search/logic.ts). */
   'search.recent': unknown;
   /** Last time we asked for an App Store / Play review (ISO), X26. */

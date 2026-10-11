@@ -109,7 +109,9 @@ EOF
 ( cd apps/site && pages "$SITE_PROJECT" dist ) || die "site deploy failed (name taken? see $LOG)"
 
 say "6/6 Admin ($ADMIN_PROJECT.pages.dev) and web app ($WEB_PROJECT.pages.dev)"
-( cd apps/admin && VITE_SUPABASE_URL=$EXPO_PUBLIC_SUPABASE_URL VITE_SUPABASE_ANON_KEY=$EXPO_PUBLIC_SUPABASE_ANON_KEY \
+# VITE_APP_ENV=staging turns on Settings > Staging tools (mock data and bot status).
+# A production build must never set it.
+( cd apps/admin && VITE_APP_ENV=staging VITE_SUPABASE_URL=$EXPO_PUBLIC_SUPABASE_URL VITE_SUPABASE_ANON_KEY=$EXPO_PUBLIC_SUPABASE_ANON_KEY \
     VITE_MEDIA_URL=$MEDIA_URL pnpm -s build ) >>"$LOG" 2>&1 || die "admin build failed (see $LOG)"
 pages "$ADMIN_PROJECT" apps/admin/dist || die "admin deploy failed"
 ( cd apps/mobile && EXPO_PUBLIC_APP_ENV=staging EXPO_PUBLIC_SUPABASE_URL=$EXPO_PUBLIC_SUPABASE_URL \

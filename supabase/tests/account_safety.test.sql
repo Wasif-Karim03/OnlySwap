@@ -1,7 +1,7 @@
 -- S15: re-verify (P4-AUTH-14), sign-out everywhere (P4-AUTH-18, T-INT-AUTH-06 DB half),
 -- help requests and email-access recovery (P4-AUTH-19, T-INT-AUTH-07 DB half).
 begin;
-select plan(31);
+select plan(34);
 select tests.create_fixtures();
 
 -- Run as a user whose session carries an amr list (how GoTrue records sign-in methods).
@@ -138,6 +138,15 @@ select is((select action || '|' || target_id || '|' || (meta ->> 'new_domain') f
   'change_email|' || tests.uid('A') || '|buckeyemail.osu.edu', 'one audit_log row, domain only');
 select is(tests.try_text_as(tests.uid('OWN'), format($$select public.admin_change_email(%L, 'x@gmail.com')::text$$, tests.uid('A'))),
   'ERROR: NOT_ADMIN', 'owner without MFA (aal1) is refused');
+
+-- 0209: the console's overload takes a required reason that goes to the audit row
+select is(pg_temp.as_aal2(tests.uid('OWN'), format($$select public.admin_change_email(%L, 'a3@buckeyemail.osu.edu', 'x')::text$$, tests.uid('A'))),
+  'ERROR: INVALID:reason', 'the reason overload needs 3+ characters');
+select is(pg_temp.as_aal2(tests.uid('OWN'), format($$select public.admin_change_email(%L, 'a3@buckeyemail.osu.edu', 'Lost access to old inbox') ->> 'ok'$$, tests.uid('A'))),
+  'true', 'with a reason the owner changes the address');
+select is((select reason || '|' || (meta ->> 'new_domain') from public.audit_log
+           where action = 'change_email' and reason <> 'email_access_recovery'),
+  'Lost access to old inbox|buckeyemail.osu.edu', 'the audit row keeps the reason');
 
 -- on_auth_user_email_changed: the campus follows the domain (T-INT-AUTH-07 DB half)
 update auth.users set email = 'dana@osu.edu' where id = tests.uid('D');

@@ -75,7 +75,7 @@ export function CampusFeedScreen({
 
   const base = mediaBase();
   const open = (item: CampusItem) =>
-    router.push({ pathname: '/listing/[id]', params: { id: item.id } });
+    router.push({ pathname: '/listing/[id]', params: { id: item.id, from: 'campus' } });
   const answer = (item: CampusItem) => {
     answerWanted(store, item);
     router.push('/sell');

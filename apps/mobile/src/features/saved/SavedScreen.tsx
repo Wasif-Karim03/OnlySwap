@@ -14,6 +14,7 @@ import { SkeletonList } from '@/components/Skeleton';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { Toggle } from '@/components/Toggle';
+import { track as trackActivity } from '@/lib/activity';
 import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
 import { feed as feedCopy, saved as copy, search as searchCopy } from '@/strings';
@@ -74,6 +75,7 @@ export function SavedScreen({
     qc.setQueryData<SavedItem[]>(['saved', 'items'], (old) => old?.filter((i) => i.id !== id));
     try {
       await api.unsave(id);
+      trackActivity('unsaved', { listingId: id, source: 'saved' });
     } catch {
       void itemsQ.refetch();
     }
@@ -142,7 +144,10 @@ export function SavedScreen({
                   accessibilityRole="button"
                   accessibilityLabel={label}
                   onPress={() =>
-                    router.push({ pathname: '/listing/[id]', params: { id: item.id } })
+                    router.push({
+                      pathname: '/listing/[id]',
+                      params: { id: item.id, from: 'saved' },
+                    })
                   }
                   style={styles.flex}
                   testID={`saved-${item.id}`}

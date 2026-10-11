@@ -23,6 +23,7 @@ OnlySwap is a campus marketplace for verified students. We collect only what we 
 | Data export requests | To build your download and send you the link. |
 | Reports, blocks, strikes and appeals | To keep people safe and enforce the rules. |
 | Push token and notification settings | To send the notifications you chose. |
+| Activity in the app: listings shown to you, listings you open and for how long, where you opened them from, searches, swipes, saves and offers, your device type and app version, and when you were last active | To run and protect the service: find problems, spot scams and spam, and see what works. Kept in our own database, never sold or shared for ads. See section 2. |
 | Basic app usage events (18 kinds, like "listing posted") | To understand what works. No content, no names, a hashed id only. You can turn this off. |
 | Crash reports | To fix bugs. No personal data is attached. You can turn this off. |
 
@@ -31,6 +32,8 @@ We don't ask for your location. We don't collect contacts, and we don't use adve
 ## 2. How we use it
 
 To verify you, run the marketplace, send the notifications you allow, keep people safe, respond to reports and support requests, fix problems, and meet legal duties.
+
+Our team can see your activity in the app (like swipes, saves and offers) to run and protect the service. Every look is logged. Staff still can't read your messages unless someone reports the chat.
 
 ## 3. Who helps us run OnlySwap
 
@@ -100,6 +103,8 @@ When you plan a meetup you can create a link to send a friend. Anyone with the l
 | Invite records | Until you delete your account. |
 | Notifications | 60 days |
 | Swipes (other than saves) | 30 days |
+| Activity in the app (listings shown and opened, time on a listing, searches) | 90 days |
+| Account deletion records (date and school only, no name or email) | 365 days |
 | Reports and evidence | 180 days after the report is resolved |
 | Moderation audit log | 2 years |
 | Age checks (a one-way hash only) | 365 days |

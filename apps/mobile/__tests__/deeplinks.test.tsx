@@ -19,9 +19,9 @@ const ID = '00000000-0000-4000-8000-000000000001';
 
 describe('P11-STATE-02 deep links', () => {
   it.each([
-    [`https://onlyswap.pages.dev/l/${ID}`, `/listing/${ID}`],
-    [`/l/${ID}`, `/listing/${ID}`],
-    [`/l/${ID}/`, `/listing/${ID}`],
+    [`https://onlyswap.pages.dev/l/${ID}`, `/listing/${ID}?from=link`],
+    [`/l/${ID}`, `/listing/${ID}?from=link`],
+    [`/l/${ID}/`, `/listing/${ID}?from=link`],
     ['/l/not-an-id', '/link-error'],
     ['https://onlyswap.pages.dev/m/abc123', '/inbox'],
     [`onlyswap://listing/${ID}`, `/listing/${ID}`],

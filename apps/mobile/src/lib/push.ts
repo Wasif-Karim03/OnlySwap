@@ -45,7 +45,7 @@ export function routeForNotification(
   if (type === 'campus_unlocked') return '/unlocked';
   if (type === 'wanted_match' || type === 'free_food') {
     const id = s('listing_id') ?? (type === 'wanted_match' ? s('wanted_id') : null);
-    if (id) return { pathname: '/listing/[id]', params: { id } };
+    if (id) return { pathname: '/listing/[id]', params: { id, from: 'notification' } };
     return type === 'free_food'
       ? { pathname: '/discover/campus', params: { kind: 'food' } }
       : '/notifications';
@@ -58,7 +58,8 @@ export function routeForNotification(
     return { pathname: '/chat/[id]/deal', params: { id: s('chat_id')! } };
   if (s('chat_id')) return { pathname: '/chat/[id]', params: { id: s('chat_id')! } };
   if (s('offer_id')) return { pathname: '/offer/[id]', params: { id: s('offer_id')! } };
-  if (s('listing_id')) return { pathname: '/listing/[id]', params: { id: s('listing_id')! } };
+  if (s('listing_id'))
+    return { pathname: '/listing/[id]', params: { id: s('listing_id')!, from: 'notification' } };
   if (type === 'report_update' && s('report_id')) {
     return { pathname: '/report/[id]', params: { id: s('report_id')! } };
   }

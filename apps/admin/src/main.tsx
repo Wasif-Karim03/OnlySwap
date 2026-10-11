@@ -4,93 +4,108 @@ import {
   createRootRoute,
   createRoute,
   createRouter,
-  Link,
-  Outlet,
+  redirect,
   RouterProvider,
 } from '@tanstack/react-router';
-import { createContext, StrictMode, useContext } from 'react';
+import { StrictMode, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { AdminGate } from './auth';
-import type { Whoami } from './logic';
+import { STAGING } from './env';
+import { ActivityPage } from './pages/Activity';
 import { AnnouncementsPage } from './pages/Announcements';
-import { BannedWordsPage } from './pages/BannedWords';
+import { AuditPage } from './pages/Audit';
 import { CampusPage } from './pages/Campus';
-import { AuditPage, ConfigPage } from './pages/Config';
+import { ListingDetailPage } from './pages/ListingDetail';
 import { ListingsPage } from './pages/Listings';
+import { MeetupsPage } from './pages/Meetups';
 import { MetricsPage } from './pages/Metrics';
 import { OverviewPage } from './pages/Overview';
+import { PersonPage } from './pages/Person';
 import { QuadPage } from './pages/Quad';
-import { AppealsPage, ReportDetailPage, ReportsPage } from './pages/Reports';
-import { TeamPage } from './pages/Team';
-import { UserDetailPage, UsersPage } from './pages/Users';
+import { AppealsPage, ReportsPage } from './pages/Reports';
+import { SettingsPage } from './pages/Settings';
+import { SupportPage } from './pages/Support';
+import { UsersPage } from './pages/Users';
+import { WaitlistPage } from './pages/Waitlist';
+import { SessionProvider } from './session';
+import { NotFoundPage, Shell } from './shell';
 
-const Session = createContext<{ who: Whoami; signOut: () => void } | null>(null);
-const useWho = () => useContext(Session)!.who;
+// The root route is the shell, so unknown addresses render inside it.
+const root = createRootRoute({ component: Shell, notFoundComponent: NotFoundPage });
 
-function Shell() {
-  const { who, signOut } = useContext(Session)!;
-  return (
-    <div className="shell">
-      <nav className="nav" aria-label="Admin">
-        <strong style={{ padding: 'var(--space-sm) var(--space-md)' }}>OnlySwap admin</strong>
-        <Link to="/">Overview</Link>
-        <Link to="/metrics">Metrics</Link>
-        <Link to="/reports">Reports</Link>
-        <Link to="/appeals">Appeals</Link>
-        <Link to="/users">Users</Link>
-        <Link to="/listings">Listings</Link>
-        <Link to="/quad">Quad</Link>
-        <Link to="/banned-words">Banned words</Link>
-        <Link to="/announcements">Announcements</Link>
-        <Link to="/campuses">Campuses</Link>
-        {who.role === 'owner' ? <Link to="/team">Team</Link> : null}
-        <Link to="/config">Flags and config</Link>
-        <Link to="/audit">Audit log</Link>
-        <div className="who">
-          {who.name} ({who.role})
-          <br />
-          <button className="link" onClick={signOut}>
-            Sign out
-          </button>
-        </div>
-      </nav>
-      <main>
-        <Outlet />
-      </main>
-    </div>
+/** Search params as plain strings (?tab=offers&user=...); every key optional. */
+export type SearchParams = { [key: string]: string | undefined };
+const searchParams = (s: Record<string, unknown>): SearchParams =>
+  Object.fromEntries(
+    Object.entries(s)
+      .filter(([, v]) => v !== undefined && v !== null && v !== '')
+      .map(([k, v]) => [k, String(v)]),
   );
-}
 
-const root = createRootRoute({ component: () => <Outlet /> });
-const shell = createRoute({ getParentRoute: () => root, id: 'shell', component: Shell });
-const page = <P extends string>(path: P, component: () => React.ReactNode) =>
-  createRoute({ getParentRoute: () => shell, path, component });
+/** One page = one file in src/pages + one line here + one entry in src/nav.ts. */
+const page = <P extends string>(path: P, component: () => ReactNode) =>
+  createRoute({ getParentRoute: () => root, path, component, validateSearch: searchParams });
+
+/** Old addresses keep working (bookmarks from the first console). */
+const moved = <P extends string>(path: P, to: string) =>
+  createRoute({
+    getParentRoute: () => root,
+    path,
+    beforeLoad: () => {
+      throw redirect({ to, replace: true });
+    },
+  });
 
 const routeTree = root.addChildren([
-  shell.addChildren([
-    page('/', OverviewPage),
-    page('/metrics', () => <MetricsPage who={useWho()} />),
-    page('/reports', ReportsPage),
-    page('/reports/$id', () => <ReportDetailPage who={useWho()} />),
-    page('/appeals', AppealsPage),
-    page('/users', () => <UsersPage who={useWho()} />),
-    page('/users/$id', () => <UserDetailPage who={useWho()} />),
-    page('/listings', ListingsPage),
-    page('/quad', () => <QuadPage who={useWho()} />),
-    page('/banned-words', () => <BannedWordsPage who={useWho()} />),
-    page('/announcements', () => <AnnouncementsPage who={useWho()} />),
-    page('/campuses', () => <CampusPage who={useWho()} />),
-    page('/team', () => <TeamPage who={useWho()} />),
-    page('/config', () => <ConfigPage who={useWho()} />),
-    page('/audit', AuditPage),
-  ]),
+  // Monitor
+  page('/', OverviewPage),
+  page('/activity', ActivityPage),
+  page('/metrics', MetricsPage),
+  page('/waitlist', WaitlistPage),
+  // People and items
+  page('/people', UsersPage),
+  page('/people/$id', PersonPage),
+  page('/listings', ListingsPage),
+  page('/listings/$id', ListingDetailPage),
+  // Safety
+  page('/reports', ReportsPage),
+  page('/reports/$id', ReportsPage),
+  page('/support', SupportPage),
+  page('/support/$id', SupportPage),
+  page('/appeals', AppealsPage),
+  page('/quad', QuadPage),
+  page('/meetups', MeetupsPage),
+  page('/audit', AuditPage),
+  // Setup
+  page('/campuses', CampusPage),
+  page('/announcements', AnnouncementsPage),
+  moved('/settings', '/settings/team'),
+  page('/settings/team', () => <SettingsPage tab="team" />),
+  page('/settings/words', () => <SettingsPage tab="words" />),
+  page('/settings/switches', () => <SettingsPage tab="switches" />),
+  page('/settings/data', () => <SettingsPage tab="data" />),
+  page('/settings/health', () => <SettingsPage tab="health" />),
+  page('/settings/review', () => <SettingsPage tab="review" />),
+  page('/settings/blocked-emails', () => <SettingsPage tab="blocked-emails" />),
+  page('/settings/categories', () => <SettingsPage tab="categories" />),
+  // Staging builds only (VITE_APP_ENV=staging); elsewhere the address is "Page not found".
+  ...(STAGING ? [page('/settings/staging', () => <SettingsPage tab="staging" />)] : []),
+  // Old addresses
+  moved('/users', '/people'),
+  createRoute({
+    getParentRoute: () => root,
+    path: '/users/$id',
+    beforeLoad: ({ params }) => {
+      throw redirect({ to: '/people/$id', params: { id: params.id }, replace: true });
+    },
+  }),
+  moved('/team', '/settings/team'),
+  moved('/banned-words', '/settings/words'),
+  moved('/config', '/settings/switches'),
 ]);
 
-const router = createRouter({
-  routeTree,
-  defaultNotFoundComponent: () => <p className="pad">Page not found.</p>,
-});
+const router = createRouter({ routeTree, defaultNotFoundComponent: NotFoundPage });
 
 declare module '@tanstack/react-router' {
   interface Register {
@@ -102,9 +117,9 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AdminGate>
       {(who, signOut) => (
-        <Session.Provider value={{ who, signOut }}>
+        <SessionProvider who={who} signOut={signOut}>
           <RouterProvider router={router} />
-        </Session.Provider>
+        </SessionProvider>
       )}
     </AdminGate>
   </StrictMode>,

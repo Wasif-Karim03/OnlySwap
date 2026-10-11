@@ -1,259 +1,260 @@
-import { Link, useParams } from '@tanstack/react-router';
+import { Link, useNavigate, useParams } from '@tanstack/react-router';
 import { useState } from 'react';
 
-import { formatWhen, maxUntil, type Whoami } from '../logic';
+import {
+  appealStatus,
+  appealSubject,
+  classYear,
+  listingStatus,
+  platform,
+  plural,
+  reportReason,
+  reportStatus,
+  USER_STATUS_OPTIONS,
+  userStatus,
+  YEAR_OPTIONS,
+} from '../labels';
+import {
+  changeEmailError,
+  dateLabel,
+  errorMessage,
+  knownError,
+  maxUntil,
+  needsUntil,
+  timeAgo,
+  toCsv,
+  whenLabel,
+} from '../logic';
+import { useCampusId, useSession, useWho } from '../session';
 import { rpc } from '../supabase';
-import { ActionButton, Loadable, useRpc } from '../ui';
+import type { UserV2 } from '../types';
+import {
+  ActionButton,
+  Avatar,
+  Button,
+  Card,
+  downloadCsv,
+  EmptyState,
+  Field,
+  FilterChip,
+  Icon,
+  Loadable,
+  Page,
+  Pager,
+  PersonCell,
+  Pill,
+  ReasonActions,
+  StatusPill,
+  Table,
+  useRpc,
+  type ReasonAction,
+} from '../ui';
 
-type UserRow = {
-  id: string;
-  display_name: string;
-  status: string;
-  strike_count: number;
-  noshow_count: number;
-  created_at: string;
-};
+type UsersV2 = { items: UserV2[]; total: number; next_cursor: number | null };
 
-/** G-USERS (P12-ADM-06): search by name (the owner can also look up an exact email). */
-export function UsersPage({ who }: { who: Whoami }) {
+const SORTS = [
+  { id: 'last_active', label: 'Last active' },
+  { id: 'joined', label: 'Newest' },
+  { id: 'name', label: 'Name' },
+  { id: 'reports', label: 'Most reported' },
+] as const;
+
+const CSV_COLS = [
+  'id',
+  'display_name',
+  'status',
+  'campus',
+  'email',
+  'year',
+  'swipes',
+  'offers',
+  'deals',
+  'reports',
+  'joined_at',
+  'last_active_at',
+];
+
+/** People list (admin_list_users_v2): status colors, campus, email, year, counts, last active. */
+export function UsersPage() {
+  const who = useWho();
+  const owner = who.role === 'owner';
+  const sideCampus = useCampusId();
+  const { campuses } = useSession();
+  const navigate = useNavigate();
   const [q, setQ] = useState('');
-  const [status, setStatus] = useState('');
-  const [filters, setFilters] = useState({ q: '', status: '' });
-  const state = useRpc<UserRow[]>('admin_list_users', { filters });
+  const [filters, setFilters] = useState({ q: '', status: '', year: '', sort: 'last_active' });
+  // null follows the sidebar campus until a campus is picked here.
+  const [campus, setCampus] = useState<string | null>(null);
+  const [cursor, setCursor] = useState(0);
+  const campusId = campus ?? sideCampus ?? '';
+  const state = useRpc<UsersV2>('admin_list_users_v2', {
+    filters: { ...filters, campus_id: campusId },
+    cursor,
+  });
+  const set = (patch: Partial<typeof filters>) => {
+    setFilters({ ...filters, ...patch });
+    setCursor(0);
+  };
+  const total = state.data?.total;
+
   return (
-    <>
-      <h1>Users</h1>
+    <Page
+      title="People"
+      crumb={total !== undefined ? plural(total, 'student') : undefined}
+      actions={
+        <Button
+          icon="down"
+          disabled={!state.data?.items.length}
+          onClick={() =>
+            downloadCsv(
+              'onlyswap-people',
+              toCsv(
+                (state.data?.items ?? []).map((u) => ({
+                  ...u,
+                  campus: u.campus?.short_name ?? '',
+                })),
+                CSV_COLS,
+              ),
+            )
+          }
+        >
+          CSV
+        </Button>
+      }
+    >
       <form
-        className="row"
+        className="filters"
         onSubmit={(e) => {
           e.preventDefault();
-          setFilters({ q, status });
+          set({ q: q.trim() });
         }}
       >
-        <label>
-          {who.role === 'owner' ? 'Name or exact email' : 'Name'}
-          <input value={q} onChange={(e) => setQ(e.target.value)} />
-        </label>
-        <label>
-          Status
-          <select value={status} onChange={(e) => setStatus(e.target.value)}>
-            <option value="">Any</option>
-            <option value="active">Active</option>
-            <option value="paused">Paused</option>
-            <option value="suspended">Suspended</option>
-            <option value="banned">Banned</option>
+        <FilterChip icon="search">
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            onBlur={() => q.trim() !== filters.q && set({ q: q.trim() })}
+            placeholder={owner ? 'Name or exact email' : 'Name'}
+            aria-label={owner ? 'Search by name or exact email' : 'Search by name'}
+            style={{ width: 170 }}
+          />
+        </FilterChip>
+        <FilterChip label="Status">
+          <select value={filters.status} onChange={(e) => set({ status: e.target.value })}>
+            <option value="">All</option>
+            {USER_STATUS_OPTIONS.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.label}
+              </option>
+            ))}
           </select>
-        </label>
-        <button type="submit">Search</button>
-      </form>
-      <Loadable state={state} empty={(d) => d.length === 0}>
-        {(rows) => (
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Status</th>
-                <th>Strikes</th>
-                <th>No-shows</th>
-                <th>Joined</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((u) => (
-                <tr key={u.id}>
-                  <td>
-                    <Link to="/users/$id" params={{ id: u.id }}>
-                      {u.display_name}
-                    </Link>
-                  </td>
-                  <td>
-                    <span className="pill">{u.status}</span>
-                  </td>
-                  <td>{u.strike_count}</td>
-                  <td>{u.noshow_count}</td>
-                  <td className="meta">{formatWhen(u.created_at)}</td>
-                </tr>
+        </FilterChip>
+        {owner ? (
+          <FilterChip label="Campus">
+            <select
+              value={campusId}
+              onChange={(e) => {
+                setCampus(e.target.value);
+                setCursor(0);
+              }}
+            >
+              <option value="">All</option>
+              {campuses.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.short_name || c.name}
+                </option>
               ))}
-            </tbody>
-          </table>
-        )}
-      </Loadable>
-    </>
-  );
-}
-
-type UserDetail = UserRow & {
-  status_reason: string | null;
-  paused_until: string | null;
-  verified_until: string | null;
-  year: string | null;
-  email: string | null;
-  strikes: { id: string; reason: string; created_at: string; cleared_at: string | null }[];
-  reports_against: { id: string; reason: string; status: string; created_at: string }[];
-  appeals: { id: string; subject_type: string; status: string; created_at: string }[];
-  listings: { id: string; title: string; status: string; created_at: string }[];
-};
-
-/** G-USER detail (P12-ADM-06). Opening it is logged. */
-export function UserDetailPage({ who }: { who: Whoami }) {
-  const { id } = useParams({ from: '/shell/users/$id' });
-  const state = useRpc<UserDetail>('admin_user_detail', { id });
-  const limit = maxUntil(who.role ?? 'moderator', new Date());
-  const [until, setUntil] = useState(() =>
-    new Date(Date.now() + 3 * 86_400_000).toISOString().slice(0, 10),
-  );
-  const [email, setEmail] = useState('');
-  return (
-    <Loadable state={state}>
-      {(u) => (
-        <>
-          <p>
-            <Link to="/users">Back to users</Link>
-          </p>
-          <h1>{u.display_name}</h1>
-          <div className="card">
-            <p>
-              <span className="pill">{u.status}</span>
-              {u.paused_until ? ` until ${formatWhen(u.paused_until)}` : ''}{' '}
-              {u.status_reason ? `(${u.status_reason})` : ''}
-            </p>
-            <p className="meta">
-              Joined {formatWhen(u.created_at)}. Verified until {formatWhen(u.verified_until)}.{' '}
-              {u.strike_count} strikes, {u.noshow_count} no-shows.
-            </p>
-            {u.email ? <p className="meta">Email: {u.email}</p> : null}
-          </div>
-          <div className="card">
-            <h2>Account</h2>
-            <div className="row">
-              <label>
-                Until
-                <input
-                  type="date"
-                  value={until}
-                  max={limit ? limit.toISOString().slice(0, 10) : undefined}
-                  onChange={(e) => setUntil(e.target.value)}
-                />
-              </label>
-              <ActionButton
-                label="Pause"
-                run={(reason) =>
-                  rpc('admin_set_user_status', {
-                    user_id: u.id,
-                    status: 'paused',
-                    until: `${until}T23:59:00Z`,
-                    reason,
-                  })
-                }
-                onDone={state.reload}
-              />
-              <ActionButton
-                label="Suspend"
-                kind="danger"
-                run={(reason) =>
-                  rpc('admin_set_user_status', {
-                    user_id: u.id,
-                    status: 'suspended',
-                    until: `${until}T23:59:00Z`,
-                    reason,
-                  })
-                }
-                onDone={state.reload}
-              />
-              <ActionButton
-                label="Make active"
-                kind="secondary"
-                run={(reason) =>
-                  rpc('admin_set_user_status', {
-                    user_id: u.id,
-                    status: 'active',
-                    until: null,
-                    reason,
-                  })
-                }
-                onDone={state.reload}
-              />
-              <ActionButton
-                label="Ask to re-verify"
-                kind="secondary"
-                run={(reason) => rpc('admin_force_reverify', { user_id: u.id, reason })}
-                onDone={state.reload}
-              />
-              {who.role === 'owner' ? (
-                <ActionButton
-                  label="Ban"
-                  kind="danger"
-                  run={(reason) =>
-                    rpc('admin_set_user_status', {
-                      user_id: u.id,
-                      status: 'banned',
-                      until: null,
-                      reason,
-                    })
-                  }
-                  onDone={state.reload}
-                />
-              ) : null}
-            </div>
-            {who.role === 'owner' ? (
-              <div className="row" style={{ marginTop: 'var(--space-md)' }}>
-                <label>
-                  New school email (lost-access recovery)
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                </label>
-                <ActionButton
-                  label="Change email"
-                  kind="secondary"
-                  needsReason={false}
-                  run={() => rpc('admin_change_email', { user_id: u.id, new_email: email })}
-                  onDone={state.reload}
-                />
-              </div>
-            ) : null}
-          </div>
-          <div className="card">
-            <h2>Strikes</h2>
-            {u.strikes.length === 0 ? <p className="meta">None</p> : null}
-            {u.strikes.map((s) => (
-              <p key={s.id}>
-                {s.reason} <span className="meta">{formatWhen(s.created_at)}</span>{' '}
-                {s.cleared_at ? (
-                  <span className="pill">cleared</span>
-                ) : (
-                  <ActionButton
-                    label="Clear"
-                    kind="secondary"
-                    run={(reason) => rpc('admin_clear_strike', { id: s.id, reason })}
-                    onDone={state.reload}
-                  />
-                )}
-              </p>
+            </select>
+          </FilterChip>
+        ) : null}
+        <FilterChip label="Year">
+          <select value={filters.year} onChange={(e) => set({ year: e.target.value })}>
+            <option value="">All</option>
+            {YEAR_OPTIONS.map((y) => (
+              <option key={y.id} value={y.id}>
+                {y.label}
+              </option>
             ))}
-          </div>
-          <div className="card">
-            <h2>Reports about them</h2>
-            {u.reports_against.length === 0 ? <p className="meta">None</p> : null}
-            {u.reports_against.map((r) => (
-              <p key={r.id}>
-                <Link to="/reports/$id" params={{ id: r.id }}>
-                  {r.reason}
-                </Link>{' '}
-                <span className="pill">{r.status}</span>{' '}
-                <span className="meta">{formatWhen(r.created_at)}</span>
-              </p>
+          </select>
+        </FilterChip>
+        <FilterChip label="Sort">
+          <select value={filters.sort} onChange={(e) => set({ sort: e.target.value })}>
+            {SORTS.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.label}
+              </option>
             ))}
-          </div>
-          <div className="card">
-            <h2>Recent listings</h2>
-            {u.listings.length === 0 ? <p className="meta">None</p> : null}
-            {u.listings.map((l) => (
-              <p key={l.id}>
-                {l.title} <span className="pill">{l.status}</span>
-              </p>
-            ))}
-          </div>
-        </>
-      )}
-    </Loadable>
+          </select>
+        </FilterChip>
+        <button type="submit" className="sr-only">
+          Search
+        </button>
+      </form>
+      <Card>
+        <Loadable
+          state={state}
+          rows={8}
+          empty={(d) => d.items.length === 0}
+          emptyText="No students match these filters."
+        >
+          {(d) => (
+            <>
+              <Table
+                label="Students"
+                columns={[
+                  'Student',
+                  'Status',
+                  'Campus',
+                  'Year',
+                  { label: 'Swipes', num: true },
+                  { label: 'Offers', num: true },
+                  { label: 'Deals', num: true },
+                  { label: 'Reports', num: true },
+                  'Joined',
+                  'Last active',
+                ]}
+              >
+                {d.items.map((u) => (
+                  <tr
+                    key={u.id}
+                    className="click"
+                    onClick={(e) => {
+                      if ((e.target as HTMLElement).closest('a')) return;
+                      void navigate({ to: '/people/$id', params: { id: u.id } });
+                    }}
+                  >
+                    <td>
+                      <PersonCell person={u} sub={u.email ?? undefined} />
+                    </td>
+                    <td>
+                      <StatusPill {...userStatus(u.status)} />
+                    </td>
+                    <td className="ink2">{u.campus?.short_name ?? ''}</td>
+                    <td className="ink2">{classYear(u.year)}</td>
+                    <td className="num">{u.swipes.toLocaleString('en-US')}</td>
+                    <td className="num">{u.offers.toLocaleString('en-US')}</td>
+                    <td className="num">{u.deals.toLocaleString('en-US')}</td>
+                    <td className="num">
+                      {u.reports ? <span className="error strong">{u.reports}</span> : '0'}
+                    </td>
+                    <td className="muted">{dateLabel(u.joined_at)}</td>
+                    <td className="muted" title={u.last_platform ? platform(u.last_platform) : ''}>
+                      {u.last_active_at ? timeAgo(u.last_active_at) : 'Never'}
+                    </td>
+                  </tr>
+                ))}
+              </Table>
+              <Pager
+                info={`${cursor + 1} to ${cursor + d.items.length} of ${d.total.toLocaleString('en-US')}`}
+                hasPrev={cursor > 0}
+                hasNext={d.next_cursor !== null}
+                onPrev={() => setCursor(Math.max(0, cursor - 50))}
+                onNext={() => setCursor(d.next_cursor ?? cursor)}
+              />
+            </>
+          )}
+        </Loadable>
+      </Card>
+    </Page>
   );
 }

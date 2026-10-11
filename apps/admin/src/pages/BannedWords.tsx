@@ -1,17 +1,29 @@
 import { useState } from 'react';
 
+import { bannedAction, bannedMatch } from '../labels';
 import {
   BANNED_SCOPES,
   bannedWordFormError,
-  formatWhen,
+  dateLabel,
   knownError,
   regexError,
   type BannedAction,
   type BannedMatch,
-  type Whoami,
 } from '../logic';
+import { useIsOwner } from '../session';
 import { rpc } from '../supabase';
-import { ActionButton, Loadable, useRpc } from '../ui';
+import {
+  ActionButton,
+  Button,
+  Card,
+  Field,
+  FilterChip,
+  Loadable,
+  Pager,
+  StatusPill,
+  Table,
+  useRpc,
+} from '../ui';
 
 type BannedWord = {
   id: string;
@@ -29,18 +41,14 @@ const PAGE = 100;
 const scopeLabel = (id: string) => BANNED_SCOPES.find((s) => s.id === id)?.label ?? id;
 
 /**
- * G03 Banned words (R11-ADM-02): the terms private.check_text looks for.
- * Block stops the text from posting; review holds it for a moderator.
- * Owners add, edit and delete; moderators read.
+ * Settings > Banned words: the terms the server checks text for. Block stops
+ * the text from posting; review holds it for a moderator. Owners edit;
+ * moderators read.
  */
-export function BannedWordsPage({ who }: { who: Whoami }) {
-  const owner = who.role === 'owner';
+export function BannedWordsSection() {
+  const owner = useIsOwner();
   const [q, setQ] = useState('');
-  const [filters, setFilters] = useState<{ q: string; scope: string; action: string }>({
-    q: '',
-    scope: '',
-    action: '',
-  });
+  const [filters, setFilters] = useState({ q: '', scope: '', action: '' });
   const [cursor, setCursor] = useState(0);
   const state = useRpc<BannedWord[]>('admin_list_banned_words', { filters, cursor });
   const [editing, setEditing] = useState<BannedWord | null>(null);
@@ -52,102 +60,101 @@ export function BannedWordsPage({ who }: { who: Whoami }) {
   };
 
   return (
-    <>
-      <h1>Banned words</h1>
-      {owner ? (
-        <WordForm
-          key={editing ? `edit:${editing.id}` : `new:${formKey}`}
-          editing={editing}
-          onCancel={() => setEditing(null)}
-          onDone={() => {
-            setEditing(null);
-            setFormKey((k) => k + 1);
-            state.reload();
-          }}
-        />
-      ) : (
-        <p className="meta">Only an owner can change this list.</p>
-      )}
-
-      <form
-        className="row"
-        aria-label="Filter banned words"
-        style={{ marginTop: 'var(--space-lg)' }}
-        onSubmit={(e) => {
-          e.preventDefault();
-          setFilter({ q: q.trim() });
-        }}
+    <div
+      className="grid2"
+      style={{ gridTemplateColumns: owner ? 'minmax(0, 1fr) 340px' : 'minmax(0, 1fr)' }}
+    >
+      <Card
+        title={
+          <div className="row">
+            <h2>Banned words</h2>
+            {state.data ? <span className="muted">{state.data.length}</span> : null}
+          </div>
+        }
       >
-        <label>
-          Search
-          <input value={q} onChange={(e) => setQ(e.target.value)} type="search" />
-        </label>
-        <label>
-          Checked in
-          <select value={filters.scope} onChange={(e) => setFilter({ scope: e.target.value })}>
-            <option value="">Anywhere</option>
-            {BANNED_SCOPES.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Action
-          <select value={filters.action} onChange={(e) => setFilter({ action: e.target.value })}>
-            <option value="">Block or review</option>
-            <option value="block">Block</option>
-            <option value="review">Review</option>
-          </select>
-        </label>
-        <button type="submit" className="secondary">
-          Search
-        </button>
-      </form>
-
-      <div style={{ marginTop: 'var(--space-lg)' }}>
-        <Loadable state={state} empty={(d) => d.length === 0}>
+        <form
+          className="filters in-card"
+          aria-label="Filter banned words"
+          onSubmit={(e) => {
+            e.preventDefault();
+            setFilter({ q: q.trim() });
+          }}
+        >
+          <FilterChip icon="search">
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              onBlur={() => q.trim() !== filters.q && setFilter({ q: q.trim() })}
+              placeholder="Find a term"
+              aria-label="Find a term"
+              style={{ width: 140 }}
+            />
+          </FilterChip>
+          <FilterChip label="Checked in">
+            <select value={filters.scope} onChange={(e) => setFilter({ scope: e.target.value })}>
+              <option value="">Anywhere</option>
+              {BANNED_SCOPES.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+          </FilterChip>
+          <FilterChip label="Action">
+            <select value={filters.action} onChange={(e) => setFilter({ action: e.target.value })}>
+              <option value="">Any</option>
+              <option value="block">Block</option>
+              <option value="review">Hold for review</option>
+            </select>
+          </FilterChip>
+          <button type="submit" className="sr-only">
+            Search
+          </button>
+        </form>
+        <Loadable state={state} rows={6} empty={(d) => d.length === 0} emptyText="No terms match.">
           {(rows) => (
-            <table>
-              <thead>
-                <tr>
-                  <th>Term</th>
-                  <th>Match</th>
-                  <th>Checked in</th>
-                  <th>Action</th>
-                  <th>Fired</th>
-                  <th>Overturned</th>
-                  <th>Added</th>
-                  {owner ? <th>Actions</th> : null}
-                </tr>
-              </thead>
-              <tbody>
+            <>
+              <Table
+                compact
+                label="Banned words"
+                columns={[
+                  'Term',
+                  'Match',
+                  'Checked in',
+                  'Action',
+                  { label: 'Fired', num: true },
+                  { label: 'Undone', num: true },
+                  ...(owner ? [{ label: '', className: 'actions' }] : []),
+                ]}
+              >
                 {rows.map((w) => (
                   <tr key={w.id}>
+                    <td
+                      className="mono wrap"
+                      style={{ maxWidth: 190, overflowWrap: 'anywhere' }}
+                      title={`Added ${dateLabel(w.created_at)}${w.created_by ? ` by ${w.created_by}` : ''}`}
+                    >
+                      {w.pattern}
+                    </td>
+                    <td className="ink2">{bannedMatch(w.match)}</td>
+                    <td className="ink2 wrap" style={{ minWidth: 150 }}>
+                      {w.scopes.map(scopeLabel).join(', ')}
+                    </td>
                     <td>
-                      <code>{w.pattern}</code>
+                      <StatusPill {...bannedAction(w.action)} />
                     </td>
-                    <td>{w.match}</td>
-                    <td>{w.scopes.map(scopeLabel).join(', ')}</td>
-                    <td>
-                      <span className={w.action === 'block' ? 'pill p1' : 'pill'}>{w.action}</span>
-                    </td>
-                    <td>{w.fired_count}</td>
-                    <td>{w.overturned_count}</td>
-                    <td className="meta">
-                      {formatWhen(w.created_at)}
-                      {w.created_by ? ` by ${w.created_by}` : ''}
-                    </td>
+                    <td className="num">{w.fired_count}</td>
+                    <td className="num">{w.overturned_count}</td>
                     {owner ? (
-                      <td>
+                      <td className="actions">
                         <div className="row">
-                          <button className="secondary" onClick={() => setEditing(w)}>
+                          <Button size="sm" onClick={() => setEditing(w)}>
                             Edit
-                          </button>
+                          </Button>
                           <ActionButton
                             label="Delete"
                             kind="danger"
+                            size="sm"
                             confirm={`Delete "${w.pattern}"? Text with it will no longer be blocked or held.`}
                             run={(reason) => rpc('admin_delete_banned_word', { id: w.id, reason })}
                             onDone={() => {
@@ -160,33 +167,38 @@ export function BannedWordsPage({ who }: { who: Whoami }) {
                     ) : null}
                   </tr>
                 ))}
-              </tbody>
-            </table>
+              </Table>
+              <Pager
+                hasPrev={cursor > 0}
+                hasNext={rows.length === PAGE}
+                onPrev={() => setCursor(Math.max(0, cursor - PAGE))}
+                onNext={() => setCursor(cursor + PAGE)}
+              />
+            </>
           )}
         </Loadable>
-      </div>
-      <div className="row" style={{ marginTop: 'var(--space-md)' }}>
-        <button
-          className="secondary"
-          disabled={cursor === 0}
-          onClick={() => setCursor(Math.max(0, cursor - PAGE))}
+        <p
+          className="note"
+          style={{ padding: '12px 16px', borderTop: '1px solid var(--color-line)' }}
         >
-          Previous page
-        </button>
-        <button
-          className="secondary"
-          disabled={(state.data?.length ?? 0) < PAGE}
-          onClick={() => setCursor(cursor + PAGE)}
-        >
-          Next page
-        </button>
-      </div>
-      <p className="meta">
-        Text is lowercased, accents and look-alike characters (like 0 for o and $ for s) are folded,
-        and punctuation becomes spaces before it is checked. Word and phrase terms match whole
-        words. Fired counts every time a term stopped or held something.
-      </p>
-    </>
+          Text is lowercased, accents and look-alike characters (like 0 for o and $ for s) are
+          folded, and punctuation becomes spaces before it is checked. Word and phrase terms match
+          whole words. Fired counts every time a term stopped or held something.
+        </p>
+      </Card>
+      {owner ? (
+        <WordForm
+          key={editing ? `edit:${editing.id}` : `new:${formKey}`}
+          editing={editing}
+          onCancel={() => setEditing(null)}
+          onDone={() => {
+            setEditing(null);
+            setFormKey((k) => k + 1);
+            state.reload();
+          }}
+        />
+      ) : null}
+    </div>
   );
 }
 
@@ -212,7 +224,7 @@ function WordForm({
 
   return (
     <form
-      className="card"
+      className="card clip"
       aria-label={editing ? 'Edit banned word' : 'Add a banned word'}
       onSubmit={async (e) => {
         e.preventDefault();
@@ -236,7 +248,7 @@ function WordForm({
             text: knownError(err, {
               'INVALID:pattern':
                 match === 'regex'
-                  ? "Postgres couldn't read that regex, or it isn't 2 to 100 characters."
+                  ? "The server couldn't read that pattern, or it isn't 2 to 100 characters."
                   : 'Use 2 to 100 characters.',
               'INVALID:scopes': 'Pick at least one place to check.',
             }),
@@ -246,16 +258,17 @@ function WordForm({
         }
       }}
     >
-      <h2 style={{ marginTop: 0 }}>{editing ? `Edit "${editing.pattern}"` : 'Add a term'}</h2>
-      {editing ? (
-        <p className="meta">
-          The term and match type identify an entry. To change them, add a new term and delete this
-          one.
-        </p>
-      ) : null}
-      <div className="row">
-        <label style={{ flex: 1 }}>
-          Term
+      <div className="ch">
+        <h2>{editing ? `Edit "${editing.pattern}"` : 'Add a term'}</h2>
+      </div>
+      <div className="cb stack tight" style={{ gap: 12 }}>
+        {editing ? (
+          <p className="note">
+            The term and match type identify an entry. To change them, add a new term and delete
+            this one.
+          </p>
+        ) : null}
+        <Field label="Term">
           <input
             value={pattern}
             onChange={(e) => setPattern(e.target.value)}
@@ -265,48 +278,47 @@ function WordForm({
             spellCheck={false}
             aria-invalid={liveRegex ? true : undefined}
           />
-        </label>
-        <label>
-          Match
-          <select
-            value={match}
-            onChange={(e) => setMatch(e.target.value as BannedMatch)}
-            disabled={!!editing}
-          >
-            <option value="word">Word</option>
-            <option value="phrase">Phrase</option>
-            <option value="regex">Regex</option>
-          </select>
-        </label>
-        <label>
-          Action
-          <select value={action} onChange={(e) => setAction(e.target.value as BannedAction)}>
-            <option value="review">Review (hold for a moderator)</option>
-            <option value="block">Block (don't post)</option>
-          </select>
-        </label>
-      </div>
-      {liveRegex ? <p className="error">{liveRegex}</p> : null}
-      <fieldset style={{ marginTop: 'var(--space-md)' }}>
-        <legend className="meta">Check it in</legend>
-        <div className="row">
-          {BANNED_SCOPES.map((s) => (
-            <label key={s.id}>
-              <input
-                type="checkbox"
-                checked={scopes.includes(s.id)}
-                onChange={(e) =>
-                  setScopes(e.target.checked ? [...scopes, s.id] : scopes.filter((x) => x !== s.id))
-                }
-              />{' '}
-              {s.label}
-            </label>
-          ))}
+        </Field>
+        <div className="row" style={{ gap: 12 }}>
+          <Field label="Match" className="grow">
+            <select
+              value={match}
+              onChange={(e) => setMatch(e.target.value as BannedMatch)}
+              disabled={!!editing}
+            >
+              <option value="word">Word</option>
+              <option value="phrase">Phrase</option>
+              <option value="regex">Pattern (regex)</option>
+            </select>
+          </Field>
+          <Field label="Action" className="grow">
+            <select value={action} onChange={(e) => setAction(e.target.value as BannedAction)}>
+              <option value="review">Hold for review</option>
+              <option value="block">Block (don't post)</option>
+            </select>
+          </Field>
         </div>
-      </fieldset>
-      <div className="row">
-        <label style={{ flex: 1 }}>
-          Reason (saved to the audit log)
+        {liveRegex ? <p className="error">{liveRegex}</p> : null}
+        <fieldset className="field" style={{ border: 0, padding: 0, margin: 0 }}>
+          <legend className="field-label">Check it in</legend>
+          <div className="checks">
+            {BANNED_SCOPES.map((s) => (
+              <label key={s.id} className="check">
+                <input
+                  type="checkbox"
+                  checked={scopes.includes(s.id)}
+                  onChange={(e) =>
+                    setScopes(
+                      e.target.checked ? [...scopes, s.id] : scopes.filter((x) => x !== s.id),
+                    )
+                  }
+                />
+                {s.label}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <Field label="Reason (saved to the audit log)">
           <input
             value={reason}
             onChange={(e) => setReason(e.target.value)}
@@ -314,17 +326,19 @@ function WordForm({
             minLength={3}
             autoComplete="off"
           />
-        </label>
-        <button type="submit" disabled={busy || !!liveRegex}>
-          {busy ? 'Saving…' : editing ? 'Save changes' : 'Add term'}
-        </button>
-        {editing ? (
-          <button type="button" className="secondary" onClick={onCancel} disabled={busy}>
-            Cancel
-          </button>
-        ) : null}
+        </Field>
+        {msg ? <p className={msg.ok ? 'ok' : 'error'}>{msg.text}</p> : null}
       </div>
-      {msg ? <p className={msg.ok ? 'ok' : 'error'}>{msg.text}</p> : null}
+      <div className="cf">
+        {editing ? (
+          <Button variant="ghost" onClick={onCancel} disabled={busy}>
+            Cancel
+          </Button>
+        ) : null}
+        <Button type="submit" variant="primary" className="spacer" disabled={busy || !!liveRegex}>
+          {busy ? 'Saving…' : editing ? 'Save changes' : 'Add term'}
+        </Button>
+      </div>
     </form>
   );
 }

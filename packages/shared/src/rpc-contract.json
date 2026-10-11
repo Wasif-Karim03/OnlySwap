@@ -30,8 +30,48 @@
     ]
   },
   {
+    "name": "admin_activity_feed",
+    "args": "campus_id uuid, kinds text[], user_id uuid, listing_id uuid, since timestamp with time zone, until timestamp with time zone, cursor jsonb, \"limit\" integer",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_age_blocks_summary",
+    "args": "campus_id uuid, days integer",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_bulk_set_listing_status",
+    "args": "ids uuid[], status text, reason text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "admin_change_email",
     "args": "user_id uuid, new_email text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_change_email",
+    "args": "user_id uuid, new_email text, reason text",
     "returns": "jsonb",
     "security": "definer",
     "grants": [
@@ -60,8 +100,28 @@
     ]
   },
   {
+    "name": "admin_create_campus",
+    "args": "name text, short_name text, slug text, timezone text, domain text, status text, spot jsonb, reason text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "admin_decide_appeal",
     "args": "id uuid, decision text, note text",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_delete_banned_hash",
+    "args": "email_hash text, reason text",
     "returns": "void",
     "security": "definer",
     "grants": [
@@ -82,6 +142,16 @@
   {
     "name": "admin_delete_domain",
     "args": "domain text, reason text",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_delete_review_account",
+    "args": "email text, reason text",
     "returns": "void",
     "security": "definer",
     "grants": [
@@ -160,6 +230,26 @@
     ]
   },
   {
+    "name": "admin_list_audit_v2",
+    "args": "filters jsonb, cursor bigint",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_list_banned_hashes",
+    "args": "cursor integer",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "admin_list_banned_words",
     "args": "filters jsonb, cursor integer",
     "returns": "jsonb",
@@ -180,8 +270,28 @@
     ]
   },
   {
+    "name": "admin_list_deletions_exports",
+    "args": "cursor integer",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "admin_list_listings",
     "args": "filters jsonb, cursor integer",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_list_meetups",
+    "args": "campus_id uuid, \"when\" text, cursor integer",
     "returns": "jsonb",
     "security": "definer",
     "grants": [
@@ -210,8 +320,48 @@
     ]
   },
   {
+    "name": "admin_list_review_accounts",
+    "args": "",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_list_support",
+    "args": "status text, campus_id uuid, cursor integer",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "admin_list_users",
     "args": "filters jsonb, cursor integer",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_list_users_v2",
+    "args": "filters jsonb, cursor integer",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_listing_activity",
+    "args": "listing_id uuid",
     "returns": "jsonb",
     "security": "definer",
     "grants": [
@@ -270,7 +420,127 @@
     ]
   },
   {
+    "name": "admin_noshow_summary",
+    "args": "campus_id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_open_campus",
+    "args": "campus_id uuid, reason text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "admin_overview",
+    "args": "campus_id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_overview_v2",
+    "args": "campus_id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_person",
+    "args": "user_id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_person_access_log",
+    "args": "user_id uuid, cursor bigint",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_person_chats",
+    "args": "user_id uuid, cursor integer",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_person_listings",
+    "args": "user_id uuid, cursor integer",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_person_meetups",
+    "args": "user_id uuid, cursor integer",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_person_offers",
+    "args": "user_id uuid, cursor integer",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_person_reports",
+    "args": "user_id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_person_timeline",
+    "args": "user_id uuid, kinds text[], cursor jsonb, \"limit\" integer",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_ratings_summary",
     "args": "campus_id uuid",
     "returns": "jsonb",
     "security": "definer",
@@ -330,6 +600,16 @@
     ]
   },
   {
+    "name": "admin_search",
+    "args": "q text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "admin_set_config",
     "args": "key text, value jsonb, reason text",
     "returns": "void",
@@ -360,9 +640,49 @@
     ]
   },
   {
+    "name": "admin_support_detail",
+    "args": "id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_system_health",
+    "args": "",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "admin_update_campus",
     "args": "id uuid, patch jsonb, reason text",
     "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_update_support",
+    "args": "id uuid, status text, reason text, note text, reply text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_upsert_banned_hash",
+    "args": "email text, reason text",
+    "returns": "jsonb",
     "security": "definer",
     "grants": [
       "authenticated",
@@ -380,8 +700,28 @@
     ]
   },
   {
+    "name": "admin_upsert_category",
+    "args": "id smallint, name text, sort smallint, reason text, slug text, parent_id smallint",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "admin_upsert_domain",
     "args": "domain text, campus_id uuid, kind text, reason text",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_upsert_review_account",
+    "args": "email text, note text, reason text",
     "returns": "void",
     "security": "definer",
     "grants": [
@@ -402,6 +742,16 @@
   {
     "name": "admin_user_detail",
     "args": "id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "admin_waitlist_demand",
+    "args": "",
     "returns": "jsonb",
     "security": "definer",
     "grants": [
@@ -1270,6 +1620,16 @@
     "name": "submit_rating",
     "args": "chat_id uuid, thumbs_up boolean, tags text[], comment text",
     "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "track_events",
+    "args": "events jsonb, platform text, app_version text",
+    "returns": "jsonb",
     "security": "definer",
     "grants": [
       "authenticated",

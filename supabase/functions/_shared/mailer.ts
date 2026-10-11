@@ -12,7 +12,9 @@ export type Template =
   | 'data_export'
   | 'admin_reveal_receipt'
   | 'support_request'
-  | 'priority_report';
+  | 'priority_report'
+  | 'support_reply'
+  | 'report_queue';
 
 export type Rendered = { subject: string; text: string; html: string; replyTo?: string };
 
@@ -134,6 +136,43 @@ export function render(template: Template, vars: Record<string, unknown>, site: 
       ];
       return {
         subject: `Priority report: ${reason}`,
+        text: text(lines),
+        html: page(lines.map(esc), site),
+      };
+    }
+    case 'support_reply': {
+      // Free text from our team (admin_update_support), plain and escaped.
+      const body = str(vars.body);
+      const ref = str(vars.ref);
+      const lines = [
+        'Hi, this is OnlySwap support, answering your message' + (ref ? ` (ref ${ref})` : '') + '.',
+        '',
+        body,
+        '',
+        'You can reply to this email if you need anything else.',
+      ];
+      return {
+        subject: 'Re: your OnlySwap support request',
+        text: text(lines),
+        html: page(
+          [
+            esc(lines[0]),
+            esc(body).replace(/\n/g, '<br>'),
+            'You can reply to this email if you need anything else.',
+          ],
+          site,
+        ),
+      };
+    }
+    case 'report_queue': {
+      const open = Number(vars.open) || 0;
+      const hours = Number(vars.oldest_hours) || 0;
+      const lines = [
+        `${open} open report${open === 1 ? '' : 's'}; the oldest has waited ${hours} hour${hours === 1 ? '' : 's'}.`,
+        'Open the admin console to review the queue.',
+      ];
+      return {
+        subject: 'Reports are waiting',
         text: text(lines),
         html: page(lines.map(esc), site),
       };

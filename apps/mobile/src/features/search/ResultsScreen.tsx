@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { FlatList, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { track as trackActivity } from '@/lib/activity';
 import { countBucket, track } from '@/lib/analytics';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
@@ -69,7 +70,9 @@ export function ResultsScreen({
     if (firstCount === undefined || tracked.current === searchKey) return;
     tracked.current = searchKey;
     track('search_performed', { results_bucket: countBucket(firstCount) });
-  }, [searchKey, firstCount]);
+    // The search text goes only to our database (DEC 93), never to PostHog.
+    trackActivity('searched', { query: q, source: 'search' });
+  }, [searchKey, firstCount, q]);
 
   // Opening a saved search resets its "new" count.
   useEffect(() => {
@@ -132,7 +135,9 @@ export function ResultsScreen({
               photo={item.photos[0] ? mediaUrl(base, item.photos[0].thumb_path) : null}
               blurhash={item.photos[0]?.blurhash}
               state={item.status === 'hold' ? 'hold' : 'default'}
-              onPress={() => router.push({ pathname: '/listing/[id]', params: { id: item.id } })}
+              onPress={() =>
+                router.push({ pathname: '/listing/[id]', params: { id: item.id, from: 'search' } })
+              }
               testID={`result-${item.id}`}
             />
           </View>
