@@ -5,7 +5,20 @@ export type Database = {
   
   "public": {
           Tables: {
-            "activity_days": {
+            "account_deletions": {
+                  Row: {
+                    "campus_id": string | null,"finished_at": string | null,"id": string,"started_at": string,"status": string,"underage": boolean,"user_id": string | null
+                  }
+                  Insert: {
+                    "campus_id"?: string | null,"finished_at"?: string | null,"id"?: string,"started_at"?: string,"status"?: string,"underage"?: boolean,"user_id"?: string | null
+                  }
+                  Update: {
+                    "campus_id"?: string | null,"finished_at"?: string | null,"id"?: string,"started_at"?: string,"status"?: string,"underage"?: boolean,"user_id"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"activity_days": {
                   Row: {
                     "day": string,"user_id": string
                   }
@@ -17,6 +30,61 @@ export type Database = {
                   }
                   Relationships: [
                     
+                  ]
+                },"activity_events": {
+                  Row: {
+                    "app_version": string | null,"campus_id": string,"created_at": string,"dwell_ms": number | null,"id": number,"kind": string,"listing_id": string | null,"platform": string | null,"query": string | null,"source": string | null,"user_id": string
+                  }
+                  Insert: {
+                    "app_version"?: string | null,"campus_id": string,"created_at"?: string,"dwell_ms"?: number | null,"id"?: never,"kind": string,"listing_id"?: string | null,"platform"?: string | null,"query"?: string | null,"source"?: string | null,"user_id": string
+                  }
+                  Update: {
+                    "app_version"?: string | null,"campus_id"?: string,"created_at"?: string,"dwell_ms"?: number | null,"id"?: never,"kind"?: string,"listing_id"?: string | null,"platform"?: string | null,"query"?: string | null,"source"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "activity_events_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campus_progress"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "activity_events_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campuses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "activity_events_listing_id_fkey"
+      columns: ["listing_id"]
+isOneToOne: false
+      referencedRelation: "listings"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "activity_events_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "activity_events_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "activity_events_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "activity_events_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"admins": {
                   Row: {
@@ -69,13 +137,13 @@ isOneToOne: true
                   ]
                 },"age_blocks": {
                   Row: {
-                    "created_at": string | null,"email_hash": string
+                    "campus_id": string | null,"created_at": string | null,"email_hash": string
                   }
                   Insert: {
-                    "created_at"?: string | null,"email_hash": string
+                    "campus_id"?: string | null,"created_at"?: string | null,"email_hash": string
                   }
                   Update: {
-                    "created_at"?: string | null,"email_hash"?: string
+                    "campus_id"?: string | null,"created_at"?: string | null,"email_hash"?: string
                   }
                   Relationships: [
                     
@@ -905,13 +973,13 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "adult_confirmed_at": string | null,"age_method": Database["public"]['Enums']["age_method"] | null,"analytics_opt_in": boolean,"areas": (string)[],"avatar_path": string | null,"bio": string | null,"campus_id": string,"crash_reports_opt_in": boolean,"created_at": string,"display_name": string | null,"email_hash": string,"first_name": string | null,"founding_seller_until": string | null,"id": string,"invite_code": string,"invited_by": string | null,"last_active_at": string | null,"last_initial": string | null,"noshow_count": number,"paused_until": string | null,"quad_rules_accepted_at": string | null,"rules_accepted_at": string | null,"rules_version": string | null,"seen_unlock_at": string | null,"status": Database["public"]['Enums']["user_status"],"status_reason": string | null,"strike_count": number,"theme_mode": string,"verified_until": string,"year": Database["public"]['Enums']["class_year"] | null
+                    "adult_confirmed_at": string | null,"age_method": Database["public"]['Enums']["age_method"] | null,"analytics_opt_in": boolean,"areas": (string)[],"avatar_path": string | null,"bio": string | null,"campus_id": string,"crash_reports_opt_in": boolean,"created_at": string,"display_name": string | null,"email_hash": string,"first_name": string | null,"founding_seller_until": string | null,"id": string,"invite_code": string,"invited_by": string | null,"last_active_at": string | null,"last_app_version": string | null,"last_initial": string | null,"last_platform": string | null,"noshow_count": number,"paused_until": string | null,"quad_rules_accepted_at": string | null,"rules_accepted_at": string | null,"rules_version": string | null,"seen_unlock_at": string | null,"status": Database["public"]['Enums']["user_status"],"status_reason": string | null,"strike_count": number,"theme_mode": string,"verified_until": string,"year": Database["public"]['Enums']["class_year"] | null
                   }
                   Insert: {
-                    "adult_confirmed_at"?: string | null,"age_method"?: Database["public"]['Enums']["age_method"] | null,"analytics_opt_in"?: boolean,"areas"?: (string)[],"avatar_path"?: string | null,"bio"?: string | null,"campus_id": string,"crash_reports_opt_in"?: boolean,"created_at"?: string,"display_name"?: never,"email_hash": string,"first_name"?: string | null,"founding_seller_until"?: string | null,"id": string,"invite_code"?: string,"invited_by"?: string | null,"last_active_at"?: string | null,"last_initial"?: string | null,"noshow_count"?: number,"paused_until"?: string | null,"quad_rules_accepted_at"?: string | null,"rules_accepted_at"?: string | null,"rules_version"?: string | null,"seen_unlock_at"?: string | null,"status"?: Database["public"]['Enums']["user_status"],"status_reason"?: string | null,"strike_count"?: number,"theme_mode"?: string,"verified_until": string,"year"?: Database["public"]['Enums']["class_year"] | null
+                    "adult_confirmed_at"?: string | null,"age_method"?: Database["public"]['Enums']["age_method"] | null,"analytics_opt_in"?: boolean,"areas"?: (string)[],"avatar_path"?: string | null,"bio"?: string | null,"campus_id": string,"crash_reports_opt_in"?: boolean,"created_at"?: string,"display_name"?: never,"email_hash": string,"first_name"?: string | null,"founding_seller_until"?: string | null,"id": string,"invite_code"?: string,"invited_by"?: string | null,"last_active_at"?: string | null,"last_app_version"?: string | null,"last_initial"?: string | null,"last_platform"?: string | null,"noshow_count"?: number,"paused_until"?: string | null,"quad_rules_accepted_at"?: string | null,"rules_accepted_at"?: string | null,"rules_version"?: string | null,"seen_unlock_at"?: string | null,"status"?: Database["public"]['Enums']["user_status"],"status_reason"?: string | null,"strike_count"?: number,"theme_mode"?: string,"verified_until": string,"year"?: Database["public"]['Enums']["class_year"] | null
                   }
                   Update: {
-                    "adult_confirmed_at"?: string | null,"age_method"?: Database["public"]['Enums']["age_method"] | null,"analytics_opt_in"?: boolean,"areas"?: (string)[],"avatar_path"?: string | null,"bio"?: string | null,"campus_id"?: string,"crash_reports_opt_in"?: boolean,"created_at"?: string,"display_name"?: never,"email_hash"?: string,"first_name"?: string | null,"founding_seller_until"?: string | null,"id"?: string,"invite_code"?: string,"invited_by"?: string | null,"last_active_at"?: string | null,"last_initial"?: string | null,"noshow_count"?: number,"paused_until"?: string | null,"quad_rules_accepted_at"?: string | null,"rules_accepted_at"?: string | null,"rules_version"?: string | null,"seen_unlock_at"?: string | null,"status"?: Database["public"]['Enums']["user_status"],"status_reason"?: string | null,"strike_count"?: number,"theme_mode"?: string,"verified_until"?: string,"year"?: Database["public"]['Enums']["class_year"] | null
+                    "adult_confirmed_at"?: string | null,"age_method"?: Database["public"]['Enums']["age_method"] | null,"analytics_opt_in"?: boolean,"areas"?: (string)[],"avatar_path"?: string | null,"bio"?: string | null,"campus_id"?: string,"crash_reports_opt_in"?: boolean,"created_at"?: string,"display_name"?: never,"email_hash"?: string,"first_name"?: string | null,"founding_seller_until"?: string | null,"id"?: string,"invite_code"?: string,"invited_by"?: string | null,"last_active_at"?: string | null,"last_app_version"?: string | null,"last_initial"?: string | null,"last_platform"?: string | null,"noshow_count"?: number,"paused_until"?: string | null,"quad_rules_accepted_at"?: string | null,"rules_accepted_at"?: string | null,"rules_version"?: string | null,"seen_unlock_at"?: string | null,"status"?: Database["public"]['Enums']["user_status"],"status_reason"?: string | null,"strike_count"?: number,"theme_mode"?: string,"verified_until"?: string,"year"?: Database["public"]['Enums']["class_year"] | null
                   }
                   Relationships: [
                     {
@@ -1601,13 +1669,13 @@ isOneToOne: false
                   ]
                 },"support_requests": {
                   Row: {
-                    "body": string | null,"created_at": string | null,"email": string | null,"handled_at": string | null,"id": string,"topic": string | null
+                    "body": string | null,"created_at": string | null,"email": string | null,"handled_at": string | null,"id": string,"replied_at": string | null,"reply_count": number,"staff_note": string | null,"status": string,"topic": string | null,"updated_at": string | null,"updated_by": string | null
                   }
                   Insert: {
-                    "body"?: string | null,"created_at"?: string | null,"email"?: string | null,"handled_at"?: string | null,"id"?: string,"topic"?: string | null
+                    "body"?: string | null,"created_at"?: string | null,"email"?: string | null,"handled_at"?: string | null,"id"?: string,"replied_at"?: string | null,"reply_count"?: number,"staff_note"?: string | null,"status"?: string,"topic"?: string | null,"updated_at"?: string | null,"updated_by"?: string | null
                   }
                   Update: {
-                    "body"?: string | null,"created_at"?: string | null,"email"?: string | null,"handled_at"?: string | null,"id"?: string,"topic"?: string | null
+                    "body"?: string | null,"created_at"?: string | null,"email"?: string | null,"handled_at"?: string | null,"id"?: string,"replied_at"?: string | null,"reply_count"?: number,"staff_note"?: string | null,"status"?: string,"topic"?: string | null,"updated_at"?: string | null,"updated_by"?: string | null
                   }
                   Relationships: [
                     
@@ -1936,6 +2004,15 @@ isOneToOne: false
 "accept_rules":
 { Args: { "version": string }; Returns: undefined
                            },
+"admin_activity_feed":
+{ Args: { "campus_id"?: string,"cursor"?: Json,"kinds"?: (string)[],"limit"?: number,"listing_id"?: string,"since"?: string,"until"?: string,"user_id"?: string }; Returns: Json
+                           },
+"admin_age_blocks_summary":
+{ Args: { "campus_id"?: string,"days"?: number }; Returns: Json
+                           },
+"admin_bulk_set_listing_status":
+{ Args: { "ids": (string)[],"reason": string,"status": string }; Returns: Json
+                           },
 "admin_change_email":
 { Args: { "new_email": string,"user_id": string }; Returns: Json
                            },
@@ -1945,14 +2022,23 @@ isOneToOne: false
 "admin_create_announcement":
 { Args: { "body": string,"campus_id": string,"pinned_hours"?: number,"reason"?: string,"send_push"?: boolean,"title": string,"type": string }; Returns: Json
                            },
+"admin_create_campus":
+{ Args: { "domain": string,"name": string,"reason"?: string,"short_name": string,"slug": string,"spot"?: Json,"status"?: string,"timezone": string }; Returns: Json
+                           },
 "admin_decide_appeal":
 { Args: { "decision": string,"id": string,"note": string }; Returns: undefined
+                           },
+"admin_delete_banned_hash":
+{ Args: { "email_hash": string,"reason": string }; Returns: undefined
                            },
 "admin_delete_banned_word":
 { Args: { "id": string,"reason": string }; Returns: undefined
                            },
 "admin_delete_domain":
 { Args: { "domain": string,"reason": string }; Returns: undefined
+                           },
+"admin_delete_review_account":
+{ Args: { "email": string,"reason": string }; Returns: undefined
                            },
 "admin_force_reverify":
 { Args: { "reason": string,"user_id": string }; Returns: undefined
@@ -1975,14 +2061,26 @@ isOneToOne: false
 "admin_list_audit":
 { Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
                            },
+"admin_list_audit_v2":
+{ Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
+                           },
+"admin_list_banned_hashes":
+{ Args: { "cursor"?: number }; Returns: Json
+                           },
 "admin_list_banned_words":
 { Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
                            },
 "admin_list_campuses":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"admin_list_deletions_exports":
+{ Args: { "cursor"?: number }; Returns: Json
+                           },
 "admin_list_listings":
 { Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
+                           },
+"admin_list_meetups":
+{ Args: { "campus_id"?: string,"cursor"?: number,"when"?: string }; Returns: Json
                            },
 "admin_list_quad":
 { Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
@@ -1990,8 +2088,20 @@ isOneToOne: false
 "admin_list_reports":
 { Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
                            },
+"admin_list_review_accounts":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"admin_list_support":
+{ Args: { "campus_id"?: string,"cursor"?: number,"status"?: string }; Returns: Json
+                           },
 "admin_list_users":
 { Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
+                           },
+"admin_list_users_v2":
+{ Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
+                           },
+"admin_listing_activity":
+{ Args: { "listing_id": string }; Returns: Json
                            },
 "admin_metrics_funnel":
 { Args: { "campus_id"?: string,"from_day"?: string,"to_day"?: string }; Returns: Json
@@ -2008,7 +2118,43 @@ isOneToOne: false
 "admin_moderate_quad":
 { Args: { "action": string,"id": string,"reason": string,"target_type": string }; Returns: undefined
                            },
+"admin_noshow_summary":
+{ Args: { "campus_id"?: string }; Returns: Json
+                           },
+"admin_open_campus":
+{ Args: { "campus_id": string,"reason": string }; Returns: Json
+                           },
 "admin_overview":
+{ Args: { "campus_id"?: string }; Returns: Json
+                           },
+"admin_overview_v2":
+{ Args: { "campus_id"?: string }; Returns: Json
+                           },
+"admin_person":
+{ Args: { "user_id": string }; Returns: Json
+                           },
+"admin_person_access_log":
+{ Args: { "cursor"?: number,"user_id": string }; Returns: Json
+                           },
+"admin_person_chats":
+{ Args: { "cursor"?: number,"user_id": string }; Returns: Json
+                           },
+"admin_person_listings":
+{ Args: { "cursor"?: number,"user_id": string }; Returns: Json
+                           },
+"admin_person_meetups":
+{ Args: { "cursor"?: number,"user_id": string }; Returns: Json
+                           },
+"admin_person_offers":
+{ Args: { "cursor"?: number,"user_id": string }; Returns: Json
+                           },
+"admin_person_reports":
+{ Args: { "user_id": string }; Returns: Json
+                           },
+"admin_person_timeline":
+{ Args: { "cursor"?: Json,"kinds"?: (string)[],"limit"?: number,"user_id": string }; Returns: Json
+                           },
+"admin_ratings_summary":
 { Args: { "campus_id"?: string }; Returns: Json
                            },
 "admin_read_reported_chat":
@@ -2026,6 +2172,9 @@ isOneToOne: false
 "admin_reveal_quad_author":
 { Args: { "case_ref": string,"id": string,"reason": string,"target_type": string }; Returns: Json
                            },
+"admin_search":
+{ Args: { "q": string }; Returns: Json
+                           },
 "admin_set_config":
 { Args: { "key": string,"reason": string,"value": Json }; Returns: undefined
                            },
@@ -2035,20 +2184,41 @@ isOneToOne: false
 "admin_set_user_status":
 { Args: { "reason": string,"status": string,"until": string,"user_id": string }; Returns: undefined
                            },
+"admin_support_detail":
+{ Args: { "id": string }; Returns: Json
+                           },
+"admin_system_health":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "admin_update_campus":
 { Args: { "id": string,"patch": Json,"reason": string }; Returns: undefined
+                           },
+"admin_update_support":
+{ Args: { "id": string,"note"?: string,"reason": string,"reply"?: string,"status": string }; Returns: Json
+                           },
+"admin_upsert_banned_hash":
+{ Args: { "email": string,"reason": string }; Returns: Json
                            },
 "admin_upsert_banned_word":
 { Args: { "action": string,"match": string,"pattern": string,"reason": string,"scopes": (string)[] }; Returns: Json
                            },
+"admin_upsert_category":
+{ Args: { "id": number,"name": string,"parent_id"?: number,"reason": string,"slug"?: string,"sort": number }; Returns: Json
+                           },
 "admin_upsert_domain":
 { Args: { "campus_id": string,"domain": string,"kind": string,"reason": string }; Returns: undefined
+                           },
+"admin_upsert_review_account":
+{ Args: { "email": string,"note": string,"reason": string }; Returns: undefined
                            },
 "admin_upsert_safe_spot":
 { Args: { "reason": string,"spot": Json }; Returns: Json
                            },
 "admin_user_detail":
 { Args: { "id": string }; Returns: Json
+                           },
+"admin_waitlist_demand":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "admin_whoami":
 { Args: Record<PropertyKey, never>; Returns: Json
@@ -2306,6 +2476,9 @@ isOneToOne: false
                            },
 "submit_rating":
 { Args: { "chat_id": string,"comment"?: string,"tags"?: (string)[],"thumbs_up": boolean }; Returns: undefined
+                           },
+"track_events":
+{ Args: { "app_version"?: string,"events": Json,"platform"?: string }; Returns: Json
                            },
 "unblock_user":
 { Args: { "user_id": string }; Returns: undefined
