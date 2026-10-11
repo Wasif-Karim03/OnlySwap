@@ -147,6 +147,31 @@ const ICONS: Record<IconName, ReactNode> = {
   ext: <path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6" />,
   scale: <path d="M12 3v18M5 7h14M5 7l-3 7a4 4 0 0 0 6 0zM19 7l-3 7a4 4 0 0 0 6 0z" />,
   logout: <path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 17l5-5-5-5M15 12H3" />,
+  mail: (
+    <>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M3 7l9 6 9-6" />
+    </>
+  ),
+  clock: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </>
+  ),
+  refresh: <path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" />,
+  thumb: (
+    <path d="M7 11v9H4v-9zM7 11l4-8a2 2 0 0 1 3 2l-1 5h6a2 2 0 0 1 2 2.3l-1.2 6A2 2 0 0 1 17.8 20H7" />
+  ),
+  trash: <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />,
+  school: <path d="M2 9l10-5 10 5-10 5zM6 11v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5" />,
+  server: (
+    <>
+      <rect x="3" y="4" width="18" height="7" rx="2" />
+      <rect x="3" y="13" width="18" height="7" rx="2" />
+      <path d="M7 7.5h.01M7 16.5h.01" />
+    </>
+  ),
 };
 
 export function Icon({ name, size }: { name: IconName; size?: number }) {
@@ -904,5 +929,158 @@ export function CampusSelect({
         ))}
       </select>
     </Field>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Dialog and small shared pieces (part B pages)
+
+/** Centered dialog over a dimmed page. Escape and the backdrop close it. */
+export function Dialog({
+  title,
+  onClose,
+  children,
+  wide,
+}: {
+  title: string;
+  onClose: () => void;
+  children: ReactNode;
+  wide?: boolean;
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+  return (
+    <div
+      className="dialog-back"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        className={`dialog${wide ? ' wide' : ''}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+      >
+        <CardHeader
+          title={title}
+          right={
+            <Button variant="ghost" size="sm" onClick={onClose} aria-label="Close">
+              <Icon name="x" />
+            </Button>
+          }
+        />
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/** The lock line on pages whose opening is written to the audit log (DEC 93). */
+export function LoggedNote({ children }: { children?: ReactNode }) {
+  return (
+    <div className="lock foot-lock">
+      <Icon name="lock" /> {children ?? 'Opening this page is logged.'}
+    </div>
+  );
+}
+
+/** One big number with a label under it (header count rows). */
+export function Stat({ label, value }: { label: string; value: ReactNode }) {
+  return (
+    <div>
+      <div className="v">{value}</div>
+      <div className="l">{label}</div>
+    </div>
+  );
+}
+
+/**
+ * A list with "Load more": calls `fn` with `args` plus `cursor` (offset int or
+ * keyset object, whatever the RPC returned as `next_cursor`) and appends.
+ */
+export function useLoadMore<T>(fn: string, args: Record<string, unknown>, skip = false) {
+  const key = JSON.stringify(args);
+  const [items, setItems] = useState<T[]>([]);
+  const [next, setNext] = useState<unknown>(null);
+  const [loading, setLoading] = useState(!skip);
+  const [more, setMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const reload = useCallback(() => {
+    if (skip) return;
+    setLoading(true);
+    rpc<{ items: T[]; next_cursor: unknown }>(fn, JSON.parse(key) as Record<string, unknown>)
+      .then((d) => {
+        setItems(d.items ?? []);
+        setNext(d.next_cursor ?? null);
+        setError(null);
+      })
+      .catch((e: unknown) => setError(errorMessage(e)))
+      .finally(() => setLoading(false));
+  }, [fn, key, skip]);
+  useEffect(() => {
+    reload();
+  }, [reload]);
+  const loadMore = () => {
+    if (next === null || next === undefined) return;
+    setMore(true);
+    rpc<{ items: T[]; next_cursor: unknown }>(fn, {
+      ...(JSON.parse(key) as Record<string, unknown>),
+      cursor: next,
+    })
+      .then((d) => {
+        setItems((shown) => [...shown, ...(d.items ?? [])]);
+        setNext(d.next_cursor ?? null);
+      })
+      .catch((e: unknown) => setError(errorMessage(e)))
+      .finally(() => setMore(false));
+  };
+  return {
+    items,
+    loading,
+    error,
+    more,
+    hasMore: next !== null && next !== undefined,
+    loadMore,
+    reload,
+  };
+}
+
+export type LoadMoreState<T> = ReturnType<typeof useLoadMore<T>>;
+
+/** Loading, error, empty, the rows, and a Load more footer for useLoadMore lists. */
+export function MoreList<T>({
+  state,
+  emptyText,
+  rows = 6,
+  children,
+}: {
+  state: LoadMoreState<T>;
+  emptyText: ReactNode;
+  rows?: number;
+  children: (items: T[]) => ReactNode;
+}) {
+  if (state.error && !state.items.length)
+    return <ErrorState message={state.error} onRetry={state.reload} />;
+  if (state.loading && !state.items.length) return <Loading rows={rows} />;
+  if (!state.items.length) return <EmptyState title={emptyText} />;
+  return (
+    <>
+      {children(state.items)}
+      {state.hasMore || state.error ? (
+        <div className="pager">
+          {state.error ? <span className="error">{state.error}</span> : null}
+          <span className="spacer" />
+          {state.hasMore ? (
+            <Button size="sm" disabled={state.more} onClick={state.loadMore}>
+              {state.more ? 'Loading…' : 'Load more'}
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
+    </>
   );
 }

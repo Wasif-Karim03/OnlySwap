@@ -1446,3 +1446,311 @@ table.t.compact td {
     4px 4px;
   background-repeat: no-repeat;
 }
+
+/* ---------------------------------------------------------------- part B pages */
+/* filter pickers (Activity: type, person, listing) */
+.picker {
+  position: relative;
+}
+.picker .fchip {
+  padding: 0 4px 0 0;
+}
+.chip-btn {
+  border: 0;
+  background: none;
+  font: 600 12.5px var(--a-font);
+  color: var(--color-ink);
+  height: 28px;
+  padding: 0 6px 0 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.chip-btn b {
+  font-weight: 600;
+  color: var(--color-ink3);
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chip-x {
+  border: 0;
+  background: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-ink3);
+  cursor: pointer;
+}
+.chip-x:hover {
+  background: var(--a-soft);
+}
+.chip-x svg.i {
+  width: 12px;
+  height: 12px;
+}
+.picker-pop {
+  top: 36px;
+  right: auto;
+  width: 320px;
+}
+.picker-pop button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 7px 14px;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--color-ink);
+  text-align: left;
+  cursor: pointer;
+}
+.picker-pop button:hover,
+.picker-pop button[aria-selected='true'] {
+  background: var(--a-soft);
+}
+.search-box.in-pop {
+  margin: 4px 8px 6px;
+}
+.kind-group {
+  padding: 6px 14px;
+  border-bottom: 1px solid var(--color-line);
+}
+.kind-group:last-child {
+  border-bottom: 0;
+}
+.kind-group .checks {
+  padding: 2px 0 0 24px;
+  gap: 0 14px;
+}
+.kind-group .check {
+  min-height: 26px;
+  font-size: 12.5px;
+}
+.kind-group .check.head {
+  font-weight: 650;
+}
+
+/* person and listing headers */
+.hero {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 18px 20px;
+  flex-wrap: wrap;
+}
+.hero .name {
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+.hero .facts {
+  margin-top: 3px;
+  color: var(--color-ink2);
+}
+.hero .nums {
+  margin-left: auto;
+  display: flex;
+  gap: 24px;
+  text-align: right;
+}
+.hero .nums .v {
+  font-size: 18px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+.hero .nums .l {
+  color: var(--color-ink3);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.side-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.split.main-side {
+  grid-template-columns: minmax(0, 1fr) 320px;
+}
+.split.main-side.wide {
+  grid-template-columns: minmax(0, 1fr) 340px;
+}
+@media (max-width: 1180px) {
+  .split.main-side,
+  .split.main-side.wide {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.tabs .n {
+  color: var(--color-ink3);
+  font-weight: 600;
+  margin-left: 4px;
+}
+.tabs .on .n {
+  color: var(--color-ink2);
+}
+
+/* funnel, affinity, heat strip, right vs left */
+.funnel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+}
+.funnel .frow {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr) 54px;
+  gap: 10px;
+  align-items: center;
+  font-size: 12.5px;
+}
+.funnel .frow.narrow {
+  grid-template-columns: 90px minmax(0, 1fr) 40px;
+}
+.funnel .frow .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.heat {
+  display: grid;
+  grid-template-columns: repeat(24, 1fr);
+  gap: 2px;
+}
+.heat i {
+  height: 16px;
+  border-radius: 2px;
+  background: var(--color-accent);
+}
+.heat-axis {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--color-ink3);
+  margin-top: 4px;
+}
+.split-bar {
+  display: flex;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--a-soft2);
+}
+.split-bar i {
+  display: block;
+  height: 100%;
+}
+.split-bar i.r {
+  background: var(--color-accent);
+}
+.split-bar i.l {
+  background: var(--a-soft2);
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  background: var(--color-accent);
+  margin-right: 4px;
+}
+.foot-lock {
+  padding: 2px 2px 0;
+}
+
+/* support inbox */
+.msg-body {
+  background: var(--a-soft);
+  border-radius: 10px;
+  padding: 10px 12px;
+  white-space: pre-wrap;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.reply-box textarea {
+  min-height: 110px;
+}
+
+/* dialog */
+.dialog-back {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 20, 16, 0.32);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 72px 24px 24px;
+  z-index: 50;
+  overflow-y: auto;
+}
+.dialog {
+  width: 560px;
+  max-width: 100%;
+  background: var(--color-bg);
+  border-radius: 14px;
+  box-shadow: var(--a-pop);
+}
+.dialog.wide {
+  width: 760px;
+}
+
+/* settings sub-nav */
+.subnav {
+  display: flex;
+  gap: 2px;
+  padding: 0 12px;
+  flex-wrap: wrap;
+}
+
+/* bulk bar on Listings */
+.bulk-bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-line);
+  background: var(--a-lime50);
+}
+td.pick,
+th.pick {
+  width: 36px;
+  padding-right: 0 !important;
+}
+.mono.hash {
+  font-size: 12px;
+  color: var(--color-ink2);
+}
+.big-num {
+  font-size: 24px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+/* listing thumbs inside table cells: no baseline gap, mock-size thumbs */
+table.t td > a,
+table.t td > .item {
+  display: inline-flex;
+  vertical-align: middle;
+  max-width: 100%;
+}
+table.t td .item .th {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+}
+table.t td.details {
+  white-space: normal;
+  min-width: 150px;
+  line-height: 1.35;
+}
+.bar-warn .bar i {
+  background: var(--color-red);
+}

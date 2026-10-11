@@ -335,6 +335,9 @@ export const AUDIT_ACTION_FILTERS = [
   { prefix: 'announcement.', label: 'Announcements' },
   { prefix: 'banned_word.', label: 'Banned words' },
   { prefix: 'support.', label: 'Support' },
+  { prefix: 'review_account.', label: 'Review accounts' },
+  { prefix: 'banned_hash.', label: 'Banned emails' },
+  { prefix: 'category.', label: 'Categories' },
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -367,7 +370,14 @@ export type IconName =
   | 'filter'
   | 'ext'
   | 'scale'
-  | 'logout';
+  | 'logout'
+  | 'mail'
+  | 'clock'
+  | 'refresh'
+  | 'thumb'
+  | 'trash'
+  | 'school'
+  | 'server';
 
 const EVENTS: Record<string, EventStyle> = {
   signup: { label: 'Joined', tone: 'peach', icon: 'user' },
@@ -469,3 +479,234 @@ export const FEED_FILTERS = [
   { id: 'signups', label: 'Sign-ups', kinds: ['signup'] },
 ] as const;
 export type FeedFilter = (typeof FEED_FILTERS)[number]['id'];
+
+// ---------------------------------------------------------------------------
+// Activity page type filter (grouped multi-select, API §4.1 kinds)
+
+export const ACTIVITY_GROUPS = [
+  {
+    id: 'browsing',
+    label: 'Browsing',
+    kinds: ['listing_viewed', 'searched', 'opened_from', 'app_open', 'deck_shown'],
+  },
+  { id: 'swipes', label: 'Swipes', kinds: ['swiped_left', 'saved', 'unsaved'] },
+  {
+    id: 'offers',
+    label: 'Offers and deals',
+    kinds: ['offer_made', 'offer_countered', 'offer_accepted', 'offer_declined', 'deal_done'],
+  },
+  {
+    id: 'chats',
+    label: 'Chats and meetups',
+    kinds: [
+      'chat_opened',
+      'message_sent',
+      'meetup_set',
+      'meetup_confirmed',
+      'meetup_checked_in',
+      'meetup_no_show',
+    ],
+  },
+  { id: 'listings', label: 'Listings', kinds: ['listing_posted'] },
+  { id: 'signups', label: 'Sign-ups', kinds: ['signup'] },
+] as const;
+
+/** Where a listing was opened from (activity_events.source). */
+const SOURCES: Record<string, string> = {
+  discover: 'Discover',
+  search: 'search',
+  campus: 'Around campus',
+  profile: 'a profile',
+  saved: 'Saved',
+  link: 'a shared link',
+  notification: 'a notification',
+};
+export const viewSource = (v: string | null | undefined) => (v ? (SOURCES[v] ?? humanize(v)) : '');
+
+/** "9 s", "1 min 5 s" for time on a card or page. */
+export function dwellLabel(ms: unknown): string {
+  if (typeof ms !== 'number' || !Number.isFinite(ms) || ms < 0) return '';
+  const s = Math.round(ms / 1000);
+  if (s < 60) return `${s} s`;
+  const m = Math.floor(s / 60);
+  return s % 60 ? `${m} min ${s % 60} s` : `${m} min`;
+}
+
+/** The Details column of an activity row: amounts, places, time on card. Never message text. */
+export function eventDetails(kind: string, details?: Record<string, unknown> | null): string {
+  const d = details ?? {};
+  const parts: string[] = [];
+  switch (kind) {
+    case 'offer_made':
+    case 'offer_countered':
+    case 'offer_accepted':
+    case 'offer_declined':
+      if (typeof d.amount_cents === 'number') parts.push(cents(d.amount_cents));
+      if (typeof d.asking_cents === 'number') parts.push(`asking ${cents(d.asking_cents)}`);
+      if (typeof d.round === 'number' && d.round > 1) parts.push(`round ${d.round}`);
+      if (kind === 'offer_made' && typeof d.status === 'string' && d.status !== 'pending')
+        parts.push(offerStatus(d.status).label.toLowerCase());
+      break;
+    case 'deal_done':
+      if (typeof d.agreed_cents === 'number') parts.push(`${cents(d.agreed_cents)} in person`);
+      if (typeof d.asking_cents === 'number' && d.asking_cents !== d.agreed_cents)
+        parts.push(`asking ${cents(d.asking_cents)}`);
+      break;
+    case 'chat_opened':
+      if (typeof d.agreed_cents === 'number') parts.push(`agreed ${cents(d.agreed_cents)}`);
+      break;
+    case 'message_sent':
+      parts.push(d.message_kind === 'photo' ? 'photo (locked)' : 'text locked');
+      break;
+    case 'meetup_set':
+    case 'meetup_confirmed':
+    case 'meetup_checked_in':
+      if (typeof d.place === 'string' && d.place) parts.push(d.place);
+      break;
+    case 'meetup_no_show':
+      if (typeof d.status === 'string') parts.push(`report ${humanize(d.status).toLowerCase()}`);
+      break;
+    case 'listing_posted':
+      if (typeof d.price_cents === 'number')
+        parts.push(d.price_cents ? cents(d.price_cents) : 'Free');
+      break;
+    case 'saved':
+      if (typeof d.price_at_save === 'number') parts.push(`at ${cents(d.price_at_save)}`);
+      break;
+    case 'signup':
+      if (typeof d.year === 'string') parts.push(classYear(d.year));
+      break;
+    default:
+      break;
+  }
+  if (typeof d.source === 'string' && d.source) parts.push(`from ${viewSource(d.source)}`);
+  const dwell = dwellLabel(d.dwell_ms);
+  if (dwell) parts.push(`${dwell} on ${kind === 'listing_viewed' ? 'the page' : 'the card'}`);
+  if (kind === 'app_open' && typeof d.app_version === 'string') parts.push(`v${d.app_version}`);
+  return parts.join(' · ');
+}
+
+// ---------------------------------------------------------------------------
+// Offers, chats, meetups, listings detail
+
+const OFFER_STATUSES: Record<string, Labeled> = {
+  pending: { label: 'Waiting', tone: 'amber' },
+  countered: { label: 'Countered', tone: 'amber' },
+  accepted: { label: 'Accepted', tone: 'green' },
+  declined: { label: 'Declined', tone: 'neutral' },
+  expired: { label: 'Expired', tone: 'neutral' },
+  withdrawn: { label: 'Withdrawn', tone: 'neutral' },
+  auto_declined: { label: 'Sold to someone else', tone: 'neutral' },
+};
+export const offerStatus = (v: string | null | undefined) => pick(OFFER_STATUSES, v);
+
+const CHAT_STATUSES: Record<string, Labeled> = {
+  open: { label: 'Open', tone: 'green' },
+  closed: { label: 'Closed', tone: 'neutral' },
+  blocked: { label: 'Blocked', tone: 'red' },
+};
+export const chatStatus = (v: string | null | undefined) => pick(CHAT_STATUSES, v);
+
+const MEETUP_STATUSES: Record<string, Labeled> = {
+  proposed: { label: 'Suggested', tone: 'amber' },
+  confirmed: { label: 'Confirmed', tone: 'sky' },
+  completed: { label: 'Done', tone: 'green' },
+  cancelled: { label: 'Cancelled', tone: 'neutral' },
+  no_show: { label: 'No-show', tone: 'red' },
+};
+export const meetupStatus = (v: string | null | undefined) => pick(MEETUP_STATUSES, v);
+
+/** Meetup pill with check-ins: "Checked in" once both are there. */
+export function meetupPill(m: {
+  status: string;
+  buyer_here_at?: string | null;
+  seller_here_at?: string | null;
+  no_show_reports?: number;
+}): Labeled {
+  if (m.no_show_reports) return { label: 'No-show reported', tone: 'red' };
+  if (m.status === 'confirmed' && m.buyer_here_at && m.seller_here_at)
+    return { label: 'Checked in', tone: 'green' };
+  if (m.status === 'confirmed' && (m.buyer_here_at || m.seller_here_at))
+    return { label: 'One checked in', tone: 'sky' };
+  return meetupStatus(m.status);
+}
+
+const CONDITIONS: Record<string, string> = {
+  new: 'New',
+  like_new: 'Like new',
+  good: 'Good',
+  fair: 'Fair',
+};
+export const condition = (v: string | null | undefined) =>
+  v ? (CONDITIONS[v] ?? humanize(v)) : '';
+
+const SWIPES: Record<string, EventStyle> = {
+  offered: { label: 'Right (offer)', tone: 'green', icon: 'dollar' },
+  saved: { label: 'Saved', tone: 'green', icon: 'heart' },
+  left: { label: 'Swiped left', tone: 'neutral', icon: 'x' },
+};
+export const swipeDirection = (v: string | null | undefined): EventStyle =>
+  (v && SWIPES[v]) || { label: humanize(v), tone: 'neutral', icon: 'pulse' };
+
+// ---------------------------------------------------------------------------
+// Support, deletions, exports, scheduled jobs
+
+const SUPPORT_STATUSES: Record<string, Labeled> = {
+  open: { label: 'Open', tone: 'amber' },
+  answered: { label: 'Answered', tone: 'sky' },
+  closed: { label: 'Closed', tone: 'neutral' },
+};
+export const supportStatus = (v: string | null | undefined) => pick(SUPPORT_STATUSES, v);
+
+const SUPPORT_TOPICS: Record<string, string> = {
+  general: 'General question',
+  cant_access_email: "Can't get into school email",
+  safety: 'Safety',
+  bug: 'Something is broken',
+  other: 'Other',
+};
+export const supportTopic = (v: string | null | undefined) =>
+  v ? (SUPPORT_TOPICS[v] ?? humanize(v)) : '';
+
+/** A deletion row: running, done, or stuck (still running after an hour). */
+export function deletionStatus(d: { status: string; stuck?: boolean }): Labeled {
+  if (d.stuck) return { label: 'Stuck', tone: 'red' };
+  if (d.status === 'done') return { label: 'Done', tone: 'green' };
+  if (d.status === 'started') return { label: 'Running', tone: 'amber' };
+  return { label: humanize(d.status), tone: 'neutral' };
+}
+
+const EXPORT_STATUSES: Record<string, Labeled> = {
+  queued: { label: 'Waiting', tone: 'amber' },
+  running: { label: 'Running', tone: 'amber' },
+  ready: { label: 'Done', tone: 'green' },
+  done: { label: 'Done', tone: 'green' },
+  sent: { label: 'Done', tone: 'green' },
+  failed: { label: 'Failed', tone: 'red' },
+  expired: { label: 'Link expired', tone: 'neutral' },
+};
+export const exportStatus = (v: string | null | undefined) => pick(EXPORT_STATUSES, v);
+
+const CRON_STATUSES: Record<string, Labeled> = {
+  succeeded: { label: 'OK', tone: 'green' },
+  failed: { label: 'Failed', tone: 'red' },
+  running: { label: 'Running', tone: 'sky' },
+  starting: { label: 'Starting', tone: 'sky' },
+};
+export const cronStatus = (v: string | null | undefined): Labeled =>
+  v ? pick(CRON_STATUSES, v) : { label: 'Not run yet', tone: 'neutral' };
+
+const EMAIL_TEMPLATES: Record<string, string> = {
+  campus_open: 'Campus open',
+  account_paused: 'Account paused',
+  reverify_due: 'Re-verify reminder',
+  account_deleted: 'Account deleted',
+  data_export: 'Data export',
+  admin_reveal_receipt: 'Quad reveal receipt',
+  support_request: 'Support request',
+  priority_report: 'Urgent report alert',
+  support_reply: 'Support reply',
+  report_queue: 'Report queue alert',
+};
+export const emailTemplate = (v: string | null | undefined) =>
+  v ? (EMAIL_TEMPLATES[v] ?? humanize(v)) : '';
