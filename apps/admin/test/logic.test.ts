@@ -4,6 +4,20 @@ import { test } from 'node:test';
 
 import {
   ageLabel,
+  announceableCampuses,
+  auditWindow,
+  changeEmailError,
+  dateLabel,
+  deltaLabel,
+  mediaUrl,
+  moneyLabel,
+  needsSuspendDays,
+  needsUntil,
+  pageStack,
+  reasonError,
+  sparkPath,
+  timeAgo,
+  whenLabel,
   allowedActions,
   announcementFormError,
   bannedWordFormError,
@@ -252,4 +266,88 @@ test('T-UNIT-ADMIN-WORDS regex and form validation', () => {
   assert.match(bannedWordFormError({ ...ok, pattern: '(bad', match: 'regex' })!, /compile/);
   assert.match(bannedWordFormError({ ...ok, scopes: [] })!, /at least one/);
   assert.match(bannedWordFormError({ ...ok, reason: '' })!, /reason/);
+});
+
+test('T-UNIT-ADMIN-V2 bug fixes: days only for Suspend, Until only for Pause and Suspend', () => {
+  assert.equal(needsSuspendDays('suspend'), true);
+  for (const a of ['dismiss', 'remove_content', 'warn', 'strike', 'ban'])
+    assert.equal(needsSuspendDays(a), false);
+  assert.equal(needsUntil('paused'), true);
+  assert.equal(needsUntil('suspended'), true);
+  for (const s of ['active', 'banned', 'reverify']) assert.equal(needsUntil(s), false);
+});
+
+test('T-UNIT-ADMIN-V2 change email needs an address and a reason', () => {
+  assert.equal(changeEmailError('nope', 'Lost inbox'), 'Enter the new school email.');
+  assert.equal(changeEmailError('a@school.edu', ''), 'Add a reason of at least 3 characters.');
+  assert.equal(changeEmailError('a@school.edu', 'Lost inbox'), null);
+  assert.equal(reasonError('ok'), 'Add a reason of at least 3 characters.');
+  assert.equal(reasonError(' fine '), null);
+});
+
+test('T-UNIT-ADMIN-V2 announcements never offer the demo campus', () => {
+  const list = [
+    { id: 'a', is_demo: false },
+    { id: 'd', is_demo: true },
+  ];
+  assert.deepEqual(
+    announceableCampuses(list).map((c) => c.id),
+    ['a'],
+  );
+});
+
+test('T-UNIT-ADMIN-V2 audit time filter and keyset paging', () => {
+  const now = Date.parse('2026-10-11T12:00:00Z');
+  assert.deepEqual(auditWindow('24h', now), { since: '2026-10-10T12:00:00.000Z' });
+  assert.deepEqual(auditWindow('7d', now), { since: '2026-10-04T12:00:00.000Z' });
+  assert.deepEqual(auditWindow('all', now), {});
+  const custom = auditWindow('custom', now, '2026-10-01', '2026-10-02');
+  // whole local days, the end day included
+  assert.equal(Date.parse(custom.until!) - Date.parse(custom.since!), 2 * 86_400_000);
+  assert.deepEqual(auditWindow('custom', now), {});
+  assert.deepEqual(pageStack([], 'next', 900), [900]);
+  assert.deepEqual(pageStack([900], 'next', 800), [900, 800]);
+  assert.deepEqual(pageStack([900, 800], 'prev'), [900]);
+  assert.deepEqual(pageStack([900], 'next', null), [900]);
+  assert.deepEqual(pageStack([900, 800], 'reset'), []);
+});
+
+test('T-UNIT-ADMIN-V2 time labels', () => {
+  const now = new Date(2026, 9, 11, 10, 45).getTime();
+  assert.equal(whenLabel(new Date(2026, 9, 11, 10, 41).toISOString(), now), 'Today 10:41');
+  assert.equal(whenLabel(new Date(2026, 9, 10, 21, 2).toISOString(), now), 'Yesterday 21:02');
+  assert.equal(whenLabel(new Date(2026, 9, 7, 14, 30).toISOString(), now), 'Oct 7 14:30');
+  assert.equal(whenLabel(null, now), '');
+  assert.equal(timeAgo(new Date(now - 12_000).toISOString(), now), '12 s ago');
+  assert.equal(timeAgo(new Date(now - 3 * 60_000).toISOString(), now), '3 min ago');
+  assert.equal(timeAgo(new Date(now - 5 * 3_600_000).toISOString(), now), '5 h ago');
+  assert.equal(timeAgo(new Date(now - 30 * 3_600_000).toISOString(), now), 'Yesterday');
+  assert.equal(timeAgo(new Date(now - 3 * 86_400_000).toISOString(), now), '3 days ago');
+  assert.equal(dateLabel(new Date(2026, 8, 14, 12).toISOString(), now), 'Sep 14');
+  assert.equal(dateLabel(new Date(2025, 8, 14, 12).toISOString(), now), 'Sep 14, 2025');
+});
+
+test('T-UNIT-ADMIN-V2 KPI change lines and sparklines', () => {
+  assert.deepEqual(deltaLabel(112, 100, 'last Fri'), { text: '+12% vs last Fri', dir: 'up' });
+  assert.deepEqual(deltaLabel(90, 100, 'last week'), { text: '-10% vs last week', dir: 'down' });
+  assert.deepEqual(deltaLabel(5, 5, 'last week'), { text: 'Same as last week', dir: 'flat' });
+  assert.deepEqual(deltaLabel(4, 0, 'last week'), { text: '+4 vs last week', dir: 'up' });
+  assert.deepEqual(deltaLabel(4, null, 'last week'), { text: '', dir: 'flat' });
+  assert.equal(sparkPath([1, 2, 3], 120, 30), 'M0.0 28.0 L60.0 15.0 L120.0 2.0');
+  assert.equal(sparkPath([], 120, 30), 'M0 15 L120 15');
+  assert.equal(sparkPath([4, 4], 120, 30), 'M0.0 15.0 L120.0 15.0');
+});
+
+test('T-UNIT-ADMIN-V2 media URLs and money', () => {
+  assert.equal(
+    mediaUrl('https://m.example/', '/c/1/l/2/t.webp'),
+    'https://m.example/c/1/l/2/t.webp',
+  );
+  assert.equal(mediaUrl('', 'c/1.webp'), '');
+  assert.equal(mediaUrl('https://m.example', null), '');
+  assert.equal(moneyLabel(4500), '$45');
+  assert.equal(moneyLabel(294000), '$2,940');
+  assert.equal(moneyLabel(450), '$4.50');
+  assert.equal(moneyLabel(0, true), 'Free');
+  assert.equal(moneyLabel(null), '');
 });
