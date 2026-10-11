@@ -32,28 +32,28 @@ Priority: **P1** before launch, **P2** soon after launch, **P3** later.
 All 38 admin database functions are wired into a page; none is unused.
 
 ## 2. Bugs to fix (P1)
-- [ ] Unknown page shows "Page not found" outside the sidebar, with no way back
-- [ ] Report detail: one "Suspend days" box sits in front of every action; show it only for Suspend
-- [ ] User detail: one "Until" date sits in front of every action; show it only for Pause and Suspend
-- [ ] Change email saves without asking for a reason (audit row has no reason)
-- [ ] Users list doesn't show campus or email
-- [ ] Announcements can't be posted when "All campuses" is selected; demo campus shows in the picker
-- [ ] Audit log has no paging and no date filter
-- [ ] "1 strikes" and "1 no-shows" plurals
-- [ ] Campuses: the Active checkbox is huge (input height rule hits checkboxes); long spot names are cut off
-- [ ] Sidebar scrolls away on long pages
+- [x] Unknown page shows "Page not found" outside the sidebar, with no way back
+- [x] Report detail: one "Suspend days" box sits in front of every action; show it only for Suspend
+- [x] User detail: one "Until" date sits in front of every action; show it only for Pause and Suspend
+- [x] Change email saves without asking for a reason (audit row has no reason) (0209 adds the reason overload)
+- [x] Users list doesn't show campus or email
+- [x] Announcements can't be posted when "All campuses" is selected; demo campus shows in the picker
+- [x] Audit log has no paging and no date filter
+- [x] "1 strikes" and "1 no-shows" plurals
+- [x] Campuses: the Active checkbox is huge (input height rule hits checkboxes); long spot names are cut off
+- [x] Sidebar scrolls away on long pages
 
 ## 3. Redesign (approved mock) (P1)
-- [ ] New look: fixed sidebar with groups, top bar with search and export, calm tables, colored status pills, one main action per area
-- [ ] Plain words instead of database names (`no_show` to "No-show", `unlock_threshold` to "Opens at")
-- [ ] Overview: trend numbers, live activity feed, needs attention, campuses table
-- [ ] Reports: queue and detail side by side, reported person's history next to the report, one action row with the reason box
-- [ ] People list with status colors, campus, year, swipes, offers, deals, reports, last active
+- [x] New look: fixed sidebar with groups, top bar with search and export, calm tables, colored status pills, one main action per area
+- [x] Plain words instead of database names (`no_show` to "No-show", `unlock_threshold` to "Opens at")
+- [x] Overview: trend numbers, live activity feed (latest 10), needs attention, campuses table
+- [x] Reports: queue and detail side by side, reported person's history next to the report, one action row with the reason box
+- [~] People list with status colors, campus, year, swipes, offers, deals, reports, last active (built on `admin_list_users_v2`; part B finishes it)
 - [ ] One student page: header with status and numbers, tabs (Timeline, Swipes, Offers, Listings, Chats, Meetups, Reports, Access log), what they like, when they're active, account facts
 - [ ] Listing page: who swiped which way and when, offers, views, price history, funnel, right vs left
 - [ ] Activity page: every action by every student, filters (type, campus, person, listing, time), CSV
-- [ ] Quad, Audit log, Campuses (schools list plus settings plus spots table), Announcements (with reach count), Settings (team, banned words, switches, limits) in the new layout
-- [ ] Sign-in pages with the logo and one line about who the console is for
+- [x] Quad, Audit log, Campuses (schools list plus settings plus spots table), Announcements (with reach count), Settings (team, banned words, switches, limits) in the new layout
+- [x] Sign-in pages with the logo and one line about who the console is for
 
 ## 4. New data the redesign needs (P1)
 Today the app stores saves, offers (a right swipe is an offer), chats, meetups, deals and left swipes (deleted after 30 days). It does not store views per person or anything about how people browse.
