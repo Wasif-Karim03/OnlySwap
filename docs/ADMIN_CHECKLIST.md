@@ -15,21 +15,21 @@ Priority: **P1** before launch, **P2** soon after launch, **P3** later.
 - [x] Quad author reveal: owner only, fresh two-step check, case number, reason, receipt email, 5 per day
 
 ### Pages and actions
-- [~] Overview: 9 number tiles only (no trends, no live feed, no "needs attention")
-- [~] Reports queue and report detail: dismiss, remove content, warn, strike, suspend, ban, read reported chat
-- [~] Appeals: approve or deny
-- [~] Users list and user detail: pause, suspend, ban, make active, force re-verify, clear strike, change email
-- [~] Listings: held for review and active, approve or remove
-- [~] Quad moderation: held, reported, hidden; approve or remove; reveal author
-- [~] Metrics: funnel, retention, liquidity, safety, per campus
-- [~] Banned words: add, edit, delete, per scope
-- [~] Announcements: list and post (one per campus per week)
-- [~] Campuses: settings, email domains, meetup spots
-- [~] Team: invite and remove admins
-- [~] Config: app switches and limits (raw JSON today)
-- [~] Audit log: list
+- [x] Overview: trend tiles with sparklines, live activity feed, needs attention, campuses table (was 9 number tiles)
+- [x] Reports queue and report detail side by side: the reported person's history, one action row with the reason box (dismiss, remove content, warn, strike, suspend with days only for Suspend, ban), read reported chat (logged)
+- [x] Appeals: approve or deny, in the new layout
+- [x] People list (campus, email, year, swipes, offers, deals, reports, last active) and the one student page: pause, suspend, ban, make active, ask to re-verify, clear strike, change email with a reason
+- [x] Listings: held for review and active, approve or remove, bulk hold or remove, the listing page
+- [x] Quad moderation: held, reported, hidden; approve or remove; reveal author, in the new layout
+- [x] Metrics: funnel, retention, liquidity, safety, per campus, plus ratings and under-18 attempts
+- [x] Banned words: add, edit, delete, per scope (Settings > Banned words)
+- [x] Announcements: list and post (one per campus per week), with reach count; All campuses works, demo campus hidden
+- [x] Campuses: schools list, settings, email domains, meetup spots table, Add school
+- [x] Team: invite and remove admins (Settings > Team)
+- [x] App switches and limits with plain labels: on/off as switches, single values as fields, JSON only for structured values (Settings > App switches; was raw JSON for everything)
+- [x] Audit log: list with paging and filters (staff, action, about, time or a date range)
 
-All 38 admin database functions are wired into a page; none is unused.
+Every admin database function (the original 38 plus the v2 ones in 0206 to 0209) is wired into a page; none is unused. Staging adds one more, `admin_mock_status`, from `supabase/campuses/owu-mock.sql` only.
 
 ## 2. Bugs to fix (P1)
 - [x] Unknown page shows "Page not found" outside the sidebar, with no way back
@@ -82,12 +82,25 @@ Today the app stores saves, offers (a right swipe is an offer), chats, meetups, 
 - [x] **Global search** (P2) (backend): one box for people, listings, reports (the ⌘K in the mock) Page: top bar on every page.
 - [x] **Photo blocklist** (P3): banned image hashes (`banned_hashes`) page (backend; note `banned_hashes` holds hashed emails of banned accounts, not photos) Page: `/settings/blocked-emails`.
 - [~] **Categories editor** (P3): rename, reorder, hide categories (backend: rename, reorder, add; hide not built because the app reads categories directly) Page: `/settings/categories`.
-- [ ] **Staging tools** (P3): mock data and bot status, on staging only
-- [ ] **Phone-friendly layout** (P3): read-only on a phone for checking reports on the go
+- [x] **Staging tools** (P3): mock data and bot status, on staging only Page: Settings > Staging tools (`/settings/staging`, owner only, only in a console built with `VITE_APP_ENV=staging`, which `cloudflare-staging.command` sets). Backend: `admin_mock_status()` lives in `supabase/campuses/owu-mock.sql` (never a migration) and is dropped by `owu-mock-remove.sql`; without it the page says "Mock data isn't installed on this server". pgTAP: `supabase/campuses/tests/mock_status.test.sql` (17 checks).
+- [x] **Phone-friendly layout** (P3): read-only on a phone for checking reports on the go. Under 900px: top bar with a menu button (sidebar as a drawer), tables scroll inside their cards, split views stack (Reports and Support show the list or the picked item with a Back button), KPI grids wrap to 2 columns. Checked at 390 x 844 (`design/admin-screens-now.html`, screens starting with "Phone").
 
 ## 6. Checks before launch (P1)
 - [ ] Moderator account can only see and act on its own campus (test with a real second admin)
+  - Database side is covered by pgTAP (moderators are refused off-campus reads and owner-only actions in `admin_v2_*` and `r11_extras_admin`). Owner does the live check: Settings > Team, invite a second email you own as a moderator for Ohio Wesleyan; sign in as them in a private window and set up their authenticator; confirm the sidebar shows only "Ohio Wesleyan" (no campus picker), People, Reports and Listings show only OWU rows, Settings shows only Team, Banned words and App switches, and opening another campus's student address shows an error. Remove the moderator afterwards.
 - [ ] Every action and every person-page view shows up in the audit log with a reason
+  - pgTAP checks that every admin write leaves exactly one audit row and that opening a student or listing page writes an access row (DEC 93). Owner does the live check on staging: take one action of each kind (warn, pause, change email, hide a listing, approve a Quad post), open one student page, then Audit log: each shows with your reason, and opening the student page shows as "Opened profile" (reason "view"; switching tabs on the same student within 30 minutes adds no extra row).
 - [ ] Console works on the live staging data, not only sample data
-- [ ] Tests for every new admin function (pgTAP) and the new pages
+  - Every page was rendered here only against sample data (`design/admin-screens-now.html`). Owner, after the deploy below: sign in at the staging console, open every sidebar page and every Settings section once (owner), check nothing shows an error box, and that Activity shows your own phone's events after you browse in the staging app.
+- [x] Tests for every new admin function (pgTAP) and the new pages
+  - Checked 2026-10-11 on a clean clone: every public function added in 0206 to 0209 is called in a pgTAP file (the private helpers are covered through them); full suite 1452 passed, 1 known failure (`smoke.test.sql` test 1 wants Postgres 17, the sandbox has 14). Staging tools: `supabase/campuses/tests/mock_status.test.sql` 17/17. Pages: 48 admin unit tests on the pure helpers behind every page, plus all 66 screens rendered (`design/admin-screens-now.html`). There is no browser E2E for the console in CI.
 - [ ] Owner two-step check is set up on your account, with a second authenticator (or a written recovery plan) in case you lose your phone
+  - Owner: the console enrolls one authenticator at your first sign-in, so either (a) when it shows the QR code, scan it with two apps at once (for example your phone's Passwords app and a second device), or (b) write a recovery plan: if the phone is lost, open the Supabase dashboard for the project, Authentication > Users > your user, delete the TOTP factor, then sign in to the console again and enroll a new authenticator. Keep the Supabase account itself on its own two-step login.
+
+## 7. How to deploy (owner, on the Mac)
+1. Merge `feat/admin-v2` once its checks are green, then from the repo root on `main`:
+2. `bash scripts/deploy/staging-supabase.command` applies migrations 0206 to 0209 to staging (`supabase db push`) and redeploys the Edge Functions.
+3. `bash scripts/deploy/cloudflare-staging.command` rebuilds and deploys the console to `onlyswap-admin.pages.dev` (built with `VITE_APP_ENV=staging`, so Settings shows Staging tools), plus the site and web app.
+4. `bash scripts/deploy/mock-data.command owu` installs `admin_mock_status` for Settings > Staging tools (safe to re-run; it also refreshes the food posts).
+5. App activity events: the app changes are JavaScript only, so `bash scripts/deploy/ios-staging-update.command "activity events"` sends them to the staging iPhone build (close and open the app twice). If the app doesn't pick it up, run `bash scripts/deploy/ios-staging-build.command` for a new build.
+6. Then do the live checks in section 6.
