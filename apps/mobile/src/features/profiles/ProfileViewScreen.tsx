@@ -181,7 +181,12 @@ export function ProfileViewScreen({
                   photo={l.photos[0] ? mediaUrl(base, l.photos[0].thumb_path) : null}
                   blurhash={l.photos[0]?.blurhash}
                   state={l.status === 'hold' ? 'hold' : 'default'}
-                  onPress={() => router.push({ pathname: '/listing/[id]', params: { id: l.id } })}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/listing/[id]',
+                      params: { id: l.id, from: 'profile' },
+                    })
+                  }
                   testID={`profile-listing-${l.id}`}
                 />
               </View>

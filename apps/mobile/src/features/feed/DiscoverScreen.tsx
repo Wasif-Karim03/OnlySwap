@@ -1,9 +1,10 @@
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import type { StoreApi } from 'zustand';
 
+import { track as trackActivity, type ActivityKind } from '@/lib/activity';
 import { track } from '@/lib/analytics';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
@@ -44,6 +45,13 @@ const defaultCoach: CoachStorage = {
 };
 
 type Phase = 'loading' | 'ready' | 'error';
+
+/** Activity kind for each swipe (DEC 93): the server reads time on card from these. */
+const SWIPE_KIND: Record<SwipeDir, ActivityKind> = {
+  left: 'swiped_left',
+  save: 'saved',
+  right: 'offer_made',
+};
 
 /**
  * B01 Discover (P6-FEED-03): the deck, first-swipe coach, prefetch, end of
@@ -89,6 +97,9 @@ export function DiscoverScreen({
   const removed = useRef(new Map<string, FeedItem>());
   const swiped = useRef(new Set<string>());
   const lastDir = useRef<SwipeDir | null>(null);
+  // Time on the top card (DEC 93): counted only while Discover is in front.
+  const topCard = useRef<{ id: string; ms: number; since: number | null } | null>(null);
+  const shownIds = useRef(new Set<string>());
 
   const load = useCallback(
     async (fresh: boolean) => {
@@ -137,6 +148,34 @@ export function DiscoverScreen({
     return items.map((i) => toDeckCard(i, base, t));
   }, [items, mediaBase, now]);
 
+  // deck_shown once per card per visit (the server keeps one a day); the deck only, not the grid.
+  const topId = gridWidth === undefined && phase === 'ready' ? cards[0]?.id : undefined;
+  useEffect(() => {
+    if (!topId || topCard.current?.id === topId) return;
+    topCard.current = { id: topId, ms: 0, since: Date.now() };
+    if (shownIds.current.has(topId)) return;
+    shownIds.current.add(topId);
+    trackActivity('deck_shown', { listingId: topId, source: 'discover' });
+  }, [topId]);
+  useFocusEffect(
+    useCallback(() => {
+      const t = topCard.current;
+      if (t && t.since === null) t.since = Date.now();
+      return () => {
+        const c = topCard.current;
+        if (c && c.since !== null) {
+          c.ms += Date.now() - c.since;
+          c.since = null;
+        }
+      };
+    }, []),
+  );
+  const dwellOn = useCallback((id: string) => {
+    const t = topCard.current;
+    if (!t || t.id !== id) return undefined;
+    return t.ms + (t.since !== null ? Date.now() - t.since : 0);
+  }, []);
+
   const undo = useCallback(async () => {
     const id = await store.getState().undo();
     if (!id) return;
@@ -144,7 +183,10 @@ export function DiscoverScreen({
     swiped.current.delete(id);
     if (item) {
       setItems((prev) => [item, ...prev.filter((p) => p.id !== id)]);
-      if (lastDir.current === 'save' && !item.saved) void api.unsave(id).catch(() => {});
+      if (lastDir.current === 'save' && !item.saved) {
+        void api.unsave(id).catch(() => {});
+        trackActivity('unsaved', { listingId: id, source: 'discover' });
+      }
     }
   }, [store, api]);
 
@@ -157,6 +199,11 @@ export function DiscoverScreen({
       setItems((prev) => prev.filter((p) => p.id !== card.id));
       store.getState().swipe(card.id, dir);
       track('card_swiped', { dir });
+      trackActivity(SWIPE_KIND[dir], {
+        listingId: card.id,
+        source: 'discover',
+        dwellMs: dwellOn(card.id),
+      });
       if (showCoach) {
         setShowCoach(false);
         coach.markSeen();
@@ -171,11 +218,12 @@ export function DiscoverScreen({
         router.push({ pathname: '/listing/[id]/offer', params: { id: card.id } });
       }
     },
-    [items, store, showCoach, coach, api, router, undo],
+    [items, store, showCoach, coach, api, router, undo, dwellOn],
   );
 
   const onOpen = useCallback(
-    (card: DeckCard) => router.push({ pathname: '/listing/[id]', params: { id: card.id } }),
+    (card: DeckCard) =>
+      router.push({ pathname: '/listing/[id]', params: { id: card.id, from: 'discover' } }),
     [router],
   );
 

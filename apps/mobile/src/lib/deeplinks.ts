@@ -35,7 +35,7 @@ export function rewriteDeepLink(path: string): string {
   // kept for the sign-up by +native-intent), signed in it goes home.
   if (/^\/i(\/|$)/.test(p)) return '/';
   const listing = /^\/l\/([^/?#]+)\/?$/.exec(p);
-  if (listing) return UUID.test(listing[1]!) ? `/listing/${listing[1]}` : '/link-error';
+  if (listing) return UUID.test(listing[1]!) ? `/listing/${listing[1]}?from=link` : '/link-error';
   // /m/{token} is the friend's web status page; in the app it opens nothing special.
   if (/^\/m\//.test(p)) return '/inbox';
   return p || '/';
