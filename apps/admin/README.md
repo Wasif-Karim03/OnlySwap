@@ -17,7 +17,7 @@ pnpm --filter admin build
 |---|---|
 | `src/main.tsx` | Routes. The root route is the shell, so unknown addresses show "Page not found" inside it. Old addresses (`/users`, `/team`, `/config`, `/banned-words`) redirect. |
 | `src/nav.ts` | Sidebar groups (Monitor, People and items, Safety, Setup), icons and badge counts; Settings sections (`SETTINGS_TABS`, `settingsTabs(owner, staging)`) |
-| `src/env.ts` | `STAGING`: true only when built with `VITE_APP_ENV=staging` (the staging deploy sets it) |
+| `src/env.ts` | `STAGING`: true only when built with `VITE_APP_ENV=staging` (the staging deploy sets it); a plain comparison, so production builds drop the staging-only code |
 | `src/shell.tsx` | Fixed 232px sidebar, campus picker, signed-in admin, `NotFoundPage`, `ComingSoon` placeholder |
 | `src/session.tsx` | `useWho()`, `useIsOwner()`, `useCampusId()` (sidebar campus, null = all or "mine"), `useSession()` (`campuses`, `counts`, `refreshCounts`) |
 | `src/ui.tsx` | UI kit (below) and `useRpc` |

@@ -97,11 +97,6 @@ export function settingsTabs(owner: boolean, staging: boolean): SettingsTabItem[
   return SETTINGS_TABS.filter((t) => (owner || !t.ownerOnly) && (staging || !t.stagingOnly));
 }
 
-/** True only for a console built with VITE_APP_ENV=staging (never production). */
-export function isStagingBuild(appEnv: unknown): boolean {
-  return typeof appEnv === 'string' && appEnv.trim().toLowerCase() === 'staging';
-}
-
 /** Whether a nav item is the current page ("/" only matches itself). */
 export function isActive(to: string, pathname: string): boolean {
   if (to === '/') return pathname === '/';
