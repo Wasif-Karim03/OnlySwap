@@ -214,7 +214,7 @@ Every admin RPC checks `require_admin(min)` (AAL2) and inserts exactly one `audi
 | `admin_list_users(filters, cursor)` / `admin_user_detail(id)` | moderator | — | R1.0 |
 | `admin_set_user_status(user_id, status, until, reason)` | moderator ≤7 d / owner | calls the `revoke-sessions` function | R1.0 |
 | `admin_clear_strike(id)` / `admin_force_reverify(user_id)` | moderator | — | R1.0 |
-| `admin_change_email(user_id, new_email)` | owner | recovery (PM-03); calls the `admin-change-email` function | R1.0 |
+| `admin_change_email(user_id, new_email)` / `admin_change_email(user_id, new_email, reason)` | owner | recovery (PM-03); calls the `admin-change-email` function. The console uses the reason overload (0209): the reason (3+ characters) goes to the audit row | R1.0 |
 | `admin_set_listing_status(id, status)` | moderator | approve held, remove, restore | R1.0 |
 | `admin_read_reported_chat(report_id)` | moderator | returns messages only if the report targets that chat or a message in it | R1.0 |
 | `admin_decide_appeal(id, decision, note)` | moderator | restore + clear strike or uphold | R1.0 |

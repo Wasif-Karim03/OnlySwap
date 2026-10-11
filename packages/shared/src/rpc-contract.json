@@ -70,6 +70,16 @@
     ]
   },
   {
+    "name": "admin_change_email",
+    "args": "user_id uuid, new_email text, reason text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "admin_clear_strike",
     "args": "id uuid, reason text",
     "returns": "void",

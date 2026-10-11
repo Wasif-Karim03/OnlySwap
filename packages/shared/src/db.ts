@@ -2015,6 +2015,8 @@ isOneToOne: false
                            },
 "admin_change_email":
 { Args: { "new_email": string,"user_id": string }; Returns: Json
+                           } |
+{ Args: { "new_email": string,"reason": string,"user_id": string }; Returns: Json
                            },
 "admin_clear_strike":
 { Args: { "id": string,"reason": string }; Returns: undefined
