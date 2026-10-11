@@ -22,7 +22,9 @@ select tables_are(
     'notifications','notification_prefs','push_tokens','push_tickets','email_outbox',
     'announcements','data_exports',
     -- 0200 Quad (R1.1, DEC 76)
-    'quad_posts','quad_replies','quad_votes','quad_poll_options','quad_poll_votes','quad_hides','quad_mutes'
+    'quad_posts','quad_replies','quad_votes','quad_poll_options','quad_poll_votes','quad_hides','quad_mutes',
+    -- 0206 / 0208 admin v2 (DEC 93)
+    'activity_events','account_deletions'
   ],
   'public has exactly the tables from DATA_MODEL §2.1 to §2.6'
 );
