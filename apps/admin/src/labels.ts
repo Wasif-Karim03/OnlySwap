@@ -377,7 +377,8 @@ export type IconName =
   | 'thumb'
   | 'trash'
   | 'school'
-  | 'server';
+  | 'server'
+  | 'menu';
 
 const EVENTS: Record<string, EventStyle> = {
   signup: { label: 'Joined', tone: 'peach', icon: 'user' },
@@ -710,3 +711,30 @@ const EMAIL_TEMPLATES: Record<string, string> = {
 };
 export const emailTemplate = (v: string | null | undefined) =>
   v ? (EMAIL_TEMPLATES[v] ?? humanize(v)) : '';
+
+// ---------------------------------------------------------------------------
+// Staging tools (mock seller bot, DEC 92)
+
+const BOT_STATES: Record<string, Labeled> = {
+  running: { label: 'Running', tone: 'green' },
+  late: { label: 'No run in 5 min', tone: 'amber' },
+  failing: { label: 'Last run failed', tone: 'red' },
+  paused: { label: 'Paused', tone: 'amber' },
+  not_scheduled: { label: 'Not scheduled', tone: 'neutral' },
+  not_run: { label: 'Not run yet', tone: 'neutral' },
+};
+export const botState = (v: string): Labeled => pick(BOT_STATES, v);
+
+const MOCK_ACTIONS: Record<string, string> = {
+  accept_offer: 'Accepted an offer',
+  counter_offer: 'Countered an offer',
+  make_offer: 'Made an offer',
+  hello: 'Said hi in a new chat',
+  reply: 'Replied in a chat',
+  propose_meetup: 'Suggested a meetup',
+  confirm_meetup: 'Confirmed a meetup',
+  confirm_deal: 'Answered "Did it sell?"',
+  submit_rating: 'Left a rating',
+};
+export const mockAction = (v: string | null | undefined): string =>
+  v ? (MOCK_ACTIONS[v] ?? humanize(v)) : '';

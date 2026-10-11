@@ -5,12 +5,14 @@ import { test } from 'node:test';
 
 import {
   ACTIVITY_GROUPS,
+  botState,
   cronStatus,
   deletionStatus,
   dwellLabel,
   eventDetails,
   exportStatus,
   meetupPill,
+  mockAction,
   supportTopic,
   swipeDirection,
 } from '../src/labels.ts';
@@ -27,8 +29,10 @@ import {
   funnelRows,
   heatLevels,
   hourLabel,
+  isMissingFunction,
   kindsArg,
   kindsSummary,
+  mockBotState,
   newCampusArgs,
   newCampusError,
   peakHours,
@@ -349,4 +353,43 @@ test('T-UNIT-ADMIN-TOOLS bulk result, support line, health labels', () => {
   );
   assert.equal(meetupPill({ status: 'confirmed', no_show_reports: 1 }).label, 'No-show reported');
   assert.equal(meetupPill({ status: 'cancelled' }).label, 'Cancelled');
+});
+
+test('T-UNIT-ADMIN-STAGING the mock status function is missing on this server', () => {
+  assert.equal(
+    isMissingFunction(
+      'Could not find the function public.admin_mock_status without parameters in the schema cache',
+    ),
+    true,
+  );
+  assert.equal(isMissingFunction('PGRST202'), true);
+  assert.equal(
+    isMissingFunction('You need an admin account with MFA, and the right role, for that.'),
+    false,
+  );
+  assert.equal(isMissingFunction(null), false);
+});
+
+test('T-UNIT-ADMIN-STAGING mock bot state', () => {
+  const at = (minAgo: number) => new Date(NOW - minAgo * 60_000).toISOString();
+  assert.equal(mockBotState(null, NOW), 'not_scheduled');
+  assert.equal(mockBotState({ active: false, last_run: null }, NOW), 'paused');
+  assert.equal(mockBotState({ active: true, last_run: null }, NOW), 'not_run');
+  assert.equal(
+    mockBotState({ active: true, last_run: { status: 'failed', start_time: at(1) } }, NOW),
+    'failing',
+  );
+  assert.equal(
+    mockBotState({ active: true, last_run: { status: 'succeeded', start_time: at(1) } }, NOW),
+    'running',
+  );
+  assert.equal(
+    mockBotState({ active: true, last_run: { status: 'succeeded', start_time: at(12) } }, NOW),
+    'late',
+  );
+  assert.deepEqual(botState('failing'), { label: 'Last run failed', tone: 'red' });
+  assert.deepEqual(botState('running'), { label: 'Running', tone: 'green' });
+  assert.equal(mockAction('accept_offer'), 'Accepted an offer');
+  assert.equal(mockAction('confirm_deal'), 'Answered "Did it sell?"');
+  assert.equal(mockAction('new_thing'), 'New thing');
 });

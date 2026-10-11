@@ -1,5 +1,7 @@
 import { Link } from '@tanstack/react-router';
 
+import { STAGING } from '../env';
+import { settingsTabs, type SettingsTab } from '../nav';
 import { useIsOwner } from '../session';
 import { EmptyState, Page } from '../ui';
 import { BannedEmailsSection } from './BannedEmails';
@@ -9,27 +11,8 @@ import { SwitchesSection } from './Config';
 import { DataRequestsSection } from './DataRequests';
 import { HealthSection } from './Health';
 import { ReviewAccountsSection } from './ReviewAccounts';
+import { StagingSection } from './Staging';
 import { TeamSection } from './Team';
-
-export type SettingsTab =
-  'team' | 'words' | 'switches' | 'data' | 'health' | 'review' | 'blocked-emails' | 'categories';
-
-export const SETTINGS_TABS: { id: SettingsTab; to: string; label: string; ownerOnly?: boolean }[] =
-  [
-    { id: 'team', to: '/settings/team', label: 'Team' },
-    { id: 'words', to: '/settings/words', label: 'Banned words' },
-    { id: 'switches', to: '/settings/switches', label: 'App switches' },
-    { id: 'data', to: '/settings/data', label: 'Data requests', ownerOnly: true },
-    { id: 'health', to: '/settings/health', label: 'System health', ownerOnly: true },
-    { id: 'review', to: '/settings/review', label: 'Review accounts', ownerOnly: true },
-    {
-      id: 'blocked-emails',
-      to: '/settings/blocked-emails',
-      label: 'Banned emails',
-      ownerOnly: true,
-    },
-    { id: 'categories', to: '/settings/categories', label: 'Categories', ownerOnly: true },
-  ];
 
 const CRUMBS: Record<SettingsTab, string> = {
   team: 'Who can use this console',
@@ -40,14 +23,15 @@ const CRUMBS: Record<SettingsTab, string> = {
   review: 'App Store and Google Play reviewer logins',
   'blocked-emails': 'Emails of banned accounts',
   categories: 'Listing categories',
+  staging: 'Mock data and the mock seller bot (staging only)',
 };
 
 /** Settings with a sub-nav (one route per section). Owner-only sections are hidden for moderators. */
 export function SettingsPage({ tab }: { tab: SettingsTab }) {
   const owner = useIsOwner();
-  const tabs = SETTINGS_TABS.filter((t) => owner || !t.ownerOnly);
-  const current = SETTINGS_TABS.find((t) => t.id === tab);
-  const blocked = current?.ownerOnly && !owner;
+  const tabs = settingsTabs(owner, STAGING);
+  const current = settingsTabs(true, STAGING).find((t) => t.id === tab);
+  const blocked = !current || (current.ownerOnly && !owner);
   return (
     <Page title="Settings" crumb={CRUMBS[tab]}>
       <nav className="tabs card subnav" aria-label="Settings sections" style={{ borderRadius: 12 }}>
@@ -76,6 +60,7 @@ export function SettingsPage({ tab }: { tab: SettingsTab }) {
           {tab === 'review' ? <ReviewAccountsSection /> : null}
           {tab === 'blocked-emails' ? <BannedEmailsSection /> : null}
           {tab === 'categories' ? <CategoriesSection /> : null}
+          {tab === 'staging' && STAGING ? <StagingSection /> : null}
         </>
       )}
     </Page>

@@ -1,6 +1,8 @@
 // The console frame: fixed 232px sidebar (brand, campus picker, nav groups
 // with counts, signed-in admin) and the page outlet. Pages render <Page>.
+// Under 900px the sidebar is a drawer opened from a top bar (phone layout).
 import { Link, Outlet, useRouterState } from '@tanstack/react-router';
+import { useEffect, useState } from 'react';
 
 import { role } from './labels';
 import { isActive, NAV } from './nav';
@@ -12,10 +14,43 @@ export function Shell() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const owner = who.role === 'owner';
   const myCampus = campuses.find((c) => c.id === who.campus_id);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const urgent = counts?.open_reports ?? 0;
+
+  // The drawer closes on navigation and on Escape.
+  useEffect(() => setMenuOpen(false), [path]);
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMenuOpen(false);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [menuOpen]);
 
   return (
-    <div className="app">
-      <aside className="side" aria-label="Admin navigation">
+    <div className={`app${menuOpen ? ' menu-open' : ''}`}>
+      <header className="mbar">
+        <button
+          type="button"
+          className="btn ghost mbar-menu"
+          aria-label={
+            menuOpen ? 'Close menu' : urgent ? `Open menu, ${urgent} open reports` : 'Open menu'
+          }
+          aria-expanded={menuOpen}
+          aria-controls="admin-side"
+          onClick={() => setMenuOpen((o) => !o)}
+        >
+          <Icon name={menuOpen ? 'x' : 'menu'} />
+          {urgent && !menuOpen ? <span className="mbar-dot" aria-hidden="true" /> : null}
+        </button>
+        <div className="brand">
+          <span className="mark" aria-hidden="true" />
+          OnlySwap<small>Admin</small>
+        </div>
+      </header>
+      {menuOpen ? (
+        <div className="scrim" aria-hidden="true" onClick={() => setMenuOpen(false)} />
+      ) : null}
+      <aside className="side" id="admin-side" aria-label="Admin navigation">
         <div className="brand">
           <span className="mark" aria-hidden="true" />
           OnlySwap<small>Admin</small>

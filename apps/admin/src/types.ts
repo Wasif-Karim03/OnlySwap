@@ -552,3 +552,38 @@ export type Category = {
   parent_id: number | null;
   sort: number;
 };
+
+/** Staging tools (admin_mock_status, only on a server with the mock data, DEC 92). */
+export type MockLogRow = {
+  id: number;
+  at: string;
+  action: string;
+  ok?: boolean;
+  detail: string | null;
+  ref: string | null;
+  actor: string | null;
+  actor_name: string | null;
+};
+
+export type MockStatus = {
+  generated_at: string;
+  users: { active: number; total: number };
+  listings: { discover: number; food_live: number; wanted: number; sold: number; total: number };
+  photos: number;
+  bot: {
+    jobname: string;
+    schedule: string;
+    active: boolean;
+    last_run: {
+      status: string;
+      start_time: string | null;
+      end_time: string | null;
+      message: string | null;
+    } | null;
+    runs_24h: number;
+    failures_24h: number;
+  } | null;
+  actions: { ok_24h: number; failed_24h: number; ok_total: number; failed_total: number };
+  recent: MockLogRow[];
+  recent_failures: MockLogRow[];
+};

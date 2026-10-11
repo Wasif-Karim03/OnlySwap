@@ -1754,3 +1754,202 @@ table.t td.details {
 .bar-warn .bar i {
   background: var(--color-red);
 }
+
+/* ---------------------------------------------------------------- phone layout (checklist §5, P3)
+ * Under 900px: the sidebar becomes a drawer opened from a top bar, tables
+ * scroll sideways inside their cards, split views stack and KPI grids wrap to
+ * 2 columns. Pages set some grid columns inline, hence the !important below. */
+.mbar,
+.scrim,
+.phone-only {
+  display: none;
+}
+@media (max-width: 899px) {
+  .mbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    position: sticky;
+    top: 0;
+    z-index: 15;
+    height: 52px;
+    padding: 0 10px;
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-line);
+  }
+  .mbar .brand {
+    padding: 0;
+    flex: 1;
+  }
+  .mbar .brand small {
+    margin-left: 6px;
+  }
+  .mbar-menu {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    justify-content: center;
+    position: relative;
+    color: var(--color-ink);
+  }
+  .mbar-menu svg.i {
+    width: 20px;
+    height: 20px;
+  }
+  .mbar-dot {
+    position: absolute;
+    top: 10px;
+    right: 9px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-red);
+    border: 2px solid var(--color-bg);
+  }
+  .app {
+    flex-direction: column;
+  }
+  .side {
+    top: 52px;
+    width: min(300px, 86vw);
+    z-index: 30;
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition:
+      transform 0.2s ease,
+      visibility 0s linear 0.2s;
+    box-shadow: var(--a-pop);
+  }
+  .app.menu-open .side {
+    transform: none;
+    visibility: visible;
+    transition: transform 0.2s ease;
+  }
+  .side .brand {
+    display: none;
+  }
+  .nav a {
+    padding: 10px 10px;
+  }
+  .scrim {
+    display: block;
+    position: fixed;
+    inset: 52px 0 0 0;
+    background: rgba(20, 20, 16, 0.32);
+    z-index: 25;
+  }
+  .main {
+    margin-left: 0;
+    min-height: calc(100vh - 52px);
+  }
+  .top {
+    position: static;
+    height: auto;
+    flex-wrap: wrap;
+    padding: 12px 14px;
+    gap: 6px 10px;
+  }
+  .top .crumb {
+    flex: 1 1 auto;
+  }
+  .top-right {
+    margin-left: 0;
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+  }
+  .search {
+    flex: 1 1 200px;
+    width: auto;
+    min-width: 0;
+  }
+  .search kbd {
+    display: none;
+  }
+  .content {
+    padding: 14px 12px 24px;
+    gap: 12px;
+  }
+  .split,
+  .split.main-side,
+  .split.main-side.wide,
+  .grid2,
+  .grid3 {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .kpis,
+  .kpis.k4,
+  .kpis.k3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px;
+  }
+  .kpi {
+    padding: 12px;
+  }
+  .kpi .v {
+    font-size: 21px;
+  }
+  .kv {
+    grid-template-columns: 104px minmax(0, 1fr);
+  }
+  .hero {
+    padding: 14px;
+  }
+  .hero .nums {
+    margin-left: 0;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    text-align: left;
+  }
+  .table-wrap {
+    -webkit-overflow-scrolling: touch;
+  }
+  .ch .r,
+  .cf {
+    flex-wrap: wrap;
+  }
+  table.t td.actions .row {
+    flex-wrap: wrap;
+  }
+  .dialog-back {
+    padding: 12px;
+  }
+  /* master-detail (Reports, Support): the list, or the picked item with a way back */
+  .phone-only {
+    display: inline-flex;
+  }
+  .btn.back {
+    align-self: flex-start;
+  }
+  .split.master:not(.has-detail) > :nth-child(2),
+  .split.master.has-detail > :first-child {
+    display: none;
+  }
+  /* activity rows: drop the type square, let the sentence wrap */
+  .ev {
+    padding: 9px 12px;
+    align-items: flex-start;
+  }
+  .ev > .ico {
+    display: none;
+  }
+  .ev .ev-text {
+    flex-wrap: wrap !important;
+    row-gap: 2px !important;
+    flex: 1;
+  }
+  .ev .ev-text a.strong {
+    white-space: nowrap;
+  }
+  .ev .t {
+    padding-top: 2px;
+  }
+}
+@media (max-width: 899px) and (prefers-reduced-motion: reduce) {
+  .side,
+  .app.menu-open .side {
+    transition: none;
+  }
+}

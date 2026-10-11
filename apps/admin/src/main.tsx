@@ -11,6 +11,7 @@ import { StrictMode, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { AdminGate } from './auth';
+import { STAGING } from './env';
 import { ActivityPage } from './pages/Activity';
 import { AnnouncementsPage } from './pages/Announcements';
 import { AuditPage } from './pages/Audit';
@@ -88,6 +89,8 @@ const routeTree = root.addChildren([
   page('/settings/review', () => <SettingsPage tab="review" />),
   page('/settings/blocked-emails', () => <SettingsPage tab="blocked-emails" />),
   page('/settings/categories', () => <SettingsPage tab="categories" />),
+  // Staging builds only (VITE_APP_ENV=staging); elsewhere the address is "Page not found".
+  ...(STAGING ? [page('/settings/staging', () => <SettingsPage tab="staging" />)] : []),
   // Old addresses
   moved('/users', '/people'),
   createRoute({

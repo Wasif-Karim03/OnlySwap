@@ -87,7 +87,8 @@ export function ReportsPage() {
 
   return (
     <Page title="Reports" crumb={open !== undefined ? `${open} open` : undefined}>
-      <div className="split">
+      {/* On a phone the queue and the picked report are two screens (master-detail). */}
+      <div className={`split master${id ? ' has-detail' : ''}`}>
         <Card
           title={
             <Segmented
@@ -143,15 +144,20 @@ export function ReportsPage() {
           </Loadable>
         </Card>
         {selectedId ? (
-          <ReportDetailCard
-            key={selectedId}
-            id={selectedId}
-            row={selectedRow}
-            onResolved={() => {
-              queue.reload();
-              refreshCounts();
-            }}
-          />
+          <div className="stack tight">
+            <Link className="btn sm phone-only back" to="/reports">
+              Back to reports
+            </Link>
+            <ReportDetailCard
+              key={selectedId}
+              id={selectedId}
+              row={selectedRow}
+              onResolved={() => {
+                queue.reload();
+                refreshCounts();
+              }}
+            />
+          </div>
         ) : (
           <div className="card">
             <EmptyState title="Pick a report on the left." />

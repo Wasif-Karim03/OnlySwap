@@ -64,7 +64,10 @@ export function SupportPage() {
       title="Support"
       crumb={counts?.support_open ? `${counts.support_open} open` : 'Help requests by email'}
     >
-      <div className="split" style={{ gridTemplateColumns: '360px minmax(0, 1fr)' }}>
+      <div
+        className={`split master${id ? ' has-detail' : ''}`}
+        style={{ gridTemplateColumns: '360px minmax(0, 1fr)' }}
+      >
         <Card>
           <div className="filters in-card">
             <Segmented
@@ -131,15 +134,20 @@ export function SupportPage() {
           </MoreList>
         </Card>
         {selected ? (
-          <SupportDetailCard
-            key={selected}
-            id={selected}
-            onChange={() => {
-              list.reload();
-              refreshCounts();
-            }}
-            onClosed={() => void navigate({ to: '/support' })}
-          />
+          <div className="stack tight">
+            <Link className="btn sm phone-only back" to="/support">
+              Back to support
+            </Link>
+            <SupportDetailCard
+              key={selected}
+              id={selected}
+              onChange={() => {
+                list.reload();
+                refreshCounts();
+              }}
+              onClosed={() => void navigate({ to: '/support' })}
+            />
+          </div>
         ) : (
           <div className="card">
             <EmptyState title="Pick a request on the left." />

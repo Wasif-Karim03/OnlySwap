@@ -1008,3 +1008,33 @@ export const ACTIVITY_CSV_COLS = [
   'details',
   'device',
 ];
+
+// ---------------------------------------------------------------------------
+// Staging tools
+
+/** PostgREST's answer for a function that doesn't exist on this server (PGRST202, HTTP 404). */
+export function isMissingFunction(message: string | null | undefined): boolean {
+  if (!message) return false;
+  return /PGRST202|could not find the function/i.test(message);
+}
+
+export type BotState = 'running' | 'late' | 'failing' | 'paused' | 'not_scheduled' | 'not_run';
+
+/**
+ * The mock seller bot at a glance: not scheduled, paused, its last run failed,
+ * no run for over 5 minutes (it runs every minute), or running.
+ */
+export function mockBotState(
+  bot: {
+    active: boolean;
+    last_run: { status: string; start_time: string | null } | null;
+  } | null,
+  now: number = Date.now(),
+): BotState {
+  if (!bot) return 'not_scheduled';
+  if (!bot.active) return 'paused';
+  if (!bot.last_run?.start_time) return 'not_run';
+  if (bot.last_run.status === 'failed') return 'failing';
+  const age = now - Date.parse(bot.last_run.start_time);
+  return Number.isNaN(age) || age > 5 * 60_000 ? 'late' : 'running';
+}

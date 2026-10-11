@@ -53,6 +53,55 @@ export const NAV: NavGroup[] = [
   },
 ];
 
+export type SettingsTab =
+  | 'team'
+  | 'words'
+  | 'switches'
+  | 'data'
+  | 'health'
+  | 'review'
+  | 'blocked-emails'
+  | 'categories'
+  | 'staging';
+
+export type SettingsTabItem = {
+  id: SettingsTab;
+  to: string;
+  label: string;
+  ownerOnly?: boolean;
+  /** Only in a console built for staging (VITE_APP_ENV=staging). */
+  stagingOnly?: boolean;
+};
+
+/** Settings sub-nav, one route per section. */
+export const SETTINGS_TABS: SettingsTabItem[] = [
+  { id: 'team', to: '/settings/team', label: 'Team' },
+  { id: 'words', to: '/settings/words', label: 'Banned words' },
+  { id: 'switches', to: '/settings/switches', label: 'App switches' },
+  { id: 'data', to: '/settings/data', label: 'Data requests', ownerOnly: true },
+  { id: 'health', to: '/settings/health', label: 'System health', ownerOnly: true },
+  { id: 'review', to: '/settings/review', label: 'Review accounts', ownerOnly: true },
+  { id: 'blocked-emails', to: '/settings/blocked-emails', label: 'Banned emails', ownerOnly: true },
+  { id: 'categories', to: '/settings/categories', label: 'Categories', ownerOnly: true },
+  {
+    id: 'staging',
+    to: '/settings/staging',
+    label: 'Staging tools',
+    ownerOnly: true,
+    stagingOnly: true,
+  },
+];
+
+/** The Settings sections this admin sees: owner-only ones for the owner, staging ones on staging. */
+export function settingsTabs(owner: boolean, staging: boolean): SettingsTabItem[] {
+  return SETTINGS_TABS.filter((t) => (owner || !t.ownerOnly) && (staging || !t.stagingOnly));
+}
+
+/** True only for a console built with VITE_APP_ENV=staging (never production). */
+export function isStagingBuild(appEnv: unknown): boolean {
+  return typeof appEnv === 'string' && appEnv.trim().toLowerCase() === 'staging';
+}
+
 /** Whether a nav item is the current page ("/" only matches itself). */
 export function isActive(to: string, pathname: string): boolean {
   if (to === '/') return pathname === '/';

@@ -4,7 +4,8 @@ Vite + React admin console (Cloudflare Pages). Built in S34 (P12-ADM-01), redesi
 approved mock `design/admin-redesign-mock.html` (docs/ADMIN_CHECKLIST.md §3).
 
 ```bash
-pnpm --filter admin dev        # needs VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY (+ VITE_MEDIA_URL for photos)
+pnpm --filter admin dev        # needs VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY (+ VITE_MEDIA_URL for photos,
+                               #   VITE_APP_ENV=staging for Settings > Staging tools; never in production)
 pnpm --filter admin typecheck
 pnpm --filter admin test       # node --test on the pure modules (logic, labels, nav)
 pnpm --filter admin build
@@ -15,7 +16,8 @@ pnpm --filter admin build
 | File | What it is |
 |---|---|
 | `src/main.tsx` | Routes. The root route is the shell, so unknown addresses show "Page not found" inside it. Old addresses (`/users`, `/team`, `/config`, `/banned-words`) redirect. |
-| `src/nav.ts` | Sidebar groups (Monitor, People and items, Safety, Setup), icons and badge counts |
+| `src/nav.ts` | Sidebar groups (Monitor, People and items, Safety, Setup), icons and badge counts; Settings sections (`SETTINGS_TABS`, `settingsTabs(owner, staging)`) |
+| `src/env.ts` | `STAGING`: true only when built with `VITE_APP_ENV=staging` (the staging deploy sets it) |
 | `src/shell.tsx` | Fixed 232px sidebar, campus picker, signed-in admin, `NotFoundPage`, `ComingSoon` placeholder |
 | `src/session.tsx` | `useWho()`, `useIsOwner()`, `useCampusId()` (sidebar campus, null = all or "mine"), `useSession()` (`campuses`, `counts`, `refreshCounts`) |
 | `src/ui.tsx` | UI kit (below) and `useRpc` |
@@ -86,6 +88,15 @@ Copy: plain student tone, no em dashes, no emoji, verbs on buttons.
 | `/metrics` | plus Ratings and Under-18 attempts cards | `admin_ratings_summary`, `admin_age_blocks_summary` |
 | `/campuses?add=1` | Add school dialog | `admin_create_campus` |
 | `/settings/data`, `/health`, `/review`, `/blocked-emails`, `/categories` | owner-only Settings sections | see API §4.1 |
+| `/settings/staging` | Staging tools (owner, staging builds only): mock data counts, mock bot job, recent actions and failures; "Mock data isn't installed" when the function is missing | `admin_mock_status` (only on staging, from `supabase/campuses/owu-mock.sql`) |
+
+## Phone layout
+
+Under 900px wide the sidebar becomes a top bar with a menu button (the sidebar slides in as a
+drawer and closes on navigation, Escape or a tap outside), tables scroll sideways inside their
+cards, split views and side-by-side cards stack, and KPI grids wrap to 2 columns. The console is
+meant for reading on a phone (checking reports on the go); actions still work but aren't tuned
+for touch.
 
 Useful classes: `stack`, `row`, `spacer`, `split` (330px + rest), `grid2`, `grid3`, `form-grid`,
 `ev` (list row; `ev col`, `ev sel`), `kv` (definition list), `filters`, `tabs`, `callout`, `quote`,

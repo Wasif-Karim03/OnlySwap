@@ -14,7 +14,7 @@ export function FeedRow({ e, now = Date.now() }: { e: ActivityEvent; now?: numbe
     <div className="ev">
       <EventIcon tone={style.tone} icon={style.icon} />
       <Avatar initial={e.person?.initial} seed={e.person?.id} />
-      <span className="row" style={{ gap: 5, flexWrap: 'nowrap', minWidth: 0 }}>
+      <span className="row ev-text" style={{ gap: 5, flexWrap: 'nowrap', minWidth: 0 }}>
         {e.person ? (
           <Link className="strong" to="/people/$id" params={{ id: e.person.id }}>
             {name}
