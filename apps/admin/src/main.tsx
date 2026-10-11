@@ -11,25 +11,40 @@ import { StrictMode, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { AdminGate } from './auth';
+import { ActivityPage } from './pages/Activity';
 import { AnnouncementsPage } from './pages/Announcements';
 import { AuditPage } from './pages/Audit';
 import { CampusPage } from './pages/Campus';
+import { ListingDetailPage } from './pages/ListingDetail';
 import { ListingsPage } from './pages/Listings';
+import { MeetupsPage } from './pages/Meetups';
 import { MetricsPage } from './pages/Metrics';
 import { OverviewPage } from './pages/Overview';
+import { PersonPage } from './pages/Person';
 import { QuadPage } from './pages/Quad';
 import { AppealsPage, ReportsPage } from './pages/Reports';
 import { SettingsPage } from './pages/Settings';
-import { UserDetailPage, UsersPage } from './pages/Users';
+import { SupportPage } from './pages/Support';
+import { UsersPage } from './pages/Users';
+import { WaitlistPage } from './pages/Waitlist';
 import { SessionProvider } from './session';
-import { ComingSoon, NotFoundPage, Shell } from './shell';
+import { NotFoundPage, Shell } from './shell';
 
 // The root route is the shell, so unknown addresses render inside it.
 const root = createRootRoute({ component: Shell, notFoundComponent: NotFoundPage });
 
+/** Search params as plain strings (?tab=offers&user=...); every key optional. */
+export type SearchParams = { [key: string]: string | undefined };
+const searchParams = (s: Record<string, unknown>): SearchParams =>
+  Object.fromEntries(
+    Object.entries(s)
+      .filter(([, v]) => v !== undefined && v !== null && v !== '')
+      .map(([k, v]) => [k, String(v)]),
+  );
+
 /** One page = one file in src/pages + one line here + one entry in src/nav.ts. */
 const page = <P extends string>(path: P, component: () => ReactNode) =>
-  createRoute({ getParentRoute: () => root, path, component });
+  createRoute({ getParentRoute: () => root, path, component, validateSearch: searchParams });
 
 /** Old addresses keep working (bookmarks from the first console). */
 const moved = <P extends string>(path: P, to: string) =>
@@ -44,18 +59,22 @@ const moved = <P extends string>(path: P, to: string) =>
 const routeTree = root.addChildren([
   // Monitor
   page('/', OverviewPage),
-  page('/activity', () => <ComingSoon title="Activity" crumb="Every action, every student" />),
+  page('/activity', ActivityPage),
   page('/metrics', MetricsPage),
+  page('/waitlist', WaitlistPage),
   // People and items
   page('/people', UsersPage),
-  page('/people/$id', UserDetailPage),
+  page('/people/$id', PersonPage),
   page('/listings', ListingsPage),
-  page('/listings/$id', () => <ComingSoon title="Listings" crumb="Listing activity" />),
+  page('/listings/$id', ListingDetailPage),
   // Safety
   page('/reports', ReportsPage),
   page('/reports/$id', ReportsPage),
+  page('/support', SupportPage),
+  page('/support/$id', SupportPage),
   page('/appeals', AppealsPage),
   page('/quad', QuadPage),
+  page('/meetups', MeetupsPage),
   page('/audit', AuditPage),
   // Setup
   page('/campuses', CampusPage),
@@ -64,6 +83,11 @@ const routeTree = root.addChildren([
   page('/settings/team', () => <SettingsPage tab="team" />),
   page('/settings/words', () => <SettingsPage tab="words" />),
   page('/settings/switches', () => <SettingsPage tab="switches" />),
+  page('/settings/data', () => <SettingsPage tab="data" />),
+  page('/settings/health', () => <SettingsPage tab="health" />),
+  page('/settings/review', () => <SettingsPage tab="review" />),
+  page('/settings/blocked-emails', () => <SettingsPage tab="blocked-emails" />),
+  page('/settings/categories', () => <SettingsPage tab="categories" />),
   // Old addresses
   moved('/users', '/people'),
   createRoute({

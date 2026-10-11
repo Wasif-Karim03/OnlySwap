@@ -1,3 +1,4 @@
+import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useState } from 'react';
 
 import {
@@ -7,13 +8,23 @@ import {
   spotDesignation,
   type CampusDial,
 } from '../labels';
-import { errorMessage, reasonError } from '../logic';
+import {
+  errorMessage,
+  knownError,
+  newCampusArgs,
+  newCampusError,
+  reasonError,
+  slugFromName,
+  TIME_ZONES,
+  type NewCampusForm,
+} from '../logic';
 import { useIsOwner, useSession } from '../session';
 import { rpc } from '../supabase';
 import {
   ActionButton,
   Button,
   Card,
+  Dialog,
   EmptyState,
   Field,
   Loadable,
@@ -61,12 +72,40 @@ export function CampusPage() {
   const owner = useIsOwner();
   const { campusId } = useSession();
   const state = useRpc<Campus[]>('admin_list_campuses');
+  const search = useSearch({ strict: false }) as Partial<Record<string, string>>;
+  const navigate = useNavigate();
   const [picked, setPicked] = useState<string | null>(null);
+  const [adding, setAdding] = useState(owner && search.add === '1');
   const rows = state.data ?? [];
   const current = rows.find((c) => c.id === (picked ?? campusId)) ?? rows[0] ?? null;
+  const closeAdd = () => {
+    setAdding(false);
+    if (search.add) void navigate({ to: '/campuses', search: {}, replace: true });
+  };
 
   return (
-    <Page title="Campuses" crumb={current ? `/ ${current.short_name || current.name}` : undefined}>
+    <Page
+      title="Campuses"
+      crumb={current ? `/ ${current.short_name || current.name}` : undefined}
+      actions={
+        owner ? (
+          <Button variant="primary" icon="plus" onClick={() => setAdding(true)}>
+            Add school
+          </Button>
+        ) : null
+      }
+    >
+      {adding ? (
+        <AddSchool
+          domain={search.domain ?? ''}
+          name={search.name ?? ''}
+          onClose={closeAdd}
+          onCreated={(id) => {
+            setPicked(id);
+            state.reload();
+          }}
+        />
+      ) : null}
       <div className="split" style={{ gridTemplateColumns: '280px minmax(0, 1fr)' }}>
         <Card title="Schools">
           <Loadable
@@ -540,5 +579,209 @@ function SpotForm({
         {error ? <span className="toast error">{error}</span> : null}
       </div>
     </form>
+  );
+}
+
+/**
+ * Add school (owner, admin_create_campus): name, short name, link name from
+ * the name, time zone, student email domain, Live or Waitlist, and the first
+ * Meetup spot (optional). The new school is picked when it's saved.
+ */
+function AddSchool({
+  domain,
+  name,
+  onClose,
+  onCreated,
+}: {
+  domain: string;
+  name: string;
+  onClose: () => void;
+  onCreated: (id: string) => void;
+}) {
+  const [f, setF] = useState<NewCampusForm>(() => ({
+    name,
+    short_name: '',
+    slug: slugFromName(name),
+    timezone: 'America/New_York',
+    domain,
+    status: 'waitlist',
+    spot_name: '',
+    spot_description: '',
+    spot_hours: '',
+    spot_lat: '',
+    spot_lng: '',
+    reason: '',
+  }));
+  const [slugTouched, setSlugTouched] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const set = (patch: Partial<NewCampusForm>) => setF({ ...f, ...patch });
+
+  const submit = async () => {
+    const invalid = newCampusError(f);
+    if (invalid) return setMsg({ ok: false, text: invalid });
+    setBusy(true);
+    setMsg(null);
+    try {
+      const r = await rpc<{ id: string; slug: string; spot_id: string | null }>(
+        'admin_create_campus',
+        newCampusArgs(f),
+      );
+      onCreated(r.id);
+      onClose();
+    } catch (e) {
+      setMsg({
+        ok: false,
+        text:
+          knownError(e, {
+            'INVALID:slug_taken': 'Another school already uses this link name.',
+            'INVALID:domain_taken': 'This email domain already belongs to a school.',
+            'INVALID:timezone': 'Pick a real time zone.',
+            'INVALID:domain': 'Enter the student email domain, like owu.edu.',
+            'INVALID:spot': 'Check the Meetup spot name and map position.',
+          }) || errorMessage(e),
+      });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Dialog title="Add school" onClose={onClose} wide>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          void submit();
+        }}
+      >
+        <div className="form-grid">
+          <Field label="School name" className="span2">
+            <input
+              value={f.name}
+              autoFocus
+              onChange={(e) =>
+                set({
+                  name: e.target.value,
+                  ...(slugTouched ? {} : { slug: slugFromName(e.target.value) }),
+                })
+              }
+              placeholder="Ohio Wesleyan University"
+            />
+          </Field>
+          <Field label="Short name" hint="Shown in the app and here">
+            <input
+              value={f.short_name}
+              onChange={(e) => set({ short_name: e.target.value })}
+              placeholder="Ohio Wesleyan"
+            />
+          </Field>
+          <Field label="Link name" hint="Made from the name; can't change later">
+            <input
+              value={f.slug}
+              onChange={(e) => {
+                setSlugTouched(true);
+                set({ slug: e.target.value.toLowerCase() });
+              }}
+            />
+          </Field>
+          <Field label="Student email domain">
+            <input
+              value={f.domain}
+              onChange={(e) => set({ domain: e.target.value })}
+              placeholder="owu.edu"
+            />
+          </Field>
+          <Field label="Time zone">
+            <select value={f.timezone} onChange={(e) => set({ timezone: e.target.value })}>
+              {TIME_ZONES.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field
+            label="Start as"
+            hint={
+              f.status === 'live'
+                ? 'Students can sign up and trade right away.'
+                : 'Sign-ups wait until it opens.'
+            }
+          >
+            <select
+              value={f.status}
+              onChange={(e) => set({ status: e.target.value as NewCampusForm['status'] })}
+            >
+              <option value="waitlist">Waitlist</option>
+              <option value="live">Live</option>
+            </select>
+          </Field>
+        </div>
+        <div className="ch top-line flush">
+          <h3>First Meetup spot</h3>
+          <span className="muted">Optional. A public place, like a library entrance.</span>
+        </div>
+        <div className="form-grid">
+          <Field label="Spot name">
+            <input
+              value={f.spot_name}
+              onChange={(e) => set({ spot_name: e.target.value })}
+              placeholder="Library entrance"
+            />
+          </Field>
+          <Field label="Where exactly">
+            <input
+              value={f.spot_description}
+              onChange={(e) => set({ spot_description: e.target.value })}
+              placeholder="Inside the front doors"
+            />
+          </Field>
+          <Field label="Hours">
+            <input
+              value={f.spot_hours}
+              onChange={(e) => set({ spot_hours: e.target.value })}
+              placeholder="7am to 1am"
+            />
+          </Field>
+          <Field label="Latitude">
+            <input
+              inputMode="decimal"
+              value={f.spot_lat}
+              onChange={(e) => set({ spot_lat: e.target.value })}
+              placeholder="40.2986"
+            />
+          </Field>
+          <Field label="Longitude">
+            <input
+              inputMode="decimal"
+              value={f.spot_lng}
+              onChange={(e) => set({ spot_lng: e.target.value })}
+              placeholder="-83.0680"
+            />
+          </Field>
+        </div>
+        <div className="cf">
+          <input
+            className="reason"
+            value={f.reason}
+            onChange={(e) => set({ reason: e.target.value })}
+            placeholder="Reason (required, saved to the audit log)"
+            aria-label="Reason (required, saved to the audit log)"
+            autoComplete="off"
+          />
+          <Button variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" variant="primary" disabled={busy}>
+            {busy ? 'Adding…' : 'Add school'}
+          </Button>
+          {msg ? (
+            <p className={`${msg.ok ? 'ok' : 'error'}`} style={{ width: '100%' }}>
+              {msg.text}
+            </p>
+          ) : null}
+        </div>
+      </form>
+    </Dialog>
   );
 }

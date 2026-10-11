@@ -17,6 +17,7 @@ import {
   type Target,
 } from '../logic';
 import { useCampusId, useSession } from '../session';
+import { AgeBlocksSection, RatingsSection } from './Ratings';
 import {
   Bar,
   Button,
@@ -203,6 +204,8 @@ export function MetricsPage() {
           {(s) => <SafetyView weeks={s.weeks} allCampuses={allCampuses} />}
         </Loadable>
       </Card>
+      <RatingsSection campusId={campusId} />
+      <AgeBlocksSection campusId={campusId} />
       <p className="note">Crash-free sessions (target 99.5%) live in Sentry, not here.</p>
     </Page>
   );

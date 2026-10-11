@@ -22,6 +22,7 @@ export const NAV: NavGroup[] = [
       { to: '/', label: 'Overview', icon: 'home' },
       { to: '/activity', label: 'Activity', icon: 'pulse' },
       { to: '/metrics', label: 'Metrics', icon: 'chart' },
+      { to: '/waitlist', label: 'Waitlist', icon: 'school' },
     ],
   },
   {
@@ -35,15 +36,17 @@ export const NAV: NavGroup[] = [
     label: 'Safety',
     items: [
       { to: '/reports', label: 'Reports', icon: 'flag', count: 'open_reports' },
+      { to: '/support', label: 'Support', icon: 'mail', count: 'support_open', quiet: true },
       { to: '/appeals', label: 'Appeals', icon: 'scale', count: 'appeals_open', quiet: true },
       { to: '/quad', label: 'Quad', icon: 'quad', count: 'quad_held', quiet: true },
+      { to: '/meetups', label: 'Meetups', icon: 'pin' },
       { to: '/audit', label: 'Audit log', icon: 'log' },
     ],
   },
   {
     label: 'Setup',
     items: [
-      { to: '/campuses', label: 'Campuses', icon: 'pin' },
+      { to: '/campuses', label: 'Campuses', icon: 'school' },
       { to: '/announcements', label: 'Announcements', icon: 'book' },
       { to: '/settings', label: 'Settings', icon: 'gear' },
     ],
