@@ -57,30 +57,30 @@ All 38 admin database functions are wired into a page; none is unused.
 
 ## 4. New data the redesign needs (P1)
 Today the app stores saves, offers (a right swipe is an offer), chats, meetups, deals and left swipes (deleted after 30 days). It does not store views per person or anything about how people browse.
-- [ ] Activity events table: who, what (shown in deck, viewed, swiped, saved, searched, opened from), which listing, when, device and app version; one server function the app calls in batches
-- [ ] Time on card and where the listing was opened from (Discover, search, Around campus, profile, link)
-- [ ] Last active time and device per student
-- [ ] Keep events 90 days, then delete (left swipes stay at 30 days); add both to the privacy policy retention table
-- [ ] Admin functions for: activity feed, a student's timeline, a listing's swipe list and funnel, live numbers with trends; each one that shows a named student writes an access row to the audit log
-- [ ] Privacy policy and in-app privacy text: "Our team can see your activity in the app (swipes, saves, offers) to run and protect the service. Every look is logged."
-- [ ] PostHog stays as it is (18 events, no personal data); the new events live only in our database
+- [x] Activity events table: who, what (shown in deck, viewed, swiped, saved, searched, opened from), which listing, when, device and app version; one server function the app calls in batches (backend: `activity_events`, `track_events`; the app sends them in step 2)
+- [x] Time on card and where the listing was opened from (Discover, search, Around campus, profile, link) (backend: `dwell_ms`, `source`)
+- [x] Last active time and device per student (backend: `last_active_at`, `last_platform`, `last_app_version`)
+- [x] Keep events 90 days, then delete (left swipes stay at 30 days); add both to the privacy policy retention table (`prune_activity` job)
+- [x] Admin functions for: activity feed, a student's timeline, a listing's swipe list and funnel, live numbers with trends; each one that shows a named student writes an access row to the audit log (backend, API §4.1)
+- [x] Privacy policy and in-app privacy text: "Our team can see your activity in the app (swipes, saves, offers) to run and protect the service. Every look is logged."
+- [x] PostHog stays as it is (18 events, no personal data); the new events live only in our database
 
 ## 5. Missing pages and tools (not in the mock yet)
-- [ ] **Support inbox** (P1): the Help form and "can't get into my school email" requests are stored (`support_requests`) but no page shows them. List, reply by email, mark done.
-- [ ] **Waitlist demand** (P1): website and app waitlist sign-ups by school (`waitlist_requests`), so you can see which school to open next, and open it in one click
-- [ ] **Add a school from the console** (P1): today a new school needs a SQL file and a Terminal command; add "Add school" with name, domain, time zone, first meetup spot
-- [ ] **Meetups and no-shows** (P2): upcoming meetups per campus, no-show reports, who keeps missing
-- [ ] **Ratings** (P2): thumbs up and down per student, low-rated sellers
-- [ ] **Account deletions and data exports** (P2): requests, status, failures
-- [ ] **System health** (P2): failed emails (code emails), failed pushes, last run of each scheduled job, storage use against the free tier
-- [ ] **Alerts to you** (P2): email when a threat or safety report comes in, or when the report queue is older than 4 hours
-- [ ] **Blocks** (P2): on a student's page, who they blocked and who blocked them
-- [ ] **Under-18 attempts** (P2): age check blocks per campus, for compliance
-- [ ] **App Review accounts** (P2): manage the Demo University reviewer logins before store submission
-- [ ] **Bulk actions** (P2): remove or hold many listings at once (spam waves)
-- [ ] **Global search** (P2): one box for people, listings, reports (the ⌘K in the mock)
-- [ ] **Photo blocklist** (P3): banned image hashes (`banned_hashes`) page
-- [ ] **Categories editor** (P3): rename, reorder, hide categories
+- [x] **Support inbox** (P1) (backend; reply goes out by email through the outbox): the Help form and "can't get into my school email" requests are stored (`support_requests`) but no page shows them. List, reply by email, mark done.
+- [x] **Waitlist demand** (P1) (backend): website and app waitlist sign-ups by school (`waitlist_requests`), so you can see which school to open next, and open it in one click
+- [x] **Add a school from the console** (P1) (backend): today a new school needs a SQL file and a Terminal command; add "Add school" with name, domain, time zone, first meetup spot
+- [x] **Meetups and no-shows** (P2) (backend): upcoming meetups per campus, no-show reports, who keeps missing
+- [x] **Ratings** (P2) (backend): thumbs up and down per student, low-rated sellers
+- [x] **Account deletions and data exports** (P2) (backend): requests, status, failures
+- [x] **System health** (P2) (backend): failed emails (code emails), failed pushes, last run of each scheduled job, storage use against the free tier
+- [x] **Alerts to you** (P2): email when a threat or safety report comes in, or when the report queue is older than 4 hours
+- [x] **Blocks** (P2) (backend, in `admin_person`): on a student's page, who they blocked and who blocked them
+- [x] **Under-18 attempts** (P2) (backend): age check blocks per campus, for compliance
+- [x] **App Review accounts** (P2) (backend): manage the Demo University reviewer logins before store submission
+- [x] **Bulk actions** (P2) (backend): remove or hold many listings at once (spam waves)
+- [x] **Global search** (P2) (backend): one box for people, listings, reports (the ⌘K in the mock)
+- [x] **Photo blocklist** (P3): banned image hashes (`banned_hashes`) page (backend; note `banned_hashes` holds hashed emails of banned accounts, not photos)
+- [~] **Categories editor** (P3): rename, reorder, hide categories (backend: rename, reorder, add; hide not built because the app reads categories directly)
 - [ ] **Staging tools** (P3): mock data and bot status, on staging only
 - [ ] **Phone-friendly layout** (P3): read-only on a phone for checking reports on the go
 

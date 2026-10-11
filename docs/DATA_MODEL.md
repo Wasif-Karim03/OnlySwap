@@ -471,6 +471,47 @@ The tables are:
 | `my_reports` | reporter's reports without `target_user_id` or `evidence` |
 | `admin_metrics_*` | funnel, retention (from `activity_days`), liquidity, safety (DATA-01 definitions in PRD §5) |
 
+### 2.8 Admin v2: activity and console records — `0206`–`0208` (DEC 93)
+
+```sql
+-- 0206: how students browse. Offers, saves, left swipes, chats, meetups and deals
+-- stay in their own tables; admin timelines read those and use this table only
+-- for what nothing else records (plus time on card for swipe taps).
+create table activity_events (
+  id bigint generated always as identity primary key,
+  user_id uuid not null references profiles on delete cascade,
+  campus_id uuid not null references campuses on delete cascade,
+  kind text not null check (kind in ('app_open','deck_shown','listing_viewed','swiped_left','saved',
+                                     'unsaved','offer_made','searched','opened_from')),
+  listing_id uuid references listings on delete set null,
+  source text check (source in ('discover','search','campus','profile','saved','link','notification')),
+  dwell_ms int check (dwell_ms between 0 and 600000),     -- time on card or page, capped at 10 min
+  query text check (char_length(query) <= 80),            -- searched only
+  platform text check (platform in ('ios','android','web')),
+  app_version text check (char_length(app_version) <= 20),
+  created_at timestamptz not null default now()
+);  -- indexes: (user_id, created_at desc), (listing_id, created_at desc), (campus_id, created_at desc), (created_at)
+-- Written only by track_events (API §3); a deck card counts once per person per listing per 24 h. Purge 90 d.
+
+alter table profiles add column last_platform text check (last_platform in ('ios','android','web'));
+alter table profiles add column last_app_version text check (char_length(last_app_version) <= 20);
+-- profiles.last_active_at (0002) is now stamped by track_events.
+
+-- 0208
+alter table support_requests add column status text not null default 'open' check (status in ('open','answered','closed')),
+  add column staff_note text check (char_length(staff_note) <= 1000), add column replied_at timestamptz,
+  add column reply_count int not null default 0, add column updated_at timestamptz, add column updated_by uuid;
+alter table age_blocks add column campus_id uuid;          -- stamped by trigger from the profile that hit the check; no FK
+create table account_deletions (                           -- no name, no email
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid,                                            -- only while running; cleared when done (T-INT-DEL-01)
+  campus_id uuid, underage bool not null default false,
+  status text not null default 'started' check (status in ('started','done')),
+  started_at timestamptz not null default now(), finished_at timestamptz
+);  -- prepare_account_deletion opens it, the profile delete trigger closes it; 'started' > 1 h = stuck. Purge 365 d.
+-- email_outbox.template adds 'support_reply' and 'report_queue'.
+```
+
 ---
 
 ## 3. Access rules matrix [R1.0]
@@ -494,6 +535,8 @@ S = select, W = write. "via RPC" means the only write path is a security-definer
 | safe_spots | via `public_safe_spots` | — | S active | — | S; W via RPC | all |
 | app_config | S public keys | S public keys | — | — | S; owner W via RPC | all |
 | audit_log | — | — | — | — | S (insert only via RPCs; no update/delete for anyone) | insert |
+| activity_events | — | W only via `track_events` (no select) | — | — | only via `admin_*` RPCs (each look at a named student logged) | all |
+| account_deletions | — | — | — | — | only via `admin_list_deletions_exports` (owner) | all |
 | all other support tables | — | — | — | — | — | all |
 | `realtime.messages` | — | topic `user:{uid}` | — | topic `chat:{id}` | — | — |
 
@@ -626,6 +669,8 @@ Suspensions and bans revoke sessions (ADR-013).
 | Account, listings, messages | until account deletion. Closed chats archived to R2 after 90 d; archives deleted on account deletion |
 | Notifications | 60 d |
 | Swipes (non-save) | 30 d |
+| Activity events (`activity_events`) | 90 d (daily `prune_activity` job) |
+| Account deletion records (`account_deletions`, no name or email) | 365 d |
 | Reports + evidence | 180 d after resolution (reporter nulled on deletion) |
 | Audit log | 2 years |
 | Age blocks (hash only) | 365 d |
@@ -685,6 +730,7 @@ Suspensions and bans revoke sessions (ADR-013).
 | `0090_cron.sql` | API.md §6 | R1.0 |
 | `0100_ref_data.sql` | categories, banned words (+ pets, gift cards, recalled items), `app_config` defaults: idempotent upserts (BE-15) | R1.0 |
 | `0200_quad.sql` … | R1.1 features | R1.1 |
+| `0206_activity_events.sql`, `0207_admin_v2_reads.sql`, `0208_admin_v2_tools.sql` | §2.8, API §3 `track_events`, API §4.1 (DEC 93) | admin v2 |
 
 Staging-only objects (`test_set_now`, the `private.now()` override, the `test_otps` table) live in `supabase/migrations_staging/` and are **never** applied to production; a CI check enforces this.
 
