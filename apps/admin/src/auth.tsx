@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from 'react';
 
 import { errorMessage, gate, sessionExpired, type Whoami } from './logic';
 import { rpc, supabase } from './supabase';
@@ -46,18 +46,57 @@ export function AdminGate({
     void supabase.auth.signOut().then(refresh);
   };
 
-  if (state === 'loading') return <p className="pad">Loading…</p>;
+  if (state === 'loading')
+    return (
+      <div className="gate" aria-busy="true">
+        <span className="mark lg" aria-hidden="true" />
+      </div>
+    );
   if (state === 'login') return <EmailLogin onDone={refresh} />;
   if (state === 'denied')
     return (
-      <div className="pad">
-        <h1>Not an admin</h1>
-        <p>This account doesn't have admin access.</p>
-        <button onClick={signOut}>Sign out</button>
-      </div>
+      <GateCard title="Not an admin">
+        <p className="lede">This account doesn't have access to the console.</p>
+        <button className="btn primary" onClick={signOut}>
+          Sign out
+        </button>
+      </GateCard>
     );
   if (state === 'mfa') return <Mfa onDone={refresh} onSignOut={signOut} />;
   return <>{children(who!, signOut)}</>;
+}
+
+/** Centered sign-in card with the logo mark and the one line about who it's for. */
+function GateCard({
+  title,
+  children,
+  onSubmit,
+}: {
+  title: string;
+  children: ReactNode;
+  onSubmit?: (e: FormEvent) => void;
+}) {
+  const body = (
+    <>
+      <span className="mark lg" aria-hidden="true" />
+      <div>
+        <h1>{title}</h1>
+        <p className="lede">For the OnlySwap team. Two-step sign-in required.</p>
+      </div>
+      {children}
+    </>
+  );
+  return (
+    <main className="gate">
+      {onSubmit ? (
+        <form className="gate-card" onSubmit={onSubmit}>
+          {body}
+        </form>
+      ) : (
+        <div className="gate-card">{body}</div>
+      )}
+    </main>
+  );
 }
 
 function EmailLogin({ onDone }: { onDone: () => void }) {
@@ -66,8 +105,8 @@ function EmailLogin({ onDone }: { onDone: () => void }) {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   return (
-    <form
-      className="card login"
+    <GateCard
+      title="Sign in to OnlySwap admin"
       onSubmit={async (e) => {
         e.preventDefault();
         setError(null);
@@ -88,9 +127,8 @@ function EmailLogin({ onDone }: { onDone: () => void }) {
         }
       }}
     >
-      <h1>OnlySwap admin</h1>
-      <label>
-        Email
+      <label className="field">
+        <span>Email</span>
         <input
           type="email"
           value={email}
@@ -100,8 +138,8 @@ function EmailLogin({ onDone }: { onDone: () => void }) {
         />
       </label>
       {sent ? (
-        <label>
-          Code from your email
+        <label className="field">
+          <span>Code from your email</span>
           <input
             value={code}
             onChange={(e) => setCode(e.target.value)}
@@ -112,14 +150,17 @@ function EmailLogin({ onDone }: { onDone: () => void }) {
         </label>
       ) : null}
       {error ? <p className="error">{error}</p> : null}
-      <button type="submit">{sent ? 'Sign in' : 'Send code'}</button>
-    </form>
+      <button type="submit" className="btn primary">
+        {sent ? 'Sign in' : 'Send code'}
+      </button>
+    </GateCard>
   );
 }
 
 function Mfa({ onDone, onSignOut }: { onDone: () => void; onSignOut: () => void }) {
   const [factorId, setFactorId] = useState<string | null>(null);
   const [qr, setQr] = useState<string | null>(null);
+  const [secret, setSecret] = useState<string | null>(null);
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -139,13 +180,14 @@ function Mfa({ onDone, onSignOut }: { onDone: () => void; onSignOut: () => void 
       else {
         setFactorId(enrolled.data.id);
         setQr(enrolled.data.totp.qr_code);
+        setSecret(enrolled.data.totp.secret);
       }
     })();
   }, []);
 
   return (
-    <form
-      className="card login"
+    <GateCard
+      title={qr ? 'Set up two-step sign-in' : 'Two-step check'}
       onSubmit={async (e) => {
         e.preventDefault();
         if (!factorId) return;
@@ -156,17 +198,26 @@ function Mfa({ onDone, onSignOut }: { onDone: () => void; onSignOut: () => void 
         else onDone();
       }}
     >
-      <h1>Two-step check</h1>
       {qr ? (
         <>
-          <p>Scan this with an authenticator app, then enter the 6-digit code.</p>
-          <img src={qr} alt="Authenticator QR code" width={180} height={180} />
+          <p className="ink2">
+            Scan this with an authenticator app, then enter the 6-digit code it shows.
+          </p>
+          <img className="qr" src={qr} alt="QR code for your authenticator app" />
+          {secret ? (
+            <div className="stack tight">
+              <span className="muted small">Can't scan? Type this key into the app instead:</span>
+              <code className="secret" aria-label="Setup key">
+                {secret}
+              </code>
+            </div>
+          ) : null}
         </>
       ) : (
-        <p>Enter the 6-digit code from your authenticator app.</p>
+        <p className="ink2">Enter the 6-digit code from your authenticator app.</p>
       )}
-      <label>
-        Code
+      <label className="field">
+        <span>Code</span>
         <input
           value={code}
           onChange={(e) => setCode(e.target.value)}
@@ -176,10 +227,12 @@ function Mfa({ onDone, onSignOut }: { onDone: () => void; onSignOut: () => void 
         />
       </label>
       {error ? <p className="error">{error}</p> : null}
-      <button type="submit">Verify</button>
-      <button type="button" className="link" onClick={onSignOut}>
+      <button type="submit" className="btn primary">
+        Verify
+      </button>
+      <button type="button" className="btn ghost" onClick={onSignOut}>
         Sign out
       </button>
-    </form>
+    </GateCard>
   );
 }

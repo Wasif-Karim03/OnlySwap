@@ -390,3 +390,173 @@ export function knownError(e: unknown, known: Record<string, string>): string {
   const raw = (e as { message?: string })?.message ?? String(e);
   return known[raw] ?? errorMessage(e);
 }
+
+// ---------------------------------------------------------------------------
+// Console v2 (docs/ADMIN_CHECKLIST.md §2 and §3)
+
+const pad2 = (n: number) => String(n).padStart(2, '0');
+const sameDay = (a: Date, b: Date) =>
+  a.getFullYear() === b.getFullYear() &&
+  a.getMonth() === b.getMonth() &&
+  a.getDate() === b.getDate();
+
+/** "Today 10:41", "Yesterday 21:02", "Oct 7 14:30" (local time, 24-hour like the mock). */
+export function whenLabel(iso: string | null | undefined, now: number = Date.now()): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const t = `${d.getHours()}:${pad2(d.getMinutes())}`;
+  const today = new Date(now);
+  if (sameDay(d, today)) return `Today ${t}`;
+  if (sameDay(d, new Date(now - 86_400_000))) return `Yesterday ${t}`;
+  const day = d.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    ...(d.getFullYear() === today.getFullYear() ? {} : { year: 'numeric' }),
+  });
+  return `${day} ${t}`;
+}
+
+/** "Oct 7" (adds the year when it isn't this year). */
+export function dateLabel(iso: string | null | undefined, now: number = Date.now()): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    ...(d.getFullYear() === new Date(now).getFullYear() ? {} : { year: 'numeric' }),
+  });
+}
+
+/** "12 s ago", "3 min ago", "5 h ago", "Yesterday", "4 days ago", then the date. */
+export function timeAgo(iso: string | null | undefined, now: number = Date.now()): string {
+  if (!iso) return '';
+  const ms = now - Date.parse(iso);
+  if (Number.isNaN(ms)) return '';
+  const s = Math.max(0, Math.floor(ms / 1000));
+  if (s < 60) return `${s} s ago`;
+  if (s < 3600) return `${Math.floor(s / 60)} min ago`;
+  if (s < 86_400) return `${Math.floor(s / 3600)} h ago`;
+  const days = Math.floor(s / 86_400);
+  if (days === 1) return 'Yesterday';
+  if (days < 7) return `${days} days ago`;
+  return dateLabel(iso, now);
+}
+
+/** "+12% vs last week" style change, and whether it went up, down or stayed. */
+export function deltaLabel(
+  value: number,
+  previous: number | null | undefined,
+  versus: string,
+): { text: string; dir: 'up' | 'down' | 'flat' } {
+  if (previous === null || previous === undefined) return { text: '', dir: 'flat' };
+  if (previous === 0) {
+    if (value === 0) return { text: `Same as ${versus}`, dir: 'flat' };
+    return { text: `+${value.toLocaleString('en-US')} vs ${versus}`, dir: 'up' };
+  }
+  const pct = Math.round(((value - previous) / previous) * 100);
+  if (pct === 0) return { text: `Same as ${versus}`, dir: 'flat' };
+  return { text: `${pct > 0 ? '+' : ''}${pct}% vs ${versus}`, dir: pct > 0 ? 'up' : 'down' };
+}
+
+/** SVG path for a sparkline (oldest first); a flat line for empty or constant series. */
+export function sparkPath(points: number[], w: number, h: number): string {
+  if (points.length === 0) return `M0 ${h / 2} L${w} ${h / 2}`;
+  if (points.length === 1) return `M0 ${h / 2} L${w} ${h / 2}`;
+  const max = Math.max(...points);
+  const min = Math.min(...points);
+  const span = max - min || 1;
+  return points
+    .map((p, i) => {
+      const x = (i / (points.length - 1)) * w;
+      const y = max === min ? h / 2 : h - 2 - ((p - min) / span) * (h - 4);
+      return `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`;
+    })
+    .join(' ');
+}
+
+/** Bug fix (checklist §2): the Until date is only for Pause and Suspend. */
+export function needsUntil(status: string): boolean {
+  return status === 'paused' || status === 'suspended';
+}
+
+/** Bug fix (checklist §2): the days box is only for Suspend. */
+export function needsSuspendDays(action: string): boolean {
+  return action === 'suspend';
+}
+
+/** Bug fix (checklist §2): changing a student's email needs a school address and a reason. */
+export function changeEmailError(email: string, reason: string): string | null {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return 'Enter the new school email.';
+  if (reason.trim().length < 3) return 'Add a reason of at least 3 characters.';
+  return null;
+}
+
+/** A reason box shared by an action row: 3+ characters, else the message to show. */
+export function reasonError(reason: string): string | null {
+  return reason.trim().length < 3 ? 'Add a reason of at least 3 characters.' : null;
+}
+
+/** Campuses that can get an announcement: every real campus, never the demo one. */
+export function announceableCampuses<T extends { is_demo: boolean }>(campuses: T[]): T[] {
+  return campuses.filter((c) => !c.is_demo);
+}
+
+export const AUDIT_RANGES = [
+  { id: '24h', label: 'Last 24 hours', ms: 86_400_000 },
+  { id: '7d', label: 'Last 7 days', ms: 7 * 86_400_000 },
+  { id: '30d', label: 'Last 30 days', ms: 30 * 86_400_000 },
+  { id: 'all', label: 'All time', ms: 0 },
+  { id: 'custom', label: 'Pick dates', ms: 0 },
+] as const;
+export type AuditRange = (typeof AUDIT_RANGES)[number]['id'];
+
+/**
+ * Audit log time filter (checklist §2): `since`/`until` ISO times for
+ * admin_list_audit_v2. Custom dates are whole local days, `to` included.
+ */
+export function auditWindow(
+  range: AuditRange,
+  now: number,
+  from?: string,
+  to?: string,
+): { since?: string; until?: string } {
+  const r = AUDIT_RANGES.find((x) => x.id === range);
+  if (range === 'custom') {
+    const out: { since?: string; until?: string } = {};
+    if (from) out.since = new Date(`${from}T00:00:00`).toISOString();
+    if (to) out.until = new Date(new Date(`${to}T00:00:00`).getTime() + 86_400_000).toISOString();
+    return out;
+  }
+  if (!r || !r.ms) return {};
+  return { since: new Date(now - r.ms).toISOString() };
+}
+
+/**
+ * Keyset paging for lists with a `next_cursor` (audit log): keeps the cursors
+ * of the pages before so Previous works. Page 1 has cursor null.
+ */
+export function pageStack<C>(stack: C[], move: 'next' | 'prev' | 'reset', next?: C | null): C[] {
+  if (move === 'reset') return [];
+  if (move === 'prev') return stack.slice(0, -1);
+  return next === null || next === undefined ? stack : [...stack, next];
+}
+
+/** Full URL for a media key (thumbs come back as keys); empty when there's no media host. */
+export function mediaUrl(base: string, key: string | null | undefined): string {
+  if (!key || !base) return '';
+  if (/^https?:\/\//.test(key)) return key;
+  return `${base.replace(/\/+$/, '')}/${key.replace(/^\/+/, '')}`;
+}
+
+/** "$45", "$4.50", "Free" for 0 when asked. */
+export function moneyLabel(cents: number | null | undefined, freeWord = false): string {
+  if (cents === null || cents === undefined) return '';
+  if (cents === 0 && freeWord) return 'Free';
+  const d = cents / 100;
+  return `$${d.toLocaleString('en-US', {
+    minimumFractionDigits: cents % 100 ? 2 : 0,
+    maximumFractionDigits: 2,
+  })}`;
+}
