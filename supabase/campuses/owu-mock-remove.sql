@@ -3,6 +3,7 @@
 -- Safe to run again.
 --
 -- What it touches: only mock rows (users b0000000-..., listings b1000000-...,
+-- the console read public.admin_mock_status,
 -- schema mock, cron job mock_bot, domain mock.onlyswap.test).
 --
 -- Real people's deal data is never deleted or changed. A mock user with deal
@@ -35,6 +36,8 @@ begin
   end if;
 end;
 $$;
+-- The console's Staging tools read (admin_mock_status) goes with the bot.
+drop function if exists public.admin_mock_status();
 drop schema if exists mock cascade;
 
 -- 2. Listings and users.

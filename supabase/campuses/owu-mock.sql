@@ -590,6 +590,71 @@ end;
 $$;
 
 -- ---------------------------------------------------------------------------
+-- 5. Staging tools in the admin console (Settings > Staging tools, owner only,
+--    shown only by a staging build of the console). Read only. It lives here
+--    and not in a migration, so only a server with the mock data has it: on any
+--    other server PostgREST answers 404 and the console says the mock data
+--    isn't installed. owu-mock-remove.sql drops it. Same rules as the other
+--    admin reads: owner with the two-step check (private.require_admin).
+create or replace function public.admin_mock_status()
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare
+  a public.admins := private.require_admin('owner');
+  now_at timestamptz := now();
+  bot jsonb;
+begin
+  select jsonb_build_object(
+      'jobname', j.jobname, 'schedule', j.schedule, 'active', j.active,
+      'last_run', (select jsonb_build_object('status', d.status, 'start_time', d.start_time, 'end_time', d.end_time,
+                                             'message', left(d.return_message, 200))
+                   from cron.job_run_details d where d.jobid = j.jobid order by d.start_time desc nulls last limit 1),
+      'runs_24h', (select count(*)::int from cron.job_run_details d
+                   where d.jobid = j.jobid and d.start_time >= now_at - interval '24 hours'),
+      'failures_24h', (select count(*)::int from cron.job_run_details d
+                       where d.jobid = j.jobid and d.status = 'failed' and d.start_time >= now_at - interval '24 hours'))
+    into bot
+  from cron.job j where j.jobname = 'mock_bot';
+
+  return jsonb_build_object(
+    'generated_at', now_at,
+    'users', jsonb_build_object(
+      'active', (select count(*)::int from public.profiles p where p.id::text like 'b0000000-%' and p.status = 'active'),
+      'total', (select count(*)::int from public.profiles p where p.id::text like 'b0000000-%')),
+    'listings', jsonb_build_object(
+      'discover', (select count(*)::int from public.listings l where l.id::text like 'b1000000-%' and l.status = 'active'
+                     and l.kind in ('sale', 'free')),
+      'food_live', (select count(*)::int from public.listings l where l.id::text like 'b1000000-%' and l.status = 'active'
+                      and l.kind = 'food' and l.expires_at > now_at),
+      'wanted', (select count(*)::int from public.listings l where l.id::text like 'b1000000-%' and l.status = 'active'
+                   and l.kind = 'wanted'),
+      'sold', (select count(*)::int from public.listings l where l.id::text like 'b1000000-%' and l.status = 'sold'),
+      'total', (select count(*)::int from public.listings l where l.id::text like 'b1000000-%')),
+    'photos', (select count(*)::int from public.listing_photos ph where ph.path like 'c/mock/l/%'),
+    'bot', bot,
+    'actions', jsonb_build_object(
+      'ok_24h', (select count(*)::int from mock.log g where g.ok and g.at >= now_at - interval '24 hours'),
+      'failed_24h', (select count(*)::int from mock.log g where not g.ok and g.at >= now_at - interval '24 hours'),
+      'ok_total', (select count(*)::int from mock.log g where g.ok),
+      'failed_total', (select count(*)::int from mock.log g where not g.ok)),
+    'recent', coalesce((select jsonb_agg(jsonb_build_object('id', g.id, 'at', g.at, 'action', g.action, 'ok', g.ok,
+          'detail', g.detail, 'ref', g.ref, 'actor', g.actor, 'actor_name', p.display_name) order by g.at desc, g.id desc)
+        from (select * from mock.log x order by x.at desc, x.id desc limit 15) g
+        left join public.profiles p on p.id = g.actor), '[]'::jsonb),
+    'recent_failures', coalesce((select jsonb_agg(jsonb_build_object('id', g.id, 'at', g.at, 'action', g.action,
+          'detail', g.detail, 'ref', g.ref, 'actor', g.actor, 'actor_name', p.display_name) order by g.at desc, g.id desc)
+        from (select * from mock.log x where not x.ok order by x.at desc, x.id desc limit 10) g
+        left join public.profiles p on p.id = g.actor), '[]'::jsonb));
+end;
+$$;
+revoke all on function public.admin_mock_status() from public, anon;
+grant execute on function public.admin_mock_status() to authenticated, service_role;
+
+-- ---------------------------------------------------------------------------
 -- Summary
 select
   (select count(*) from public.profiles p where p.id::text like 'b0000000-%' and p.status = 'active') as mock_users,

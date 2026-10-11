@@ -7,6 +7,7 @@ Schools and test data for **staging**, kept as idempotent SQL (data, not schema)
 | `owu.sql` | Ohio Wesleyan (DEC 91): the campus, the `owu.edu` domain and one meetup spot. Apply with `bash scripts/deploy/add-campus.command owu`. |
 | `owu-mock.sql` | OWU mock data and the mock seller bot (DEC 92). Staging only. |
 | `owu-mock-remove.sql` | Stops the bot and removes the mock data. |
+| `tests/mock_status.test.sql` | pgTAP for the console's Staging tools read (`admin_mock_status`). Not run by CI (see Testing). |
 | `mock-photos/` | The listing photos (WebP, full and thumb) uploaded to R2, plus `SOURCES.txt` (all CC0 or public domain). |
 
 ## Mock data (staging only, DEC 92)
@@ -42,6 +43,20 @@ What it adds on the OWU campus:
 
 Every action is logged in `mock.log` (see `--status`); a failing action is retried at most 3 times.
 
+### Staging tools in the admin console
+
+`owu-mock.sql` also adds `public.admin_mock_status()` (owner with the two-step check, read only, no audit row). The console built for staging (`VITE_APP_ENV=staging`, set by `cloudflare-staging.command`) shows it under **Settings > Staging tools**: mock students and listings, the `mock_bot` job (on or off, last run, runs and failures in 24 hours), what the bot did lately and its failures. A production build never shows the section or its address. On a server without the mock data the function doesn't exist and the section says "Mock data isn't installed on this server". After changing the SQL, run `mock-data.command owu` again to install it.
+
+### Testing
+
+The mock SQL isn't a migration, so CI never loads it and `supabase test db` doesn't run `tests/`. On a local database with the migrations applied:
+
+```bash
+supabase db reset                       # migrations + seed
+psql "$DB_URL" -f supabase/tests/000_setup.test.sql
+psql "$DB_URL" -f supabase/campuses/tests/mock_status.test.sql   # loads owu.sql + owu-mock.sql itself, rolls back
+```
+
 ### Removing
 
-`--remove` unschedules the job, drops the `mock` schema, deletes the test domain and deletes the mock users and listings. Real people's deal data is never deleted or changed: a mock user who shares an offer, chat, rating, report or block with a real person is kept and switched off (`suspended`), and a mock listing a real person made an offer on, chatted about or answered with "I have this" is soft-deleted instead, because a hard delete would cascade into their rows. Saves, swipes and watches of deleted mock listings go with them. The R2 photos are deleted only when nothing points at them any more.
+`--remove` unschedules the job, drops `admin_mock_status` and the `mock` schema, deletes the test domain and deletes the mock users and listings. Real people's deal data is never deleted or changed: a mock user who shares an offer, chat, rating, report or block with a real person is kept and switched off (`suspended`), and a mock listing a real person made an offer on, chatted about or answered with "I have this" is soft-deleted instead, because a hard delete would cascade into their rows. Saves, swipes and watches of deleted mock listings go with them. The R2 photos are deleted only when nothing points at them any more.
