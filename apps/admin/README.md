@@ -25,6 +25,7 @@ pnpm --filter admin build
 | `src/types.ts` | Shapes of the v2 RPCs (docs/API.md §4.1) |
 | `src/feed.tsx` | `FeedRow`: one activity event as a sentence |
 | `src/search.tsx` | Top bar search (⌘K) through `admin_search` |
+| `src/pickers.tsx` | `SearchPicker`: pick one person or listing for a filter (Activity) |
 | `src/pages/*.tsx` | One file per page |
 
 ## Adding a page
@@ -32,7 +33,8 @@ pnpm --filter admin build
 1. Create `src/pages/Thing.tsx` exporting `ThingPage()` that renders one `<Page title crumb actions>`.
    Read the admin and campus with `useWho()` / `useCampusId()`; load data with `useRpc`.
 2. Add one line to the route list in `src/main.tsx`: `page('/thing', ThingPage),`
-   (params: `page('/thing/$id', ThingDetailPage)` and `useParams({ strict: false })`).
+   (params: `page('/thing/$id', ThingDetailPage)` and `useParams({ strict: false })`). Every route
+   takes optional string search params (`?tab=offers`): read them with `useSearch({ strict: false })`.
 3. Add one entry to `NAV` in `src/nav.ts` (`{ to: '/thing', label: 'Thing', icon: 'pulse' }`,
    optional `count` key from `NavCounts`). Replacing a placeholder (`ComingSoon`) is just step 2.
 
@@ -66,6 +68,24 @@ Copy: plain student tone, no em dashes, no emoji, verbs on buttons.
 | `ReasonActions` | `actions: [{id, label, variant?, run(reason), confirm?, needsExtra?, extra?}]` | one action row with a required reason box; `needsExtra` reveals `extra` (days, until) |
 | `ActionButton` | `label, run(reason), kind?, confirm?, size?` | single button that prompts for the reason |
 | `downloadCsv(name, csv)` | | with `toCsv` from logic.ts |
+| `useLoadMore` / `MoreList` | `fn, args` / `state, emptyText` + render child | lists with "Load more" (offset or keyset `next_cursor`) |
+| `Dialog` | `title, onClose, wide?` | dimmed overlay (Add school, Open school) |
+| `LoggedNote` | children? | lock line "Opening this page is logged." (DEC 93) |
+| `Stat` | `label, value` | header numbers (`.hero .nums`) |
+
+## Pages
+
+| Route | Page | RPCs |
+|---|---|---|
+| `/activity` | Activity (filters, CSV, Load more, live) | `admin_activity_feed`, `admin_search` |
+| `/people/$id?tab=` | One student (timeline, offers, listings, chats, meetups, reports, blocks, access log) | `admin_person` and its tabs |
+| `/listings/$id?tab=` | One listing (who swiped, offers, views, price history, reports) | `admin_listing_activity` |
+| `/support`, `/support/$id` | Support inbox | `admin_list_support`, `admin_support_detail`, `admin_update_support` |
+| `/waitlist` | Waitlist demand, Open school | `admin_waitlist_demand`, `admin_open_campus` |
+| `/meetups` | Meetups and who keeps missing | `admin_list_meetups`, `admin_noshow_summary` |
+| `/metrics` | plus Ratings and Under-18 attempts cards | `admin_ratings_summary`, `admin_age_blocks_summary` |
+| `/campuses?add=1` | Add school dialog | `admin_create_campus` |
+| `/settings/data`, `/health`, `/review`, `/blocked-emails`, `/categories` | owner-only Settings sections | see API §4.1 |
 
 Useful classes: `stack`, `row`, `spacer`, `split` (330px + rest), `grid2`, `grid3`, `form-grid`,
 `ev` (list row; `ev col`, `ev sel`), `kv` (definition list), `filters`, `tabs`, `callout`, `quote`,

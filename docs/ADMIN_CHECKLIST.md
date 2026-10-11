@@ -48,10 +48,10 @@ All 38 admin database functions are wired into a page; none is unused.
 - [x] Plain words instead of database names (`no_show` to "No-show", `unlock_threshold` to "Opens at")
 - [x] Overview: trend numbers, live activity feed (latest 10), needs attention, campuses table
 - [x] Reports: queue and detail side by side, reported person's history next to the report, one action row with the reason box
-- [~] People list with status colors, campus, year, swipes, offers, deals, reports, last active (built on `admin_list_users_v2`; part B finishes it)
-- [ ] One student page: header with status and numbers, tabs (Timeline, Swipes, Offers, Listings, Chats, Meetups, Reports, Access log), what they like, when they're active, account facts
-- [ ] Listing page: who swiped which way and when, offers, views, price history, funnel, right vs left
-- [ ] Activity page: every action by every student, filters (type, campus, person, listing, time), CSV
+- [x] People list with status colors, campus, year, swipes, offers, deals, reports, last active (built on `admin_list_users_v2`)
+- [x] One student page: header with status and numbers, tabs (Timeline, Swipes, Offers, Listings, Chats, Meetups, Reports, Access log), what they like, when they're active, account facts (`/people/$id`; tabs in `?tab=`, plus Blocks; swipes are the Timeline's All / Offers / Saves / Left / Views filter, not a separate tab)
+- [x] Listing page: who swiped which way and when, offers, views, price history, funnel, right vs left (`/listings/$id`)
+- [x] Activity page: every action by every student, filters (type, campus, person, listing, time), CSV (`/activity`, Load more, 20 s live refresh)
 - [x] Quad, Audit log, Campuses (schools list plus settings plus spots table), Announcements (with reach count), Settings (team, banned words, switches, limits) in the new layout
 - [x] Sign-in pages with the logo and one line about who the console is for
 
@@ -67,21 +67,21 @@ Today the app stores saves, offers (a right swipe is an offer), chats, meetups, 
 - [x] App side (`apps/mobile/src/lib/activity.ts`): a queue saved on the phone sends `track_events` batches (up to 50, every 15 s, on background, at 50 waiting; at most 100 batches an hour; 24 h and 500 caps; retries offline; cleared on sign-out) with the device type and app version. Fires `app_open` (launch, and after 30 minutes away), `deck_shown` (top card in Discover), `swiped_left` / `saved` / `offer_made` with time on card, `unsaved`, `listing_viewed` once per visit with time on page and where it was opened from (`from` route param: Discover, search, Around campus, profile, saved, link, notification), `searched` with the text. Service data, not analytics: the analytics switch doesn't turn it off (privacy policy section 2)
 
 ## 5. Missing pages and tools (not in the mock yet)
-- [x] **Support inbox** (P1) (backend; reply goes out by email through the outbox): the Help form and "can't get into my school email" requests are stored (`support_requests`) but no page shows them. List, reply by email, mark done.
-- [x] **Waitlist demand** (P1) (backend): website and app waitlist sign-ups by school (`waitlist_requests`), so you can see which school to open next, and open it in one click
-- [x] **Add a school from the console** (P1) (backend): today a new school needs a SQL file and a Terminal command; add "Add school" with name, domain, time zone, first meetup spot
-- [x] **Meetups and no-shows** (P2) (backend): upcoming meetups per campus, no-show reports, who keeps missing
-- [x] **Ratings** (P2) (backend): thumbs up and down per student, low-rated sellers
-- [x] **Account deletions and data exports** (P2) (backend): requests, status, failures
-- [x] **System health** (P2) (backend): failed emails (code emails), failed pushes, last run of each scheduled job, storage use against the free tier
+- [x] **Support inbox** (P1) (backend; reply goes out by email through the outbox): the Help form and "can't get into my school email" requests are stored (`support_requests`) but no page shows them. List, reply by email, mark done. Page: `/support`.
+- [x] **Waitlist demand** (P1) (backend): website and app waitlist sign-ups by school (`waitlist_requests`), so you can see which school to open next, and open it in one click Page: `/waitlist`.
+- [x] **Add a school from the console** (P1) (backend): today a new school needs a SQL file and a Terminal command; add "Add school" with name, domain, time zone, first meetup spot Page: Add school on `/campuses`.
+- [x] **Meetups and no-shows** (P2) (backend): upcoming meetups per campus, no-show reports, who keeps missing Page: `/meetups`.
+- [x] **Ratings** (P2) (backend): thumbs up and down per student, low-rated sellers Page: Ratings card on `/metrics`.
+- [x] **Account deletions and data exports** (P2) (backend): requests, status, failures Page: `/settings/data`.
+- [x] **System health** (P2) (backend): failed emails (code emails), failed pushes, last run of each scheduled job, storage use against the free tier Page: `/settings/health`.
 - [x] **Alerts to you** (P2): email when a threat or safety report comes in, or when the report queue is older than 4 hours
-- [x] **Blocks** (P2) (backend, in `admin_person`): on a student's page, who they blocked and who blocked them
-- [x] **Under-18 attempts** (P2) (backend): age check blocks per campus, for compliance
-- [x] **App Review accounts** (P2) (backend): manage the Demo University reviewer logins before store submission
-- [x] **Bulk actions** (P2) (backend): remove or hold many listings at once (spam waves)
-- [x] **Global search** (P2) (backend): one box for people, listings, reports (the ⌘K in the mock)
-- [x] **Photo blocklist** (P3): banned image hashes (`banned_hashes`) page (backend; note `banned_hashes` holds hashed emails of banned accounts, not photos)
-- [~] **Categories editor** (P3): rename, reorder, hide categories (backend: rename, reorder, add; hide not built because the app reads categories directly)
+- [x] **Blocks** (P2) (backend, in `admin_person`): on a student's page, who they blocked and who blocked them Page: Blocks tab on the student page.
+- [x] **Under-18 attempts** (P2) (backend): age check blocks per campus, for compliance Page: card on `/metrics`.
+- [x] **App Review accounts** (P2) (backend): manage the Demo University reviewer logins before store submission Page: `/settings/review`.
+- [x] **Bulk actions** (P2) (backend): remove or hold many listings at once (spam waves) Page: checkboxes on `/listings`.
+- [x] **Global search** (P2) (backend): one box for people, listings, reports (the ⌘K in the mock) Page: top bar on every page.
+- [x] **Photo blocklist** (P3): banned image hashes (`banned_hashes`) page (backend; note `banned_hashes` holds hashed emails of banned accounts, not photos) Page: `/settings/blocked-emails`.
+- [~] **Categories editor** (P3): rename, reorder, hide categories (backend: rename, reorder, add; hide not built because the app reads categories directly) Page: `/settings/categories`.
 - [ ] **Staging tools** (P3): mock data and bot status, on staging only
 - [ ] **Phone-friendly layout** (P3): read-only on a phone for checking reports on the go
 
