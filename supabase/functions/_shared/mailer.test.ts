@@ -14,6 +14,8 @@ const ALL: Template[] = [
   'admin_reveal_receipt',
   'support_request',
   'priority_report',
+  'support_reply',
+  'report_queue',
 ];
 
 test('every template renders a subject, text and html with the site footer', () => {
@@ -40,6 +42,14 @@ test('templates fill their values and escape html', () => {
   assert.equal(s.replyTo, 'a@osu.edu');
   assert.ok(s.html.includes('&lt;b&gt;hi&lt;/b&gt;<br>there'));
   assert.ok(render('data_export', { url: 'https://x/y' }, SITE).text.includes('https://x/y'));
+  const r = render('support_reply', { body: 'Try again <now>\nThanks', ref: 'abcd1234' }, SITE);
+  assert.ok(r.text.includes('Try again <now>\nThanks'));
+  assert.ok(r.text.includes('(ref abcd1234)'));
+  assert.ok(r.html.includes('Try again &lt;now&gt;<br>Thanks'));
+  assert.equal(
+    render('report_queue', { open: 3, oldest_hours: 5 }, SITE).text.split('\n')[0],
+    '3 open reports; the oldest has waited 5 hours.',
+  );
   assert.throws(() => render('nope' as Template, {}, SITE));
 });
 
