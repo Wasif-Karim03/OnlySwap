@@ -1,9 +1,11 @@
 import { useState } from 'react';
 
+import { announcementType, plural } from '../labels';
 import {
   ANNOUNCEMENT_BODY_MAX,
   ANNOUNCEMENT_TITLE_MAX,
   ANNOUNCEMENT_TYPES,
+  announceableCampuses,
   announcementFormError,
   charCounter,
   formatWhen,
@@ -11,11 +13,25 @@ import {
   nextAnnouncementAt,
   rateLimitRetryAt,
   retryIn,
+  dateLabel,
   type AnnouncementType,
-  type Whoami,
 } from '../logic';
+import { useCampusId, useIsOwner, useSession } from '../session';
 import { rpc } from '../supabase';
-import { CampusSelect, Loadable, useRpc, type CampusOption } from '../ui';
+import type { OverviewV2 } from '../types';
+import {
+  Button,
+  Card,
+  Field,
+  Loadable,
+  Page,
+  Pager,
+  Pill,
+  Segmented,
+  StatusPill,
+  Table,
+  useRpc,
+} from '../ui';
 
 type Announcement = {
   id: string;
@@ -34,140 +50,140 @@ type Announcement = {
 };
 
 const PAGE = 50;
+const VIEWS = [
+  { id: 'all', label: 'All' },
+  { id: 'pinned', label: 'Pinned' },
+  { id: 'safety', label: 'Safety' },
+] as const;
+type View = (typeof VIEWS)[number]['id'];
 
 /**
- * G03 Announcements (R11-ADM-02, T-INT-ANN-01): one per campus per 7 days,
- * pinned at the top of the Quad feed. Safety pushes go to every active
- * member; news and updates only to people who turned on tips. Owners create;
- * moderators read their campus.
+ * Announcements: one per campus per 7 days, pinned at the top of the Quad
+ * feed. Safety pushes go to every active member; news and updates only to
+ * people who turned on tips. Owners post; moderators read their campus.
  */
-export function AnnouncementsPage({ who }: { who: Whoami }) {
-  const owner = who.role === 'owner';
-  const campuses = useRpc<CampusOption[]>('admin_list_campuses');
-  const [campus, setCampus] = useState('');
+export function AnnouncementsPage() {
+  const owner = useIsOwner();
+  const campusId = useCampusId();
+  const { campuses } = useSession();
   const [cursor, setCursor] = useState(0);
-  const campusId = owner ? campus || null : (who.campus_id ?? null);
+  const [view, setView] = useState<View>('all');
   const state = useRpc<Announcement[]>('admin_list_announcements', {
     campus_id: campusId,
     cursor,
   });
-  const name = (id: string) => campuses.data?.find((c) => c.id === id)?.name ?? id;
+  const name = (id: string) => campuses.find((c) => c.id === id)?.short_name ?? '';
+  const rows = (state.data ?? []).filter((a) =>
+    view === 'pinned' ? a.pinned : view === 'safety' ? a.type === 'safety' : true,
+  );
 
   return (
-    <>
-      <h1>Announcements</h1>
-      {owner ? (
-        <div className="row">
-          <CampusSelect
-            campuses={campuses.data ?? []}
-            value={campus}
-            onChange={(id) => {
-              setCampus(id);
-              setCursor(0);
-            }}
-            allLabel="All campuses"
-          />
-        </div>
-      ) : null}
-
-      {owner ? (
-        campus ? (
+    <Page title="Announcements" crumb="In-app banners and pushes">
+      <div className="split" style={{ gridTemplateColumns: 'minmax(0, 1fr) 420px' }}>
+        <Card
+          title="Sent"
+          right={<Segmented label="Show" options={VIEWS} value={view} onChange={setView} />}
+        >
+          <Loadable
+            state={state}
+            rows={5}
+            empty={() => rows.length === 0}
+            emptyText="No announcements yet."
+          >
+            {() => (
+              <>
+                <Table
+                  compact
+                  label="Sent announcements"
+                  columns={[
+                    'Announcement',
+                    'Type',
+                    'Campus',
+                    'Sent',
+                    'Pinned',
+                    { label: 'Reach', num: true },
+                  ]}
+                >
+                  {rows.map((a) => (
+                    <tr key={a.id}>
+                      <td className="wrap" style={{ minWidth: 200, maxWidth: 300 }}>
+                        <div className="strong">{a.title}</div>
+                        <div className="muted small">{a.body}</div>
+                      </td>
+                      <td>
+                        <StatusPill {...announcementType(a.type)} />
+                      </td>
+                      <td className="ink2">{name(a.campus_id)}</td>
+                      <td className="muted" title={formatWhen(a.created_at)}>
+                        {dateLabel(a.created_at)}
+                        {a.created_by ? <div className="small">by {a.created_by}</div> : null}
+                      </td>
+                      <td>
+                        {a.pinned ? (
+                          <Pill tone="green" label={`Until ${dateLabel(a.pinned_until)}`} />
+                        ) : (
+                          <span className="muted">{a.pinned_until ? 'Ended' : 'No'}</span>
+                        )}
+                      </td>
+                      <td className="num">
+                        {a.send_push ? (
+                          a.recipients.toLocaleString('en-US')
+                        ) : (
+                          <span className="muted">No push</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </Table>
+                <Pager
+                  hasPrev={cursor > 0}
+                  hasNext={(state.data?.length ?? 0) === PAGE}
+                  onPrev={() => setCursor(Math.max(0, cursor - PAGE))}
+                  onNext={() => setCursor(cursor + PAGE)}
+                />
+              </>
+            )}
+          </Loadable>
+        </Card>
+        {owner ? (
           <CreateForm
-            key={campus}
-            campusId={campus}
-            campusName={name(campus)}
             existing={state.data ?? []}
+            defaultCampus={campusId}
             onDone={() => {
               setCursor(0);
               state.reload();
             }}
           />
         ) : (
-          <p className="meta">Pick a campus to post an announcement.</p>
-        )
-      ) : (
-        <p className="meta">Only an owner can post announcements.</p>
-      )}
-
-      <h2>Sent</h2>
-      <Loadable state={state} empty={(d) => d.length === 0}>
-        {(rows) => (
-          <table>
-            <thead>
-              <tr>
-                <th>Posted</th>
-                {campusId ? null : <th>Campus</th>}
-                <th>Type</th>
-                <th>Announcement</th>
-                <th>Pinned</th>
-                <th>Push</th>
-                <th>By</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((a) => (
-                <tr key={a.id}>
-                  <td className="meta">{formatWhen(a.created_at)}</td>
-                  {campusId ? null : <td>{name(a.campus_id)}</td>}
-                  <td>
-                    <span className={a.type === 'safety' ? 'pill p1' : 'pill'}>{a.type}</span>
-                  </td>
-                  <td>
-                    <strong>{a.title}</strong>
-                    <div>{a.body}</div>
-                  </td>
-                  <td>
-                    {a.pinned ? (
-                      <span className="pill met">Until {formatWhen(a.pinned_until)}</span>
-                    ) : (
-                      <span className="meta">{a.pinned_until ? 'Ended' : 'Not pinned'}</span>
-                    )}
-                  </td>
-                  <td>
-                    {a.send_push ? (
-                      `${a.recipients} ${a.recipients === 1 ? 'person' : 'people'}`
-                    ) : (
-                      <span className="meta">No push</span>
-                    )}
-                  </td>
-                  <td className="meta">{a.created_by ?? ''}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="card pad">
+            <p className="ink2">Only an owner can post announcements.</p>
+          </div>
         )}
-      </Loadable>
-      <div className="row" style={{ marginTop: 'var(--space-md)' }}>
-        <button
-          className="secondary"
-          disabled={cursor === 0}
-          onClick={() => setCursor(Math.max(0, cursor - PAGE))}
-        >
-          Previous page
-        </button>
-        <button
-          className="secondary"
-          disabled={(state.data?.length ?? 0) < PAGE}
-          onClick={() => setCursor(cursor + PAGE)}
-        >
-          Next page
-        </button>
       </div>
-    </>
+    </Page>
   );
 }
 
+/**
+ * New announcement. It always has its own campus picker (checklist §2: with
+ * "All campuses" in the sidebar the form used to be stuck), and the demo
+ * campus is never offered.
+ */
 function CreateForm({
-  campusId,
-  campusName,
   existing,
+  defaultCampus,
   onDone,
 }: {
-  campusId: string;
-  campusName: string;
   existing: Announcement[];
+  defaultCampus: string | null;
   onDone: () => void;
 }) {
+  const { campuses: all } = useSession();
+  const campuses = announceableCampuses(all);
+  const reach = useRpc<OverviewV2>('admin_overview_v2', { campus_id: null });
+  const [campusId, setCampusId] = useState(() =>
+    defaultCampus && campuses.some((c) => c.id === defaultCampus) ? defaultCampus : '',
+  );
   const [type, setType] = useState<AnnouncementType>('news');
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
@@ -179,16 +195,24 @@ function CreateForm({
   const [done, setDone] = useState<string | null>(null);
   const [blockedUntil, setBlockedUntil] = useState<string | null>(null);
 
+  const campus = campuses.find((c) => c.id === campusId);
+  const students = reach.data?.campuses.find((c) => c.id === campusId)?.students ?? null;
   const now = Date.now();
-  const listedNext = nextAnnouncementAt(existing, campusId, now);
+  const listedNext = campusId ? nextAnnouncementAt(existing, campusId, now) : null;
   const serverNext = blockedUntil && Date.parse(blockedUntil) > now ? blockedUntil : null;
   const nextAt = serverNext ?? listedNext;
   const t = charCounter(title, ANNOUNCEMENT_TITLE_MAX);
   const b = charCounter(body, ANNOUNCEMENT_BODY_MAX);
+  const reachText =
+    students === null
+      ? null
+      : type === 'safety'
+        ? `Send to ${plural(students, 'student')}`
+        : `Send to students with tips on (up to ${students.toLocaleString('en-US')})`;
 
   return (
     <form
-      className="card"
+      className="card clip"
       aria-label="New announcement"
       onSubmit={async (e) => {
         e.preventDefault();
@@ -199,8 +223,8 @@ function CreateForm({
           sendPush &&
           !window.confirm(
             type === 'safety'
-              ? `Send a push to every active member at ${campusName}?`
-              : `Send a push to members at ${campusName} who turned on tips?`,
+              ? `Send a push to every active member at ${campus?.name ?? 'this campus'}?`
+              : `Send a push to members at ${campus?.name ?? 'this campus'} who turned on tips?`,
           )
         )
           return;
@@ -221,7 +245,7 @@ function CreateForm({
           );
           setDone(
             sendPush
-              ? `Posted and sent to ${r.recipients} ${r.recipients === 1 ? 'person' : 'people'}.`
+              ? `Posted and sent to ${plural(r.recipients, 'person', 'people')}.`
               : 'Posted.',
           );
           setBlockedUntil(r.next_allowed_at);
@@ -237,6 +261,7 @@ function CreateForm({
               'INVALID:title': `Use 1 to ${ANNOUNCEMENT_TITLE_MAX} characters for the title.`,
               'INVALID:body': `Use 1 to ${ANNOUNCEMENT_BODY_MAX} characters for the message.`,
               'INVALID:pinned_hours': 'Pin for 0 to 168 hours.',
+              'INVALID:campus_id': 'Pick a campus.',
             }),
           );
         } finally {
@@ -244,77 +269,83 @@ function CreateForm({
         }
       }}
     >
-      <h2 style={{ marginTop: 0 }}>New announcement for {campusName}</h2>
-      {nextAt ? (
-        <p className="error" role="status">
-          This campus had an announcement in the last 7 days. The next one can go out{' '}
-          {retryIn(nextAt, now)} ({formatWhen(nextAt)}).
-        </p>
-      ) : (
-        <p className="meta">One announcement per campus every 7 days.</p>
-      )}
-      <div className="row">
-        <label>
-          Type
-          <select value={type} onChange={(e) => setType(e.target.value as AnnouncementType)}>
-            {ANNOUNCEMENT_TYPES.map((x) => (
-              <option key={x.id} value={x.id}>
-                {x.label}
+      <div className="ch">
+        <h2>New announcement</h2>
+      </div>
+      <div className="cb stack tight" style={{ gap: 12 }}>
+        <Field
+          label="Campus"
+          hint={
+            campuses.length === 0
+              ? 'No campuses to post to yet.'
+              : students !== null
+                ? `Reach: ${plural(students, 'student')} at this campus`
+                : undefined
+          }
+        >
+          <select
+            value={campusId}
+            onChange={(e) => {
+              setCampusId(e.target.value);
+              setBlockedUntil(null);
+              setError(null);
+            }}
+          >
+            <option value="">Pick a campus</option>
+            {campuses.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
               </option>
             ))}
           </select>
-        </label>
-        <label style={{ flex: 1 }}>
-          Title
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            aria-describedby="ann-title-count"
-            required
+        </Field>
+        <div className="field">
+          <span className="field-label">Type</span>
+          <Segmented
+            label="Type"
+            full
+            options={ANNOUNCEMENT_TYPES}
+            value={type}
+            onChange={setType}
           />
-          <span id="ann-title-count" className={t.over ? 'counter over' : 'counter'}>
-            {t.label}
+          <span className="hint">
+            Safety always notifies. News and Update only reach students with tips turned on.
           </span>
-        </label>
-      </div>
-      <label style={{ marginTop: 'var(--space-md)' }}>
-        Message
-        <textarea
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          rows={3}
-          aria-describedby="ann-body-count"
-          required
-        />
-        <span id="ann-body-count" className={b.over ? 'counter over' : 'counter'}>
-          {b.label}
-        </span>
-      </label>
-      <div className="row" style={{ marginTop: 'var(--space-md)' }}>
-        <label>
-          Pin at the top of Quad (hours, 0 to 168)
-          <input
-            type="number"
-            min={0}
-            max={168}
-            step={1}
-            value={pinnedHours}
-            onChange={(e) => setPinnedHours(Number(e.target.value))}
-          />
-        </label>
-        <fieldset>
-          <legend className="meta">Push</legend>
-          <label>
+        </div>
+        <Field
+          label="Title"
+          hint={<span className={t.over ? 'counter over' : 'counter'}>{t.label}</span>}
+        >
+          <input value={title} onChange={(e) => setTitle(e.target.value)} required />
+        </Field>
+        <Field
+          label="Message"
+          hint={<span className={b.over ? 'counter over' : 'counter'}>{b.label}</span>}
+        >
+          <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={3} required />
+        </Field>
+        <div className="row" style={{ gap: 12, alignItems: 'flex-end' }}>
+          <Field label="Pin at the top of Quad (hours)" className="">
+            <input
+              type="number"
+              min={0}
+              max={168}
+              step={1}
+              value={pinnedHours}
+              onChange={(e) => setPinnedHours(Number(e.target.value))}
+              style={{ width: 110 }}
+            />
+          </Field>
+          <label className="check">
             <input
               type="checkbox"
               checked={sendPush}
               onChange={(e) => setSendPush(e.target.checked)}
-            />{' '}
+            />
             Also send a push
           </label>
-        </fieldset>
-        <label style={{ flex: 1 }}>
-          Reason (saved to the audit log)
+        </div>
+        <Field label="Reason (saved to the audit log)">
           <input
             value={reason}
             onChange={(e) => setReason(e.target.value)}
@@ -322,38 +353,33 @@ function CreateForm({
             minLength={3}
             autoComplete="off"
           />
-        </label>
-      </div>
-
-      <h3 className="meta">Preview</h3>
-      {sendPush ? (
-        <div className="preview" aria-label="Push preview">
-          <div className="meta">OnlySwap · now</div>
-          <strong>{title.trim() || 'Title'}</strong>
-          <div>{body.trim() || 'Message'}</div>
-        </div>
-      ) : (
-        <div className="preview" aria-label="Quad preview">
-          <span className={type === 'safety' ? 'pill p1' : 'pill'}>{type}</span>
-          <div>
-            <strong>{title.trim() || 'Title'}</strong>
+        </Field>
+        {nextAt ? (
+          <div className="callout amber" role="status">
+            {campus?.name ?? 'This campus'} had an announcement in the last 7 days. The next one can
+            go out {retryIn(nextAt, now)} ({formatWhen(nextAt)}).
           </div>
-          <div>{body.trim() || 'Message'}</div>
-        </div>
-      )}
-      <p className="meta">
-        {sendPush
-          ? type === 'safety'
-            ? 'Safety pushes go to every active member at this campus.'
-            : 'News and update pushes only go to members who turned on tips.'
-          : 'No push.'}{' '}
-        {pinnedHours > 0 ? `Pinned at the top of Quad for ${pinnedHours} hours.` : 'Not pinned.'}
-      </p>
-      {error ? <p className="error">{error}</p> : null}
-      {done ? <p className="ok">{done}</p> : null}
-      <button type="submit" disabled={busy || !!nextAt || t.over || b.over}>
-        {busy ? 'Posting…' : sendPush ? 'Post and send push' : 'Post announcement'}
-      </button>
+        ) : null}
+        {error ? <p className="error">{error}</p> : null}
+        {done ? <p className="ok">{done}</p> : null}
+      </div>
+      <div className="cf">
+        <span className="muted">One per campus per week</span>
+        <Button
+          type="submit"
+          variant="primary"
+          className="spacer"
+          disabled={busy || !!nextAt || t.over || b.over || !campusId}
+        >
+          {busy
+            ? 'Posting…'
+            : !campusId
+              ? 'Pick a campus first'
+              : sendPush && reachText
+                ? reachText
+                : 'Post announcement'}
+        </Button>
+      </div>
     </form>
   );
 }

@@ -1,19 +1,35 @@
-import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 
+import { quadStatus, userStatus } from '../labels';
 import {
-  ageLabel,
   canReveal,
   errorMessage,
-  formatWhen,
   holdReasonLabel,
   QUAD_VIEWS,
   revealFormError,
+  timeAgo,
+  whenLabel,
   type QuadView,
-  type Whoami,
 } from '../logic';
+import { useSession, useWho } from '../session';
 import { rpc, supabase } from '../supabase';
-import { ActionButton, Loadable, useRpc } from '../ui';
+import {
+  ActionButton,
+  Button,
+  Card,
+  Field,
+  Icon,
+  Loadable,
+  media,
+  Page,
+  Pager,
+  PersonCell,
+  Pill,
+  Segmented,
+  StatusPill,
+  Table,
+  useRpc,
+} from '../ui';
 
 type QuadRow = {
   target_type: 'post' | 'reply';
@@ -38,182 +54,223 @@ type Revealed = {
 };
 
 const PAGE = 50;
-const mediaBase = (import.meta.env.VITE_MEDIA_URL as string | undefined) ?? '';
 
 /**
- * G-QUAD (R11-ADM-03): held, hidden-by-votes and reported Quad posts and
- * replies. Rows never carry author ids; only the owner can reveal an author,
- * with a fresh authenticator code, a case reference and a receipt email.
+ * Quad moderation: held, hidden-by-votes and reported posts and replies.
+ * Rows never carry author ids; only the owner can reveal an author, with a
+ * fresh authenticator code, a case reference and a receipt email.
  */
-export function QuadPage({ who }: { who: Whoami }) {
+export function QuadPage() {
+  const who = useWho();
+  const { counts, refreshCounts, campuses } = useSession();
   const [view, setView] = useState<QuadView>('held');
   const [cursor, setCursor] = useState(0);
   const state = useRpc<QuadRow[]>('admin_list_quad', { filters: { view }, cursor });
   const [revealFor, setRevealFor] = useState<QuadRow | null>(null);
   const [revealed, setRevealed] = useState<Revealed | null>(null);
   const owner = canReveal(who);
+  const campusName = (id: string) => campuses.find((c) => c.id === id)?.short_name ?? '';
+  const done = () => {
+    state.reload();
+    refreshCounts();
+  };
 
   return (
-    <>
-      <h1>Quad</h1>
-      <div className="row" role="tablist" aria-label="Quad queues">
-        {QUAD_VIEWS.map((v) => (
-          <button
-            key={v.id}
-            role="tab"
-            aria-selected={view === v.id}
-            className={view === v.id ? undefined : 'secondary'}
-            onClick={() => {
-              setView(v.id);
-              setCursor(0);
-            }}
-          >
-            {v.label}
-          </button>
-        ))}
-      </div>
-
-      {revealed ? (
-        <div className="card" role="region" aria-label="Revealed author">
-          <h2>Author for case {revealed.case_ref}</h2>
-          <p>
-            <Link to="/users/$id" params={{ id: revealed.user_id }}>
-              {revealed.display_name ?? 'No display name'}
-            </Link>{' '}
-            <span className="pill">{revealed.status}</span>
-          </p>
-          <p className="meta">User id {revealed.user_id}</p>
-          <button className="secondary" onClick={() => setRevealed(null)}>
-            Dismiss
-          </button>
-        </div>
-      ) : null}
-
-      {revealFor && owner ? (
-        <RevealForm
-          row={revealFor}
-          onCancel={() => setRevealFor(null)}
-          onRevealed={(r) => {
-            setRevealFor(null);
-            setRevealed(r);
+    <Page title="Quad" crumb="Moderation · authors stay hidden">
+      <div className="filters">
+        <Segmented
+          label="Quad queue"
+          options={QUAD_VIEWS.map((v) => ({
+            id: v.id,
+            label:
+              v.id === 'held' && counts?.quad_held ? `${v.label} ${counts.quad_held}` : v.label,
+          }))}
+          value={view}
+          onChange={(v) => {
+            setView(v);
+            setCursor(0);
           }}
         />
-      ) : null}
-
-      <div style={{ marginTop: 'var(--space-lg)' }}>
-        <Loadable state={state} empty={(d) => d.length === 0}>
-          {(rows) => (
-            <table>
-              <thead>
-                <tr>
-                  <th>Kind</th>
-                  <th>Post</th>
-                  <th>Status</th>
-                  <th>Why</th>
-                  <th>Score</th>
-                  <th>Open reports</th>
-                  <th>Age</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((q) => (
-                  <tr key={`${q.target_type}:${q.id}`}>
-                    <td>{q.target_type === 'reply' ? 'Reply' : q.kind}</td>
-                    <td>
-                      {q.photo_path && mediaBase ? (
-                        <img
-                          src={`${mediaBase}/${q.photo_path}`}
-                          alt="Photo on this post"
-                          width={64}
-                          height={64}
-                          style={{ borderRadius: 'var(--radius-thumb)', objectFit: 'cover' }}
-                        />
-                      ) : null}
-                      <div>{q.body}</div>
-                    </td>
-                    <td>
-                      <span className="pill">{q.status}</span>
-                    </td>
-                    <td>{holdReasonLabel(q.hold_reason)}</td>
-                    <td>{q.score}</td>
-                    <td>{q.open_reports}</td>
-                    <td className="meta" title={formatWhen(q.created_at)}>
-                      {ageLabel(q.created_at, Date.now())}
-                    </td>
-                    <td>
-                      <div className="row">
-                        {q.status === 'held' || q.status === 'hidden' ? (
-                          <ActionButton
-                            label="Approve"
-                            run={(reason) =>
-                              rpc('admin_moderate_quad', {
-                                target_type: q.target_type,
-                                id: q.id,
-                                action: 'approve',
-                                reason,
-                              })
-                            }
-                            onDone={state.reload}
+        <span className="muted spacer">
+          Held automatically when a post matches a review word, names a student or gets voted down.
+        </span>
+      </div>
+      <div className="split" style={{ gridTemplateColumns: 'minmax(0, 1fr) 280px' }}>
+        <Card>
+          <Loadable
+            state={state}
+            rows={6}
+            empty={(d) => d.length === 0}
+            emptyText="Nothing here right now."
+          >
+            {(rows) => (
+              <>
+                <Table
+                  compact
+                  label="Quad posts"
+                  columns={[
+                    'Post',
+                    'Why',
+                    { label: 'Votes', num: true },
+                    { label: 'Reports', num: true },
+                    'Posted',
+                    { label: '', className: 'actions' },
+                  ]}
+                >
+                  {rows.map((q) => (
+                    <tr key={`${q.target_type}:${q.id}`}>
+                      <td className="wrap" style={{ minWidth: 180 }}>
+                        <div
+                          className="row"
+                          style={{ flexWrap: 'nowrap', alignItems: 'flex-start' }}
+                        >
+                          {q.photo_path && media(q.photo_path) ? (
+                            <img
+                              className="th"
+                              src={media(q.photo_path)}
+                              alt="Photo on this post"
+                            />
+                          ) : null}
+                          <div>
+                            <div style={{ fontWeight: 500, lineHeight: 1.4 }}>{q.body}</div>
+                            <div className="muted small">
+                              {q.target_type === 'reply' ? 'Reply' : 'Post'}
+                              {q.kind && q.target_type === 'post' && q.kind !== 'text'
+                                ? ` · ${q.kind}`
+                                : ''}
+                              {q.status !== view ? (
+                                <>
+                                  {' · '}
+                                  {quadStatus(q.status).label}
+                                </>
+                              ) : null}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        {q.hold_reason ? (
+                          <Pill
+                            tone={q.hold_reason === 'names_student' ? 'red' : 'amber'}
+                            label={holdReasonLabel(q.hold_reason)}
                           />
-                        ) : null}
-                        {q.status !== 'removed' ? (
-                          <ActionButton
-                            label="Remove"
-                            kind="danger"
-                            run={(reason) =>
-                              rpc('admin_moderate_quad', {
-                                target_type: q.target_type,
-                                id: q.id,
-                                action: 'remove',
-                                reason,
-                              })
-                            }
-                            onDone={state.reload}
-                          />
-                        ) : null}
-                        {owner ? (
-                          <button
-                            className="secondary"
-                            onClick={() => {
-                              setRevealed(null);
-                              setRevealFor(q);
-                            }}
-                          >
-                            Reveal author
-                          </button>
-                        ) : null}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                        ) : (
+                          <StatusPill {...quadStatus(q.status)} />
+                        )}
+                      </td>
+                      <td className="num">{q.score}</td>
+                      <td className="num">{q.open_reports}</td>
+                      <td className="muted" title={whenLabel(q.created_at)}>
+                        {timeAgo(q.created_at)}
+                        <div className="small">{campusName(q.campus_id)}</div>
+                      </td>
+                      <td className="actions">
+                        <div className="row">
+                          {q.status === 'held' || q.status === 'hidden' ? (
+                            <ActionButton
+                              label="Approve"
+                              size="sm"
+                              run={(reason) =>
+                                rpc('admin_moderate_quad', {
+                                  target_type: q.target_type,
+                                  id: q.id,
+                                  action: 'approve',
+                                  reason,
+                                })
+                              }
+                              onDone={done}
+                            />
+                          ) : null}
+                          {q.status !== 'removed' ? (
+                            <ActionButton
+                              label="Remove"
+                              kind="danger"
+                              size="sm"
+                              run={(reason) =>
+                                rpc('admin_moderate_quad', {
+                                  target_type: q.target_type,
+                                  id: q.id,
+                                  action: 'remove',
+                                  reason,
+                                })
+                              }
+                              onDone={done}
+                            />
+                          ) : null}
+                          {owner ? (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              icon="lock"
+                              onClick={() => {
+                                setRevealed(null);
+                                setRevealFor(q);
+                              }}
+                            >
+                              Reveal
+                            </Button>
+                          ) : null}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </Table>
+                <Pager
+                  hasPrev={cursor > 0}
+                  hasNext={rows.length === PAGE}
+                  onPrev={() => setCursor(Math.max(0, cursor - PAGE))}
+                  onNext={() => setCursor(cursor + PAGE)}
+                />
+              </>
+            )}
+          </Loadable>
+        </Card>
+        <div className="stack">
+          {revealed ? (
+            <Card title={`Author for case ${revealed.case_ref}`}>
+              <div className="cb stack tight">
+                <div className="row">
+                  <PersonCell
+                    person={{ id: revealed.user_id, display_name: revealed.display_name }}
+                  />
+                  <StatusPill {...userStatus(revealed.status)} />
+                </div>
+                <p className="muted small">User id {revealed.user_id}</p>
+                <div>
+                  <Button onClick={() => setRevealed(null)}>Close</Button>
+                </div>
+              </div>
+            </Card>
+          ) : null}
+          {revealFor && owner ? (
+            <RevealForm
+              row={revealFor}
+              onCancel={() => setRevealFor(null)}
+              onRevealed={(r) => {
+                setRevealFor(null);
+                setRevealed(r);
+              }}
+            />
+          ) : (
+            <div className="card pad stack tight">
+              <div className="strong">Reveal an author</div>
+              <p className="ink2" style={{ lineHeight: 1.5 }}>
+                Owner only, for a legal request or someone in danger. Needs a fresh two-step check,
+                a case number and a reason. The author gets an email receipt and it's written to the
+                audit log. 5 per day.
+              </p>
+              {owner ? (
+                <p className="muted small">Pick "Reveal author" on a post to start.</p>
+              ) : null}
+            </div>
           )}
-        </Loadable>
+          <p className="note">
+            Quad is anonymous. This list never shows who wrote a post. Approve and Remove are
+            written to the audit log.
+          </p>
+        </div>
       </div>
-
-      <div className="row" style={{ marginTop: 'var(--space-md)' }}>
-        <button
-          className="secondary"
-          disabled={cursor === 0}
-          onClick={() => setCursor(Math.max(0, cursor - PAGE))}
-        >
-          Previous page
-        </button>
-        <button
-          className="secondary"
-          disabled={(state.data?.length ?? 0) < PAGE}
-          onClick={() => setCursor(cursor + PAGE)}
-        >
-          Next page
-        </button>
-      </div>
-      <p className="meta">
-        Quad is anonymous. This list never shows who wrote a post. Approve and Remove are written to
-        the audit log.
-      </p>
-    </>
+    </Page>
   );
 }
 
@@ -275,22 +332,24 @@ function RevealForm({
 
   return (
     <form
-      className="card"
+      className="card clip"
       aria-label="Reveal author"
       onSubmit={(e) => {
         e.preventDefault();
         void submit();
       }}
     >
-      <h2>Reveal who wrote this {row.target_type === 'reply' ? 'reply' : 'post'}</h2>
-      <p className="error">
-        Use this only for safety cases. The author gets an email saying an admin looked up who wrote
-        it. You can do this at most 5 times a day, and each one is written to the audit log.
-      </p>
-      {row.body ? <p className="bubble">{row.body}</p> : null}
-      <div className="row">
-        <label>
-          Case reference
+      <div className="ch">
+        <Icon name="lock" />
+        <h2>Reveal who wrote this {row.target_type === 'reply' ? 'reply' : 'post'}</h2>
+      </div>
+      <div className="cb stack tight">
+        <div className="callout red">
+          Use this only for safety cases. The author gets an email saying an admin looked up who
+          wrote it. At most 5 a day, each written to the audit log.
+        </div>
+        {row.body ? <div className="bubble">{row.body}</div> : null}
+        <Field label="Case reference">
           <input
             value={caseRef}
             onChange={(e) => setCaseRef(e.target.value)}
@@ -298,9 +357,8 @@ function RevealForm({
             minLength={3}
             autoComplete="off"
           />
-        </label>
-        <label>
-          Reason (saved to the audit log)
+        </Field>
+        <Field label="Reason (saved to the audit log)">
           <input
             value={reason}
             onChange={(e) => setReason(e.target.value)}
@@ -308,9 +366,8 @@ function RevealForm({
             minLength={3}
             autoComplete="off"
           />
-        </label>
-        <label>
-          Authenticator code
+        </Field>
+        <Field label="Authenticator code">
           <input
             value={code}
             onChange={(e) => setCode(e.target.value)}
@@ -318,16 +375,16 @@ function RevealForm({
             autoComplete="one-time-code"
             required
           />
-        </label>
-      </div>
-      {error ? <p className="error">{error}</p> : null}
-      <div className="row" style={{ marginTop: 'var(--space-md)' }}>
-        <button type="submit" className="danger" disabled={busy}>
-          {busy ? 'Checking…' : 'Reveal author'}
-        </button>
-        <button type="button" className="secondary" onClick={onCancel} disabled={busy}>
-          Cancel
-        </button>
+        </Field>
+        {error ? <p className="error">{error}</p> : null}
+        <div className="row">
+          <Button type="submit" variant="primary" disabled={busy}>
+            {busy ? 'Checking…' : 'Reveal author'}
+          </Button>
+          <Button variant="ghost" onClick={onCancel} disabled={busy}>
+            Cancel
+          </Button>
+        </div>
       </div>
     </form>
   );

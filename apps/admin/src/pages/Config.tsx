@@ -1,45 +1,69 @@
 import { useState } from 'react';
 
-import { formatWhen, toCsv, type Whoami } from '../logic';
+import { configHelp, configKey } from '../labels';
+import { errorMessage } from '../logic';
+import { useIsOwner } from '../session';
 import { rpc } from '../supabase';
-import { ActionButton, Loadable, useRpc } from '../ui';
+import { Button, Card, Loadable, Switch, useRpc } from '../ui';
+
+/** Ask for the audit reason with a prompt (3+ characters), or null when cancelled. */
+function askReason(what: string): string | null {
+  const r = window.prompt(`${what}: reason (saved to the audit log)`);
+  if (r === null) return null;
+  if (r.trim().length < 3) {
+    window.alert('Add a reason of at least 3 characters.');
+    return null;
+  }
+  return r.trim();
+}
 
 /**
- * Flags and config (P12-ADM-08): maintenance, minimum app versions, rules_version
- * (bumping it makes the app ask everyone to accept the rules again, E2E-22).
+ * Settings > App switches and limits (admin_get_config / admin_set_config):
+ * on/off values are switches, short values are text boxes, anything else is
+ * JSON. rules_version makes the app ask everyone to accept the rules again.
  */
-export function ConfigPage({ who }: { who: Whoami }) {
+export function SwitchesSection() {
+  const owner = useIsOwner();
   const state = useRpc<Record<string, unknown>>('admin_get_config');
-  const owner = who.role === 'owner';
   return (
-    <>
-      <h1>Flags and config</h1>
-      {!owner ? <p className="meta">Only the owner can change these.</p> : null}
-      <Loadable state={state}>
-        {(cfg) => (
-          <table>
-            <thead>
-              <tr>
-                <th>Key</th>
-                <th>Value (JSON)</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(cfg)
-                .sort(([a], [b]) => a.localeCompare(b))
-                .map(([k, v]) => (
-                  <ConfigRow key={k} k={k} v={v} owner={owner} reload={state.reload} />
-                ))}
-            </tbody>
-          </table>
-        )}
-      </Loadable>
-    </>
+    <Loadable state={state} rows={6}>
+      {(cfg) => {
+        const entries = Object.entries(cfg).sort(([a], [b]) =>
+          configKey(a).localeCompare(configKey(b)),
+        );
+        const toggles = entries.filter(([, v]) => isToggle(v));
+        const rest = entries.filter(([, v]) => !isToggle(v));
+        return (
+          <div className="grid2" style={{ gridTemplateColumns: '1fr 1fr' }}>
+            <Card title="App switches">
+              {toggles.map(([k, v]) => (
+                <ToggleRow key={k} k={k} v={v} owner={owner} reload={state.reload} />
+              ))}
+              {!owner ? <p className="note cb">Only the owner can change these.</p> : null}
+            </Card>
+            <Card title="Limits and versions">
+              {rest.map(([k, v]) => (
+                <ValueRow key={k} k={k} v={v} owner={owner} reload={state.reload} />
+              ))}
+            </Card>
+          </div>
+        );
+      }}
+    </Loadable>
   );
 }
 
-function ConfigRow({
+/** true/false, or {enabled: boolean, ...} like maintenance. */
+function isToggle(v: unknown): boolean {
+  return (
+    typeof v === 'boolean' ||
+    (typeof v === 'object' &&
+      v !== null &&
+      typeof (v as { enabled?: unknown }).enabled === 'boolean')
+  );
+}
+
+function ToggleRow({
   k,
   v,
   owner,
@@ -50,133 +74,120 @@ function ConfigRow({
   owner: boolean;
   reload: () => void;
 }) {
-  const [text, setText] = useState(JSON.stringify(v));
-  let parsed: unknown;
-  let valid = true;
-  try {
-    parsed = JSON.parse(text);
-  } catch {
-    valid = false;
-  }
+  const [error, setError] = useState<string | null>(null);
+  const on = typeof v === 'boolean' ? v : !!(v as { enabled: boolean }).enabled;
   return (
-    <tr>
-      <td>{k}</td>
-      <td>
-        <input
-          style={{ width: '100%' }}
-          disabled={!owner}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          aria-label={`${k} value`}
-        />
-        {!valid ? <div className="error">Not valid JSON</div> : null}
-      </td>
-      <td>
-        {owner && valid && text !== JSON.stringify(v) ? (
-          <ActionButton
-            label="Save"
-            run={(reason) => rpc('admin_set_config', { key: k, value: parsed, reason })}
-            onDone={reload}
-          />
-        ) : null}
-      </td>
-    </tr>
+    <div className="ev">
+      <div style={{ minWidth: 0 }}>
+        <div className="strong">{configKey(k)}</div>
+        <div className="muted small">{configHelp(k) || k}</div>
+        {error ? <div className="error small">{error}</div> : null}
+      </div>
+      <span className="spacer" />
+      <Switch
+        checked={on}
+        label={configKey(k)}
+        disabled={!owner}
+        onChange={async (next) => {
+          const reason = askReason(`Turn ${configKey(k)} ${next ? 'on' : 'off'}`);
+          if (!reason) return;
+          const value = typeof v === 'boolean' ? next : { ...(v as object), enabled: next };
+          try {
+            await rpc('admin_set_config', { key: k, value, reason });
+            setError(null);
+            reload();
+          } catch (e) {
+            setError(errorMessage(e));
+          }
+        }}
+      />
+    </div>
   );
 }
 
-type AuditRow = {
-  id: number;
-  actor: string | null;
-  action: string;
-  target_type: string;
-  target_id: string;
-  reason: string;
-  meta: unknown;
-  created_at: string;
-};
-const AUDIT_COLS = [
-  'id',
-  'created_at',
-  'actor',
-  'action',
-  'target_type',
-  'target_id',
-  'reason',
-  'meta',
-];
-
-/** Audit log with CSV export (P12-ADM-08). */
-export function AuditPage() {
-  const [action, setAction] = useState('');
-  const [filter, setFilter] = useState('');
-  const state = useRpc<AuditRow[]>('admin_list_audit', {
-    filters: filter ? { action: filter } : {},
-  });
+function ValueRow({
+  k,
+  v,
+  owner,
+  reload,
+}: {
+  k: string;
+  v: unknown;
+  owner: boolean;
+  reload: () => void;
+}) {
+  const simple = typeof v === 'string' || typeof v === 'number';
+  const initial = simple ? String(v) : JSON.stringify(v, null, 2);
+  const [text, setText] = useState(initial);
+  const [error, setError] = useState<string | null>(null);
+  let parsed: unknown = text;
+  let valid = true;
+  if (typeof v === 'number') {
+    parsed = Number(text);
+    valid = text.trim() !== '' && Number.isFinite(parsed);
+  } else if (!simple) {
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      valid = false;
+    }
+  }
+  const dirty = text !== initial;
   return (
-    <>
-      <h1>Audit log</h1>
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          setFilter(action.trim());
-        }}
-      >
-        <label>
-          Action starts with
-          <input value={action} onChange={(e) => setAction(e.target.value)} placeholder="report." />
-        </label>
-        <button type="submit">Filter</button>
-        <button
-          type="button"
-          className="secondary"
-          disabled={!state.data?.length}
-          onClick={() => {
-            const blob = new Blob([toCsv(state.data ?? [], AUDIT_COLS)], { type: 'text/csv' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `onlyswap-audit-${new Date().toISOString().slice(0, 10)}.csv`;
-            a.click();
-            URL.revokeObjectURL(a.href);
-          }}
+    <div className="ev col" style={{ gap: 6 }}>
+      <div className="row">
+        <div style={{ minWidth: 0 }}>
+          <div className="strong">{configKey(k)}</div>
+          <div className="muted small">{configHelp(k) || k}</div>
+        </div>
+        {simple && !owner ? <span className="spacer strong">{text}</span> : null}
+      </div>
+      {owner || !simple ? (
+        <div
+          className="row"
+          style={{ width: '100%', flexWrap: 'nowrap', alignItems: 'flex-start' }}
         >
-          Download CSV
-        </button>
-      </form>
-      <Loadable state={state} empty={(d) => d.length === 0}>
-        {(rows) => (
-          <table>
-            <thead>
-              <tr>
-                <th>When</th>
-                <th>Who</th>
-                <th>Action</th>
-                <th>Target</th>
-                <th>Reason</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.id}>
-                  <td className="meta">{formatWhen(r.created_at)}</td>
-                  <td>{r.actor}</td>
-                  <td>{r.action}</td>
-                  <td className="meta">
-                    {r.target_type} {r.target_id}
-                  </td>
-                  <td>{r.reason}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </Loadable>
-      <ActionButton
-        label="Refresh"
-        kind="secondary"
-        needsReason={false}
-        run={async () => state.reload()}
-      />
-    </>
+          {simple ? (
+            <input
+              value={text}
+              disabled={!owner}
+              onChange={(e) => setText(e.target.value)}
+              aria-label={configKey(k)}
+              inputMode={typeof v === 'number' ? 'numeric' : undefined}
+            />
+          ) : (
+            <textarea
+              className="mono"
+              value={text}
+              disabled={!owner}
+              onChange={(e) => setText(e.target.value)}
+              aria-label={`${configKey(k)} (JSON)`}
+              rows={Math.min(8, text.split('\n').length)}
+            />
+          )}
+          {owner && dirty ? (
+            <Button
+              variant="primary"
+              disabled={!valid}
+              onClick={async () => {
+                const reason = askReason(`Change ${configKey(k)}`);
+                if (!reason) return;
+                try {
+                  await rpc('admin_set_config', { key: k, value: parsed, reason });
+                  setError(null);
+                  reload();
+                } catch (e) {
+                  setError(errorMessage(e));
+                }
+              }}
+            >
+              Save
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
+      {!valid ? <div className="error small">That isn't valid for this setting.</div> : null}
+      {error ? <div className="error small">{error}</div> : null}
+    </div>
   );
 }

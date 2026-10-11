@@ -1,8 +1,21 @@
 import { useState } from 'react';
 
-import { formatWhen, inviteFormError, knownError, type Whoami } from '../logic';
+import { role } from '../labels';
+import { dateLabel, inviteFormError, knownError } from '../logic';
+import { useIsOwner, useSession } from '../session';
 import { rpc } from '../supabase';
-import { ActionButton, CampusSelect, Loadable, useRpc, type CampusOption } from '../ui';
+import {
+  ActionButton,
+  Avatar,
+  Button,
+  Card,
+  EmptyState,
+  Field,
+  Loadable,
+  Pill,
+  useRpc,
+  type CampusOption,
+} from '../ui';
 
 type Admin = {
   user_id: string;
@@ -16,91 +29,80 @@ type Admin = {
 };
 
 /**
- * G03 Team (R11-ADM-02): owners list, invite and remove admins. The person
- * needs an account first; inviting an admin again changes their role or
- * campus. Moderators are bound to one campus (DEC 69). Owner only.
+ * Settings > Team: owners list, invite and remove admins. The person needs an
+ * account first; inviting an admin again changes their role or campus.
+ * Moderators are bound to one campus (DEC 69). Owner only.
  */
-export function TeamPage({ who }: { who: Whoami }) {
-  if (who.role !== 'owner')
+export function TeamSection() {
+  const owner = useIsOwner();
+  if (!owner)
     return (
-      <>
-        <h1>Team</h1>
-        <p className="meta">Only an owner can see and change the admin team.</p>
-      </>
+      <div className="card">
+        <EmptyState title="Only an owner can see and change the admin team." />
+      </div>
     );
   return <OwnerTeam />;
 }
 
 function OwnerTeam() {
   const state = useRpc<Admin[]>('admin_list_admins');
-  const campuses = useRpc<CampusOption[]>('admin_list_campuses');
+  const { campuses } = useSession();
   const campusName = (id: string | null) =>
-    id ? (campuses.data?.find((c) => c.id === id)?.name ?? id) : 'All campuses';
+    id ? (campuses.find((c) => c.id === id)?.name ?? 'Unknown campus') : 'All campuses';
   const owners = state.data?.filter((a) => a.role === 'owner').length ?? 0;
 
   return (
-    <>
-      <h1>Team</h1>
-      <Loadable state={state} empty={(d) => d.length === 0}>
-        {(rows) => (
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Campus</th>
-                <th>Added</th>
-                <th>Added by</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+    <div className="grid2" style={{ gridTemplateColumns: 'minmax(0, 1fr) 400px' }}>
+      <Card title="Team">
+        <Loadable state={state} rows={3} empty={(d) => d.length === 0}>
+          {(rows) => (
+            <>
               {rows.map((a) => (
-                <tr key={a.user_id}>
-                  <td>
-                    {a.display_name ?? 'No display name'}
-                    {a.me ? <span className="meta"> (you)</span> : null}
-                  </td>
-                  <td>{a.email}</td>
-                  <td>
-                    <span className="pill">{a.role}</span>
-                  </td>
-                  <td>{campusName(a.campus_id)}</td>
-                  <td className="meta">{formatWhen(a.created_at)}</td>
-                  <td className="meta">{a.invited_by ?? ''}</td>
-                  <td>
-                    {a.me ? (
-                      <span className="meta">You can't remove yourself.</span>
-                    ) : a.role === 'owner' && owners <= 1 ? (
-                      <span className="meta">Last owner</span>
-                    ) : (
-                      <ActionButton
-                        label="Remove"
-                        kind="danger"
-                        confirm={`Remove ${a.display_name ?? a.email ?? 'this admin'} from the admin team? They lose console access right away.`}
-                        run={(reason) => rpc('admin_remove_admin', { user_id: a.user_id, reason })}
-                        onDone={state.reload}
-                      />
-                    )}
-                  </td>
-                </tr>
+                <div key={a.user_id} className="ev">
+                  <Avatar initial={a.display_name?.slice(0, 1)} seed={a.user_id} me={a.me} />
+                  <div style={{ minWidth: 0 }}>
+                    <div className="strong">
+                      {a.display_name ?? 'No display name'}
+                      {a.me ? <span className="muted"> (you)</span> : null}
+                    </div>
+                    <div className="muted small">
+                      {campusName(a.campus_id)} · {a.email ?? 'no email'} · added{' '}
+                      {dateLabel(a.created_at)}
+                      {a.invited_by ? ` by ${a.invited_by}` : ''}
+                    </div>
+                  </div>
+                  <span className="spacer" />
+                  <Pill tone={a.role === 'owner' ? 'green' : 'sky'} label={role(a.role)} />
+                  {a.me ? null : a.role === 'owner' && owners <= 1 ? (
+                    <span className="muted small">Last owner</span>
+                  ) : (
+                    <ActionButton
+                      label="Remove"
+                      kind="danger"
+                      size="sm"
+                      confirm={`Remove ${a.display_name ?? a.email ?? 'this admin'} from the admin team? They lose console access right away.`}
+                      run={(reason) => rpc('admin_remove_admin', { user_id: a.user_id, reason })}
+                      onDone={state.reload}
+                    />
+                  )}
+                </div>
               ))}
-            </tbody>
-          </table>
-        )}
-      </Loadable>
-      <InviteForm
-        campuses={(campuses.data ?? []).filter((c) => !c.is_demo)}
-        onDone={state.reload}
-      />
-    </>
+              <p className="note" style={{ padding: '12px 16px' }}>
+                Moderators see their own campus, can pause or suspend up to 7 days, and can't ban or
+                change settings.
+              </p>
+            </>
+          )}
+        </Loadable>
+      </Card>
+      <InviteForm campuses={campuses.filter((c) => !c.is_demo)} onDone={state.reload} />
+    </div>
   );
 }
 
 function InviteForm({ campuses, onDone }: { campuses: CampusOption[]; onDone: () => void }) {
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState<'owner' | 'moderator'>('moderator');
+  const [roleId, setRole] = useState<'owner' | 'moderator'>('moderator');
   const [campusId, setCampusId] = useState('');
   const [reason, setReason] = useState('');
   const [busy, setBusy] = useState(false);
@@ -109,12 +111,11 @@ function InviteForm({ campuses, onDone }: { campuses: CampusOption[]; onDone: ()
 
   return (
     <form
-      className="card"
+      className="card clip"
       aria-label="Add an admin"
-      style={{ marginTop: 'var(--space-lg)' }}
       onSubmit={async (e) => {
         e.preventDefault();
-        const invalid = inviteFormError({ email, role, campusId: campus, reason });
+        const invalid = inviteFormError({ email, role: roleId, campusId: campus, reason });
         if (invalid) return setMsg({ ok: false, text: invalid });
         setBusy(true);
         setMsg(null);
@@ -123,40 +124,43 @@ function InviteForm({ campuses, onDone }: { campuses: CampusOption[]; onDone: ()
             'admin_invite_admin',
             {
               email: email.trim(),
-              role,
-              campus_id: role === 'moderator' ? campus : null,
+              role: roleId,
+              campus_id: roleId === 'moderator' ? campus : null,
               reason: reason.trim(),
             },
           );
           setMsg({
             ok: true,
-            text: `${r.display_name ?? email.trim()} ${r.updated ? 'now has the new role' : 'is now an admin'}. They sign in at this console with their email and set up an authenticator app.`,
+            text: `${r.display_name ?? email.trim()} ${r.updated ? 'now has the new role' : 'is now an admin'}. They sign in here with their email and set up an authenticator app.`,
           });
           setEmail('');
           setReason('');
           onDone();
         } catch (err) {
-          const text = knownError(err, {
-            'INVALID:email': 'No OnlySwap account uses that email. They need to sign up first.',
-            'INVALID:self': "You can't change your own role.",
-            'INVALID:status': 'That account is suspended or banned.',
-            'INVALID:last_owner': 'There has to be at least one owner.',
-            'INVALID:campus_id': 'Pick a campus that exists.',
+          setMsg({
+            ok: false,
+            text: knownError(err, {
+              'INVALID:email': 'No OnlySwap account uses that email. They need to sign up first.',
+              'INVALID:self': "You can't change your own role.",
+              'INVALID:status': 'That account is suspended or banned.',
+              'INVALID:last_owner': 'There has to be at least one owner.',
+              'INVALID:campus_id': 'Pick a campus that exists.',
+            }),
           });
-          setMsg({ ok: false, text });
         } finally {
           setBusy(false);
         }
       }}
     >
-      <h2 style={{ marginTop: 0 }}>Add or change an admin</h2>
-      <p className="meta">
-        The person needs an OnlySwap account first. Adding someone who is already an admin changes
-        their role and campus. Owners cover every campus; moderators cover one.
-      </p>
-      <div className="row">
-        <label>
-          Email on their account
+      <div className="ch">
+        <h2>Add or change an admin</h2>
+      </div>
+      <div className="cb stack tight" style={{ gap: 12 }}>
+        <p className="note">
+          The person needs an OnlySwap account first. Adding someone who is already an admin changes
+          their role and campus.
+        </p>
+        <Field label="Email on their account">
           <input
             type="email"
             value={email}
@@ -164,19 +168,29 @@ function InviteForm({ campuses, onDone }: { campuses: CampusOption[]; onDone: ()
             required
             autoComplete="off"
           />
-        </label>
-        <label>
-          Role
-          <select value={role} onChange={(e) => setRole(e.target.value as 'owner' | 'moderator')}>
-            <option value="moderator">Moderator</option>
-            <option value="owner">Owner</option>
+        </Field>
+        <Field label="Role">
+          <select value={roleId} onChange={(e) => setRole(e.target.value as 'owner' | 'moderator')}>
+            <option value="moderator">Moderator (one campus)</option>
+            <option value="owner">Owner (every campus)</option>
           </select>
-        </label>
-        {role === 'moderator' ? (
-          <CampusSelect campuses={campuses} value={campus} onChange={setCampusId} />
-        ) : null}
-        <label>
-          Reason (saved to the audit log)
+        </Field>
+        {roleId === 'moderator' ? (
+          <Field label="Campus">
+            <select value={campus} onChange={(e) => setCampusId(e.target.value)}>
+              {campuses.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+        ) : (
+          <div className="callout amber">
+            Owners can ban, change settings, reveal Quad authors and manage this team.
+          </div>
+        )}
+        <Field label="Reason (saved to the audit log)">
           <input
             value={reason}
             onChange={(e) => setReason(e.target.value)}
@@ -184,17 +198,14 @@ function InviteForm({ campuses, onDone }: { campuses: CampusOption[]; onDone: ()
             minLength={3}
             autoComplete="off"
           />
-        </label>
-        <button type="submit" disabled={busy}>
-          {busy ? 'Saving…' : 'Add admin'}
-        </button>
+        </Field>
+        {msg ? <p className={msg.ok ? 'ok' : 'error'}>{msg.text}</p> : null}
       </div>
-      {role === 'owner' ? (
-        <p className="error">
-          Owners can ban, change config, reveal Quad authors and manage this team.
-        </p>
-      ) : null}
-      {msg ? <p className={msg.ok ? 'ok' : 'error'}>{msg.text}</p> : null}
+      <div className="cf">
+        <Button type="submit" variant="primary" disabled={busy} className="spacer">
+          {busy ? 'Saving…' : 'Add admin'}
+        </Button>
+      </div>
     </form>
   );
 }

@@ -1,8 +1,22 @@
+import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 
-import { formatWhen } from '../logic';
+import { listingStatus } from '../labels';
+import { timeAgo, whenLabel } from '../logic';
+import { useCampusId, useSession } from '../session';
 import { rpc } from '../supabase';
-import { ActionButton, Loadable, money, useRpc } from '../ui';
+import {
+  ActionButton,
+  Card,
+  Loadable,
+  ListingCell,
+  Page,
+  Pager,
+  Segmented,
+  StatusPill,
+  Table,
+  useRpc,
+} from '../ui';
 
 type ListingRow = {
   id: string;
@@ -10,98 +24,161 @@ type ListingRow = {
   description: string | null;
   status: string;
   price_cents: number;
+  campus_id: string;
   seller: string | null;
   thumb_path: string | null;
   created_at: string;
 };
 
-const mediaBase = (import.meta.env.VITE_MEDIA_URL as string | undefined) ?? '';
+const VIEWS = [
+  { id: 'held_review', label: 'Held for review' },
+  { id: 'active', label: 'Active' },
+  { id: 'removed', label: 'Removed' },
+] as const;
+type View = (typeof VIEWS)[number]['id'];
 
 /**
- * G02 Listings (P12-ADM-07): the held-for-review queue, and removed listings
- * that can be restored. Every action goes through an audited RPC.
+ * Listings: the held-for-review queue, live listings, and removed ones that
+ * can be restored. Every action asks for a reason and is audited.
  */
 export function ListingsPage() {
-  const [status, setStatus] = useState('held_review');
-  const state = useRpc<ListingRow[]>('admin_list_listings', { filters: { status } });
+  const campusId = useCampusId();
+  const { counts, refreshCounts, campuses } = useSession();
+  const [view, setView] = useState<View>('held_review');
+  const [cursor, setCursor] = useState(0);
+  const state = useRpc<ListingRow[]>('admin_list_listings', {
+    filters: { status: view, ...(campusId ? { campus_id: campusId } : {}) },
+    cursor,
+  });
+  const campusName = (id: string) => campuses.find((c) => c.id === id)?.short_name ?? '';
+  const done = () => {
+    state.reload();
+    refreshCounts();
+  };
+
   return (
-    <>
-      <h1>Listings</h1>
-      <div className="row">
-        <label>
-          Show
-          <select value={status} onChange={(e) => setStatus(e.target.value)}>
-            <option value="held_review">Held for review</option>
-            <option value="active">Active</option>
-            <option value="removed">Removed</option>
-          </select>
-        </label>
+    <Page
+      title="Listings"
+      crumb={counts?.held_listings ? `${counts.held_listings} held for review` : undefined}
+    >
+      <div className="filters">
+        <Segmented
+          label="Show"
+          options={VIEWS.map((v) => ({
+            id: v.id,
+            label:
+              v.id === 'held_review' && counts?.held_listings
+                ? `${v.label} ${counts.held_listings}`
+                : v.label,
+          }))}
+          value={view}
+          onChange={(v) => {
+            setView(v);
+            setCursor(0);
+          }}
+        />
+        <span className="muted spacer">
+          Chats stay private. They open only from a report, and every read is logged.
+        </span>
       </div>
-      <Loadable state={state} empty={(d) => d.length === 0}>
-        {(rows) => (
-          <table>
-            <thead>
-              <tr>
-                <th>Photo</th>
-                <th>Listing</th>
-                <th>Seller</th>
-                <th>Posted</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((l) => (
-                <tr key={l.id}>
-                  <td>
-                    {l.thumb_path && mediaBase ? (
-                      <img
-                        src={`${mediaBase}/${l.thumb_path}`}
-                        alt=""
-                        width={64}
-                        height={64}
-                        style={{ borderRadius: 'var(--radius-thumb)', objectFit: 'cover' }}
-                      />
-                    ) : null}
-                  </td>
-                  <td>
-                    <strong>{l.title}</strong> {money(l.price_cents)}
-                    <div className="meta">{l.description}</div>
-                  </td>
-                  <td>{l.seller}</td>
-                  <td className="meta">{formatWhen(l.created_at)}</td>
-                  <td>
-                    <div className="row">
-                      {l.status !== 'active' ? (
-                        <ActionButton
-                          label={l.status === 'removed' ? 'Restore' : 'Approve'}
-                          run={(reason) =>
-                            rpc('admin_set_listing_status', { id: l.id, status: 'active', reason })
-                          }
-                          onDone={state.reload}
+      <Card>
+        <Loadable
+          state={state}
+          rows={6}
+          empty={(d) => d.length === 0}
+          emptyText={
+            view === 'held_review' ? 'Nothing is waiting for review.' : 'No listings here.'
+          }
+        >
+          {(rows) => (
+            <>
+              <Table
+                label="Listings"
+                columns={[
+                  'Listing',
+                  'Seller',
+                  'Campus',
+                  'Status',
+                  'Posted',
+                  { label: '', className: 'actions' },
+                ]}
+              >
+                {rows.map((l) => (
+                  <tr key={l.id}>
+                    <td className="wrap" style={{ minWidth: 280 }}>
+                      <Link
+                        to="/listings/$id"
+                        params={{ id: l.id }}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <ListingCell
+                          listing={{
+                            title: l.title,
+                            price_cents: l.price_cents,
+                            photo: l.thumb_path,
+                          }}
                         />
+                      </Link>
+                      {l.description ? (
+                        <div className="muted small" style={{ marginTop: 4, maxWidth: 420 }}>
+                          {l.description}
+                        </div>
                       ) : null}
-                      {l.status !== 'removed' ? (
-                        <ActionButton
-                          label="Remove"
-                          kind="danger"
-                          run={(reason) =>
-                            rpc('admin_set_listing_status', { id: l.id, status: 'removed', reason })
-                          }
-                          onDone={state.reload}
-                        />
-                      ) : null}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </Loadable>
-      <p className="meta">
-        Chats are private. They open only from a report about a chat or a message, and every read is
-        logged.
-      </p>
-    </>
+                    </td>
+                    <td>{l.seller ?? <span className="muted">Deleted account</span>}</td>
+                    <td className="ink2">{campusName(l.campus_id)}</td>
+                    <td>
+                      <StatusPill {...listingStatus(l.status)} />
+                    </td>
+                    <td className="muted" title={whenLabel(l.created_at)}>
+                      {timeAgo(l.created_at)}
+                    </td>
+                    <td className="actions">
+                      <div className="row">
+                        {l.status !== 'active' ? (
+                          <ActionButton
+                            label={l.status === 'removed' ? 'Restore' : 'Approve'}
+                            size="sm"
+                            run={(reason) =>
+                              rpc('admin_set_listing_status', {
+                                id: l.id,
+                                status: 'active',
+                                reason,
+                              })
+                            }
+                            onDone={done}
+                          />
+                        ) : null}
+                        {l.status !== 'removed' ? (
+                          <ActionButton
+                            label="Remove"
+                            kind="danger"
+                            size="sm"
+                            run={(reason) =>
+                              rpc('admin_set_listing_status', {
+                                id: l.id,
+                                status: 'removed',
+                                reason,
+                              })
+                            }
+                            onDone={done}
+                          />
+                        ) : null}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </Table>
+              <Pager
+                hasPrev={cursor > 0}
+                hasNext={rows.length === 50}
+                onPrev={() => setCursor(Math.max(0, cursor - 50))}
+                onNext={() => setCursor(cursor + 50)}
+              />
+            </>
+          )}
+        </Loadable>
+      </Card>
+    </Page>
   );
 }
