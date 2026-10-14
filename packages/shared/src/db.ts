@@ -109,30 +109,6 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "campuses"
       referencedColumns: ["id"]
-    },{
-      foreignKeyName: "admins_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: true
-      referencedRelation: "profile_stats"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "admins_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: true
-      referencedRelation: "profile_stats_mv"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "admins_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: true
-      referencedRelation: "profiles"
-      referencedColumns: ["id"]
-    },{
-      foreignKeyName: "admins_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: true
-      referencedRelation: "public_profiles"
-      referencedColumns: ["id"]
     }
                   ]
                 },"age_blocks": {
