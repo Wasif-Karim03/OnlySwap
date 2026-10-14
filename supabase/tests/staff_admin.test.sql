@@ -3,7 +3,7 @@
 -- owner with no profile, is named by its email in the console and audit log,
 -- still needs the two-step check, and the staff list is closed to the API.
 begin;
-select plan(16);
+select plan(20);
 select tests.create_fixtures();
 select tests.set_pepper();
 
@@ -62,6 +62,18 @@ select is(pg_temp.as_user('00000000-0000-4000-8000-0000000000f1', 'select count(
 
 select ok(pg_temp.as_user(tests.uid('A'), 'select count(*)::text from private.staff_emails') ~ '^ERROR: permission denied',
   'students cannot read the staff list');
+
+-- Two-step switch off (0211, DEC 95): the email code alone is enough.
+update private.admin_settings set mfa_required = false;
+select ok(pg_temp.as_user('00000000-0000-4000-8000-0000000000f1', 'select count(*)::text from public.admin_list_admins()', 'aal1') !~ '^ERROR',
+  'with the switch off the owner works without the two-step check');
+select is(pg_temp.as_user('00000000-0000-4000-8000-0000000000f1', 'select public.admin_whoami() ->> ''mfa_required''', 'aal1'),
+  'false', 'whoami tells the console to skip the authenticator step');
+select is(pg_temp.as_user(tests.uid('A'), 'select count(*)::text from public.admin_list_admins()', 'aal1'),
+  'ERROR: NOT_ADMIN', 'students are still refused with the switch off');
+update private.admin_settings set mfa_required = true;
+select is(pg_temp.as_user('00000000-0000-4000-8000-0000000000f1', 'select public.admin_whoami() ->> ''mfa_required''', 'aal1'),
+  'true', 'switched back on, the console asks for the authenticator again');
 
 delete from auth.users where id = '00000000-0000-4000-8000-0000000000f1';
 select is((select count(*)::int from public.admins where user_id = '00000000-0000-4000-8000-0000000000f1'), 0,

@@ -47,6 +47,9 @@ as $$
 declare
   rules text := (select value #>> '{}' from public.app_config where key = 'rules_version');
 begin
+  -- Admin tests run with the two-step check on, as it will be at launch (0211,
+  -- DEC 95); staff_admin.test.sql covers the switch being off.
+  update private.admin_settings set mfa_required = true;
   -- Start from an empty campus world: seed.sql data (local demo campuses and
   -- users) would collide with the fixtures. Each test file rolls this back.
   delete from auth.users;
