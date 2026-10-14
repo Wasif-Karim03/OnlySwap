@@ -348,6 +348,8 @@ Every job that calls a function has an exists-guard (ARC-05).
 | price_drop | alerts | | price_drop | "Desk chair you saved is now $30" | `price_drop:{listing}:{cents}` |
 | watch_available | alerts | | saved_search | "The lamp is available again" | `watch:{listing}:{date}` |
 | listing_stale | selling | | **tips (opt-in)** | "No offers on your lamp yet. Drop the price?" | `stale:{listing}` |
+| listing_removed | selling | | always (moderation) | "OnlySwap removed Desk lamp. Reason: {admin reason}" (DEC 96; from admin_set_listing_status, admin_bulk_set_listing_status, admin_resolve_report remove_content; `data.listing_id`) | `listing_removed:{listing}:{txid}` |
+| listing_restored | selling | | always | "Desk lamp is live again." (an admin put a removed listing back) | `listing_restored:{listing}:{txid}` |
 | report_update | safety | | always | "We reviewed your report" | `report:{id}:{status}` |
 | appeal_decided | account | | always | "Your appeal was reviewed" | `appeal:{id}` |
 | account_notice | account | | always | "Your account is paused until Oct 2" | `acct:{user}:{event}:{date}` |

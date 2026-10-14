@@ -11,7 +11,7 @@ select tables_are(
     'campuses','campus_domains','profiles','review_accounts','age_blocks','banned_hashes',
     'waitlist_requests','admins','app_config','activity_days','common_first_names',
     -- 0003 listings
-    'categories','listings','listing_photos','listing_reservations','listing_price_changes',
+    'categories','listings','listing_photos','listing_reservations','listing_price_changes','listing_removals',
     'swipes','saves','watches','saved_searches',
     -- 0004 deals
     'offers','chats','messages','safe_spots','meetups','noshow_reports','ratings','blocks',

@@ -220,6 +220,7 @@ create table listing_photos (
 
 create table listing_reservations (id uuid primary key, user_id uuid not null, created_at timestamptz default now(), used_at timestamptz);  -- no access; purge 24 h
 create table listing_price_changes (id bigint generated always as identity primary key, listing_id uuid references listings on delete cascade, old_cents int, new_cents int, changed_at timestamptz default now()); -- no access
+create table listing_removals (listing_id uuid primary key references listings on delete cascade, reason text not null, removed_by uuid, removed_at timestamptz default now()); -- no access; the admin's reason for a removed listing, read only by the seller through my_listings and get_listing (`removed_reason`), cleared when put back (DEC 96)
 create table swipes (user_id uuid references profiles on delete cascade, listing_id uuid references listings on delete cascade, dir swipe_dir not null, created_at timestamptz default now(), primary key (user_id, listing_id));  -- self select; purge 30 d (non-save)
 create index on swipes (listing_id);
 create table saves (user_id uuid references profiles on delete cascade, listing_id uuid references listings on delete cascade, price_at_save int, created_at timestamptz default now(), primary key (user_id, listing_id));  -- self select

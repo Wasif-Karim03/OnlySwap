@@ -543,6 +543,25 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"listing_removals": {
+                  Row: {
+                    "listing_id": string,"reason": string,"removed_at": string,"removed_by": string | null
+                  }
+                  Insert: {
+                    "listing_id": string,"reason": string,"removed_at"?: string,"removed_by"?: string | null
+                  }
+                  Update: {
+                    "listing_id"?: string,"reason"?: string,"removed_at"?: string,"removed_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "listing_removals_listing_id_fkey"
+      columns: ["listing_id"]
+isOneToOne: true
+      referencedRelation: "listings"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"listing_reservations": {
                   Row: {
                     "created_at": string | null,"id": string,"used_at": string | null,"user_id": string
