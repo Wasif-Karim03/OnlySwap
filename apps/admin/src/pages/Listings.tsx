@@ -204,6 +204,7 @@ export function ListingsPage() {
                             label="Remove"
                             kind="danger"
                             size="sm"
+                            reasonPrompt="Remove: reason. The seller sees this in the app, so write it for them."
                             run={(reason) =>
                               rpc('admin_set_listing_status', {
                                 id: l.id,
@@ -259,7 +260,9 @@ function BulkBar({
     if (invalid) return setMsg({ ok: false, text: invalid });
     if (
       status === 'removed' &&
-      !window.confirm(`Remove ${ids.length} listings? Open offers and chats about them wind down.`)
+      !window.confirm(
+        `Remove ${ids.length} listings? Open offers and chats about them wind down, and each seller sees your reason in the app.`,
+      )
     )
       return;
     setBusy(true);
