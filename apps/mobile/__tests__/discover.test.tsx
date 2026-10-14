@@ -22,7 +22,7 @@ import {
   type QueuedSwipe,
 } from '../src/features/feed/logic';
 import { createSwipeStore } from '../src/features/feed/swipes';
-import { feed } from '../src/strings/en';
+import { feed, system } from '../src/strings/en';
 
 jest.mock('expo-haptics', () => ({
   selectionAsync: jest.fn(async () => {}),
@@ -394,6 +394,33 @@ describe('B02 Listing', () => {
     expect(await screen.findByTestId('listing-owner-stats')).toBeTruthy();
     expect(screen.getByText('7 views')).toBeTruthy();
     expect(api.recordView).not.toHaveBeenCalled();
+  });
+
+  it('owner: an admin removal shows the reason (DEC 96)', async () => {
+    const api = fakeApi({
+      getListing: jest.fn(
+        async () =>
+          ({
+            ...item(1, { status: 'removed', removed_reason: 'Weapons are not allowed' }),
+            access: 'owner',
+          }) as ListingResult,
+      ),
+    });
+    listing(api);
+    expect(
+      await screen.findByText('OnlySwap removed this listing. Reason: Weapons are not allowed'),
+    ).toBeTruthy();
+    expect(screen.getByText(feed.removed)).toBeTruthy();
+  });
+
+  it('owner: an admin removal without a reason still says so', async () => {
+    const api = fakeApi({
+      getListing: jest.fn(
+        async () => ({ ...item(1, { status: 'removed' }), access: 'owner' }) as ListingResult,
+      ),
+    });
+    listing(api);
+    expect(await screen.findByText(system.removedByAdminNoReason)).toBeTruthy();
   });
 
   it('on hold: "Tell me" watches it', async () => {

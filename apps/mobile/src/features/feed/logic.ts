@@ -43,6 +43,8 @@ export type FeedItem = {
     width: number | null;
     height: number | null;
   }[];
+  /** Only on the seller's own listing when an admin removed it (DEC 96). */
+  removed_reason?: string | null;
 };
 
 export type FeedCursor = { bumped_at: string; id: string };

@@ -227,7 +227,9 @@ export function ListingScreen({
         ? copy.sold
         : item.status === 'held_review'
           ? copy.inReview
-          : null;
+          : item.status === 'removed'
+            ? copy.removed
+            : null;
 
   const statusTone = item.status === 'sold' ? 'ink3' : 'amber';
   const sellerAvatar = item.seller.avatar_path ? mediaUrl(base, item.seller.avatar_path) : null;
@@ -337,6 +339,16 @@ export function ListingScreen({
 
           {owner && item.status === 'held_review' ? (
             <Banner kind="info" message={systemCopy.underReview} />
+          ) : null}
+          {owner && item.status === 'removed' ? (
+            <Banner
+              kind="warning"
+              message={
+                item.removed_reason
+                  ? fill(systemCopy.removedByAdmin, { reason: item.removed_reason })
+                  : systemCopy.removedByAdminNoReason
+              }
+            />
           ) : null}
           {owner ? (
             <View style={styles.stats} testID="listing-owner-stats">

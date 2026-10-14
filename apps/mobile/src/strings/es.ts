@@ -873,6 +873,7 @@ const feed: Strings['feed'] = {
   watching: 'Te avisaremos',
   sold: 'Vendido',
   inReview: 'En revisión',
+  removed: 'Quitada',
   notOpenToOffers: 'Precio fijo',
   askForIt: 'Pedirlo',
   goneTitle: 'Esta publicación ya no está',
@@ -1493,7 +1494,7 @@ const me: Strings['me'] = {
     sold: 'Vendida',
     expired: 'Vencida',
     held_review: 'En revisión',
-    removed: 'Quitada',
+    removed: 'Quitada por OnlySwap',
   },
   relist: 'Republicar',
   stats: 'Estadísticas',
@@ -1623,6 +1624,8 @@ const system: Strings['system'] = {
   notFoundBody: 'No encontramos esa página en la app.',
   goHome: 'Ir a Explorar',
   underReview: 'Un moderador está revisando tu publicación. Los demás la verán cuando se apruebe.',
+  removedByAdmin: 'OnlySwap quitó esta publicación. Motivo: {reason}',
+  removedByAdminNoReason: 'OnlySwap quitó esta publicación. Los demás estudiantes ya no la ven.',
 };
 
 const quad: Strings['quad'] = {

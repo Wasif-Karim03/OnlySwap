@@ -880,6 +880,7 @@ export const feed = {
   watching: "We'll tell you",
   sold: 'Sold',
   inReview: 'In review',
+  removed: 'Removed',
   notOpenToOffers: 'Price is firm',
   askForIt: 'Ask for it',
   goneTitle: 'This listing is gone',
@@ -1521,7 +1522,7 @@ export const me = {
     sold: 'Sold',
     expired: 'Expired',
     held_review: 'In review',
-    removed: 'Removed',
+    removed: 'Removed by OnlySwap',
   },
   relist: 'Relist',
   stats: 'Stats',
@@ -1666,6 +1667,9 @@ export const system = {
   // X14 under review
   underReview:
     'Your listing is being checked by a moderator. It shows to others once it is approved.',
+  // Admin removed the seller's listing (DEC 96)
+  removedByAdmin: 'OnlySwap removed this listing. Reason: {reason}',
+  removedByAdminNoReason: 'OnlySwap removed this listing. Other students can no longer see it.',
 } as const;
 
 /** The Quad (R1.1, DESIGN_SYSTEM Q01 to Q14 with D7; check-in is R2). */
