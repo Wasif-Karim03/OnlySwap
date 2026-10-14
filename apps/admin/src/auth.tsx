@@ -172,6 +172,13 @@ function Mfa({ onDone, onSignOut }: { onDone: () => void; onSignOut: () => void 
         setFactorId(totp.id);
         return;
       }
+      // A setup that was left before the first code (reload, closed tab) keeps an
+      // unverified factor with the same name, and enroll refuses a duplicate name.
+      for (const f of data?.all ?? []) {
+        if (f.factor_type === 'totp' && f.status === 'unverified') {
+          await supabase.auth.mfa.unenroll({ factorId: f.id });
+        }
+      }
       const enrolled = await supabase.auth.mfa.enroll({
         factorType: 'totp',
         friendlyName: 'OnlySwap admin',
