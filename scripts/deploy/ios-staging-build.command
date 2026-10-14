@@ -27,4 +27,4 @@ for k in EXPO_PUBLIC_APP_ENV EXPO_PUBLIC_SUPABASE_URL EXPO_PUBLIC_SUPABASE_ANON_
   echo "  ok $k"
 done
 echo "== Build ($PLATFORM, profile preview)"
-EAS build -p "$PLATFORM" --profile preview
+EAS build -p "$PLATFORM" --profile preview ${EAS_FLAGS:-}
