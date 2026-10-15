@@ -88,6 +88,13 @@ export const states = {
   retry: 'Try again',
 } as const;
 
+/** Render crash fallback (F-08, DEC 103): the root ErrorBoundary. */
+export const crash = {
+  title: 'Something went wrong',
+  body: 'OnlySwap hit a problem on this screen. Try again, and if it keeps happening, close and reopen the app.',
+  retry: 'Try again',
+} as const;
+
 export const nav = {
   back: 'Back',
   close: 'Close',
@@ -2169,6 +2176,7 @@ export const en = {
   banner,
   photo,
   states,
+  crash,
   nav,
   primer,
   report,

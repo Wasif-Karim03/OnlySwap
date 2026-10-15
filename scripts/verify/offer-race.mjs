@@ -2,7 +2,9 @@
 //   ANON_KEY=... SERVICE_KEY=... node scripts/verify/offer-race.mjs
 // Two accepts on different offers of one listing at the same moment: exactly
 // one wins (FOR UPDATE). make_offer racing mark_sold: the offer is refused or
-// auto-declined, never left pending on a sold listing (FOR SHARE).
+// auto-declined, never left pending on a sold listing (the listing lock).
+// T-INT-OFF-RACE-03 (E-05): six first offers on one listing at once all
+// land; none fails with a deadlock.
 import { campusOf, check, done, listing, rpc, student } from './lib.mjs';
 
 const stamp = Date.now();
@@ -46,4 +48,17 @@ for (let round = 0; round < 5; round += 1) {
     );
   }
 }
+
+const crowd = await Promise.all(
+  Array.from({ length: 6 }, (_, i) => student(`race-e${i}-${stamp}@osu.edu`, 'Eve')),
+);
+const hot = await listing(seller, campus, { title: 'Race chair' });
+const offers = await Promise.all(
+  crowd.map((b) => rpc('make_offer', { listing_id: hot, amount_cents: 1500 }, b.token)),
+);
+check(
+  offers.every((r) => r.status === 200),
+  'RACE-03: six first offers on one listing at once all land',
+  offers.map((r) => r.status).join('/'),
+);
 done();
