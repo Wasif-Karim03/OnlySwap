@@ -65,7 +65,7 @@ create type campus_status  as enum ('waitlist','live','paused');
 create type user_status    as enum ('active','waitlist','reverify','paused','suspended','banned');
 create type class_year     as enum ('freshman','sophomore','junior','senior','grad','other');
 create type age_method     as enum ('os_signal','self_declared','review');
-create type listing_kind   as enum ('sale','free','wanted','food');
+create type listing_kind   as enum ('sale','free','wanted','food','news');  -- news: DEC 98 (0214)
 create type listing_status as enum ('active','hold','sold','expired','held_review','removed','deleted');
 create type item_condition as enum ('new','like_new','good','fair');
 create type swipe_dir      as enum ('left','save');           -- right-swipe = offer (recorded as offer)
@@ -185,6 +185,8 @@ create table listings (
   open_to_offers bool not null default true,
   meet_spot_ids uuid[] not null default '{}',
   meet_note text check (char_length(meet_note) <= 60),
+  link_url text check (link_url is null or (char_length(link_url) <= 300 and link_url ~ '^https?://[^[:space:]]+$')),  -- news only (DEC 98, 0215)
+  event_at timestamptz,                                -- news event time; expires_at = end of that day (DEC 98)
   availability text[] not null default '{}',
   wanted_max_cents int check (wanted_max_cents between 0 and 200000),
   wanted_ref uuid references listings on delete set null,        -- PM-05
