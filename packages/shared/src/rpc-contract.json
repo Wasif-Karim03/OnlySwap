@@ -890,6 +890,16 @@
     ]
   },
   {
+    "name": "create_news",
+    "args": "id uuid, title text, description text, photos jsonb, link_url text, event_at timestamp with time zone, place text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "create_quad_post",
     "args": "kind text, body text, photo_path text, poll jsonb, place text, post_id uuid",
     "returns": "jsonb",
