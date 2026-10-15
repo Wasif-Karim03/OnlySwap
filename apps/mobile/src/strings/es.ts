@@ -45,6 +45,7 @@ const errors: Strings['errors'] = {
   RATE_LIMITED_UNTIL: 'Lo estás haciendo mucho. Intenta de nuevo después de las {time}.',
   OFFERS_PAUSED: 'Las ofertas están en pausa en tu cuenta por un encuentro al que no llegaste.',
   SELLER_AWAY: 'Este vendedor pausó sus publicaciones. Guárdala y vuelve más tarde.',
+  HANDOFF_LOCKED: 'Demasiados códigos incorrectos. Usa ¿Se vendió? en el chat.',
   LISTING_UNAVAILABLE: 'Esta publicación no está recibiendo ofertas ahora.',
   OFFER_NOT_PENDING: 'Esta oferta cambió. Desliza hacia abajo para actualizar.',
   ALREADY_REPORTED: 'Ya reportaste esto. Lo estamos revisando.',
@@ -1208,6 +1209,15 @@ const chat: Strings['chat'] = {
 };
 
 const meetup: Strings['meetup'] = {
+  handoffTitle: 'Código de entrega',
+  handoffBuyer:
+    'Muéstralo al vendedor cuando tengas el artículo. Lo escribe para terminar el intercambio.',
+  handoffSellerTitle: '¿Intercambio hecho?',
+  handoffSellerBody: 'Pide al comprador su código de 4 dígitos y escríbelo aquí.',
+  handoffLabel: 'Código del comprador',
+  handoffConfirm: 'Terminar intercambio',
+  handoffWrong: 'Ese código no coincide. Quedan {n} intentos.',
+  handoffDone: 'Intercambio hecho.',
   planTitle: 'Planea la entrega',
   spotsTitle: 'Puntos de encuentro',
   police: 'Designado por la policía',

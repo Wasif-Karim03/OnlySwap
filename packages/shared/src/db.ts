@@ -803,13 +803,13 @@ isOneToOne: false
                   ]
                 },"meetups": {
                   Row: {
-                    "buyer_here_at": string | null,"cancel_reason": string | null,"cancelled_by": string | null,"chat_id": string,"confirmed_at": string | null,"created_at": string,"custom_place": string | null,"deal_check_sent_at": string | null,"id": string,"late_minutes": number | null,"late_user": string | null,"previous_starts_at": string | null,"proposed_by": string | null,"reminder_sent_at": string | null,"seller_here_at": string | null,"share_created_by": string | null,"share_expires_at": string | null,"share_token": string | null,"spot_id": string | null,"starts_at": string,"status": Database["public"]['Enums']["meetup_status"]
+                    "buyer_here_at": string | null,"cancel_reason": string | null,"cancelled_by": string | null,"chat_id": string,"confirmed_at": string | null,"created_at": string,"custom_place": string | null,"deal_check_sent_at": string | null,"handoff_at": string | null,"handoff_code": string | null,"handoff_tries": number,"id": string,"late_minutes": number | null,"late_user": string | null,"previous_starts_at": string | null,"proposed_by": string | null,"reminder_sent_at": string | null,"seller_here_at": string | null,"share_created_by": string | null,"share_expires_at": string | null,"share_token": string | null,"spot_id": string | null,"starts_at": string,"status": Database["public"]['Enums']["meetup_status"]
                   }
                   Insert: {
-                    "buyer_here_at"?: string | null,"cancel_reason"?: string | null,"cancelled_by"?: string | null,"chat_id": string,"confirmed_at"?: string | null,"created_at"?: string,"custom_place"?: string | null,"deal_check_sent_at"?: string | null,"id"?: string,"late_minutes"?: number | null,"late_user"?: string | null,"previous_starts_at"?: string | null,"proposed_by"?: string | null,"reminder_sent_at"?: string | null,"seller_here_at"?: string | null,"share_created_by"?: string | null,"share_expires_at"?: string | null,"share_token"?: string | null,"spot_id"?: string | null,"starts_at": string,"status"?: Database["public"]['Enums']["meetup_status"]
+                    "buyer_here_at"?: string | null,"cancel_reason"?: string | null,"cancelled_by"?: string | null,"chat_id": string,"confirmed_at"?: string | null,"created_at"?: string,"custom_place"?: string | null,"deal_check_sent_at"?: string | null,"handoff_at"?: string | null,"handoff_code"?: string | null,"handoff_tries"?: number,"id"?: string,"late_minutes"?: number | null,"late_user"?: string | null,"previous_starts_at"?: string | null,"proposed_by"?: string | null,"reminder_sent_at"?: string | null,"seller_here_at"?: string | null,"share_created_by"?: string | null,"share_expires_at"?: string | null,"share_token"?: string | null,"spot_id"?: string | null,"starts_at": string,"status"?: Database["public"]['Enums']["meetup_status"]
                   }
                   Update: {
-                    "buyer_here_at"?: string | null,"cancel_reason"?: string | null,"cancelled_by"?: string | null,"chat_id"?: string,"confirmed_at"?: string | null,"created_at"?: string,"custom_place"?: string | null,"deal_check_sent_at"?: string | null,"id"?: string,"late_minutes"?: number | null,"late_user"?: string | null,"previous_starts_at"?: string | null,"proposed_by"?: string | null,"reminder_sent_at"?: string | null,"seller_here_at"?: string | null,"share_created_by"?: string | null,"share_expires_at"?: string | null,"share_token"?: string | null,"spot_id"?: string | null,"starts_at"?: string,"status"?: Database["public"]['Enums']["meetup_status"]
+                    "buyer_here_at"?: string | null,"cancel_reason"?: string | null,"cancelled_by"?: string | null,"chat_id"?: string,"confirmed_at"?: string | null,"created_at"?: string,"custom_place"?: string | null,"deal_check_sent_at"?: string | null,"handoff_at"?: string | null,"handoff_code"?: string | null,"handoff_tries"?: number,"id"?: string,"late_minutes"?: number | null,"late_user"?: string | null,"previous_starts_at"?: string | null,"proposed_by"?: string | null,"reminder_sent_at"?: string | null,"seller_here_at"?: string | null,"share_created_by"?: string | null,"share_expires_at"?: string | null,"share_token"?: string | null,"spot_id"?: string | null,"starts_at"?: string,"status"?: Database["public"]['Enums']["meetup_status"]
                   }
                   Relationships: [
                     {
@@ -2375,6 +2375,9 @@ isOneToOne: false
                            },
 "confirm_deal":
 { Args: { "chat_id": string,"outcome": string }; Returns: undefined
+                           },
+"confirm_handoff":
+{ Args: { "code": string,"meetup_id": string }; Returns: Json
                            },
 "confirm_meetup":
 { Args: { "meetup_id": string }; Returns: undefined

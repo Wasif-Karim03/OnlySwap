@@ -840,6 +840,16 @@
     ]
   },
   {
+    "name": "confirm_handoff",
+    "args": "meetup_id uuid, code text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "confirm_meetup",
     "args": "meetup_id uuid",
     "returns": "void",

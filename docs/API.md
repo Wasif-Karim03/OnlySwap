@@ -34,6 +34,7 @@ The client maps these to copy in `apps/mobile/src/strings/en.ts` → `errors.*`.
 | `RATE_LIMITED:<action>:<retry_at>` | limit hit |
 | `OFFERS_PAUSED` | no-show pause |
 | `SELLER_AWAY` | the seller paused their listings (DEC 126) |
+| `HANDOFF_LOCKED` | 5 wrong handoff codes on this meetup (DEC 132) |
 | `LISTING_UNAVAILABLE` | not active / not open to offers |
 | `OFFER_NOT_PENDING` | state changed |
 | `ALREADY_REPORTED` | duplicate open report |
@@ -174,10 +175,11 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 | `propose_meetup` | `chat_id, spot_id?, custom_place?, starts_at` | meetup | now+15 min ≤ starts_at ≤ now+14 d; cancels previous active in the same tx | 20/day |
 | `confirm_meetup` | `meetup_id` | void | other party | — |
 | `checkin_meetup` | `meetup_id` | void | start −60 … +60 min | — |
+| `confirm_handoff` | `meetup_id, code` | `{ok, tries_left}` | seller only, confirmed meetup; a wrong code counts a try (5, then HANDOFF_LOCKED); the right one completes the meetup, sets both outcomes done, sells to this buyer, sends both rate prompts (DEC 132) | FORBIDDEN, MEETUP_WINDOW, INVALID:code, HANDOFF_LOCKED |
 | `running_late` | `meetup_id, minutes` | void | 5/10/15/30 | — |
 | `cancel_meetup` | `meetup_id, reason` | void | — | — |
 | `create_meetup_share` | `meetup_id` | `{url}` | 22-char token; expires start + 24 h | 10/day |
-| `get_meetup` / `get_chat_meetup` | `meetup_id` / `chat_id` | meetup (or null) | participants (DEC 62) | — |
+| `get_meetup` / `get_chat_meetup` | `meetup_id` / `chat_id` | meetup (or null); adds `i_am_seller`, `handoff_code` (buyer only, while confirmed), `handoff_at`, `handoff_tries_left` (DEC 132) | participants (DEC 62) | — |
 | `report_noshow` | `meetup_id, note` | void | reporter checked in; ≥ start+20 min; other not checked in → else `MEETUP_WINDOW` | — |
 | `confirm_deal` | `chat_id, outcome` | void | `done` / `not_yet` / `fell_through` (listing back to active) | — |
 | `get_my_rating` | `chat_id` | `{mine, theirs, theirs_waiting}` | theirs only once revealed (DEC 63) | — |

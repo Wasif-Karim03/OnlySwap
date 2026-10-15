@@ -314,6 +314,7 @@ const meetupRow = (patch: Partial<Meetup> = {}): Meetup => ({
 const meetupsApi = (over: Partial<MeetupsApi> = {}): MeetupsApi => ({
   propose: jest.fn(),
   confirm: jest.fn(async () => {}),
+  confirmHandoff: jest.fn(async () => ({ ok: true, tries_left: 5 })),
   checkIn: jest.fn(async () => {}),
   late: jest.fn(async () => {}),
   cancel: jest.fn(async () => {}),

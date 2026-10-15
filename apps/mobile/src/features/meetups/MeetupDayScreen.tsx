@@ -39,6 +39,7 @@ import {
   whenParts,
   type Meetup,
 } from './logic';
+import { Handoff } from './Handoff';
 import { SpotsMap } from './SpotsMap';
 
 export const meetupKey = (id: string) => ['meetup', id] as const;
@@ -232,6 +233,7 @@ export function MeetupDayScreen({
           </View>
         </View>
 
+        <Handoff meetup={m} api={api} onDone={refresh} />
         {confirmed && m.my_here_at ? (
           <Text variant="label" tone="green" testID="meetup-you-here">
             {copy.youreHere}

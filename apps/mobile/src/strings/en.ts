@@ -43,6 +43,7 @@ export const errors = {
   RATE_LIMITED_UNTIL: "You're doing that a lot. Try again after {time}.",
   OFFERS_PAUSED: 'Offers are paused on your account after a missed meetup.',
   SELLER_AWAY: 'This seller paused their listings. Save it and check back later.',
+  HANDOFF_LOCKED: 'Too many wrong codes. Use Did it sell? in the chat instead.',
   LISTING_UNAVAILABLE: "This item isn't taking offers right now.",
   OFFER_NOT_PENDING: 'This offer changed. Pull to refresh.',
   ALREADY_REPORTED: "You've already reported this. We're on it.",
@@ -1229,6 +1230,15 @@ export const chat = {
 } as const;
 
 export const meetup = {
+  // Handoff code (DEC 132)
+  handoffTitle: 'Handoff code',
+  handoffBuyer: 'Show this to the seller when you have the item. They type it to finish the swap.',
+  handoffSellerTitle: 'Swap done?',
+  handoffSellerBody: 'Ask the buyer for their 4-digit code and type it here.',
+  handoffLabel: 'Buyer code',
+  handoffConfirm: 'Finish swap',
+  handoffWrong: 'That code does not match. {n} tries left.',
+  handoffDone: 'Swap done.',
   // Plan the pickup (E05)
   planTitle: 'Plan the pickup',
   spotsTitle: 'Meetup spots',

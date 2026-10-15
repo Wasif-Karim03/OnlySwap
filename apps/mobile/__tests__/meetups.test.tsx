@@ -15,6 +15,7 @@ import {
   type Meetup,
 } from '../src/features/meetups/logic';
 import { MeetupCard } from '../src/features/meetups/MeetupCard';
+import { cleanHandoffCode } from '../src/features/meetups/Handoff';
 import { MeetupDayScreen } from '../src/features/meetups/MeetupDayScreen';
 import { PlanMeetupScreen } from '../src/features/meetups/PlanMeetupScreen';
 import type { Spot } from '../src/features/sell/logic';
@@ -112,6 +113,7 @@ function api(over: Partial<MeetupsApi> = {}): MeetupsApi {
   return {
     propose: jest.fn(async () => m({ status: 'proposed' })),
     confirm: jest.fn(async () => {}),
+    confirmHandoff: jest.fn(async () => ({ ok: true, tries_left: 5 })),
     checkIn: jest.fn(async () => {}),
     late: jest.fn(async () => {}),
     cancel: jest.fn(async () => {}),
@@ -329,5 +331,74 @@ describe('E06 Meetup day', () => {
     );
     fireEvent.press(await screen.findByText(meetup.emergency));
     expect(openUrl).toHaveBeenCalledWith('tel:911');
+  });
+});
+
+describe('T-UNIT-HANDOFF-01 handoff code (DEC 132)', () => {
+  const at = (h: number, min: number) => () => new Date(2027, 2, 10, h, min);
+  const day = (a: MeetupsApi) =>
+    render(
+      {
+        'meetup/[id]': () => <MeetupDayScreen id="m1" otherName="Aisha" api={a} now={at(16, 25)} />,
+        'deal/[chatId]/rate': () => <Text testID="screen-rate">rate</Text>,
+      },
+      '/meetup/m1',
+    );
+
+  it('keeps digits only, at most 4', () => {
+    expect(cleanHandoffCode('48 2-1x9')).toBe('4821');
+  });
+
+  it('the buyer sees their code; no entry field', async () => {
+    day(api({ get: jest.fn(async () => m({ handoff_code: '0482', i_am_seller: false })) }));
+    expect(await screen.findByText('0482')).toBeTruthy();
+    expect(screen.queryByTestId('meetup-handoff-entry')).toBeNull();
+  });
+
+  it('the seller types it: a wrong code says the tries left, the right one opens Rate', async () => {
+    const confirmHandoff = jest
+      .fn()
+      .mockResolvedValueOnce({ ok: false, tries_left: 4 })
+      .mockResolvedValueOnce({ ok: true, tries_left: 4 });
+    day(
+      api({
+        get: jest.fn(async () => m({ handoff_code: null, i_am_seller: true })),
+        confirmHandoff,
+      }),
+    );
+    const input = await screen.findByTestId('meetup-handoff-input');
+    expect(screen.queryByTestId('meetup-handoff-code')).toBeNull();
+    fireEvent.changeText(input, '12');
+    expect(screen.getByTestId('meetup-handoff-confirm').props.accessibilityState).toMatchObject({
+      disabled: true,
+    });
+    fireEvent.changeText(input, '1234');
+    fireEvent.press(screen.getByTestId('meetup-handoff-confirm'));
+    expect(await screen.findByText('That code does not match. 4 tries left.')).toBeTruthy();
+    fireEvent.changeText(screen.getByTestId('meetup-handoff-input'), '0482');
+    await waitFor(() =>
+      expect(screen.getByTestId('meetup-handoff-confirm').props.accessibilityState).toMatchObject({
+        disabled: false,
+      }),
+    );
+    // Past the 500 ms double-tap guard.
+    const later = Date.now() + 1000;
+    jest.spyOn(Date, 'now').mockReturnValue(later);
+    fireEvent.press(screen.getByTestId('meetup-handoff-confirm'));
+    await waitFor(() => expect(confirmHandoff).toHaveBeenLastCalledWith('m1', '0482'));
+    expect(await screen.findByTestId('screen-rate')).toBeTruthy();
+    jest.restoreAllMocks();
+  });
+
+  it('gone once the swap is done', async () => {
+    day(
+      api({
+        get: jest.fn(async () =>
+          m({ handoff_code: '0482', handoff_at: new Date().toISOString(), i_am_seller: false }),
+        ),
+      }),
+    );
+    await screen.findByTestId('meetup-other-name');
+    expect(screen.queryByTestId('meetup-handoff-code')).toBeNull();
   });
 });

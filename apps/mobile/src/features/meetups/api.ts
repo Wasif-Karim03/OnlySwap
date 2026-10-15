@@ -18,6 +18,8 @@ export type MeetupsApi = {
   forChat: (chatId: string) => Promise<Meetup | null>;
   share: (meetupId: string) => Promise<{ token: string; expires_at: string }>;
   noShow: (meetupId: string, note?: string) => Promise<void>;
+  /** DEC 132: the seller types the buyer's code. */
+  confirmHandoff: (meetupId: string, code: string) => Promise<{ ok: boolean; tries_left: number }>;
 };
 
 const rpc = createRpc(() => getSupabase() as unknown as RpcClient);
@@ -43,6 +45,8 @@ export const meetupsApi: MeetupsApi = {
     await rpc('cancel_meetup', { meetup_id: id, reason: reason ?? null });
   },
   get: (id) => rpc<Meetup>('get_meetup', { meetup_id: id }),
+  confirmHandoff: (id, code) =>
+    rpc<{ ok: boolean; tries_left: number }>('confirm_handoff', { meetup_id: id, code }),
   forChat: (chatId) => rpc<Meetup | null>('get_chat_meetup', { chat_id: chatId }),
   share: (id) =>
     rpc<{ token: string; expires_at: string }>('create_meetup_share', { meetup_id: id }),

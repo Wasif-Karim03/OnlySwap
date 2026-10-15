@@ -332,6 +332,7 @@ const noMeetups = {
   get: jest.fn(),
   forChat: jest.fn(async () => null),
   share: jest.fn(),
+  confirmHandoff: jest.fn(),
   noShow: jest.fn(),
 };
 
