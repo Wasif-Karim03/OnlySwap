@@ -2463,6 +2463,9 @@ isOneToOne: false
 "get_listing_public_card":
 { Args: { "id": string }; Returns: Json
                            },
+"get_listings_by_ids":
+{ Args: { "ids": (string)[] }; Returns: Json
+                           },
 "get_me":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
@@ -2635,6 +2638,9 @@ isOneToOne: false
                            },
 "set_wanted_prefs":
 { Args: { "alerts": boolean,"id": string,"need_by": string }; Returns: Json
+                           },
+"similar_listings":
+{ Args: { "id": string }; Returns: Json
                            },
 "submit_rating":
 { Args: { "chat_id": string,"comment"?: string,"tags"?: (string)[],"thumbs_up": boolean }; Returns: undefined

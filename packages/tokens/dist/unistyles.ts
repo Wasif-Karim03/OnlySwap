@@ -194,7 +194,8 @@ export const size = {
   "stepBar": 4,
   "progressBar": 8,
   "navBar": 46,
-  "copyMax": 320
+  "copyMax": 320,
+  "stripTile": 140
 } as const;
 
 export const elevation = {

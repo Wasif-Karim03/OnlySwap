@@ -880,6 +880,8 @@ export const feed = {
   more: 'More options',
   shareMessage: '{title}, {price} on OnlySwap',
   descriptionTitle: 'About this item',
+  /** DEC 128. */
+  moreLikeThis: 'More like this',
   meetupTitle: 'Meetup',
   meetupDecide: 'You and the seller pick a spot in chat.',
   availabilityTitle: 'Usually free',
@@ -925,6 +927,8 @@ export const search = {
   placeholder: 'Search your campus',
   inputLabel: 'Search',
   cancel: 'Cancel',
+  /** DEC 128: kept on the phone only. */
+  recentlyViewed: 'Recently viewed',
   recent: 'Recent',
   clearRecent: 'Clear',
   removeRecent: 'Remove {q}',
@@ -1553,7 +1557,8 @@ export const me = {
   relist: 'Relist',
   /** Away mode (DEC 126). */
   away: 'Pause my listings',
-  awayBody: 'Your items leave Discover and search, and no one can make new offers. Chats stay open. Expiry dates move by the time you are away.',
+  awayBody:
+    'Your items leave Discover and search, and no one can make new offers. Chats stay open. Expiry dates move by the time you are away.',
   awayOn: 'Your listings are paused',
   awayOff: 'Your listings are back',
   /** Renew an active listing (DEC 125). */

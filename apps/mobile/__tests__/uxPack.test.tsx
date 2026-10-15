@@ -1,7 +1,13 @@
-import { render, screen } from '@testing-library/react-native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { renderRouter } from 'expo-router/testing-library';
+import type { ReactNode } from 'react';
 
 import { trustLine, type FeedItem } from '../src/features/feed/logic';
+import { addViewed, parseViewed, rememberViewed, VIEWED_MAX } from '../src/features/feed/recent';
 import { SwipeCard, cardLabel, type DeckCard } from '../src/features/feed/SwipeCard';
+import type { SearchApi } from '../src/features/search/api';
+import { SearchScreen } from '../src/features/search/SearchScreen';
 
 const seller = (over: Partial<FeedItem['seller']> = {}): FeedItem['seller'] => ({
   id: 's1',
@@ -53,5 +59,68 @@ describe('T-UNIT-TRUST-01 trust line on the card (DEC 124)', () => {
     screen.unmount();
     render(<SwipeCard card={card} compact />);
     expect(screen.queryByTestId('card-trust')).toBeNull();
+  });
+});
+
+const item = (id: string, title: string): FeedItem =>
+  ({
+    id,
+    kind: 'sale',
+    status: 'active',
+    title,
+    price_cents: 1500,
+    photos: [],
+    seller: seller(),
+  }) as unknown as FeedItem;
+
+describe('T-UNIT-RECENT-01 recently viewed (DEC 128)', () => {
+  it('keeps the newest 20 ids, no repeats', () => {
+    expect(addViewed(['a', 'b'], 'b')).toEqual(['b', 'a']);
+    const many = Array.from({ length: 25 }, (_, i) => `x${i}`);
+    expect(addViewed(many, 'new')).toHaveLength(VIEWED_MAX);
+    expect(parseViewed('junk')).toEqual([]);
+    expect(parseViewed(['a', 3, 'b'])).toEqual(['a', 'b']);
+  });
+
+  it('remembers a view, and survives broken storage', () => {
+    let saved: unknown = ['a'];
+    rememberViewed('b', { get: () => saved, set: (v) => (saved = v) });
+    expect(saved).toEqual(['b', 'a']);
+    expect(() =>
+      rememberViewed('c', {
+        get: () => {
+          throw new Error('no storage');
+        },
+        set: () => {},
+      }),
+    ).not.toThrow();
+  });
+
+  it('Search shows recently viewed before you type', async () => {
+    const byIds = jest.fn(async () => [item('l1', 'Desk lamp'), item('l2', 'Mini fridge')]);
+    const api = { suggest: jest.fn(async () => []) } as unknown as SearchApi;
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    );
+    renderRouter(
+      {
+        search: () => (
+          <SearchScreen
+            api={api}
+            recentStorage={{ get: () => [], set: () => {} }}
+            more={{ similar: jest.fn(), byIds }}
+            viewedStore={{ get: () => ['l1', 'l2'], set: () => {} }}
+            mediaBase={() => 'http://m'}
+          />
+        ),
+        'listing/[id]': () => null,
+      },
+      { initialUrl: '/search', wrapper },
+    );
+    expect(await screen.findByTestId('search-recently-viewed')).toBeTruthy();
+    expect(byIds).toHaveBeenCalledWith(['l1', 'l2']);
+    fireEvent.press(screen.getByTestId('search-recently-viewed-l2'));
+    await waitFor(() => expect(screen.queryByTestId('search-recently-viewed')).toBeNull());
   });
 });

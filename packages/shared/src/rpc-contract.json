@@ -1133,6 +1133,16 @@
     ]
   },
   {
+    "name": "get_listings_by_ids",
+    "args": "ids uuid[]",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "get_me",
     "args": "",
     "returns": "jsonb",
@@ -1709,6 +1719,16 @@
   {
     "name": "set_wanted_prefs",
     "args": "id uuid, need_by date, alerts boolean",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "similar_listings",
+    "args": "id uuid",
     "returns": "jsonb",
     "security": "definer",
     "grants": [
