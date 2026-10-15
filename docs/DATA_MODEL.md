@@ -42,7 +42,7 @@
 | self | `auth.uid() = row owner` |
 | other user | authenticated, not the owner |
 | participant | buyer or seller of the chat/offer |
-| admin | `private.is_admin(min_role)`: `admins` row + JWT `aal='aal2'` |
+| admin | `private.is_admin(min_role)`: `admins` row + JWT `aal='aal2'`. Table reads are also campus-scoped: `private.admin_sees(campus)` / `admin_sees_user(uid)` let a moderator with `admins.campus_id` set see only that campus's rows; global admins (`campus_id` null) see all (0226, DEC 113) |
 | service | `service_role` (Edge Functions, cron) |
 
 **JWT claims** are added by the custom access token hook: `campus_id`, `status`, `adult`, `admin_role`.

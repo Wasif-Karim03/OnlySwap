@@ -124,7 +124,7 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 | `record_view` | `listing_id` | void | once/user/day | — |
 | `track_events` | `events jsonb` (≤50: `{kind, listing_id?, source?, dwell_ms?, query?, at?}`), `platform text?` (`ios`\|`android`\|`web`), `app_version text?` | `{accepted}` | admin v2 activity (DEC 93): kinds `app_open`, `listing_viewed`, `unsaved`, `searched`, `opened_from` (DEC 100: `deck_shown`, `swiped_left`, `saved` and `offer_made` from older builds are dropped without an error); sources `discover`, `search`, `campus`, `profile`, `saved`, `link`, `notification` (else null); unknown kinds, listings not on the caller's campus or deleted, and `searched` without text are dropped; dwell capped at 600000 ms; query cut to 80; `at` kept within the last 24 h; stamps `last_active_at`, `last_platform`, `last_app_version`; `INVALID:events` when not an array or > 50 | 120/h |
 | `get_listing` | `id` | `FeedItem & {access}`; `{id, access}` when not visible | access: buyer, owner, gone, blocked, other_campus (DEC 57) | 600/h |
-| `get_campus_feed` | `kind text?, cursor` | items (all, news, free, wanted, food, new); `all` = food, free, wanted, news and sale from the last 7 days; items carry `link_url`, `event_at` (DEC 98) | — | 120/h |
+| `get_campus_feed` | `kind text?, cursor` | items (all, news, free, wanted, food, new); `all` = food, free, wanted, news and sale from the last 7 days; items carry `link_url`, `event_at` (DEC 98); `day_one`, `active_listings`, `founding` on page one only, null after (0229) | — | 120/h |
 | `create_news` | `id` (reserved), `title`, `description?`, `photos jsonb` (≤4), `link_url?`, `event_at?`, `place?` | listing | DEC 98: kind `news`, price 0, no offers; title 3–80, description ≤1000, place ≤60 (stored in `meet_note`), link `^https?://` with a dot, ≤300; `event_at` future and ≤90 days; expires at the end of the event's day in campus time, else now + 14 days; banned words and review holds as `create_listing`; `FORBIDDEN` without a reservation; idempotent on the id | create_listing 20/day + 3/day news |
 | `search_listings` | `q, filters, cursor` | listings | `websearch_to_tsquery`; trigram fallback (both indexed, DEC 101); `cursor` `{offset}`; unknown filter keys → `INVALID:filters` | 120/h |
 | `search_suggest` | `q` (≥2) | `[{type, label, count}]` | — | 600/h |
@@ -181,7 +181,7 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 
 | RPC | Args | Returns | Errors / rules | Limit |
 |---|---|---|---|---|
-| `create_report` | `target_type, target_id, reason, details` | `{id}` | resolves `target_user_id` + `evidence` snapshot; `ALREADY_REPORTED` | 20/day |
+| `create_report` | `target_type, target_id, reason, details` | `{id}` | resolves `target_user_id` + `evidence` snapshot; `ALREADY_REPORTED`; 3 open reports from distinct reporters aged >7 d hold a Quad post or reply (0227) | 20/day |
 | `get_my_report` | `id` | `{status, timeline[]}` (generic outcome only) | reporter | — |
 | `block_user` / `unblock_user` | `user_id` | void | not self; blocks chats | 50/day |
 | `create_appeal` | `subject_type, subject_id, reason_choice, body` | `{id}` | own subject; `ALREADY_APPEALED` | 5/day |

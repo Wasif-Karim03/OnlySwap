@@ -6,7 +6,7 @@ import {
   type ChatItem,
   type Message,
 } from '../src/features/chat/logic';
-import { createChatStore } from '../src/features/chat/useChat';
+import { chatStoreFor, createChatStore, resetChatStores } from '../src/features/chat/useChat';
 
 const msg = (id: number, patch: Partial<Message> = {}): Message => ({
   id,
@@ -149,5 +149,43 @@ describe('T-UNIT-CHAT-04 scam hint', () => {
     ['', null],
   ])('%s → %s', (body, hint) => {
     expect(scamHint(body)).toBe(hint);
+  });
+});
+
+describe('T-UNIT-CHAT-05 chat store cache (C-04)', () => {
+  const api = { messages: jest.fn(async () => [msg(1, { sender_id: 'me' })]), send: jest.fn() };
+  beforeEach(() => resetChatStores());
+
+  it('a store made before the session loads is not reused once we know who we are', async () => {
+    const early = chatStoreFor('c1', null, api);
+    const later = chatStoreFor('c1', 'me', api);
+    expect(later).not.toBe(early);
+    await later.getState().load();
+    expect(later.getState().items[0]!.mine).toBe(true);
+    expect(chatStoreFor('c1', 'me', api)).toBe(later);
+  });
+
+  it('two accounts never share a store for the same chat', () => {
+    expect(chatStoreFor('c1', 'a', api)).not.toBe(chatStoreFor('c1', 'b', api));
+  });
+
+  it('keeps at most 20 chats, dropping the least recently opened', () => {
+    const first = chatStoreFor('c0', 'me', api);
+    const second = chatStoreFor('c1', 'me', api);
+    for (let i = 2; i < 20; i += 1) chatStoreFor(`c${i}`, 'me', api);
+    // c0 was opened again, so c1 is now the oldest.
+    expect(chatStoreFor('c0', 'me', api)).toBe(first);
+    chatStoreFor('c20', 'me', api);
+    expect(chatStoreFor('c0', 'me', api)).toBe(first);
+    expect(chatStoreFor('c1', 'me', api)).not.toBe(second);
+  });
+
+  it('never drops a chat with unsent messages', async () => {
+    const send = jest.fn(() => new Promise<never>(() => {}));
+    const busy = chatStoreFor('busy', 'me', { messages: jest.fn(async () => []), send });
+    await busy.getState().load();
+    void busy.getState().send('hold on');
+    for (let i = 0; i < 25; i += 1) chatStoreFor(`c${i}`, 'me', api);
+    expect(chatStoreFor('busy', 'me', api)).toBe(busy);
   });
 });
