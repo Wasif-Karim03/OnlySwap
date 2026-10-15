@@ -1,5 +1,10 @@
 import { fontScale as fontScaleTokens, type TypeVariant } from '@onlyswap/tokens';
-import { Text as RNText, useWindowDimensions, type TextProps as RNTextProps } from 'react-native';
+import {
+  Platform,
+  Text as RNText,
+  useWindowDimensions,
+  type TextProps as RNTextProps,
+} from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 /** Text colors allowed for type. `accent` is deliberately absent (UX-03). */
@@ -45,6 +50,11 @@ export function Text({
       key={fontScale}
       allowFontScaling
       maxFontSizeMultiplier={overlay ? fontScaleTokens.overlayMax : undefined}
+      // Android's default 'highQuality' line breaking can measure a wrapped line
+      // narrower than it draws, so the last line of a chat bubble was cut off on
+      // a Samsung phone (owner device check, 2026-10-15). 'simple' measures and
+      // draws the same way.
+      textBreakStrategy={Platform.OS === 'android' ? 'simple' : undefined}
       style={[styles.text(variant, tone), style]}
       {...rest}
     />
