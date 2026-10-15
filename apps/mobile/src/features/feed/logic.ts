@@ -121,10 +121,10 @@ export const DAY_ONE_MAX = 10;
 
 /** `dwell_ms` is time on card (E-03, DEC 100); the server keeps it on the swipe. */
 export type QueuedSwipe = { listing_id: string; dir: SwipeDir; at: string; dwell_ms?: number };
-/** The server keeps `left` and `save`; a right swipe opens the offer sheet and is recorded as seen (left). */
+/** A right swipe opens the offer sheet and is stored as `right` (DEC 106; it was `left`, which inflated pass counts). */
 export type ServerSwipe = {
   listing_id: string;
-  dir: 'left' | 'save';
+  dir: SwipeDir;
   at: string;
   dwell_ms?: number;
 };
@@ -145,7 +145,7 @@ export function cleanDwell(ms: unknown): number | undefined {
 export function toServer(s: QueuedSwipe): ServerSwipe {
   const out: ServerSwipe = {
     listing_id: s.listing_id,
-    dir: s.dir === 'save' ? 'save' : 'left',
+    dir: s.dir,
     at: s.at,
   };
   if (s.dwell_ms !== undefined) out.dwell_ms = s.dwell_ms;
