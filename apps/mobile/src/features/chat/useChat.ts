@@ -227,11 +227,41 @@ export function createChatStore(chatId: string, deps: Deps): StoreApi<ChatState>
   });
 }
 
+/** Chats kept in memory; the oldest idle one is dropped past this (C-04). */
+export const MAX_CHAT_STORES = 20;
+
+// Keyed by `${me}:${chatId}` so a store never outlives the user its `mine`
+// flags were computed for. Map order is recency: oldest first.
 const stores = new Map<string, StoreApi<ChatState>>();
 
 /** Drops every cached chat (sign-out or account switch, C-03). */
 export function resetChatStores(): void {
   stores.clear();
+}
+
+const busy = (s: StoreApi<ChatState>) => s.getState().items.some((m) => m.state !== 'sent');
+
+/**
+ * The store for one chat as one user. Before the session loads (`me` null) the
+ * store is not cached, so it cannot leak into the signed-in screen (C-04).
+ */
+export function chatStoreFor(
+  chatId: string,
+  me: string | null,
+  api: Deps['api'],
+): StoreApi<ChatState> {
+  if (!me) return createChatStore(chatId, { api, me: () => null });
+  const key = `${me}:${chatId}`;
+  let s = stores.get(key);
+  if (s) stores.delete(key);
+  else s = createChatStore(chatId, { api, me: () => me });
+  stores.set(key, s);
+  for (const [k, old] of stores) {
+    if (stores.size <= MAX_CHAT_STORES) break;
+    // Unsent messages stay queued until they go out.
+    if (k !== key && !busy(old)) stores.delete(k);
+  }
+  return s;
 }
 
 /**
@@ -254,12 +284,7 @@ export function useChat(
 ) {
   const store = useMemo(() => {
     if (injected) return injected;
-    let s = stores.get(chatId);
-    if (!s) {
-      s = createChatStore(chatId, { api, me: () => me });
-      stores.set(chatId, s);
-    }
-    return s;
+    return chatStoreFor(chatId, me, api);
   }, [injected, chatId, api, me]);
   const state = useStore(store);
 
