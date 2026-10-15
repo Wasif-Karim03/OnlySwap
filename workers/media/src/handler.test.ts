@@ -138,3 +138,76 @@ test('chat photos: only with a valid, unexpired signature (P8-CHAT-04)', async (
     404,
   );
 });
+
+// E-07: public images go through the edge cache so repeat GETs skip R2.
+function fakeEdge() {
+  const store = new Map<string, Response>();
+  const pending: Promise<unknown>[] = [];
+  return {
+    store,
+    pending,
+    edge: {
+      cache: {
+        match: async (req: Request) => store.get(req.url)?.clone(),
+        put: async (req: Request, res: Response) => {
+          store.set(req.url, res);
+        },
+      },
+      waitUntil: (p: Promise<unknown>) => {
+        pending.push(p);
+      },
+    },
+  };
+}
+
+test('E-07: a public image is cached at the edge and served without R2 next time', async () => {
+  let reads = 0;
+  const counted: Env = {
+    MEDIA: { get: async (k) => (reads++, env.MEDIA.get(k)) },
+  };
+  const { store, pending, edge } = fakeEdge();
+  const url = 'https://m.test/c/osu/l/L1/abc_full.webp';
+  const first = await handle(new Request(url), counted, Date.now(), edge);
+  assert.equal(first.status, 200);
+  assert.equal(await first.text(), 'WEBPDATA');
+  await Promise.all(pending);
+  assert.equal(store.size, 1);
+
+  // A cache-busting query string still hits the same entry.
+  const second = await handle(new Request(`${url}?v=2`), counted, Date.now(), edge);
+  assert.equal(second.status, 200);
+  assert.equal(await second.text(), 'WEBPDATA');
+  assert.equal(second.headers.get('cache-control'), CACHE_CONTROL);
+  assert.equal(reads, 1);
+
+  const etag = second.headers.get('etag') as string;
+  const cond = await handle(
+    new Request(url, { headers: { 'if-none-match': etag } }),
+    counted,
+    Date.now(),
+    edge,
+  );
+  assert.equal(cond.status, 304);
+  const head = await handle(new Request(url, { method: 'HEAD' }), counted, Date.now(), edge);
+  assert.equal(head.status, 200);
+  assert.equal(await head.text(), '');
+  assert.equal(reads, 1);
+});
+
+test('E-07: 404s, HEAD misses and signed chat photos are never put in the shared cache', async () => {
+  const key = 'c/osu/chat/C1/33333333-3333-4333-8333-333333333333_full.webp';
+  const signed: Env = {
+    MEDIA_SIGNING_KEY: 'k',
+    MEDIA: { get: async (k) => (k === key ? { body: 'CHAT', size: 4, httpEtag: '"c"' } : null) },
+  };
+  const now = Date.UTC(2027, 2, 10, 17, 0, 0);
+  const exp = Math.floor(now / 1000) + 600;
+  const sig = await signChat('k', key, exp);
+  const { store, pending, edge } = fakeEdge();
+  const ok = await handle(new Request(`https://m.test/${key}?exp=${exp}&sig=${sig}`), signed, now, edge);
+  assert.equal(ok.status, 200);
+  await handle(new Request('https://m.test/c/osu/l/L1/missing_full.webp'), env, now, edge);
+  await handle(new Request('https://m.test/share/L1.jpg', { method: 'HEAD' }), env, now, edge);
+  await Promise.all(pending);
+  assert.equal(store.size, 0);
+});

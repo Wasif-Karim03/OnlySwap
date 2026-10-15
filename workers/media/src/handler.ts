@@ -15,6 +15,20 @@ export type Bucket = {
 
 export type Env = { MEDIA: Bucket; MEDIA_SIGNING_KEY?: string };
 
+/**
+ * The edge cache (E-07): `caches.default` plus `ctx.waitUntil` in the Worker.
+ * Repeat GETs of a public image are served from the colo cache, so they skip
+ * the R2 read (Class B). Cloudflare ignores the Cache API on workers.dev, so
+ * this only pays off once the Worker is on a custom domain (RELEASE Q2).
+ */
+export type Edge = {
+  cache: {
+    match: (request: Request) => Promise<Response | undefined>;
+    put: (request: Request, response: Response) => Promise<void>;
+  };
+  waitUntil: (promise: Promise<unknown>) => void;
+};
+
 /** Public prefixes (DATA_MODEL §6). `c/{campus}/chat/` stays private. */
 export const PUBLIC_PREFIXES = ['c/', 'share/'] as const;
 
@@ -125,10 +139,20 @@ function notFound(): Response {
   });
 }
 
+/** 304 when the client already has this version, else the response as is (body dropped for HEAD). */
+function answer(request: Request, res: Response): Response {
+  if (request.headers.get('if-none-match') === res.headers.get('etag')) {
+    return new Response(null, { status: 304, headers: res.headers });
+  }
+  if (request.method === 'HEAD') return new Response(null, { status: 200, headers: res.headers });
+  return res;
+}
+
 export async function handle(
   request: Request,
   env: Env,
   now: number = Date.now(),
+  edge?: Edge,
 ): Promise<Response> {
   if (request.method !== 'GET' && request.method !== 'HEAD') {
     return new Response('Method not allowed', { status: 405, headers: { allow: 'GET, HEAD' } });
@@ -149,6 +173,14 @@ export async function handle(
   }
   if (!key) return notFound();
 
+  // Public images only; the key ignores the query so cache-busters share one entry.
+  const shared = edge && cacheControl === CACHE_CONTROL ? edge : undefined;
+  const cacheKey = new Request(`${url.origin}${url.pathname}`);
+  if (shared) {
+    const hit = await shared.cache.match(cacheKey);
+    if (hit) return answer(request, hit);
+  }
+
   const object = await env.MEDIA.get(key);
   if (!object) return notFound();
 
@@ -162,8 +194,10 @@ export async function handle(
     etag: object.httpEtag,
     'content-length': String(object.size),
   };
-  if (request.headers.get('if-none-match') === object.httpEtag) {
-    return new Response(null, { status: 304, headers });
+  if (request.headers.get('if-none-match') === object.httpEtag || request.method === 'HEAD') {
+    return answer(request, new Response(null, { status: 200, headers }));
   }
-  return new Response(request.method === 'HEAD' ? null : object.body, { status: 200, headers });
+  const res = new Response(object.body, { status: 200, headers });
+  if (shared) shared.waitUntil(shared.cache.put(cacheKey, res.clone()));
+  return res;
 }
