@@ -3,13 +3,19 @@
 //
 // Flow: verify the caller's JWT → private.prepare_account_deletion (closes
 // chats, keeps a banned hash, queues the goodbye email unless underage,
-// returns R2 prefixes) → delete R2 prefixes (wired in P5-MEDIA-04) →
-// auth.admin.deleteUser (cascades and set-nulls remove the rest).
+// returns R2 prefixes and archived chat keys) → delete R2 prefixes (wired in
+// P5-MEDIA-04) and chat archives (B-03) → auth.admin.deleteUser (cascades and set-nulls remove the rest).
 
 export type EvidenceItem = { report_id: string; key: string };
 export type EvidenceMove = { report_id: string; from: string; to: string };
 
-export type Prepared = { email: string | null; r2_prefixes: string[]; evidence?: EvidenceItem[] };
+export type Prepared = {
+  email: string | null;
+  r2_prefixes: string[];
+  evidence?: EvidenceItem[];
+  /** Private-bucket keys of the person's archived chats (B-03). */
+  archives?: string[];
+};
 
 /** Where a reported photo is kept: onlyswap-private/evidence/{report}/{file}. */
 export function evidenceKey(item: EvidenceItem): string {
@@ -24,6 +30,8 @@ export type DeleteDeps = {
   deleteUser: (userId: string) => Promise<void>;
   /** R2 cleanup (P5-MEDIA-04). */
   deleteR2Prefix?: (prefix: string) => Promise<void>;
+  /** Deletes one archived chat from the private bucket (DATA_MODEL §5, B-03). */
+  deleteArchive?: (key: string) => Promise<void>;
   /** Copies a media key into the private bucket (BE-02); false when the photo is already gone. */
   copyToPrivate?: (fromKey: string, toKey: string) => Promise<boolean | void>;
   /** Points the reports at the private copies (private.record_evidence_moves). */
@@ -103,6 +111,9 @@ export async function handleDeleteAccount(
     }
     if (deps.deleteR2Prefix) {
       for (const prefix of prepared.r2_prefixes) await deps.deleteR2Prefix(prefix);
+    }
+    if (deps.deleteArchive) {
+      for (const key of prepared.archives ?? []) await deps.deleteArchive(key);
     }
   } catch (error) {
     // Only the R2 method and status (e.g. "r2 GET 403"); never keys or ids.
