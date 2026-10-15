@@ -451,8 +451,23 @@ export function MyListingsScreen({
   mediaBase?: () => string;
 }) {
   const router = useRouter();
+  const qc = useQueryClient();
   const q = useQuery({ queryKey: ['my-listings'], queryFn: () => api.listings() });
   const [tab, setTab] = useState<'active' | 'sold' | 'other'>('active');
+  const [renewing, setRenewing] = useState<string | null>(null);
+  // Renew (DEC 125): one tap moves an active listing back to the top; no screen.
+  const renew = async (id: string) => {
+    setRenewing(id);
+    try {
+      await api.relist(id, null);
+      void qc.invalidateQueries({ queryKey: ['my-listings'] });
+      useToastStore.getState().show('success', copy.renewed);
+    } catch (e) {
+      useToastStore.getState().show('error', errorText(e));
+    } finally {
+      setRenewing(null);
+    }
+  };
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/profile'));
   let body;
   if (q.isPending) body = <SkeletonList />;
@@ -502,7 +517,25 @@ export function MyListingsScreen({
                     router.push({ pathname: '/listing/[id]/stats', params: { id: l.id } })
                   }
                 />
-                {l.can_relist ? (
+                {l.can_relist && l.status === 'active' ? (
+                  <Button
+                    label={copy.renew}
+                    variant="text"
+                    size="S"
+                    loading={renewing === l.id}
+                    onPress={() => void renew(l.id)}
+                    testID={`renew-${l.id}`}
+                  />
+                ) : l.status === 'active' && l.renew_at ? (
+                  <Text variant="meta" tone="ink3" testID={`renew-at-${l.id}`}>
+                    {fill(copy.renewAt, {
+                      date: new Date(l.renew_at).toLocaleDateString(intlLocale, {
+                        month: 'short',
+                        day: 'numeric',
+                      }),
+                    })}
+                  </Text>
+                ) : l.can_relist ? (
                   <Button
                     label={copy.relist}
                     variant="text"

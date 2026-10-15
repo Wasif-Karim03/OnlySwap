@@ -141,7 +141,7 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 | `create_listing` | `id, kind, title, description, category_id, condition, price_cents, open_to_offers, photos jsonb, meet_spot_ids, meet_note, availability, wanted_max_cents, wanted_ref, food_minutes, pickup_by` | listing | id must be reserved by the caller; **idempotent** (`on conflict (id) do nothing`, returns existing); photos 1–8 (sale/free), 0–1 (wanted/food); path prefix check; `BANNED_TERM`; review → `held_review`; price ≤ 200000; food ≤ 180 min; `pickup_by` (free only, today…+14 d) sets the expiry (DEC 54) | 20/day (3 in first 24 h); wanted 5/day; food 3/day |
 | `update_listing` | `id, …` | listing | seller; not sold/deleted; price change logged | 50/day |
 | `delete_listing` | `id` | void | **soft**: status `deleted`, `deleted_at`; auto-declines, closes chats | — |
-| `relist_listing` | `id, price_cents` | listing | expired or fell-through; bump once / 7 d | — |
+| `relist_listing` | `id, price_cents` | listing | expired, or Renew an active sale/free listing; once / 3 d (DEC 125); `my_listings` adds `renew_at` | — |
 | `set_listing_share_image` | `id` | `{share_image_path}` | seller; not deleted; records `share/{id}.jpg` after the app uploads the share card (DEC 55) | 30/day |
 | `mark_sold` | `id, buyer_id?` | void | buyer must be a chat participant; closes other chats | — |
 | `listing_stats` / `listing_offers` | `id` | stats / offers | seller only | — |

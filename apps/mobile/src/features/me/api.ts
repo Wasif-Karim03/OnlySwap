@@ -30,7 +30,8 @@ export type Me = {
   };
 };
 
-export type MyListing = FeedItem & { can_relist: boolean };
+/** `renew_at`: when an active sale/free listing can next be renewed (DEC 125, 0236). */
+export type MyListing = FeedItem & { can_relist: boolean; renew_at?: string | null };
 
 export type ListingStats = {
   views: number;

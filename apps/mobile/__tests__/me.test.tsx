@@ -449,3 +449,26 @@ describe('P11-ACC-02 F17 Download your data', () => {
     expect(screen.getByTestId('data-export-send')).toBeDisabled();
   });
 });
+
+describe('T-UNIT-RENEW-01 renew from My listings (DEC 125)', () => {
+  it('renews an active listing in one tap, and shows the date when it is too soon', async () => {
+    const relist = jest.fn(async () => {});
+    const listings = jest.fn(async () => [
+      listing('a', 'active', { can_relist: true, renew_at: '2027-03-09T12:00:00Z' }),
+      listing('d', 'active', { renew_at: '2027-03-12T17:00:00Z' }),
+    ]);
+    render(
+      {
+        'profile/listings': () => (
+          <MyListingsScreen api={api({ relist, listings })} mediaBase={() => 'http://m'} />
+        ),
+      },
+      '/profile/listings',
+    );
+    expect(await screen.findByTestId('renew-at-d')).toBeTruthy();
+    expect(screen.queryByTestId('renew-d')).toBeNull();
+    fireEvent.press(screen.getByTestId('renew-a'));
+    await waitFor(() => expect(relist).toHaveBeenCalledWith('a', null));
+    expect(screen.queryByTestId('screen-relist-stub')).toBeNull();
+  });
+});

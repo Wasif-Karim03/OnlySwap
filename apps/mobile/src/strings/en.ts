@@ -1546,6 +1546,10 @@ export const me = {
     removed: 'Removed by OnlySwap',
   },
   relist: 'Relist',
+  /** Renew an active listing (DEC 125). */
+  renew: 'Renew',
+  renewAt: 'Renew {date}',
+  renewed: 'Moved to the top of Discover',
   stats: 'Stats',
   // F04 Listing stats
   statsTitle: 'Listing stats',
