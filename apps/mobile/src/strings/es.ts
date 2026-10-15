@@ -1973,6 +1973,11 @@ const campus: Strings['campus'] = {
   budgetHint: 'Déjalo vacío si eres flexible.',
   categoryLabel: 'Categoría (opcional)',
   categoryHint: 'Quien publique algo en esta categoría se entera de tu publicación.',
+  needByLabel: 'Lo necesito para',
+  needBy: { none: 'Sin prisa', week: 'Esta semana', twoWeeks: 'En 2 semanas', month: 'Este mes' },
+  needByLine: 'Lo necesita para el {date}',
+  alertMe: 'Avísame',
+  alertMeBody: 'Recibe una notificación cuando alguien publique algo que coincida.',
   detailsLabel: 'Detalles (opcional)',
   detailsPlaceholder: 'Edición, tamaño, color, para cuándo lo necesitas.',
   wantedNote:

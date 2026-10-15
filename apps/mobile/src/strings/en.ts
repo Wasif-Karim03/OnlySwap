@@ -2039,6 +2039,12 @@ export const campus = {
   budgetHint: 'Leave it empty if you are flexible.',
   categoryLabel: 'Category (optional)',
   categoryHint: 'People who list something in this category hear about your post.',
+  /** Need it by and alert me (DEC 127). */
+  needByLabel: 'Need it by',
+  needBy: { none: 'No rush', week: 'This week', twoWeeks: 'In 2 weeks', month: 'This month' },
+  needByLine: 'Needs it by {date}',
+  alertMe: 'Alert me',
+  alertMeBody: 'Get a notification when someone lists a match.',
   detailsLabel: 'Details (optional)',
   detailsPlaceholder: 'Edition, size, color, when you need it.',
   wantedNote:

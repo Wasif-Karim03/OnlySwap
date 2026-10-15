@@ -25,6 +25,17 @@ export const newsApi: NewsApi = {
   createNews: (args) => rpc<PostedListing>('create_news', args),
 };
 
+/** Need it by and alert me on a Wanted post (DEC 127), set right after posting. */
+export type WantedPrefsApi = {
+  setWantedPrefs: (id: string, needBy: string | null, alerts: boolean) => Promise<void>;
+};
+
+export const wantedPrefsApi: WantedPrefsApi = {
+  setWantedPrefs: async (id, needBy, alerts) => {
+    await rpc('set_wanted_prefs', { id, need_by: needBy, alerts });
+  },
+};
+
 export const campusKeys = {
   all: ['campus-feed'] as const,
   feed: (kind: CampusFilter) => ['campus-feed', kind] as const,

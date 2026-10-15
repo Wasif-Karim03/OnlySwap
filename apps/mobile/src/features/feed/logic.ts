@@ -59,6 +59,9 @@ export type FeedItem = {
   /** News posts (DEC 98): an optional link and event time. */
   link_url?: string | null;
   event_at?: string | null;
+  /** Wanted posts (DEC 127, 0238). */
+  need_by?: string | null;
+  wanted_alerts?: boolean;
 };
 
 export type FeedCursor = { bumped_at: string; id: string };

@@ -14,6 +14,7 @@ import { agoLabel, sellerName } from '../feed/logic';
 import { mediaUrl, priceLabel } from '../sell/logic';
 import {
   budgetLabel,
+  needByLine,
   canAnswer,
   countdown,
   countdownLabel,
@@ -173,7 +174,7 @@ function WantedCard(props: CardProps) {
               </Text>
               <Text variant="bodyStrong">{item.title}</Text>
               <Text variant="meta" tone="ink2">
-                {budget}
+                {[budget, needByLine(item.need_by)].filter(Boolean).join(feedCopy.metaSeparator)}
               </Text>
             </View>
           </Tappable>

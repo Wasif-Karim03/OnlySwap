@@ -1,5 +1,5 @@
 import { fill, money } from '@/lib/format';
-import { campus as copy } from '@/strings';
+import { campus as copy, intlLocale } from '@/strings';
 
 import type { FeedCursor, FeedItem } from '../feed/logic';
 import { whenParts } from '../meetups/logic';
@@ -121,6 +121,30 @@ export function canAnswer(item: Pick<CampusItem, 'kind' | 'is_own' | 'status'>):
 }
 
 /** "Up to $40", or "Any budget". */
+/** Need it by (DEC 127): chips, sent as a campus date the server checks (today to +60). */
+export type NeedBy = 'none' | 'week' | 'twoWeeks' | 'month';
+export const NEED_BY: NeedBy[] = ['none', 'week', 'twoWeeks', 'month'];
+const NEED_BY_DAYS: Record<Exclude<NeedBy, 'none'>, number> = { week: 7, twoWeeks: 14, month: 30 };
+
+/** "YYYY-MM-DD" on the phone's calendar, or null for no rush. */
+export function needByDate(choice: NeedBy, now: Date): string | null {
+  if (choice === 'none') return null;
+  const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + NEED_BY_DAYS[choice]);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+/** "Needs it by Mar 20" for a Wanted card; null when there's no date. */
+export function needByLine(needBy: string | null | undefined): string | null {
+  if (!needBy) return null;
+  const [y, m, d] = needBy.split('-').map(Number);
+  const date = new Date(y ?? 1970, (m ?? 1) - 1, d ?? 1).toLocaleDateString(intlLocale, {
+    month: 'short',
+    day: 'numeric',
+  });
+  return fill(copy.needByLine, { date });
+}
+
 export function budgetLabel(cents: number | null): string {
   if (cents === null || cents === undefined) return copy.anyBudget;
   return fill(copy.upTo, { price: money(cents) });
