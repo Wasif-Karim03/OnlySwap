@@ -223,7 +223,7 @@ create table listing_photos (
 create table listing_reservations (id uuid primary key, user_id uuid not null, created_at timestamptz default now(), used_at timestamptz);  -- no access; purge 24 h
 create table listing_price_changes (id bigint generated always as identity primary key, listing_id uuid references listings on delete cascade, old_cents int, new_cents int, changed_at timestamptz default now()); -- no access
 create table listing_removals (listing_id uuid primary key references listings on delete cascade, reason text not null, removed_by uuid, removed_at timestamptz default now()); -- no access; the admin's reason for a removed listing, read only by the seller through my_listings and get_listing (`removed_reason`), cleared when put back (DEC 96)
-create table swipes (user_id uuid references profiles on delete cascade, listing_id uuid references listings on delete cascade, dir swipe_dir not null, created_at timestamptz default now(), primary key (user_id, listing_id));  -- self select; purge 30 d (non-save)
+create table swipes (user_id uuid references profiles on delete cascade, listing_id uuid references listings on delete cascade, dir swipe_dir not null, created_at timestamptz default now(), dwell_ms int check (dwell_ms between 0 and 600000), primary key (user_id, listing_id));  -- self select; purge 30 d (non-save); dwell_ms = time on card (DEC 100)
 create index on swipes (listing_id);
 create table saves (user_id uuid references profiles on delete cascade, listing_id uuid references listings on delete cascade, price_at_save int, created_at timestamptz default now(), primary key (user_id, listing_id));  -- self select
 create index on saves (listing_id);
@@ -484,17 +484,17 @@ create table activity_events (
   id bigint generated always as identity primary key,
   user_id uuid not null references profiles on delete cascade,
   campus_id uuid not null references campuses on delete cascade,
-  kind text not null check (kind in ('app_open','deck_shown','listing_viewed','swiped_left','saved',
-                                     'unsaved','offer_made','searched','opened_from')),
+  kind text not null check (kind in ('app_open','listing_viewed','unsaved','searched','opened_from')),  -- DEC 100
   listing_id uuid references listings on delete set null,
   source text check (source in ('discover','search','campus','profile','saved','link','notification')),
-  dwell_ms int check (dwell_ms between 0 and 600000),     -- time on card or page, capped at 10 min
+  dwell_ms int check (dwell_ms between 0 and 600000),     -- time on page, capped at 10 min
   query text check (char_length(query) <= 80),            -- searched only
   platform text check (platform in ('ios','android','web')),
   app_version text check (char_length(app_version) <= 20),
   created_at timestamptz not null default now()
 );  -- indexes: (user_id, created_at desc), (listing_id, created_at desc), (campus_id, created_at desc), (created_at)
--- Written only by track_events (API §3); a deck card counts once per person per listing per 24 h. Purge 90 d.
+-- Written only by track_events (API §3). Deck cards, swipes, saves and offers live in their own tables
+-- (time on card is swipes.dwell_ms, DEC 100). Purge 30 d.
 
 alter table profiles add column last_platform text check (last_platform in ('ios','android','web'));
 alter table profiles add column last_app_version text check (char_length(last_app_version) <= 20);
@@ -672,7 +672,7 @@ Suspensions and bans revoke sessions (ADR-013).
 | Account, listings, messages | until account deletion. Closed chats archived to R2 after 90 d; archives deleted on account deletion |
 | Notifications | 60 d |
 | Swipes (non-save) | 30 d |
-| Activity events (`activity_events`) | 90 d (daily `prune_activity` job) |
+| Activity events (`activity_events`) | 30 d (daily `prune_activity` job, DEC 100) |
 | Account deletion records (`account_deletions`, no name or email) | 365 d |
 | Reports + evidence | 180 d after resolution (reporter nulled on deletion) |
 | Audit log | 2 years |
@@ -734,6 +734,7 @@ Suspensions and bans revoke sessions (ADR-013).
 | `0100_ref_data.sql` | categories, banned words (+ pets, gift cards, recalled items), `app_config` defaults: idempotent upserts (BE-15) | R1.0 |
 | `0200_quad.sql` … | R1.1 features | R1.1 |
 | `0206_activity_events.sql`, `0207_admin_v2_reads.sql`, `0208_admin_v2_tools.sql` | §2.8, API §3 `track_events`, API §4.1 (DEC 93) | admin v2 |
+| `0217_activity_volume.sql` | §2.8, swipes, API §3 `record_swipes` and `track_events` (DEC 100) | audit E-03 |
 
 Staging-only objects (`test_set_now`, the `private.now()` override, the `test_otps` table) live in `supabase/migrations_staging/` and are **never** applied to production; a CI check enforces this.
 
