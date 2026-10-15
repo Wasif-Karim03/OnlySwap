@@ -24,10 +24,12 @@ type Props = {
     | 'onPhoto';
   /** Stroke width; 2.2 marks the selected tab (board tab bar). */
   strokeWidth?: number;
+  /** Fill the shape in the same color (a liked heart, DEC 121). */
+  filled?: boolean;
 };
 
 /** Stroke icon from the board (24x24, 1.8 px, round caps). Decorative by default. */
-export function Icon({ name, size = 22, tone = 'ink', strokeWidth = 1.8 }: Props) {
+export function Icon({ name, size = 22, tone = 'ink', strokeWidth = 1.8, filled = false }: Props) {
   const { theme } = useUnistyles();
   const color = tone === 'inverse' ? theme.colors.bg : theme.colors[tone];
   return (
@@ -35,7 +37,7 @@ export function Icon({ name, size = 22, tone = 'ink', strokeWidth = 1.8 }: Props
       width={size}
       height={size}
       viewBox="0 0 24 24"
-      fill="none"
+      fill={filled ? color : 'none'}
       stroke={color}
       strokeWidth={strokeWidth}
       strokeLinecap="round"

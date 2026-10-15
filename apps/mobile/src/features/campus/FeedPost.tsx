@@ -2,13 +2,15 @@ import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { Avatar } from '@/components/Avatar';
+import { IconButton } from '@/components/IconButton';
 import { Icon, type IconName } from '@/components/icons/Icon';
 import { Photo } from '@/components/Photo';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { fill } from '@/lib/format';
-import { campus as copy, feed as feedCopy } from '@/strings';
+import { campus as copy, comments as commentCopy, feed as feedCopy } from '@/strings';
 
+import { commentsText, likesText } from '../comments/logic';
 import { agoLabel, sellerName } from '../feed/logic';
 import { mediaUrl, priceLabel } from '../sell/logic';
 import { eventLabel, linkHost, type CampusItem } from './logic';
@@ -23,6 +25,8 @@ type Props = {
   onOffer: () => void;
   onShare: () => void;
   onOpenLink: (url: string) => void;
+  onLike: () => void;
+  onComments: () => void;
   testID?: string;
 };
 
@@ -31,7 +35,8 @@ const SMALL_MAX = 3;
 
 /**
  * One Feed post (DEC 98), laid out like a social feed: who posted it and
- * when, the words, the photos, then Save, Make offer or Open link, and Share.
+ * when (Save at the top right), the words, the photos, the like and comment
+ * counts, then Like, Comment, Make offer or Open link, and Share (DEC 121).
  * News puts the headline above the photos; a listing keeps price and title on
  * white below them (DEC 90).
  */
@@ -44,8 +49,13 @@ export function FeedPost({
   onOffer,
   onShare,
   onOpenLink,
+  onLike,
+  onComments,
   testID,
 }: Props) {
+  const likes = item.like_count ?? 0;
+  const commentCount = item.comment_count ?? 0;
+  const liked = item.liked === true;
   const news = item.kind === 'news';
   const name = sellerName(item);
   const ago = agoLabel(new Date(item.created_at), now());
@@ -75,7 +85,7 @@ export function FeedPost({
     <View style={styles.card} testID={testID}>
       <Tappable accessibilityRole="button" accessibilityLabel={label} onPress={onOpen}>
         <View>
-          <View style={styles.head}>
+          <View style={[styles.head, styles.headRoom]}>
             <Avatar name={name} uri={avatar} size="M" />
             <View style={styles.flex}>
               <Text variant="bodyStrong" numberOfLines={1}>
@@ -169,22 +179,43 @@ export function FeedPost({
         </Tappable>
       ) : null}
 
+      {likes > 0 || commentCount > 0 ? (
+        <View style={styles.counts} testID={testID ? `${testID}-counts` : undefined}>
+          <Text variant="meta" tone="ink2" style={styles.flex}>
+            {likesText(likes)}
+          </Text>
+          {commentCount > 0 ? (
+            <Tappable
+              accessibilityRole="button"
+              accessibilityLabel={`${commentsText(commentCount)}. ${commentCopy.openComments}`}
+              onPress={onComments}
+              testID={testID ? `${testID}-comment-count` : undefined}
+            >
+              <Text variant="meta" tone="ink2">
+                {commentsText(commentCount)}
+              </Text>
+            </Tappable>
+          ) : null}
+        </View>
+      ) : null}
+
       <View style={styles.actions}>
-        {item.is_own ? (
-          <View style={styles.own}>
-            <Text variant="label" tone="ink3">
-              {copy.yours}
-            </Text>
-          </View>
-        ) : (
-          <Action
-            icon="bookmark"
-            label={item.saved ? copy.saved : copy.save}
-            selected={item.saved}
-            onPress={onSave}
-            testID={testID ? `${testID}-save` : undefined}
-          />
-        )}
+        <Action
+          icon="heart"
+          label={commentCopy.like}
+          a11yLabel={commentCopy.likePost}
+          selected={liked}
+          filled={liked}
+          onPress={onLike}
+          testID={testID ? `${testID}-like` : undefined}
+        />
+        <Action
+          icon="chat"
+          label={commentCopy.comment}
+          a11yLabel={commentCopy.openComments}
+          onPress={onComments}
+          testID={testID ? `${testID}-comment` : undefined}
+        />
         {!news && !item.is_own && item.status === 'active' ? (
           <Action
             icon="tag"
@@ -208,6 +239,25 @@ export function FeedPost({
           testID={testID ? `${testID}-share` : undefined}
         />
       </View>
+
+      {/* Save sits over the header's right edge, outside the open-post button. */}
+      <View style={styles.corner}>
+        {item.is_own ? (
+          <View style={styles.own}>
+            <Text variant="label" tone="ink3">
+              {copy.yours}
+            </Text>
+          </View>
+        ) : (
+          <IconButton
+            icon="bookmark"
+            accessibilityLabel={item.saved ? copy.saved : copy.save}
+            selected={item.saved}
+            onPress={onSave}
+            testID={testID ? `${testID}-save` : undefined}
+          />
+        )}
+      </View>
     </View>
   );
 }
@@ -215,23 +265,27 @@ export function FeedPost({
 function Action({
   icon,
   label,
+  a11yLabel,
   selected = false,
+  filled = false,
   onPress,
   testID,
 }: {
   icon: IconName;
   label: string;
+  a11yLabel?: string;
   selected?: boolean;
+  filled?: boolean;
   onPress: () => void;
   testID?: string;
 }) {
   return (
     <Tappable
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={a11yLabel ?? label}
       accessibilityState={{ selected }}
       onPress={onPress}
-      style={styles.flex}
+      style={styles.grow}
       testID={testID}
     >
       <View style={styles.action}>
@@ -240,6 +294,7 @@ function Action({
           size={20}
           tone={selected ? 'ink' : 'ink2'}
           strokeWidth={selected ? 2.4 : 1.8}
+          filled={filled}
         />
         <Text
           variant={selected ? 'bodyStrong' : 'label'}
@@ -260,6 +315,24 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.card,
   },
   flex: { flex: 1 },
+  // Actions share the row by their own width, so "Make offer" is not cut.
+  grow: { flexGrow: 1, flexShrink: 1, flexBasis: 'auto' },
+  // Room on the right of the header for Save.
+  headRoom: { paddingRight: theme.size.hit + theme.space.sm },
+  corner: {
+    position: 'absolute',
+    top: theme.space.xs,
+    right: theme.space.xs,
+    minHeight: theme.size.hit,
+    justifyContent: 'center',
+  },
+  counts: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.space.md,
+    paddingHorizontal: theme.space.lg,
+    paddingTop: theme.space.sm,
+  },
   head: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -308,5 +381,5 @@ const styles = StyleSheet.create((theme) => ({
     gap: theme.space.xs,
     paddingHorizontal: theme.space.xs,
   },
-  own: { flex: 1, minHeight: theme.size.hit, alignItems: 'center', justifyContent: 'center' },
+  own: { minHeight: theme.size.hit, justifyContent: 'center', paddingHorizontal: theme.space.md },
 }));

@@ -880,6 +880,16 @@
     ]
   },
   {
+    "name": "create_listing_comment",
+    "args": "listing_id uuid, body text, parent_id uuid, client_id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "create_meetup_share",
     "args": "meetup_id uuid",
     "returns": "jsonb",
@@ -952,6 +962,16 @@
   {
     "name": "delete_listing",
     "args": "id uuid",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "delete_listing_comment",
+    "args": "comment_id uuid",
     "returns": "void",
     "security": "definer",
     "grants": [
@@ -1041,6 +1061,16 @@
     ]
   },
   {
+    "name": "get_comment_replies",
+    "args": "comment_id uuid, cursor jsonb",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "get_feed",
     "args": "cursor jsonb, \"limit\" integer",
     "returns": "jsonb",
@@ -1074,6 +1104,16 @@
   {
     "name": "get_listing",
     "args": "id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "get_listing_comments",
+    "args": "listing_id uuid, sort text, cursor jsonb",
     "returns": "jsonb",
     "security": "definer",
     "grants": [
@@ -1287,6 +1327,26 @@
     "name": "hide_quad_author",
     "args": "post_id uuid",
     "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "like_listing",
+    "args": "listing_id uuid, liked boolean",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "like_listing_comment",
+    "args": "comment_id uuid, liked boolean",
+    "returns": "jsonb",
     "security": "definer",
     "grants": [
       "authenticated",
@@ -1600,6 +1660,16 @@
     "name": "set_chat_mute",
     "args": "chat_id uuid, muted boolean",
     "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "set_listing_comments",
+    "args": "listing_id uuid, enabled boolean",
+    "returns": "jsonb",
     "security": "definer",
     "grants": [
       "authenticated",

@@ -23,6 +23,11 @@ export type FeedItem = {
   save_count: number;
   view_count: number;
   offer_count: number;
+  /** Likes and comments (DEC 121, 0233); optional so older cached cards still parse. */
+  like_count?: number;
+  comment_count?: number;
+  comments_enabled?: boolean;
+  liked?: boolean;
   bumped_at: string;
   created_at: string;
   expires_at: string | null;

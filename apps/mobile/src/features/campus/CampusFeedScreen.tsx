@@ -6,7 +6,7 @@ import {
   type InfiniteData,
 } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ActivityIndicator, Linking, Platform, ScrollView, Share, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import type { StoreApi } from 'zustand';
@@ -25,9 +25,11 @@ import { useToastStore } from '@/components/Toast';
 import { track as trackActivity } from '@/lib/activity';
 import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
-import { campus as copy, feed as feedCopy } from '@/strings';
+import { campus as copy, comments as commentCopy, feed as feedCopy } from '@/strings';
 import { feedColumn } from '@/theme/layout';
 
+import { commentsApi, type CommentsApi } from '../comments/api';
+import { createLikeSender, toggleLike } from '../comments/logic';
 import { feedApi, type FeedApi } from '../feed/api';
 import type { FeedCursor } from '../feed/logic';
 import { meApi, type Me } from '../me/api';
@@ -54,6 +56,7 @@ const FILTER_ICON: Partial<Record<CampusFilter, IconName>> = { food: 'food', fre
 type Deps = {
   api?: CampusApi;
   saves?: Pick<FeedApi, 'save' | 'unsave'>;
+  likes?: Pick<CommentsApi, 'likePost'>;
   store?: StoreApi<DraftState>;
   mediaBase?: () => string;
   site?: () => string;
@@ -73,6 +76,7 @@ type Deps = {
 export function CampusFeedScreen({
   api = campusApi,
   saves = feedApi,
+  likes = commentsApi,
   store = getDraftStore(),
   mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
   site = () => getEnv().EXPO_PUBLIC_SITE_URL,
@@ -140,6 +144,27 @@ export function CampusFeedScreen({
       useToastStore.getState().show('error', copy.saveFailed);
     }
   };
+  // Likes show at once; the sender keeps one call per post in flight and the
+  // server's count wins. A failure reloads the Feed to the true state.
+  const likeSender = useRef(
+    createLikeSender(
+      (id, liked) => likes.likePost(id, liked),
+      (id, res) => {
+        if (res) patchItem(id, { liked: res.liked, like_count: res.like_count });
+        else {
+          useToastStore.getState().show('error', commentCopy.likeFailed);
+          void qc.invalidateQueries({ queryKey: campusKeys.all });
+        }
+      },
+    ),
+  ).current;
+  const toggleLikeItem = (item: CampusItem) => {
+    const next = toggleLike({ liked: item.liked === true, count: item.like_count ?? 0 });
+    patchItem(item.id, { liked: next.liked, like_count: next.count });
+    likeSender(item.id, next.liked);
+  };
+  const openComments = (item: CampusItem) =>
+    router.push({ pathname: '/listing/[id]/comments', params: { id: item.id } });
   const onShare = async (item: CampusItem) => {
     const url = listingLink(site(), item.id);
     const text =
@@ -218,6 +243,8 @@ export function CampusFeedScreen({
         mediaBase={base}
         onOpen={() => open(item)}
         onAnswer={() => answer(item)}
+        onLike={() => toggleLikeItem(item)}
+        onComments={() => openComments(item)}
         testID={`campus-item-${item.id}`}
       />
     ) : (
@@ -230,6 +257,8 @@ export function CampusFeedScreen({
         onOffer={() => router.push({ pathname: '/listing/[id]/offer', params: { id: item.id } })}
         onShare={() => void onShare(item)}
         onOpenLink={(url) => void openUrl(url)}
+        onLike={() => toggleLikeItem(item)}
+        onComments={() => openComments(item)}
         testID={`campus-item-${item.id}`}
       />
     );

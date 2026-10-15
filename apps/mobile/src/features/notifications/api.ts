@@ -25,6 +25,8 @@ export type NotificationPrefs = {
   quad_replies?: boolean;
   /** Free food posts on your campus (R1.1). Off by default; present once the server returns it. */
   free_food?: boolean;
+  /** Comments and replies on your Feed posts (DEC 121). On by default; present once the server returns it. */
+  comments?: boolean;
   quiet_start: string;
   quiet_end: string;
 };

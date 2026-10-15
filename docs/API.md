@@ -76,6 +76,7 @@ The client maps these to copy in `apps/mobile/src/strings/en.ts` → `errors.*`.
 | `trg_listings_price` | after update of `price_cents` | log change; drop ≥5% → `price_drop` to savers (dedupe `price_drop:{listing}:{new_cents}`) |
 | `trg_listings_status` | after update of status | hold→active: `watch_available`; sold/deleted/removed: auto-decline open offers, close other chats with a system message (BE-11) |
 | `trg_offers_notify` | after insert/update offers | `offer_new` / `offer_countered` / `offer_accepted` / `offer_declined` / `offer_expired` with `dedupe_key = type:{offer}:{round}` |
+| `trg_notifications_ping` | after insert or update of title, body, created_at on notifications | unread and `grp` not messages/offers: `realtime.send('user:'‖user_id, 'bell', {})` so the bell refetches `unread_count` (0234, DEC 122) |
 | `trg_messages_ai` | after insert messages | update chat `last_message_at`; one `realtime.send('user:'‖other, 'inbox', {chat_id, message})` (both parties for a message with no sender; nothing on `chat:{id}`, DEC 108); queue `message_new` (preview only if the recipient's `message_previews`; collapse via `dedupe_key = message_new:{chat}:{minute}`) |
 | `trg_meetups_notify` | after insert/update | `meetup_proposed` / `meetup_confirmed` / `meetup_status` / `meetup_changed` |
 | `trg_reports_ai` | after insert | priority-1 → `queue_email(priority_report)`; ≥3 distinct reporters aged >7 d within 24 h → auto-hide target (BE-09) |
@@ -196,6 +197,20 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 | `update_notification_prefs` | `prefs jsonb` | prefs | known keys only | — |
 | `register_push_token` | `token, platform, app_version` | void | `ExponentPushToken[…]` format; upsert `last_seen_at` | 20/day |
 | `disable_push_token` | `token` | void | — | — |
+
+**Feed likes and comments (`0233`, DEC 121):** every write calls `require_active` and the post must be on the caller's campus (else `NOT_FOUND`).
+
+| RPC | Args | Returns | Rules | Rate |
+|---|---|---|---|---|
+| `like_listing` | `listing_id, liked` | `{like_count, liked}` | idempotent; likes notify the owner in the bell only (grouped, no push) | `listing_like` 300/h |
+| `get_listing_comments` | `listing_id, sort 'top'\|'new', cursor` | `{items[] (each with first 2 replies), next_cursor, comment_count, like_count, liked, comments_enabled, can_comment, is_owner, title, kind}` | hides blocked people both ways; held shows only to its author | 600/h |
+| `get_comment_replies` | `comment_id, cursor` | `{items[], next_cursor}` | oldest first, 50 a page, keyset `{created_at,id}` | shares 600/h |
+| `create_listing_comment` | `listing_id, body ≤500, parent_id?, client_id` | `{status live\|held\|blocked, reason, comment}` | idempotent on `client_id`; a reply to a reply joins the top comment; `FORBIDDEN:closed` / `FORBIDDEN:comments_off`; contact details block, review words hold (system report) | `listing_comment` 30/h |
+| `like_listing_comment` | `comment_id, liked` | `{like_count, liked}` | live comments only; bell only | `listing_like` 300/h |
+| `delete_listing_comment` | `comment_id` | void | the author or the post's author; keeps the row (`deleted`, body cleared) | — |
+| `set_listing_comments` | `listing_id, enabled` | bool | the post's author only | — |
+
+`create_report` takes `target_type 'listing_comment'` (Quad reasons); 3 settled reporters hold the comment. `admin_resolve_report` on a comment: dismiss puts a held comment back, any other action removes it.
 
 **[R1.1] Quad RPCs:** `get_quad_status`, `get_my_quad_mutes` (DEC 77), `get_quad_feed`, `get_quad_thread`, `create_quad_post`, `create_quad_reply`, `vote_quad`, `vote_poll`, `hide_quad_author`, `unhide_quad`, `get_my_quad_hides`, `set_quad_replies`, `delete_quad_post`, `get_my_quad`, `mute_keyword`, `unmute_keyword`, `accept_quad_rules`. `get_quad_feed(sort, cursor)` pages by keyset: pass back `next_cursor` as is (opaque; an old `{offset}` still works; DEC 101).
 - Contracts are as in `docs/archive/blueprint-v0/backend.md` §4.
@@ -366,6 +381,8 @@ Every job that calls a function has an exists-guard (ARC-05).
 - Tap routes come from `data.url`.
 
 **[R1.1] additions:** `wanted_match`, `campus_unlocked` (with the waitlist and Around campus, DEC-13), `quad_reply`, `quad_milestone`, `announcement_safety`, `announcement_news` (tips), `free_food` (pref `free_food`), `rating_revealed`.
+
+**Feed comments (DEC 121), group `comments`, pref `comments` (on by default):** `listing_comment` (to the post's author) and `comment_reply` (to the comment's author) push, deduped per post per hour; `listing_like` and `comment_like` are bell only (`push_state 'skipped'`), one unread row per target updated in place. All four open `/listing/[id]/comments`.
 
 ## 8. Workers and Pages Functions
 
