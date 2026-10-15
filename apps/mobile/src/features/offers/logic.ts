@@ -30,7 +30,25 @@ export type Offer = {
     thumb_path: string | null;
   } | null;
   other: { id: string; display_name: string | null; avatar_path: string | null } | null;
+  /** DEC 133: the other items of a bundle offer. */
+  bundle?: BundleItem[];
 };
+
+export type BundleItem = {
+  id: string;
+  title: string;
+  price_cents: number;
+  kind: 'sale' | 'free';
+  status: string;
+  thumb_path: string | null;
+};
+
+/** "Mini fridge + 2 more" for a bundle offer, else the listing title. */
+export function offerTitle(o: Pick<Offer, 'listing' | 'bundle'>): string {
+  const title = o.listing?.title ?? '';
+  const n = o.bundle?.length ?? 0;
+  return n > 0 ? fill(copy.bundleMore, { title, n }) : title;
+}
 
 export type ChatSummary = {
   id: string;

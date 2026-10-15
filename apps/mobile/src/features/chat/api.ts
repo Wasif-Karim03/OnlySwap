@@ -4,7 +4,7 @@ import { createRpc, type RpcClient } from '@/lib/rpc';
 import { getSupabase } from '@/lib/supabase';
 import { uploadApi } from '@/lib/uploadApi';
 
-import type { ChatSummary } from '../offers/logic';
+import type { BundleItem, ChatSummary } from '../offers/logic';
 import type { Message } from './logic';
 
 export type ChatInfo = ChatSummary & {
@@ -15,6 +15,8 @@ export type ChatInfo = ChatSummary & {
   buyer_outcome: string | null;
   seller_outcome: string | null;
   my_first_message: boolean;
+  /** DEC 133: the other items when the deal is a bundle. */
+  bundle?: BundleItem[];
   /** When the chat started, if the server sends it (the photo blur rule uses it). */
   created_at?: string | null;
 };

@@ -11,6 +11,14 @@ export type OffersApi = {
     note: string,
     quickNotes: string[],
   ) => Promise<Offer>;
+  /** DEC 133: one offer for this item and more of the seller's (moving out). */
+  makeBundle: (
+    listingId: string,
+    bundleIds: string[],
+    amountCents: number,
+    note: string,
+    quickNotes: string[],
+  ) => Promise<Offer>;
   accept: (offerId: string) => Promise<{ chat_id: string }>;
   counter: (offerId: string, amountCents: number, note?: string) => Promise<Offer>;
   decline: (offerId: string, reason?: string) => Promise<void>;
@@ -26,6 +34,14 @@ export const offersApi: OffersApi = {
   make: (listingId, amountCents, note, quickNotes) =>
     rpc<Offer>('make_offer', {
       listing_id: listingId,
+      amount_cents: amountCents,
+      note: note.trim() || null,
+      quick_notes: quickNotes,
+    }),
+  makeBundle: (listingId, bundleIds, amountCents, note, quickNotes) =>
+    rpc<Offer>('make_bundle_offer', {
+      listing_id: listingId,
+      bundle_ids: bundleIds,
       amount_cents: amountCents,
       note: note.trim() || null,
       quick_notes: quickNotes,

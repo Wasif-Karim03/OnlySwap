@@ -90,6 +90,7 @@ function api(over: Partial<MeApi> = {}): MeApi {
     deleteListing: jest.fn(async () => {}),
     relist: jest.fn(async () => {}),
     setAway: jest.fn(async () => {}),
+    setMovingOut: jest.fn(async () => {}),
     ...over,
   };
 }
@@ -487,5 +488,29 @@ describe('T-UNIT-AWAY-01 pause my listings (DEC 126)', () => {
     );
     fireEvent.press(await screen.findByLabelText(meCopy.away));
     await waitFor(() => expect(setAway).toHaveBeenCalledWith(true));
+  });
+});
+
+describe('T-UNIT-MOVING-02 moving out (DEC 133)', () => {
+  it('sets a date from My listings and shows it', async () => {
+    let by: string | null = null;
+    const setMovingOut = jest.fn(async (d: string | null) => {
+      by = d;
+    });
+    const me = jest.fn(async () => ({ ...ME, moving_out_by: by }));
+    render(
+      {
+        'profile/listings': () => (
+          <MyListingsScreen api={api({ setMovingOut, me })} mediaBase={() => 'http://m'} />
+        ),
+      },
+      '/profile/listings',
+    );
+    fireEvent.press(await screen.findByTestId('moving-out-twoWeeks'));
+    await waitFor(() =>
+      expect(setMovingOut).toHaveBeenCalledWith(expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/)),
+    );
+    // The date shows in place of the explainer.
+    expect(await screen.findByText(/^Moving out by /)).toBeTruthy();
   });
 });

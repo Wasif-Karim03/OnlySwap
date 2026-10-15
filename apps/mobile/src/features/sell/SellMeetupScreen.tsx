@@ -39,7 +39,7 @@ import {
   type Availability,
   type Spot,
 } from './logic';
-import { usePostedStore } from './posted';
+import { draftCarry, usePostedStore } from './posted';
 import { SellStep } from './SellStep';
 
 const deviceTz = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -100,7 +100,7 @@ export function SellMeetupScreen({
       const listing = await api.createListing(createArgs(draft, chosen));
       devTrace('post: created');
       track('listing_posted', { photos_count: draft.photos.length });
-      usePostedStore.getState().set(listing, draft.photos[0]?.uri ?? null);
+      usePostedStore.getState().set(listing, draft.photos[0]?.uri ?? null, draftCarry(draft));
       devTrace('post: draft reset');
       reset();
       devTrace('post: navigate');

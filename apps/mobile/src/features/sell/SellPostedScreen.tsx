@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Platform, Share, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { captureRef } from 'react-native-view-shot';
+import type { StoreApi } from 'zustand';
 
 import { track } from '@/lib/analytics';
 import { devTrace } from '@/lib/devTrace';
@@ -18,6 +19,7 @@ import { sell as copy } from '@/strings';
 
 import { sellApi, type SellApi } from './api';
 import { listingLink, mediaUrl, priceLabel, type Condition, type ListingKind } from './logic';
+import { getDraftStore, type DraftState } from './draft';
 import { usePostedStore } from './posted';
 import { ShareCard } from './ShareCard';
 
@@ -40,12 +42,14 @@ export function SellPostedScreen({
   site = () => getEnv().EXPO_PUBLIC_SITE_URL,
   mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
   cardTimeoutMs = 6000,
+  store = getDraftStore(),
 }: {
   api?: SellApi;
   capture?: Capture;
   share?: (content: { message: string; url?: string }) => Promise<unknown>;
   site?: () => string;
   mediaBase?: () => string;
+  store?: StoreApi<DraftState>;
   cardTimeoutMs?: number;
 }) {
   const router = useRouter();
@@ -131,8 +135,11 @@ export function SellPostedScreen({
     await share(Platform.OS === 'ios' ? { message: text, url } : { message: `${text} ${url}` });
   };
 
+  // DEC 133: the next listing starts with the same spots, note, times and pick-up-by.
   const listAnother = () => {
+    const { carry } = usePostedStore.getState();
     usePostedStore.getState().clear();
+    if (carry) store.getState().update(carry);
     router.replace('/sell');
   };
 

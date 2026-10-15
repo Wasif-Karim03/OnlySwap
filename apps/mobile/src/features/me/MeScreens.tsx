@@ -41,7 +41,8 @@ import { readableColumn } from '@/theme/layout';
 import { avatarDeps, type AvatarDeps } from '../auth/avatar';
 import { feedApi, type FeedApi } from '../feed/api';
 import { listingKey } from '../feed/ListingScreen';
-import { isVisible } from '../feed/logic';
+import { NEED_BY, needByDate, type NeedBy } from '../campus/logic';
+import { isVisible, movingOutLine } from '../feed/logic';
 import type { ClassYear } from '../profiles/api';
 import { centsToDollars, dollarsToCents } from '../search/logic';
 import { mediaUrl, priceLabel } from '../sell/logic';
@@ -473,6 +474,22 @@ export function MyListingsScreen({
       setAwayBusy(false);
     }
   };
+  // DEC 133 moving out: a date buyers see, and bundle offers while it is set.
+  const movingOut = meQ.data?.moving_out_by ?? null;
+  const setMovingOut = async (choice: NeedBy) => {
+    const by = needByDate(choice, new Date());
+    setAwayBusy(true);
+    try {
+      await api.setMovingOut(by);
+      qc.setQueryData(meKey, (m: Me | undefined) => (m ? { ...m, moving_out_by: by } : m));
+      void qc.invalidateQueries({ queryKey: meKey });
+      useToastStore.getState().show('success', by ? copy.movingOutSet : copy.movingOutCleared);
+    } catch (e) {
+      useToastStore.getState().show('error', errorText(e));
+    } finally {
+      setAwayBusy(false);
+    }
+  };
   // Renew (DEC 125): one tap moves an active listing back to the top; no screen.
   const renew = async (id: string) => {
     setRenewing(id);
@@ -581,6 +598,26 @@ export function MyListingsScreen({
             disabled={awayBusy}
             onChange={(v) => void setAway(v)}
           />
+        </View>
+      ) : null}
+      {meQ.data ? (
+        <View style={styles.tabs} testID="moving-out">
+          <Text variant="label">{copy.movingOut}</Text>
+          <Text variant="meta" tone="ink2">
+            {movingOutLine(movingOut) ?? copy.movingOutBody}
+          </Text>
+          <View style={styles.chipRow}>
+            {NEED_BY.map((n) => (
+              <Chip
+                key={n}
+                label={copy.movingOutChoices[n]}
+                selected={n === 'none' ? !movingOut : needByDate(n, new Date()) === movingOut}
+                disabled={awayBusy}
+                onPress={() => void setMovingOut(n)}
+                testID={`moving-out-${n}`}
+              />
+            ))}
+          </View>
         </View>
       ) : null}
       <View style={styles.tabs}>
@@ -872,7 +909,17 @@ const styles = StyleSheet.create((theme, rt) => ({
   tagRow: { flexDirection: 'row', marginTop: theme.space.xs },
   stats: { marginTop: -theme.space.xs },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
-  tabs: { paddingHorizontal: theme.space.screen, paddingBottom: theme.space.md },
+  tabs: {
+    paddingHorizontal: theme.space.screen,
+    paddingBottom: theme.space.md,
+    gap: theme.space.xs,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.space.sm,
+    paddingTop: theme.space.xs,
+  },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',

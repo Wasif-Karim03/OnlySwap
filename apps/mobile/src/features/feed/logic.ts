@@ -1,5 +1,5 @@
 import { fill } from '@/lib/format';
-import { feed as copy, profileView, sell as sellCopy } from '@/strings';
+import { feed as copy, intlLocale, profileView, sell as sellCopy } from '@/strings';
 
 import { ago, mediaUrl, priceLabel, type AnyListingKind, type Condition } from '../sell/logic';
 import type { SwipeDir } from './deckMath';
@@ -46,6 +46,8 @@ export type FeedItem = {
     thumbs_total?: number;
     /** Away mode (DEC 126, 0237). */
     away?: boolean;
+    /** DEC 133: "YYYY-MM-DD" while the seller is moving out. */
+    moving_out_by?: string | null;
   };
   photos: {
     path: string;
@@ -126,7 +128,20 @@ export function trustLine(seller: FeedItem['seller']): string {
         : swaps > 1
           ? fill(copy.trustSwaps, { n: swaps })
           : null;
-  return [copy.verified, stat].filter(Boolean).join(copy.metaSeparator);
+  return [copy.verified, stat, movingOutLine(seller.moving_out_by)]
+    .filter(Boolean)
+    .join(copy.metaSeparator);
+}
+
+/** "Moving out by Mar 30" (DEC 133); null when the seller isn't moving out. */
+export function movingOutLine(date: string | null | undefined): string | null {
+  if (!date) return null;
+  const [y, m, d] = date.split('-').map(Number);
+  const shown = new Date(y ?? 1970, (m ?? 1) - 1, d ?? 1).toLocaleDateString(intlLocale, {
+    month: 'short',
+    day: 'numeric',
+  });
+  return fill(copy.movingOut, { date: shown });
 }
 
 export function toDeckCard(item: FeedItem, mediaBase: string, now: Date): DeckCard {

@@ -20,12 +20,13 @@ import { getEnv } from '@/lib/env';
 import { errorText, toAppError } from '@/lib/errors';
 import { fill } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
-import { offers as copy } from '@/strings';
+import { feed as feedCopy, offers as copy } from '@/strings';
 import { readableColumn } from '@/theme/layout';
 
 import { feedApi, type FeedApi } from '../feed/api';
 import { listingKey } from '../feed/ListingScreen';
-import { isVisible, sellerName } from '../feed/logic';
+import { isVisible, movingOutLine, sellerName } from '../feed/logic';
+import { profileApi, type ProfileApi } from '../profiles/api';
 import { dollarsToCents } from '../search/logic';
 import { centsToPrice, cleanPrice, mediaUrl } from '../sell/logic';
 import { offersApi, type OffersApi } from './api';
@@ -42,11 +43,14 @@ export function OfferSheetScreen({
   listingId,
   api = offersApi,
   listings = feedApi,
+  profiles = profileApi,
   mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
 }: {
   listingId: string;
   api?: OffersApi;
   listings?: Pick<FeedApi, 'getListing'>;
+  /** The seller's other items, for a moving-out bundle (DEC 133). */
+  profiles?: Pick<ProfileApi, 'getProfile'>;
   mediaBase?: () => string;
 }) {
   const router = useRouter();
@@ -63,6 +67,16 @@ export function OfferSheetScreen({
   const [error, setError] = useState<string | null>(null);
   const [blocked, setBlocked] = useState<'paused' | 'unavailable' | null>(null);
   const [sent, setSent] = useState(false);
+  // DEC 133: while the seller is moving out, more of their items can join this offer.
+  const shownItem = query.data && isVisible(query.data) ? query.data : null;
+  const sellerId = shownItem?.seller?.id ?? null;
+  const movingBy = shownItem?.seller?.moving_out_by ?? null;
+  const sellerQ = useQuery({
+    queryKey: ['profile', sellerId],
+    queryFn: () => profiles.getProfile(sellerId!),
+    enabled: sellerId !== null && movingBy !== null && shownItem?.access === 'buyer',
+  });
+  const [extra, setExtra] = useState<string[]>([]);
   const close = () => (router.canGoBack() ? router.back() : router.replace('/discover'));
   useEffect(() => track('offer_sheet_opened'), []);
 
@@ -101,9 +115,16 @@ export function OfferSheetScreen({
     );
   }
 
-  const free = item.kind === 'free';
-  const ask = item.price_cents;
-  const firm = !free && !item.open_to_offers;
+  const pool =
+    movingBy && sellerQ.data && sellerQ.data.access === 'ok'
+      ? sellerQ.data.listings.filter((l) => l.id !== item.id && l.status === 'active')
+      : [];
+  const picked = pool.filter((l) => extra.includes(l.id));
+  const bundle = picked.length > 0;
+  // A bundle's amount is for everything: free only when every item is free.
+  const free = item.kind === 'free' && picked.every((l) => l.kind === 'free');
+  const ask = item.price_cents + picked.reduce((sum, l) => sum + l.price_cents, 0);
+  const firm = !free && !bundle && !item.open_to_offers;
   const cents = free ? 0 : firm ? ask : amount === null ? ask : (dollarsToCents(amount) ?? 0);
   const name = sellerName(item);
 
@@ -131,12 +152,16 @@ export function OfferSheetScreen({
     setError(null);
     setSending(true);
     try {
-      await api.make(
-        item.id,
-        cents,
-        note,
-        notes.map((n) => copy.quickNotes[n as keyof typeof copy.quickNotes]),
-      );
+      const quick = notes.map((n) => copy.quickNotes[n as keyof typeof copy.quickNotes]);
+      if (bundle)
+        await api.makeBundle(
+          item.id,
+          picked.map((l) => l.id),
+          cents,
+          note,
+          quick,
+        );
+      else await api.make(item.id, cents, note, quick);
       haptic('success'); // Budget: "offer sent" (DESIGN_SYSTEM §5).
       track('offer_sent', { pct_of_ask_bucket: pctBucket(cents, ask) });
       void qc.invalidateQueries({ queryKey: ['inbox'] });
@@ -173,6 +198,35 @@ export function OfferSheetScreen({
             </Text>
           </View>
         </View>
+        {pool.length > 0 ? (
+          <View style={styles.bundle} testID="offer-bundle">
+            <Text variant="label">{movingOutLine(movingBy)}</Text>
+            <Text variant="meta" tone="ink2">
+              {copy.bundleBody}
+            </Text>
+            <View style={styles.chips}>
+              {pool.map((l) => (
+                <Chip
+                  key={l.id}
+                  label={`${l.title} · ${l.kind === 'free' ? feedCopy.free : money(l.price_cents)}`}
+                  selected={extra.includes(l.id)}
+                  disabled={!extra.includes(l.id) && extra.length >= 10}
+                  onPress={() =>
+                    setExtra((prev) =>
+                      prev.includes(l.id) ? prev.filter((x) => x !== l.id) : [...prev, l.id],
+                    )
+                  }
+                  testID={`offer-bundle-${l.id}`}
+                />
+              ))}
+            </View>
+            {bundle ? (
+              <Text variant="meta" tone="ink2" testID="offer-bundle-ask">
+                {fill(copy.bundleAsk, { price: money(ask), n: picked.length + 1 })}
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
         {free ? (
           <Text variant="body" tone="ink2" style={styles.center}>
             {copy.askBody}
@@ -296,6 +350,14 @@ const styles = StyleSheet.create((theme, rt) => ({
     fontVariant: ['tabular-nums'],
   },
   bigInput: { textAlign: 'center', paddingVertical: 0 },
+  bundle: {
+    gap: theme.space.sm,
+    padding: theme.space.lg,
+    borderRadius: theme.radius.card,
+    borderWidth: 1,
+    borderColor: theme.colors.line,
+    backgroundColor: theme.colors.card,
+  },
   quick: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: theme.space.sm },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
   center: { textAlign: 'center' },

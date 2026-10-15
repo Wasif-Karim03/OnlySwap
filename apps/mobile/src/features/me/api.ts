@@ -22,6 +22,8 @@ export type Me = {
   theme_mode: 'system' | 'light' | 'dark';
   /** Away mode (DEC 126, 0237); optional for older cached rows. */
   away_since?: string | null;
+  /** DEC 133: "YYYY-MM-DD" while moving out. */
+  moving_out_by?: string | null;
   counts: {
     active: number;
     sold: number;
@@ -77,6 +79,7 @@ export type MeApi = {
   deleteListing: (id: string) => Promise<void>;
   relist: (id: string, priceCents: number | null) => Promise<void>;
   setAway: (away: boolean) => Promise<void>;
+  setMovingOut: (by: string | null) => Promise<void>;
 };
 
 const rpc = createRpc(() => getSupabase() as unknown as RpcClient);
@@ -112,6 +115,9 @@ export const meApi: MeApi = {
   },
   setAway: async (away) => {
     await rpc('set_away', { away });
+  },
+  setMovingOut: async (by) => {
+    await rpc('set_moving_out', { by });
   },
 };
 

@@ -866,6 +866,7 @@ const feed: Strings['feed'] = {
   trustThumbs: '{pct}% de pulgares arriba',
   trustSwaps: '{n} intercambios',
   trustSwapsOne: '1 intercambio',
+  movingOut: 'Se muda el {date}',
   photoCount: 'Foto {n} de {total}',
   listTitle: 'Publicaciones',
   metaSeparator: ' · ',
@@ -1046,6 +1047,10 @@ const profileView: Strings['profileView'] = {
 };
 
 const offers: Strings['offers'] = {
+  bundleBody: 'Agrega más de sus artículos a esta oferta. Tu monto es por todo.',
+  bundleAsk: 'Pide {price} por {n} artículos',
+  bundleMore: '{title} + {n} más',
+  bundleAlso: 'También en este trato: {items}',
   sheetTitle: 'Hacer una oferta',
   askTitle: 'Pedirlo',
   asking: 'Pide {price}',
@@ -1150,6 +1155,7 @@ const offers: Strings['offers'] = {
 };
 
 const chat: Strings['chat'] = {
+  bundleAlso: 'También en este trato: {items}',
   composerLabel: 'Mensaje',
   composerPlaceholder: 'Mensaje',
   send: 'Enviar',
@@ -1560,6 +1566,17 @@ const me: Strings['me'] = {
     'Tus artículos salen de Descubrir y la búsqueda, y nadie puede hacer ofertas nuevas. Los chats siguen abiertos. Las fechas de vencimiento se mueven según el tiempo que estés fuera.',
   awayOn: 'Tus publicaciones están en pausa',
   awayOff: 'Tus publicaciones volvieron',
+  movingOut: 'Me mudo',
+  movingOutBody:
+    'Los compradores ven tu fecha y pueden hacer una sola oferta por varios artículos.',
+  movingOutChoices: {
+    none: 'No me mudo',
+    week: 'En una semana',
+    twoWeeks: 'En 2 semanas',
+    month: 'En un mes',
+  },
+  movingOutSet: 'Ahora pueden agrupar tus artículos',
+  movingOutCleared: 'Mudanza desactivada',
   renew: 'Renovar',
   renewAt: 'Renovar el {date}',
   renewed: 'Movida al inicio de Descubrir',

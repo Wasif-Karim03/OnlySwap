@@ -30,6 +30,7 @@ export type PublicProfile = {
   new_seller: boolean;
   /** Away mode (DEC 126, 0237). */
   away?: boolean;
+  moving_out_by?: string | null;
   listings: FeedItem[];
   reviews: Review[];
 };

@@ -23,6 +23,7 @@ import { fill } from '@/lib/format';
 import { feed as feedCopy, profileView as copy, intlLocale } from '@/strings';
 import { readableColumn } from '@/theme/layout';
 
+import { movingOutLine } from '../feed/logic';
 import { mediaUrl, priceLabel } from '../sell/logic';
 import { profileApi, type ProfileApi, type ProfileResult, type PublicProfile } from './api';
 
@@ -152,6 +153,7 @@ export function ProfileViewScreen({
             {p.founding_seller ? <Tag label={copy.founding} tone="accent" /> : null}
             {p.new_seller ? <Tag label={copy.newSeller} tone="amber" /> : null}
             {p.away ? <Tag label={copy.away} /> : null}
+            {p.moving_out_by ? <Tag label={movingOutLine(p.moving_out_by)!} /> : null}
           </View>
           <View style={styles.stats}>
             <Text variant="label">{swapsLabel(p.swaps_count)}</Text>

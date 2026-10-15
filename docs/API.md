@@ -146,6 +146,7 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 | `update_listing` | `id, …` | listing | seller; not sold/deleted; price change logged | 50/day |
 | `delete_listing` | `id` | void | **soft**: status `deleted`, `deleted_at`; auto-declines, closes chats | — |
 | `relist_listing` | `id, price_cents` | listing | expired, or Renew an active sale/free listing; once / 3 d (DEC 125); `my_listings` adds `renew_at` | — |
+| `set_moving_out` | `by date` (null clears) | `{moving_out_by}` | Moving out (DEC 133): campus today to +60 days, else `INVALID:by`. `get_me.moving_out_by`, `get_profile.moving_out_by`, `FeedItem.seller.moving_out_by` (null once the date passes) | — |
 | `set_away` | `away bool` | `{away_since}` | Away mode (DEC 126): hides own sale/free listings from deck, search, campus feed; new offers → `SELLER_AWAY` (trigger); off adds the time away to active listings' `expires_at`. `get_me.away_since`, `get_profile.away`, `FeedItem.seller.away` | — |
 | `set_wanted_prefs` | `id, need_by date, alerts bool` | `{need_by, wanted_alerts}` | own Wanted post (DEC 127): need_by today..+60 campus days, the post ends that day; alerts off → no `wanted_match`; with alerts on a title match also alerts. `FeedItem.need_by`, `wanted_alerts` | — |
 | `set_listing_share_image` | `id` | `{share_image_path}` | seller; not deleted; records `share/{id}.jpg` after the app uploads the share card (DEC 55) | 30/day |
@@ -157,7 +158,8 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 | RPC | Args | Returns | Errors / rules | Limit |
 |---|---|---|---|---|
 | `make_offer` | `listing_id, amount_cents, note, quick_notes` | offer | not own; `FOR SHARE` lock; active + open; not blocked; `check_text(note)`; existing open offer → updates amount; `OFFERS_PAUSED` | campus `offers_per_hour` (10)/h; 5/day in first 24 h |
-| `accept_offer` | `offer_id` | `{chat_id}` | correct party; `FOR UPDATE` listing; creates chat with snapshot; auto-declines others | — |
+| `make_bundle_offer` | `listing_id, bundle_ids, amount_cents, note?, quick_notes?` | offer (with `bundle`) | DEC 133: seller moving out; 1 to 10 other active sale/free items of the same seller (`INVALID:bundle_ids`, `LISTING_UNAVAILABLE`); amount is for everything: 0 if all free, else $1 to $2,000, no firm-price rule; an open offer on the main item is replaced | shares `make_offer`'s limit |
+| `accept_offer` | `offer_id` | `{chat_id}` | correct party; `FOR UPDATE` listing; creates chat with snapshot; auto-declines others. Bundle (DEC 133): holds every item or fails `LISTING_UNAVAILABLE`, chat title "X + N more", declines open offers on all items; a trigger carries the main item's sold / back-to-active onto the bundle | — |
 | `counter_offer` | `offer_id, amount_cents, note` | offer | round < 4; alternating | 30/day |
 | `decline_offer` | `offer_id, reason` | void | — | — |
 | `withdraw_offer` | `offer_id` | void | buyer | — |
@@ -169,7 +171,7 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 | RPC | Args | Returns | Errors / rules | Limit |
 |---|---|---|---|---|
 | `get_messages` | `chat_id, before bigint?, limit=50, after bigint?` | messages | participant; `after` for reconnect (DEC 61) | — |
-| `get_chat` | `chat_id` | chat summary + state | participant (DEC 61) | — |
+| `get_chat` | `chat_id` | chat summary + state; `bundle` (other items, DEC 133) | participant (DEC 61) | — |
 | `send_message` | `chat_id, kind='text', body, client_id` | message | participant; open; not blocked; **idempotent on client_id**; `kind='photo'` → `FEATURE_OFF` in R1.0 | 60/min, 1000/day |
 | `mark_chat_read` / `set_chat_mute` / `hide_chat` | `chat_id, …` | void | — | — |
 | `propose_meetup` | `chat_id, spot_id?, custom_place?, starts_at` | meetup | now+15 min ≤ starts_at ≤ now+14 d; cancels previous active in the same tx | 20/day |

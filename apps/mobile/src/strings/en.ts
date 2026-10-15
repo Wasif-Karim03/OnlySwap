@@ -875,6 +875,7 @@ export const feed = {
   trustThumbs: '{pct}% thumbs up',
   trustSwaps: '{n} swaps',
   trustSwapsOne: '1 swap',
+  movingOut: 'Moving out by {date}',
   photoCount: 'Photo {n} of {total}',
   listTitle: 'Listings',
   metaSeparator: ' · ',
@@ -1062,6 +1063,11 @@ export const profileView = {
 } as const;
 
 export const offers = {
+  // Moving out bundles (DEC 133)
+  bundleBody: 'Add more of their items to this offer. Your amount is for everything.',
+  bundleAsk: 'Asking {price} for {n} items',
+  bundleMore: '{title} + {n} more',
+  bundleAlso: 'Also in this deal: {items}',
   // Offer sheet (B05)
   sheetTitle: 'Make an offer',
   askTitle: 'Ask for it',
@@ -1169,6 +1175,7 @@ export const offers = {
 } as const;
 
 export const chat = {
+  bundleAlso: 'Also in this deal: {items}',
   composerLabel: 'Message',
   composerPlaceholder: 'Message',
   send: 'Send',
@@ -1595,6 +1602,16 @@ export const me = {
     'Your items leave Discover and search, and no one can make new offers. Chats stay open. Expiry dates move by the time you are away.',
   awayOn: 'Your listings are paused',
   awayOff: 'Your listings are back',
+  movingOut: 'Moving out',
+  movingOutBody: 'Buyers see your date and can make one offer for several of your items.',
+  movingOutChoices: {
+    none: 'Not moving',
+    week: 'In a week',
+    twoWeeks: 'In 2 weeks',
+    month: 'In a month',
+  },
+  movingOutSet: 'Buyers can now bundle your items',
+  movingOutCleared: 'Moving out is off',
   /** Renew an active listing (DEC 125). */
   renew: 'Renew',
   renewAt: 'Renew {date}',
