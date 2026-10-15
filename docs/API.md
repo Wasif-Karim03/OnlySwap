@@ -335,7 +335,7 @@ Every job that calls a function has an exists-guard (ARC-05).
 | offer_new | offers | ✓ | offers | "Maya offered $35 on your mini fridge" | `offer_new:{offer}:{round}` |
 | offer_accepted | offers | ✓ | offers | "Devin accepted your offer. Say hi and plan the pickup." | `offer_accepted:{offer}` |
 | offer_countered | offers | ✓ | offers | "Devin countered at $38 on the mini fridge" | `offer_countered:{offer}:{round}` |
-| offer_declined | offers | | offers | "Your offer on the desk chair wasn't accepted" / "This sold to someone else" | `offer_declined:{offer}` |
+| offer_declined | offers | | offers | "Your offer on the desk chair wasn't accepted" / the wind-down reason: "This item sold to someone else", "This listing was removed" or "The seller removed this listing" (DEC 99) | `offer_declined:{offer}` |
 | offer_expired | offers | | offers | "Your $30 offer on the desk chair expired" | `offer_expired:{offer}` |
 | message_new | messages | | messages | previews on: "Aisha: can we do 4:30?"; off: "New message from Aisha" | `message_new:{chat}:{minute}` |
 | meetup_proposed | meetups | ✓ | meetups | "Aisha suggested 4:30 PM at the Rec Center" | `meetup_proposed:{meetup}` |
