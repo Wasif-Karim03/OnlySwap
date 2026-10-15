@@ -97,6 +97,9 @@ export function CampusFeedScreen({
     queryFn: ({ pageParam }) => api.feed(kind, pageParam),
     initialPageParam: null as FeedCursor | null,
     getNextPageParam: (last: CampusPage) => last.next_cursor ?? undefined,
+    // A refetch reloads every page scrolled so far, so not on every return to
+    // the app (E-20). Pull to refresh still reloads at once.
+    staleTime: 2 * 60_000,
   });
 
   const base = mediaBase();
