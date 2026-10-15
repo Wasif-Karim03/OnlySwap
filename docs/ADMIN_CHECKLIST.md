@@ -60,7 +60,7 @@ Today the app stores saves, offers (a right swipe is an offer), chats, meetups, 
 - [x] Activity events table: who, what (shown in deck, viewed, swiped, saved, searched, opened from), which listing, when, device and app version; one server function the app calls in batches (backend: `activity_events`, `track_events`; the app sends them in step 2)
 - [x] Time on card and where the listing was opened from (Discover, search, Around campus, profile, link) (backend: `dwell_ms`, `source`)
 - [x] Last active time and device per student (backend: `last_active_at`, `last_platform`, `last_app_version`)
-- [x] Keep events 90 days, then delete (left swipes stay at 30 days); add both to the privacy policy retention table (`prune_activity` job)
+- [x] Keep events 90 days, then delete (left swipes stay at 30 days). DEC 100: now 30 days; deck cards, swipes, saves and offers no longer stored as events; add both to the privacy policy retention table (`prune_activity` job)
 - [x] Admin functions for: activity feed, a student's timeline, a listing's swipe list and funnel, live numbers with trends; each one that shows a named student writes an access row to the audit log (backend, API §4.1)
 - [x] Privacy policy and in-app privacy text: "Our team can see your activity in the app (swipes, saves, offers) to run and protect the service. Every look is logged."
 - [x] PostHog stays as it is (18 events, no personal data); the new events live only in our database

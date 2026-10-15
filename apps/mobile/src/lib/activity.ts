@@ -1,8 +1,9 @@
 /**
  * Activity events for the admin console (DEC 93, ADMIN_CHECKLIST §4; API
- * `track_events`). Cards shown in the deck, listing views with time on page
- * and where they were opened from, searches, app opens, and the skip, save
- * and offer taps with time on card.
+ * `track_events`). Listing views with time on page and where they were
+ * opened from, searches, app opens and unsaves. Deck cards, swipes, saves and
+ * offers live in their own tables; time on card goes with the swipe
+ * (`record_swipes`, E-03, DEC 100).
  *
  * - Service data, not analytics: it goes only to our database through
  *   `track_events`, never to PostHog, and the privacy policy lists it as used
@@ -26,14 +27,11 @@ import { createRpc, type RpcClient } from './rpc';
 import { getStorage } from './storage';
 import { getSupabase } from './supabase';
 
+/** Deck cards, swipes, saves and offers are kept in their own tables (E-03, DEC 100). */
 export const ACTIVITY_KINDS = [
   'app_open',
-  'deck_shown',
   'listing_viewed',
-  'swiped_left',
-  'saved',
   'unsaved',
-  'offer_made',
   'searched',
   'opened_from',
 ] as const;
@@ -52,15 +50,7 @@ export const ACTIVITY_SOURCES = [
 export type ActivitySource = (typeof ACTIVITY_SOURCES)[number];
 
 /** Kinds the server only keeps with a listing on the caller's campus. */
-const LISTING_KINDS = new Set<ActivityKind>([
-  'deck_shown',
-  'listing_viewed',
-  'swiped_left',
-  'saved',
-  'unsaved',
-  'offer_made',
-  'opened_from',
-]);
+const LISTING_KINDS = new Set<ActivityKind>(['listing_viewed', 'unsaved', 'opened_from']);
 
 export const BATCH_MAX = 50;
 export const QUEUE_MAX = 500;

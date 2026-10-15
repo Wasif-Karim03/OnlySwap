@@ -130,7 +130,7 @@ export function CampusFeedScreen({
     try {
       const n = was ? await saves.unsave(item.id) : await saves.save(item.id);
       patchItem(item.id, { saved: !was, save_count: n });
-      trackActivity(was ? 'unsaved' : 'saved', { listingId: item.id, source: 'campus' });
+      if (was) trackActivity('unsaved', { listingId: item.id, source: 'campus' });
     } catch {
       patchItem(item.id, { saved: was });
       useToastStore.getState().show('error', copy.saveFailed);

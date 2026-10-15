@@ -181,6 +181,26 @@ describe('T-UNIT-FEED-01 useSwipe batching', () => {
     ).toHaveLength(1);
     expect(parseQueue('nope')).toEqual([]);
   });
+
+  it('sends time on card with the swipe, rounded and capped (E-03)', async () => {
+    const api = fakeApi();
+    const store = createSwipeStore(memory(), api, () => NOW);
+    store.getState().swipe('a', 'left', 4200.6);
+    store.getState().swipe('b', 'right', 10 ** 9);
+    store.getState().swipe('c', 'save', -5);
+    store.getState().swipe('d', 'left');
+    await store.getState().flush();
+    const batch = (api.recordSwipes as jest.Mock).mock.calls[0][0];
+    expect(batch.map((b: { dwell_ms?: number }) => b.dwell_ms)).toEqual([
+      4201,
+      600000,
+      undefined,
+      undefined,
+    ]);
+    expect(batch[3]).not.toHaveProperty('dwell_ms');
+    // A stored entry with a bad time on card keeps the swipe, drops the time.
+    expect(parseQueue([{ ...swipe('e', NOW), dwell_ms: 'x' }])).toEqual([swipe('e', NOW)]);
+  });
 });
 
 describe('feed logic', () => {

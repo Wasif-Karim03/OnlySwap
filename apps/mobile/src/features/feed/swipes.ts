@@ -10,6 +10,7 @@ import type { FeedApi } from './api';
 import type { SwipeDir } from './deckMath';
 import {
   BATCH_MAX,
+  cleanDwell,
   enqueue,
   parseQueue,
   shouldFlush,
@@ -27,7 +28,8 @@ import {
 export type SwipeState = {
   queue: QueuedSwipe[];
   last: QueuedSwipe | null;
-  swipe: (listingId: string, dir: SwipeDir) => void;
+  /** dwellMs: time on card, sent with the swipe (E-03). */
+  swipe: (listingId: string, dir: SwipeDir, dwellMs?: number) => void;
   flush: () => Promise<void>;
   /** The listing id to put back on the deck, or null when undo isn't possible. */
   undo: () => Promise<string | null>;
@@ -67,8 +69,10 @@ export function createSwipeStore(
     return {
       queue: parseQueue(storage.get()),
       last: null,
-      swipe: (listingId, dir) => {
+      swipe: (listingId, dir, dwellMs) => {
         const s: QueuedSwipe = { listing_id: listingId, dir, at: now().toISOString() };
+        const dwell = cleanDwell(dwellMs);
+        if (dwell !== undefined) s.dwell_ms = dwell;
         save(enqueue(get().queue, s));
         set({ last: s });
         if (shouldFlush(get().queue)) void flush();

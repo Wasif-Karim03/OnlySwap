@@ -1677,13 +1677,13 @@ isOneToOne: false
                   ]
                 },"swipes": {
                   Row: {
-                    "created_at": string | null,"dir": Database["public"]['Enums']["swipe_dir"],"listing_id": string,"user_id": string
+                    "created_at": string | null,"dir": Database["public"]['Enums']["swipe_dir"],"dwell_ms": number | null,"listing_id": string,"user_id": string
                   }
                   Insert: {
-                    "created_at"?: string | null,"dir": Database["public"]['Enums']["swipe_dir"],"listing_id": string,"user_id": string
+                    "created_at"?: string | null,"dir": Database["public"]['Enums']["swipe_dir"],"dwell_ms"?: number | null,"listing_id": string,"user_id": string
                   }
                   Update: {
-                    "created_at"?: string | null,"dir"?: Database["public"]['Enums']["swipe_dir"],"listing_id"?: string,"user_id"?: string
+                    "created_at"?: string | null,"dir"?: Database["public"]['Enums']["swipe_dir"],"dwell_ms"?: number | null,"listing_id"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {

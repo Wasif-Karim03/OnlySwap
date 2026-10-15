@@ -198,7 +198,7 @@ export function ListingScreen({
     try {
       const n = was ? await api.unsave(id) : await api.save(id);
       setItem({ saved: !was, save_count: n });
-      trackActivity(was ? 'unsaved' : 'saved', { listingId: id, source: from });
+      if (was) trackActivity('unsaved', { listingId: id, source: from });
     } catch {
       setItem({ saved: was });
       useToastStore.getState().show('error', copy.saveFailed);

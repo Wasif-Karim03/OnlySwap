@@ -224,7 +224,7 @@ export function ListingDetailPage() {
                         </div>
                       ))}
                       <p className="muted small">
-                        People, not taps. Shown counts each person once.
+                        People, not taps. Shown counts each person who swiped the card.
                       </p>
                     </div>
                   </Card>

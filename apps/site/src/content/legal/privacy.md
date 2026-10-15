@@ -103,7 +103,7 @@ When you plan a meetup you can create a link to send a friend. Anyone with the l
 | Invite records | Until you delete your account. |
 | Notifications | 60 days |
 | Swipes (other than saves) | 30 days |
-| Activity in the app (listings shown and opened, time on a listing, searches) | 90 days |
+| Activity in the app (listings shown and opened, time on a listing, searches) | 30 days |
 | Account deletion records (date and school only, no name or email) | 365 days |
 | Reports and evidence | 180 days after the report is resolved |
 | Moderation audit log | 2 years |
