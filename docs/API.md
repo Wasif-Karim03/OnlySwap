@@ -181,7 +181,7 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 
 | RPC | Args | Returns | Errors / rules | Limit |
 |---|---|---|---|---|
-| `create_report` | `target_type, target_id, reason, details` | `{id}` | resolves `target_user_id` + `evidence` snapshot; `ALREADY_REPORTED` | 20/day |
+| `create_report` | `target_type, target_id, reason, details` | `{id}` | resolves `target_user_id` + `evidence` snapshot; `ALREADY_REPORTED`; 3 open reports from distinct reporters aged >7 d hold a Quad post or reply (0227) | 20/day |
 | `get_my_report` | `id` | `{status, timeline[]}` (generic outcome only) | reporter | — |
 | `block_user` / `unblock_user` | `user_id` | void | not self; blocks chats | 50/day |
 | `create_appeal` | `subject_type, subject_id, reason_choice, body` | `{id}` | own subject; `ALREADY_APPEALED` | 5/day |
