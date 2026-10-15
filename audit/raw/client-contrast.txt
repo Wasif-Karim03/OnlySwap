@@ -1,0 +1,78 @@
+== light
+ink    on bg       18.89 AA
+ink    on bg2      16.99 AA
+ink    on card     18.89 AA
+ink2   on bg        6.94 AA
+ink2   on bg2       6.24 AA
+ink2   on card      6.94 AA
+ink3   on bg        2.83 FAIL
+ink3   on bg2       2.55 FAIL
+ink3   on card      2.83 FAIL
+red    on bg        3.99 AA-large/UI
+red    on bg2       3.59 AA-large/UI
+red    on card      3.99 AA-large/UI
+red    on redBg     3.45 AA-large/UI
+green  on bg        4.97 AA
+green  on bg2       4.47 AA-large/UI
+green  on card      4.97 AA
+green  on greenBg   4.34 AA-large/UI
+amber  on bg        5.10 AA
+amber  on bg2       4.58 AA
+amber  on card      5.10 AA
+amber  on amberBg   4.51 AA
+sky    on bg        6.50 AA
+sky    on bg2       5.85 AA
+sky    on card      6.50 AA
+sky    on skyBg     5.61 AA
+peach  on bg        6.54 AA
+peach  on bg2       5.88 AA
+peach  on card      6.54 AA
+peach  on peachBg   5.58 AA
+lilac  on bg        6.79 AA
+lilac  on bg2       6.11 AA
+lilac  on card      6.79 AA
+lilac  on lilacBg   5.64 AA
+line2 on bg (UI 3:1) 1.56 line 1.25
+== dark
+ink    on bg       17.58 AA
+ink    on bg2      15.62 AA
+ink    on card     12.86 AA
+ink2   on bg        7.99 AA
+ink2   on bg2       7.10 AA
+ink2   on card      5.84 AA
+ink3   on bg        3.76 AA-large/UI
+ink3   on bg2       3.34 AA-large/UI
+ink3   on card      2.75 FAIL
+red    on bg        6.32 AA
+red    on bg2       5.62 AA
+red    on card      4.63 AA
+red    on redBg     5.55 AA
+green  on bg       10.42 AA
+green  on bg2       9.26 AA
+green  on card      7.63 AA
+green  on greenBg   8.18 AA
+amber  on bg       11.02 AA
+amber  on bg2       9.80 AA
+amber  on card      8.07 AA
+amber  on amberBg   8.95 AA
+sky    on bg       10.58 AA
+sky    on bg2       9.40 AA
+sky    on card      7.74 AA
+sky    on skyBg     8.32 AA
+peach  on bg       11.39 AA
+peach  on bg2      10.12 AA
+peach  on card      8.33 AA
+peach  on peachBg   8.92 AA
+lilac  on bg        9.48 AA
+lilac  on bg2       8.43 AA
+lilac  on card      6.94 AA
+lilac  on lilacBg   7.71 AA
+line2 on bg (UI 3:1) 1.81 line 1.33
+== accents (fill vs on-colour text; accent vs white bg as UI)
+pistachio onLight 13.16 onDark 13.62 accent vs white 1.44 vs darkbg 13.62
+butter onLight 13.79 onDark 14.27 accent vs white 1.37 vs darkbg 14.27
+tangerine onLight 8.98 onDark 9.29 accent vs white 2.1 vs darkbg 9.29
+coral onLight 7.45 onDark 7.71 accent vs white 2.54 vs darkbg 7.71
+bubblegum onLight 10.27 onDark 10.62 accent vs white 1.84 vs darkbg 10.62
+sky onLight 9.75 onDark 10.09 accent vs white 1.94 vs darkbg 10.09
+cobalt onLight 6.73 onDark 6.73 accent vs white 6.73 vs darkbg 2.9

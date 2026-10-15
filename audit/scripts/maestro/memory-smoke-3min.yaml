@@ -1,0 +1,28 @@
+# 3-minute smoke of the soak loop (3 cycles). Same steps as long-session.yaml; used to prove the flow runs.
+appId: app.onlyswap
+---
+- runFlow: ../../../apps/mobile/.maestro/subflows/reviewer.yaml
+- runFlow:
+    when:
+      visible:
+        id: discover-coach
+    commands:
+      - tapOn:
+          id: discover-coach
+- repeat:
+    times: 3
+    commands:
+      - tapOn: Discover
+      - repeat:
+          times: 4
+          commands:
+            - swipe:
+                direction: LEFT
+                duration: 250
+      - tapOn: Inbox
+      - scroll
+      - tapOn: Quad
+      - scroll
+      - tapOn: Feed
+      - scroll
+      - tapOn: Discover

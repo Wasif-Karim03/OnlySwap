@@ -1,0 +1,19 @@
+./run.sh: line 20: 82011 Terminated: 15          ( while true; do
+    echo "$(date +%T) $(docker stats --no-stream --format '{{.Name}} cpu={{.CPUPerc}} mem={{.MemUsage}}' supabase_db_onlyswap supabase_rest_onlyswap supabase_kong_onlyswap supabase_realtime_onlyswap supabase_auth_onlyswap | sed 's/supabase_//; s/_onlyswap//' | tr '\n' ' ') conns=$(psql "$PGURL" -Atc 'select count(*) from pg_stat_activity' 2>/dev/null)"; sleep 5;
+done ) > "$RAW/load-$S-docker.txt"
+    server_errors..................: 856    6.584422/s
+    http_req_duration..............: avg=1.68s    med=790µs  p(90)=8.89ms p(95)=20.63s  p(99)=30s    max=30s   
+    http_req_failed................: 70.22% 856 out of 1219
+    http_reqs......................: 1219   9.376648/s
+    iterations.....................: 23439  180.294712/s
+    vus_max........................: 1000   min=1000        max=1000
+    ws_connecting..................: avg=1.31s    med=1.12ms p(90)=3.04ms p(95)=6.99ms  p(99)=40s    max=40.01s
+    ws_delivery_ms.................: avg=196.07ms med=6ms    p(90)=11ms   p(95)=14ms    p(99)=10.01s max=10.05s
+    ws_errors......................: 23244  178.794756/s
+    ws_join_ok.....................: 414    3.184522/s
+    ws_msgs_received...............: 1558   11.984264/s
+    ws_msgs_sent...................: 472    3.630663/s
+    ws_session_duration............: avg=1.59s    med=1.13ms p(90)=3.16ms p(95)=11.25ms p(99)=40s    max=1m20s 
+    ws_sessions....................: 23446  180.348556/s
+running (2m10.0s), 0000/1000 VUs, 23439 complete and 7 interrupted iterations
+time="2026-10-14T23:09:24-04:00" level=error msg="thresholds on metrics 'http_req_duration, http_req_failed, server_errors' have been crossed"

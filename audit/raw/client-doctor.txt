@@ -1,0 +1,5 @@
+env: load .env.local
+env: export EXPO_PUBLIC_APP_ENV EXPO_PUBLIC_MEDIA_URL EXPO_PUBLIC_SITE_URL EXPO_PUBLIC_SUPABASE_ANON_KEY EXPO_PUBLIC_SUPABASE_URL
+Running 21 checks on your project...
+21/21 checks passed. No issues detected!
+exit 0

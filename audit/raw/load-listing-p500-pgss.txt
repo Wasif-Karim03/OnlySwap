@@ -1,0 +1,16 @@
+                                             q                                              | calls | mean_ms | total_ms | rows  
+--------------------------------------------------------------------------------------------+-------+---------+----------+-------
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p | 13821 |   16.01 |   221219 | 13821
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT "public"."reserve_listin | 14334 |    0.42 |     6038 | 14334
+ select private.refresh_trending()                                                          |     1 |  690.09 |      690 |     1
+ select set_config('search_path', $1, true), set_config($2, $3, true), set_config('role', $ | 28155 |    0.02 |      490 | 28155
+ select private.demo_autoplay()                                                             |     2 |  210.38 |      421 |     2
+ select private.notify_push()                                                               |     2 |   35.77 |       72 |     2
+ update cron.job_run_details set status = $1 where runid = $2                               |     5 |    3.07 |       15 |     5
+ select count(*) from pg_stat_activity                                                      |    15 |    0.44 |        7 |    15
+ select pg_stat_statements_reset()                                                          |     1 |    1.16 |        1 |     1
+ update cron.job_run_details set job_pid = $1, status = $2 where runid = $3                 |     5 |    0.14 |        1 |     5
+ update cron.job_run_details set status = $1, start_time = $2 where runid = $3              |     5 |    0.13 |        1 |     5
+ insert into cron.job_run_details (jobid, runid, database, username, command, status) value |     5 |    0.11 |        1 |     5
+(12 rows)
+

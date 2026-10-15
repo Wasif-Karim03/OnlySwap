@@ -1,0 +1,16 @@
+                                             q                                              | calls | mean_ms | total_ms | rows 
+--------------------------------------------------------------------------------------------+-------+---------+----------+------
+ select private.refresh_stats()                                                             |     1 |  579.04 |      579 |    1
+ UPDATE "users" AS users SET "recovery_sent_at" = $1, "recovery_token" = $2, "updated_at" = |  1043 |    0.30 |      318 | 1043
+ INSERT INTO "one_time_tokens" ("created_at", "id", "relates_to", "token_hash", "token_type |  1043 |    0.24 |      249 | 1043
+ INSERT INTO "audit_log_entries" ("created_at", "id", "instance_id", "ip_address", "payload |  1045 |    0.14 |      142 | 1045
+ SELECT users.aud, users.banned_until, users.confirmation_sent_at, users.confirmation_token |  2090 |    0.06 |      116 | 2090
+ DELETE FROM one_time_tokens AS one_time_tokens WHERE token_type = $1 and user_id = $2      |  1043 |    0.01 |       14 |   90
+ select private.demo_autoplay()                                                             |     1 |   13.43 |       13 |    1
+ SELECT identities.created_at, identities.email, identities.id, identities.identity_data, i |  2090 |    0.01 |       12 |    0
+ begin                                                                                      |  2090 |    0.00 |        7 |    0
+ select private.pause_lift()                                                                |     1 |    6.86 |        7 |    1
+ select private.expire_offers()                                                             |     1 |    6.18 |        6 |    1
+ SELECT mfa_factors.created_at, mfa_factors.factor_type, mfa_factors.friendly_name, mfa_fac |  2090 |    0.00 |        6 |    0
+(12 rows)
+

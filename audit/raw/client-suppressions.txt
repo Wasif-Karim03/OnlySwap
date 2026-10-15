@@ -1,0 +1,34 @@
+apps/mobile/src/strings/index.ts:54:    // eslint-disable-next-line @typescript-eslint/no-require-imports
+apps/mobile/src/strings/index.ts:89:    // eslint-disable-next-line @typescript-eslint/no-require-imports
+apps/mobile/src/strings/index.ts:109:      // eslint-disable-next-line @typescript-eslint/no-require-imports
+apps/mobile/src/features/waitlist/api.ts:32:const rpc = createRpc(() => getSupabase() as unknown as RpcClient);
+apps/mobile/src/features/saved/api.ts:6:const rpc = createRpc(() => getSupabase() as unknown as RpcClient);
+apps/mobile/src/features/offers/api.ts:23:const rpc = createRpc(() => getSupabase() as unknown as RpcClient);
+apps/mobile/src/features/meetups/api.ts:23:const rpc = createRpc(() => getSupabase() as unknown as RpcClient);
+apps/mobile/src/features/sell/api.ts:63:const rpc = createRpc(() => getSupabase() as unknown as RpcClient);
+apps/mobile/src/features/quad/api.ts:137:const rpc = createRpc(() => getSupabase() as unknown as RpcClient);
+apps/mobile/src/features/chat/api.ts:51:const rpc = createRpc(() => getSupabase() as unknown as RpcClient);
+apps/mobile/src/features/auth/AgeScreen.tsx:46:  ageModule = AgeRange as unknown as AgeRangeModule,
+apps/mobile/src/features/auth/AgeScreen.tsx:108:    // eslint-disable-next-line react-hooks/exhaustive-deps
+apps/mobile/src/features/auth/LaunchScreen.tsx:41:      // eslint-disable-next-line no-console -- dev-only cold-start timing for P4-AUTH-03, stripped from release
+apps/mobile/src/features/auth/api.ts:284:  rpc: () => getSupabase() as unknown as RpcClient,
+apps/mobile/src/features/auth/api.ts:285:  functions: () => getSupabase().functions as unknown as FunctionsClient,
+apps/mobile/src/features/campus/api.ts:13:const rpc = createRpc(() => getSupabase() as unknown as RpcClient);
+apps/mobile/src/features/deals/api.ts:23:const rpc = createRpc(() => getSupabase() as unknown as RpcClient);
+apps/mobile/src/features/search/api.ts:18:const rpc = createRpc(() => getSupabase() as unknown as RpcClient);
+apps/mobile/src/features/safety/api.ts:46:const rpc = createRpc(() => getSupabase() as unknown as RpcClient);
+apps/mobile/src/features/feed/api.ts:24:const rpc = createRpc(() => getSupabase() as unknown as RpcClient);
+apps/mobile/src/features/me/api.ts:78:const rpc = createRpc(() => getSupabase() as unknown as RpcClient);
+apps/mobile/src/features/appIcon/api.ts:16:    // eslint-disable-next-line @typescript-eslint/no-require-imports -- lazy native module
+apps/mobile/src/features/profiles/api.ts:48:const rpc = createRpc(() => getSupabase() as unknown as RpcClient);
+apps/mobile/src/features/notifications/api.ts:39:const rpc = createRpc(() => getSupabase() as unknown as RpcClient);
+apps/mobile/src/features/widgets/native.ts:34:/* eslint-disable @typescript-eslint/no-require-imports -- lazy native modules, see above */
+apps/mobile/src/theme/unistyles.ts:11:  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+apps/mobile/src/lib/push.ts:70:const rpc = createRpc(() => getSupabase() as unknown as RpcClient);
+apps/mobile/src/lib/analytics.ts:159:  // eslint-disable-next-line @typescript-eslint/no-require-imports
+apps/mobile/src/lib/analytics.ts:169:  setAnalyticsClient(ph as unknown as AnalyticsClient);
+apps/mobile/src/lib/sentry.ts:70:  // eslint-disable-next-line @typescript-eslint/no-require-imports
+apps/mobile/src/lib/sentry.ts:73:    sentryOptions(dsn, appEnv, release, dist) as unknown as Parameters<typeof Sentry.init>[0],
+apps/mobile/src/lib/devTrace.ts:8:  // eslint-disable-next-line no-console -- dev-only crash bisection, stripped from release
+apps/mobile/src/lib/activity.ts:341:  const rpc = createRpc(() => getSupabase() as unknown as RpcClient);
+apps/mobile/app/_layout.tsx:82:      // eslint-disable-next-line no-console -- dev-only navigation trace, stripped from release

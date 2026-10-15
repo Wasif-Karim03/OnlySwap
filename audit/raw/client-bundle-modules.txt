@@ -1,0 +1,38 @@
+modules 3244
+['id', 'absolutePath', 'relativePath', 'size', 'imports', 'importedBy', 'source', 'output']
+total JS size (minified source bytes) 13.97 MB
+    1883 KB  app:apps/mobile/src
+    1479 KB  react-native-reanimated
+    1463 KB  react-native
+    1165 KB  expo-router
+     971 KB  @sentry/core
+     488 KB  @posthog/core
+     483 KB  @sentry/react-native
+     432 KB  @supabase/auth-js
+     344 KB  posthog-react-native
+     288 KB  react-native-svg
+     284 KB  react-native-gesture-handler
+     266 KB  @sentry/browser
+     242 KB  react-native-keyboard-controller
+     238 KB  @shopify/flash-list
+     213 KB  @expo/ui
+     199 KB  react-native-worklets
+     177 KB  react-native-unistyles
+     173 KB  @tanstack/query-core
+     162 KB  @sentry-internal/browser-utils
+     161 KB  react-native-screens
+     144 KB  @maplibre/maplibre-react-native
+     125 KB  @supabase/storage-js
+--largest modules
+    324 KB node_modules/.pnpm/react-native@0.86.3_@babel+core@7.29.7_@react-native+jest-preset@0.86.3_@babel+co
+    267 KB node_modules/.pnpm/@supabase+auth-js@2.117.2/node_modules/@supabase/auth-js/dist/main/GoTrueClient.j
+    125 KB node_modules/.pnpm/@supabase+storage-js@2.117.2/node_modules/@supabase/storage-js/dist/index.cjs
+    122 KB node_modules/.pnpm/@supabase+postgrest-js@2.117.2/node_modules/@supabase/postgrest-js/dist/index.cjs
+    112 KB node_modules/.pnpm/posthog-react-native@4.78.0_ce765a7fd8b509dcd789371d57aa4d13/node_modules/posthog
+    109 KB node_modules/.pnpm/expo-symbols@57.0.3_expo-font@57.0.4_expo@57.0.29_react-native@0.86.3_@babel+core
+     89 KB apps/mobile/src/strings/en.ts
+     86 KB apps/mobile/src/strings/es.ts
+     84 KB node_modules/.pnpm/@sentry-internal+feedback@10.37.0/node_modules/@sentry-internal/feedback/build/np
+     66 KB node_modules/.pnpm/@sentry+core@10.37.0/node_modules/@sentry/core/build/esm/index.js
+     60 KB node_modules/.pnpm/@supabase+phoenix@0.4.5/node_modules/@supabase/phoenix/priv/static/phoenix.cjs.js
+     50 KB node_modules/.pnpm/@react-native+virtualized-lists@0.86.3_@types+react@19.2.18_react-native@0.86.3_@

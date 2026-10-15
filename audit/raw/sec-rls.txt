@@ -1,0 +1,67 @@
+relname | relkind | rls | opts
+campus_trending_terms | m | f | 
+price_hints | m | f | 
+profile_stats_mv | m | f | 
+account_deletions | r | t | 
+activity_days | r | t | 
+activity_events | r | t | 
+admins | r | t | 
+age_blocks | r | t | 
+announcements | r | t | 
+app_config | r | t | 
+appeals | r | t | 
+audit_log | r | t | 
+banned_hashes | r | t | 
+banned_words | r | t | 
+blocks | r | t | 
+campus_domains | r | t | 
+campuses | r | t | 
+categories | r | t | 
+chats | r | t | 
+common_first_names | r | t | 
+daily_counters | r | t | 
+data_exports | r | t | 
+email_outbox | r | t | 
+listing_photos | r | t | 
+listing_price_changes | r | t | 
+listing_removals | r | t | 
+listing_reservations | r | t | 
+listings | r | t | 
+meetups | r | t | 
+messages | r | t | 
+noshow_reports | r | t | 
+notification_prefs | r | t | 
+notifications | r | t | 
+offers | r | t | 
+profiles | r | t | 
+push_tickets | r | t | 
+push_tokens | r | t | 
+quad_hides | r | t | 
+quad_mutes | r | t | 
+quad_poll_options | r | t | 
+quad_poll_votes | r | t | 
+quad_posts | r | t | 
+quad_replies | r | t | 
+quad_votes | r | t | 
+rate_counters | r | t | 
+ratings | r | t | 
+reports | r | t | 
+review_accounts | r | t | 
+safe_spots | r | t | 
+saved_searches | r | t | 
+saves | r | t | 
+strikes | r | t | 
+support_requests | r | t | 
+swipes | r | t | 
+waitlist_requests | r | t | 
+watches | r | t | 
+admin_metrics_funnel | v | f | 
+admin_metrics_liquidity | v | f | 
+admin_metrics_retention | v | f | 
+admin_metrics_safety | v | f | 
+campus_progress | v | f | {security_barrier=true}
+my_reports | v | f | {security_barrier=true}
+profile_stats | v | f | {security_barrier=true}
+public_profiles | v | f | {security_barrier=true}
+ratings_visible | v | f | {security_barrier=true}
+(65 rows)

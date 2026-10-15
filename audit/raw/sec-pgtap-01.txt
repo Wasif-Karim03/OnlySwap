@@ -1,0 +1,18 @@
+Connecting to local database...
+/Users/wasifkarim/Code/OnlySwap/audit/scripts/pgtap/sec_01_rls_roles.test.sql .. 
+# Failed test 58: "SCOPE: OSU moderator reads no UMICH listings via direct select"
+#         have: 1
+#         want: 0
+# Failed test 59: "SCOPE: OSU moderator reads no UMICH profiles via direct select"
+#         have: 1
+#         want: 0
+# Looks like you failed 2 tests of 75
+Failed 2/75 subtests 
+
+Test Summary Report
+-------------------
+/Users/wasifkarim/Code/OnlySwap/audit/scripts/pgtap/sec_01_rls_roles.test.sql (Wstat: 0 Tests: 75 Failed: 2)
+  Failed tests:  58-59
+Files=1, Tests=75,  0 wallclock secs ( 0.01 usr +  0.00 sys =  0.01 CPU)
+Result: FAIL
+error running container: exit 1

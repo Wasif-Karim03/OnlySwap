@@ -1,0 +1,160 @@
+app/_layout.tsx:46: [CLEANUP?] useEffect(() => watchSessionExpiry(getSupabase().auth), []);
+app/_layout.tsx:48: [CLEANUP?] useEffect(() => startWidgetSync(queryClient), [queryClient]);
+app/_layout.tsx:50: [CLEANUP?] useEffect(() => startActivity(), []);
+app/_layout.tsx:51: [CLEANUP?] useEffect(() => {
+app/_layout.tsx:52: [CLEANUP?] const t = setTimeout(() => void SplashScreen.hideAsync().catch(() => {}), SPLASH_BACKSTOP_MS);
+app/_layout.tsx:53: [CLEANUP?] return () => clearTimeout(t);
+app/_layout.tsx:80: [no-cleanup] useEffect(() => {
+src/features/waitlist/UnlockedScreen.tsx:46: [no-cleanup] useEffect(() => {
+src/features/waitlist/UnlockedScreen.tsx:59: [no-cleanup] useEffect(() => {
+src/features/waitlist/UnlockedScreen.tsx:132: [no-cleanup] useEffect(() => {
+src/features/waitlist/WaitlistScreen.tsx:85: [no-cleanup] useEffect(() => {
+src/features/waitlist/WaitlistScreen.tsx:92: [no-cleanup] useEffect(() => {
+src/features/offers/OfferSheetScreen.tsx:67: [no-cleanup] useEffect(() => track('offer_sheet_opened'), []);
+src/features/meetups/MeetupDayScreen.tsx:100: [CLEANUP?] useEffect(() => {
+src/features/meetups/MeetupDayScreen.tsx:101: [CLEANUP?] const t = setInterval(() => setClock(now()), tickMs);
+src/features/meetups/MeetupDayScreen.tsx:102: [CLEANUP?] return () => clearInterval(t);
+src/features/sell/draft.ts:43: [CLEANUP?] if (!stored) storage.remove();
+src/features/sell/draft.ts:48: [CLEANUP?] if (timer) clearTimeout(timer);
+src/features/sell/draft.ts:52: [CLEANUP?] else storage.remove();
+src/features/sell/draft.ts:63: [CLEANUP?] if (timer) clearTimeout(timer);
+src/features/sell/draft.ts:64: [CLEANUP?] timer = setTimeout(write, saveMs);
+src/features/sell/draft.ts:68: [CLEANUP?] if (timer) clearTimeout(timer);
+src/features/sell/draft.ts:70: [CLEANUP?] storage.remove();
+src/features/sell/draft.ts:119: [CLEANUP?] useEffect(() => {
+src/features/sell/draft.ts:120: [CLEANUP?] const sub = AppState.addEventListener('change', (next) => {
+src/features/sell/draft.ts:123: [CLEANUP?] return () => sub.remove();
+src/features/sell/SellPostedScreen.tsx:63: [CLEANUP?] useEffect(() => {
+src/features/sell/SellPostedScreen.tsx:68: [CLEANUP?] useEffect(() => {
+src/features/sell/SellPostedScreen.tsx:83: [CLEANUP?] useEffect(() => {
+src/features/sell/SellPostedScreen.tsx:104: [CLEANUP?] const t = setTimeout(() => void go(), cardTimeoutMs);
+src/features/sell/SellPostedScreen.tsx:105: [CLEANUP?] return () => clearTimeout(t);
+src/features/sell/SellPhotosScreen.tsx:60: [CLEANUP?] useEffect(() => {
+src/features/sell/SellPhotosScreen.tsx:61: [CLEANUP?] const t = setInterval(() => setTick((n) => n + 1), ms);
+src/features/sell/SellPhotosScreen.tsx:62: [CLEANUP?] return () => clearInterval(t);
+src/features/sell/SellPhotosScreen.tsx:89: [CLEANUP?] useEffect(() => track('listing_create_started'), []);
+src/features/sell/SellPhotosScreen.tsx:90: [CLEANUP?] useEffect(() => devTrace(`photos: ${draft.photos.length} in draft`), [draft.photos.length]);
+src/features/sell/SellDetailsScreen.tsx:1: [no-cleanup] import { useNetInfo } from '@react-native-community/netinfo';
+src/features/sell/SellDetailsScreen.tsx:48: [CLEANUP?] useEffect(() => {
+src/features/sell/SellDetailsScreen.tsx:49: [CLEANUP?] const t = setTimeout(() => setSettled(value), ms);
+src/features/sell/SellDetailsScreen.tsx:50: [CLEANUP?] return () => clearTimeout(t);
+src/features/sell/SellDetailsScreen.tsx:197: [CLEANUP?] const net = useNetInfo();
+src/features/quad/QuadFeedScreen.tsx:126: [no-cleanup] useEffect(() => {
+src/features/quad/logic.ts:47: [CLEANUP?] if (open) clearTimeout(open.timer);
+src/features/quad/logic.ts:49: [CLEANUP?] const timer = setTimeout(() => {
+src/features/chat/useChat.ts:1: [no-cleanup] import NetInfo from '@react-native-community/netinfo';
+src/features/chat/useChat.ts:261: [CLEANUP?] useEffect(() => {
+src/features/chat/useChat.ts:267: [CLEANUP?] const stop = realtime.subscribe(`chat:${chatId}`, 'message', (payload) => {
+src/features/chat/useChat.ts:274: [CLEANUP?] const net = NetInfo.addEventListener((s) => {
+src/features/chat/ChatScreen.tsx:122: [no-cleanup] useEffect(() => track('chat_opened'), []);
+src/features/chat/ChatScreen.tsx:125: [no-cleanup] useEffect(() => {
+src/features/auth/AgeScreen.tsx:100: [no-cleanup] useEffect(() => {
+src/features/auth/LaunchScreen.tsx:32: [no-cleanup] useEffect(() => {
+src/features/auth/LaunchScreen.tsx:48: [no-cleanup] useEffect(() => {
+src/features/auth/WelcomeScreen.tsx:175: [CLEANUP?] useEffect(() => {
+src/features/auth/useSchoolLookup.ts:25: [CLEANUP?] useEffect(() => {
+src/features/auth/useSchoolLookup.ts:26: [CLEANUP?] const t = setTimeout(() => setSettled(domain), LOOKUP_DEBOUNCE_MS);
+src/features/auth/useSchoolLookup.ts:27: [CLEANUP?] return () => clearTimeout(t);
+src/features/auth/SessionExpiredSheet.tsx:32: [no-cleanup] useEffect(() => {
+src/features/auth/NotificationsScreen.tsx:49: [no-cleanup] useEffect(() => {
+src/features/auth/useSession.ts:15: [CLEANUP?] data: { subscription: { unsubscribe: () => void } };
+src/features/auth/useSession.ts:27: [CLEANUP?] useEffect(() => {
+src/features/auth/useSession.ts:43: [CLEANUP?] data.subscription.unsubscribe();
+src/features/auth/VerifyScreen.tsx:72: [CLEANUP?] useEffect(() => {
+src/features/auth/VerifyScreen.tsx:74: [CLEANUP?] const t = setInterval(() => setTick((n) => n + 1), 1000);
+src/features/auth/VerifyScreen.tsx:77: [CLEANUP?] clearInterval(t);
+src/features/auth/useAppGate.ts:50: [CLEANUP?] useEffect(() => {
+src/features/auth/useAppGate.ts:51: [CLEANUP?] const t = setTimeout(() => setWaited(true), CONFIG_WAIT_MS);
+src/features/auth/useAppGate.ts:52: [CLEANUP?] return () => clearTimeout(t);
+src/features/auth/sessionExpiry.ts:40: [CLEANUP?] /** Watches auth events for the app's lifetime; returns the unsubscribe. */
+src/features/auth/sessionExpiry.ts:57: [CLEANUP?] return () => data.subscription.unsubscribe();
+src/features/auth/age.ts:51: [CLEANUP?] timer = setTimeout(() => resolve('unknown'), timeoutMs);
+src/features/auth/age.ts:64: [CLEANUP?] if (timer) clearTimeout(timer);
+src/features/campus/CampusCards.tsx:33: [CLEANUP?] useEffect(() => {
+src/features/campus/CampusCards.tsx:35: [CLEANUP?] const t = setInterval(() => setTick((n) => n + 1), every);
+src/features/campus/CampusCards.tsx:36: [CLEANUP?] return () => clearInterval(t);
+src/features/search/SearchScreen.tsx:46: [CLEANUP?] useEffect(() => {
+src/features/search/SearchScreen.tsx:47: [CLEANUP?] const t = setTimeout(() => setDebounced(text.trim()), SUGGEST_DEBOUNCE_MS);
+src/features/search/SearchScreen.tsx:48: [CLEANUP?] return () => clearTimeout(t);
+src/features/search/ResultsScreen.tsx:69: [no-cleanup] useEffect(() => {
+src/features/search/ResultsScreen.tsx:78: [no-cleanup] useEffect(() => {
+src/features/feed/SwipeDeck.tsx:249: [no-cleanup] useLayoutEffect(() => {
+src/features/feed/SwipeDeck.tsx:274: [no-cleanup] useLayoutEffect(() => {
+src/features/feed/DiscoverScreen.tsx:137: [CLEANUP?] useEffect(() => {
+src/features/feed/DiscoverScreen.tsx:141: [CLEANUP?] useEffect(() => {
+src/features/feed/DiscoverScreen.tsx:153: [CLEANUP?] useEffect(() => {
+src/features/feed/swipes.ts:1: [no-cleanup] import NetInfo from '@react-native-community/netinfo';
+src/features/feed/swipes.ts:122: [CLEANUP?] useEffect(() => {
+src/features/feed/swipes.ts:123: [CLEANUP?] const app = AppState.addEventListener('change', (s) => {
+src/features/feed/swipes.ts:126: [CLEANUP?] const net = NetInfo.addEventListener((s) => {
+src/features/feed/swipes.ts:130: [CLEANUP?] app.remove();
+src/features/feed/ListingScreen.tsx:116: [CLEANUP?] useEffect(() => {
+src/features/feed/ListingScreen.tsx:128: [CLEANUP?] useEffect(() => {
+src/features/feed/ListingScreen.tsx:142: [CLEANUP?] const sub = AppState.addEventListener('change', (s) => {
+src/features/feed/ListingScreen.tsx:146: [CLEANUP?] sub.remove();
+src/features/me/SettingsScreens.tsx:1: [no-cleanup] import { useNetInfo } from '@react-native-community/netinfo';
+src/features/me/SettingsScreens.tsx:416: [no-cleanup] const offline = isOffline(useNetInfo());
+src/features/dev/KitSections2.tsx:152: [no-cleanup] setTimeout(() => {
+src/features/dev/KitSections2.tsx:312: [no-cleanup] setTimeout(() => {
+src/features/dev/KitSections2.tsx:327: [no-cleanup] setTimeout(() => {
+src/features/notifications/NotificationSettingsScreen.tsx:69: [CLEANUP?] useEffect(() => {
+src/features/notifications/NotificationsScreen.tsx:107: [no-cleanup] useEffect(() => {
+src/features/widgets/sync.ts:176: [CLEANUP?] const unsubCache = qc.getQueryCache().subscribe((event) => {
+src/features/widgets/sync.ts:187: [CLEANUP?] const appState = AppState.addEventListener('change', (s) => {
+src/features/widgets/sync.ts:196: [CLEANUP?] unsubAuth = () => data.subscription.unsubscribe();
+src/features/widgets/sync.ts:204: [CLEANUP?] appState.remove();
+src/components/Banner.tsx:1: [no-cleanup] import { useNetInfo } from '@react-native-community/netinfo';
+src/components/Banner.tsx:49: [CLEANUP?] const net = useNetInfo();
+src/components/Banner.tsx:54: [CLEANUP?] useEffect(() => {
+src/components/Banner.tsx:56: [CLEANUP?] const t = setTimeout(() => setWaited(true), OFFLINE_SHOW_DELAY_MS);
+src/components/Banner.tsx:58: [CLEANUP?] clearTimeout(t);
+src/components/Progress.tsx:71: [no-cleanup] useEffect(() => {
+src/components/Sheet.tsx:50: [CLEANUP?] useEffect(() => {
+src/components/Sheet.tsx:58: [CLEANUP?] const t = setTimeout(() => setMounted(false), motion.fade.duration + 20);
+src/components/Sheet.tsx:59: [CLEANUP?] return () => clearTimeout(t);
+src/components/Toast.tsx:47: [CLEANUP?] useEffect(() => {
+src/components/Toast.tsx:49: [CLEANUP?] timer.current = setTimeout(() => dismiss(current.id), current.onUndo ? UNDO_MS : TOAST_MS);
+src/components/Toast.tsx:50: [CLEANUP?] return () => clearTimeout(timer.current);
+src/components/PermissionPrimer.tsx:99: [no-cleanup] useEffect(() => {
+src/components/Skeleton.tsx:28: [CLEANUP?] useEffect(() => {
+src/components/Skeleton.tsx:30: [CLEANUP?] const t = setTimeout(() => setShow(true), delay);
+src/components/Skeleton.tsx:31: [CLEANUP?] return () => clearTimeout(t);
+src/components/Skeleton.tsx:68: [CLEANUP?] useEffect(() => {
+src/components/OTPInput.tsx:63: [no-cleanup] useEffect(() => {
+src/theme/reducedMotion.ts:17: [CLEANUP?] useEffect(() => {
+src/theme/reducedMotion.ts:22: [CLEANUP?] const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduced);
+src/theme/reducedMotion.ts:25: [CLEANUP?] sub.remove();
+src/theme/motion.ts:91: [no-cleanup] useEffect(() => {
+src/theme/mode.ts:66: [no-cleanup] useEffect(() => {
+src/lib/push.ts:124: [CLEANUP?] useEffect(() => {
+src/lib/push.ts:147: [CLEANUP?] const tap = Notifications.addNotificationResponseReceivedListener(open);
+src/lib/push.ts:149: [CLEANUP?] const rotate = Notifications.addPushTokenListener(() => {
+src/lib/push.ts:159: [CLEANUP?] return () => subs.forEach((s) => s.remove());
+src/lib/a11y.ts:7: [CLEANUP?] useEffect(() => {
+src/lib/a11y.ts:12: [CLEANUP?] const sub = AccessibilityInfo.addEventListener('screenReaderChanged', setOn);
+src/lib/a11y.ts:15: [CLEANUP?] sub.remove();
+src/lib/permissions.ts:80: [CLEANUP?] useEffect(() => {
+src/lib/permissions.ts:83: [CLEANUP?] const sub = AppState.addEventListener('change', (next) => {
+src/lib/permissions.ts:88: [CLEANUP?] sub.remove();
+src/lib/telemetry.ts:39: [CLEANUP?] useEffect(() => {
+src/lib/telemetry.ts:48: [CLEANUP?] return () => data.subscription.unsubscribe();
+src/lib/activity.ts:287: [CLEANUP?] if (timer) clearInterval(timer);
+src/lib/activity.ts:288: [CLEANUP?] timer = setInterval(() => void flush(), FLUSH_MS);
+src/lib/activity.ts:295: [CLEANUP?] if (timer) clearInterval(timer);
+src/lib/activity.ts:379: [CLEANUP?] const appState = AppState.addEventListener('change', (s) => {
+src/lib/activity.ts:404: [CLEANUP?] unsubAuth = () => data.subscription.unsubscribe();
+src/lib/activity.ts:409: [CLEANUP?] appState.remove();
+src/lib/queryClient.ts:1: [CLEANUP?] import NetInfo from '@react-native-community/netinfo';
+src/lib/queryClient.ts:29: [CLEANUP?] /** Connects TanStack Query to NetInfo and AppState once per process. */
+src/lib/queryClient.ts:34: [CLEANUP?] NetInfo.addEventListener((state) => setOnline(!!state.isConnected)),
+src/lib/queryClient.ts:37: [CLEANUP?] const sub = AppState.addEventListener('change', (status: AppStateStatus) =>
+src/lib/queryClient.ts:40: [CLEANUP?] return () => sub.remove();
+src/lib/realtime.ts:27: [CLEANUP?] .channel(topic, { config: { private: true } })
+src/lib/realtime.ts:28: [CLEANUP?] .on('broadcast', { event }, (msg) => onEvent(msg.payload))
+src/lib/realtime.ts:29: [CLEANUP?] .subscribe();
+src/lib/realtime.ts:33: [CLEANUP?] if (channel) void sb.removeChannel(channel);
+src/lib/realtime.ts:49: [CLEANUP?] useEffect(() => {
+src/lib/realtime.ts:58: [CLEANUP?] stop = source.subscribe(`user:${uid}`, event, () => handler.current());
+src/lib/supabase.ts:22: [CLEANUP?] AppState.addEventListener('change', (state) => {
+src/lib/webTitle.ts:54: [no-cleanup] useEffect(() => {
+src/lib/media.ts:144: [CLEANUP?] const sleep = deps.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));

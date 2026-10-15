@@ -1,0 +1,16 @@
+                                             q                                              | calls | mean_ms | total_ms | rows 
+--------------------------------------------------------------------------------------------+-------+---------+----------+------
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |  3389 |   11.56 |    39164 | 3389
+ select set_config('search_path', $1, true), set_config($2, $3, true), set_config('role', $ |  3523 |    0.02 |       58 | 3523
+ select private.demo_autoplay()                                                             |     1 |   21.61 |       22 |    1
+ select private.notify_push()                                                               |     1 |    9.71 |       10 |    1
+ select count(*) from pg_stat_activity                                                      |    16 |    0.41 |        7 |   16
+ select pg_stat_statements_reset()                                                          |     1 |    1.36 |        1 |    1
+ update cron.job_run_details set status = $1 where runid = $2                               |     2 |    0.63 |        1 |    2
+ SELECT t0."id", t0."name", t0."external_id", t0."jwt_secret", t0."jwt_jwks", t0."postgres_ |     4 |    0.13 |        1 |    4
+ SELECT e0."id", e0."type", e0."settings", e0."tenant_external_id", e0."inserted_at", e0."u |     4 |    0.11 |        0 |    4
+ insert into cron.job_run_details (jobid, runid, database, username, command, status) value |     2 |    0.12 |        0 |    2
+ update cron.job_run_details set status = $1, start_time = $2 where runid = $3              |     2 |    0.04 |        0 |    2
+ update cron.job_run_details set job_pid = $1, status = $2 where runid = $3                 |     2 |    0.03 |        0 |    2
+(12 rows)
+

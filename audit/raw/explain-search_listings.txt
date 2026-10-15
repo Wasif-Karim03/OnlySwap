@@ -1,0 +1,62 @@
+                              set_config                               
+-----------------------------------------------------------------------
+ {"sub":"50000000-0000-4000-8000-000000000660","role":"authenticated"}
+(1 row)
+
+LOG:  duration: 360.062 ms  plan:
+Query Text: select coalesce(jsonb_agg(private.feed_item(x.id, me.id) order by x.ord), '[]')              from (
+    select l.id,
+           row_number() over (order by
+             case when v_sort = 'price_asc' then l.price_cents end asc,
+             case when v_sort = 'price_desc' then l.price_cents end desc,
+             case when v_sort = 'relevance' then
+               ts_rank(l.search, websearch_to_tsquery('english', private.unaccent_immutable(qq)))
+               + extensions.word_similarity(lower(private.unaccent_immutable(qq)), lower(private.unaccent_immutable(l.title)))
+             end desc nulls last,
+             l.bumped_at desc, l.id desc) as ord
+    from public.listings l
+    where l.campus_id = me.campus_id
+      and l.status in ('active', 'hold')
+      and l.kind in ('sale', 'free')
+      and l.seller_id <> me.id
+      and (l.expires_at is null or l.expires_at > private.now())
+      and not private.is_blocked(me.id, l.seller_id)
+      and private.text_matches(l, qq)
+      and private.filters_match(l, f)
+      and not (coalesce((f ->> 'hide_swiped')::bool, false) and exists (
+        select 1 from public.swipes s where s.user_id = me.id and s.listing_id = l.id))
+    order by ord
+    offset off limit 20
+  ) x
+Aggregate  (cost=12893.17..12893.18 rows=1 width=32) (actual time=359.754..359.755 rows=1 loops=1)
+  Buffers: shared hit=826 read=1244 written=775
+  ->  Limit  (cost=12887.87..12887.92 rows=20 width=44) (actual time=349.520..349.531 rows=20 loops=1)
+        Buffers: shared hit=357 read=1123 written=660
+        ->  Sort  (cost=12887.87..12889.85 rows=794 width=44) (actual time=349.519..349.525 rows=20 loops=1)
+              Sort Key: (row_number() OVER (?))
+              Sort Method: top-N heapsort  Memory: 26kB
+              Buffers: shared hit=357 read=1123 written=660
+              ->  WindowAgg  (cost=12638.49..12866.74 rows=794 width=44) (actual time=349.299..349.429 rows=891 loops=1)
+                    Buffers: shared hit=354 read=1123 written=660
+                    ->  Sort  (cost=12638.47..12640.45 rows=794 width=36) (actual time=349.289..349.316 rows=891 loops=1)
+                          Sort Key: ((ts_rank(l.search, '''fridg'''::tsquery) + extensions.word_similarity('fridge'::text, lower(private.unaccent_immutable(l.title))))) DESC NULLS LAST, l.bumped_at DESC, l.id DESC
+                          Sort Method: quicksort  Memory: 66kB
+                          Buffers: shared hit=354 read=1123 written=660
+                          ->  Bitmap Heap Scan on listings l  (cost=399.45..12600.22 rows=794 width=36) (actual time=1.939..348.840 rows=891 loops=1)
+                                Recheck Cond: ((campus_id = '90000000-0000-4000-8000-000000000001'::uuid) AND (kind = ANY ('{sale,free}'::public.listing_kind[])) AND (status = ANY ('{active,hold}'::public.listing_status[])))
+                                Filter: ((seller_id <> '50000000-0000-4000-8000-000000000660'::uuid) AND (NOT private.is_blocked('50000000-0000-4000-8000-000000000660'::uuid, seller_id)) AND private.text_matches(l.*, 'fridge'::text) AND private.filters_match(l.*, '{}'::jsonb) AND ((expires_at IS NULL) OR (expires_at > private.now())))
+                                Rows Removed by Filter: 9790
+                                Heap Blocks: exact=1026
+                                Buffers: shared hit=345 read=1123 written=660
+                                ->  Bitmap Index Scan on listings_campus_id_kind_status_created_at_idx  (cost=0.00..399.25 rows=10726 width=0) (actual time=1.040..1.040 rows=10681 loops=1)
+                                      Index Cond: ((campus_id = '90000000-0000-4000-8000-000000000001'::uuid) AND (kind = ANY ('{sale,free}'::public.listing_kind[])) AND (status = ANY ('{active,hold}'::public.listing_status[])))
+                                      Buffers: shared hit=1 read=85
+LOG:  duration: 368.715 ms  plan:
+Query Text: select public.search_listings('fridge','{}',null) is not null;
+Result  (cost=0.00..0.26 rows=1 width=1) (actual time=368.712..368.712 rows=1 loops=1)
+  Buffers: shared hit=2964 read=1396 dirtied=1 written=775
+ ?column? 
+----------
+ t
+(1 row)
+

@@ -1,0 +1,14 @@
+                              set_config                               
+-----------------------------------------------------------------------
+ {"sub":"50000000-0000-4000-8000-000000000660","role":"authenticated"}
+(1 row)
+
+LOG:  duration: 7.374 ms  plan:
+Query Text: select public.get_feed(null,20) is not null;
+Result  (cost=0.00..0.26 rows=1 width=1) (actual time=7.371..7.371 rows=1 loops=1)
+  Buffers: shared hit=2691 read=38 written=36
+ ?column? 
+----------
+ t
+(1 row)
+

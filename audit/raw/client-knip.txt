@@ -1,0 +1,141 @@
+Unused files (4)
+.maestro/scripts/email.js      
+.maestro/scripts/otp.js        
+plugins/withReleaseHardening.js
+src/components/ShellScreen.tsx 
+Unused exports (92)
+WORK_VERSION                                plugins/withWorkRuntimeFix.js:29:16                     
+HANDOFF_PATHS                               src/components/Mark.tsx:5:14                            
+PHOTO_BLUR_RADIUS                           src/components/MessageBubble.tsx:17:14                  
+OTP_LENGTH                                  src/components/OTPInput.tsx:16:14                       
+REPORT_DETAILS_MAX                          src/components/ReportSheet.tsx:38:14                    
+isQuadTarget                      function  src/components/ReportSheet.tsx:70:17                    
+SkeletonBlock                     function  src/components/Skeleton.tsx:57:17                       
+DOUBLE_TAP_GUARD_MS                         src/components/Tappable.tsx:7:14                        
+useGuardedPress                   function  src/components/Tappable.tsx:10:17                       
+MIN_ZOOM                                    src/components/ZoomableImage.tsx:12:14                  
+MAX_ZOOM                                    src/components/ZoomableImage.tsx:13:14                  
+DOUBLE_TAP_ZOOM                             src/components/ZoomableImage.tsx:14:14                  
+DISMISS_DISTANCE                            src/components/ZoomableImage.tsx:16:14                  
+DISMISS_VELOCITY                            src/components/ZoomableImage.tsx:17:14                  
+AGE_SIGNAL_TIMEOUT_MS                       src/features/auth/age.ts:10:14                          
+IOS_MIN_AGE_RANGE                           src/features/auth/age.ts:12:14                          
+PERSONAL_DOMAINS                            src/features/auth/logic.ts:7:14                         
+LOOKUP_DEBOUNCE_MS                          src/features/auth/useSchoolLookup.ts:8:14               
+useCountdown                      function  src/features/campus/CampusCards.tsx:28:17               
+FOOD_MIN                                    src/features/campus/logic.ts:148:14                     
+FOOD_MAX                                    src/features/campus/logic.ts:149:14                     
+EVENT_DAYS_MAX                              src/features/campus/logic.ts:338:14                     
+NEW_CONTACT_MESSAGES                        src/features/chat/logic.ts:113:14                       
+NEW_CONTACT_MS                              src/features/chat/logic.ts:115:14                       
+PAGE                                        src/features/chat/useChat.ts:21:14                      
+Section                           function  src/features/dev/KitSections2.tsx:33:17                 
+PhotoViewer                       function  src/features/dev/KitSections2.tsx:63:17                 
+RELEASE_FRACTION                            src/features/feed/deckMath.ts:9:14                      
+RELEASE_VELOCITY                            src/features/feed/deckMath.ts:10:14                     
+MAX_ROTATION                                src/features/feed/deckMath.ts:12:14                     
+STAMP_FRACTION                              src/features/feed/deckMath.ts:14:14                     
+PAGE                                        src/features/feed/DiscoverScreen.tsx:37:14              
+FLUSH_AT                                    src/features/feed/logic.ts:126:14                       
+UNDO_MS                                     src/features/feed/logic.ts:129:14                       
+isLegalSlug                       function  src/features/legal/LegalScreen.tsx:16:17                
+exportRetryTime                   function  src/features/me/SettingsScreens.tsx:392:17              
+meetupKey                                   src/features/meetups/MeetupDayScreen.tsx:44:14          
+notificationsKey                            src/features/notifications/NotificationsScreen.tsx:29:14
+inboxKey                                    src/features/offers/InboxScreen.tsx:41:14               
+offerKey                                    src/features/offers/OfferScreen.tsx:32:14               
+PollView                          function  src/features/quad/components/QuadPostCard.tsx:30:17     
+AliasBadge                        function  src/features/quad/components/ReplyRow.tsx:21:17         
+VOTE_DEBOUNCE_MS                            src/features/quad/logic.ts:19:14                        
+POLL_MIN                                    src/features/quad/logic.ts:69:14                        
+POLL_MAX                                    src/features/quad/logic.ts:70:14                        
+CHECKIN_HOURS                               src/features/quad/logic.ts:184:14                       
+PRICE_MIN_CENTS                             src/features/sell/logic.ts:17:14                        
+MAX_SPOTS                                   src/features/sell/logic.ts:33:14                        
+RESERVATION_KEEP_MS                         src/features/sell/logic.ts:126:14                       
+PRICE_HINT_MIN_N                            src/features/sell/logic.ts:499:14                       
+COLUMNS                                     src/features/sell/PhotoGrid.tsx:18:14                   
+errorText                         function  src/features/sell/SellDetailsScreen.tsx:153:17          
+SELL_STEPS                                  src/features/sell/SellStep.tsx:13:14                    
+CARD_W                                      src/features/sell/ShareCard.tsx:11:14                   
+CARD_H                                      src/features/sell/ShareCard.tsx:12:14                   
+CONFETTI_MS                                 src/features/waitlist/UnlockedScreen.tsx:28:14          
+WAITLIST_REFRESH_MS                         src/features/waitlist/WaitlistScreen.tsx:38:14          
+androidWidgetTaskHandler                    src/features/widgets/androidTask.ts:12:14               
+updateAndroidWidget               function  src/features/widgets/androidUpdate.tsx:7:17             
+MAX_TIMELINE                                src/features/widgets/logic.ts:22:14                     
+chatUrl                           function  src/features/widgets/logic.ts:141:17                    
+meetupUrl                         function  src/features/widgets/logic.ts:145:17                    
+INBOX_URL                                   src/features/widgets/logic.ts:149:14                    
+liveStatus                        function  src/features/widgets/logic.ts:218:17                    
+MEETUP_LIVE_ACTIVITY                        src/features/widgets/MeetupLiveActivity.tsx:14:14       
+MeetupLiveActivity                          src/features/widgets/MeetupLiveActivity.tsx:102:14      
+noopNative                                  src/features/widgets/native.ts:24:14                    
+NextMeetupWidget                            src/features/widgets/NextMeetupWidget.tsx:114:14        
+ACTIVITY_KINDS                              src/lib/activity.ts:29:14                               
+ACTIVITY_SOURCES                            src/lib/activity.ts:43:14                               
+QUERY_MAX                                   src/lib/activity.ts:72:14                               
+isSource                          function  src/lib/activity.ts:124:17                              
+prune                             function  src/lib/activity.ts:168:17                              
+APP_OPEN_GAP_MS                             src/lib/activity.ts:363:14                              
+linkPath                          function  src/lib/deeplinks.ts:12:17                              
+SERVER_ERROR_CODES                          src/lib/errors.ts:7:14                                  
+CLIENT_ERROR_CODES                          src/lib/errors.ts:33:14                                 
+formatRetryTime                   function  src/lib/errors.ts:134:17                                
+SIZES                                       src/lib/media.ts:14:14                                  
+FALLBACK_QUALITIES                          src/lib/media.ts:19:14                                  
+MAX_PHOTOS                                  src/lib/media.ts:21:14                                  
+UPLOAD_RETRIES                              src/lib/media.ts:125:14                                 
+CHANNELS                                    src/lib/push.ts:18:14                                   
+ensureChannels                    function  src/lib/push.ts:72:23                                   
+IGNORE_ERRORS                               src/lib/sentry.ts:17:14                                 
+MIGRATIONS                                  src/lib/storage.ts:21:3                                 
+getOrCreateEncryptionKey          function  src/lib/storage.ts:39:17                                
+VERSION_KEY                                 src/lib/storageCore.ts:48:14                            
+createUploadApi                   function  src/lib/uploadApi.ts:16:17                              
+default                           variable  src/strings/es.ts:2148:16                               
+permissions               active            src/strings/index.ts:118:3                              
+shell                     active            src/strings/index.ts:120:3                              
+Unused exported types (39)
+AvatarSize        type  src/components/Avatar.tsx:8:13          
+ButtonVariant     type  src/components/Button.tsx:13:13         
+ButtonSize        type  src/components/Button.tsx:15:13         
+InputKind         type  src/components/Input.tsx:8:13           
+TileState         type  src/components/ListingTile.tsx:12:13    
+IconTile          type  src/components/ListRow.tsx:9:13         
+BubbleKind        type  src/components/MessageBubble.tsx:13:13  
+BubbleState       type  src/components/MessageBubble.tsx:14:13  
+BubblePhoto       type  src/components/MessageBubble.tsx:19:13  
+ReportInput       type  src/components/ReportSheet.tsx:103:13   
+TabBarVariant     type  src/components/TabBar.tsx:26:13         
+ToastKind         type  src/components/Toast.tsx:13:13          
+FunctionsClient   type  src/features/auth/api.ts:75:13          
+PostApi           type  src/features/campus/PostShared.tsx:20:13
+ListingAccess     type  src/features/feed/logic.ts:55:13        
+ListingStats      type  src/features/me/api.ts:35:13            
+ProfileInput      type  src/features/me/api.ts:47:13            
+ListingPatch      type  src/features/me/api.ts:55:13            
+MeetupStatus      type  src/features/meetups/logic.ts:4:13      
+OfferAction       type  src/features/offers/logic.ts:85:13      
+Review            type  src/features/profiles/api.ts:9:13       
+QuadKind          type  src/features/quad/api.ts:16:13          
+QuadPinned        type  src/features/quad/api.ts:57:13          
+QuadOutcome       type  src/features/quad/api.ts:67:13          
+QuadReplyOutcome  type  src/features/quad/api.ts:73:13          
+QuadHide          type  src/features/quad/api.ts:84:13          
+FeedData          type  src/features/quad/cache.ts:26:13        
+BlockedPerson     type  src/features/safety/api.ts:19:13        
+ReportStatus      type  src/features/safety/api.ts:25:13        
+UploadedPhoto     type  src/features/sell/api.ts:22:13          
+TextVerdict       type  src/features/sell/api.ts:30:13          
+DetailsField      type  src/features/sell/logic.ts:280:13       
+ServerErrorCode   type  src/lib/errors.ts:35:13                 
+ClientErrorCode   type  src/lib/errors.ts:36:13                 
+EncodedImage      type  src/lib/media.ts:24:13                  
+KVStore           type  src/lib/storage.ts:24:8                 
+StorageKey        type  src/lib/storage.ts:27:8                 
+StorageSchema     type  src/lib/storage.ts:28:8                 
+UploadKind        type  src/lib/uploadApi.ts:5:13               
+Duplicate exports (2)
+en|default  src/strings/en.ts
+es|default  src/strings/es.ts

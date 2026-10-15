@@ -1,0 +1,145 @@
+# Long-session soak (audit C): ~35 min of the main loops on one launch, to watch memory.
+# Run:  maestro test audit/scripts/maestro/long-session.yaml -e REVIEW_PASSWORD=...  (staging, Demo University reviewer)
+# In another terminal: bash audit/scripts/maestro/measure-memory.sh   (60 s samples to a CSV)
+# Tabs are tapped by label (the tab-bar testIDs embed the router key, e.g. tab-bar-discover-AbC123).
+# Each cycle is roughly 60-70 s, so `times: 32` is about 35 min. Raise it for an overnight run.
+appId: app.onlyswap
+tags: [soak]
+---
+- runFlow: ../../../apps/mobile/.maestro/subflows/reviewer.yaml   # clears state, signs in, waits for screen-discover
+- runFlow:
+    when:
+      visible:
+        id: discover-coach
+    commands:
+      - tapOn:
+          id: discover-coach
+- repeat:
+    times: 32
+    commands:
+      # 1. Discover: swipe a batch (skip, skip, save-by-button, skip), undo once
+      - tapOn: Discover
+      - repeat:
+          times: 6
+          commands:
+            - swipe:
+                direction: LEFT
+                duration: 250
+            - waitForAnimationToEnd:
+                timeout: 1500
+      - runFlow:
+          when:
+            visible:
+              id: deck-save
+          commands:
+            - tapOn:
+                id: deck-save
+      # 2. Open a listing (tap the top card), look at photos, back
+      - runFlow:
+          when:
+            visible:
+              id: deck
+          commands:
+            - tapOn:
+                point: 50%,45%
+            - runFlow:
+                when:
+                  visible:
+                    id: screen-listing
+                commands:
+                  - scrollUntilVisible:
+                      element:
+                        id: listing-offer
+                      direction: DOWN
+                      timeout: 8000
+                  # 3. Make an offer (swipe right = offer sheet) and send
+                  - tapOn:
+                      id: listing-offer
+                  - runFlow:
+                      when:
+                        visible:
+                          id: screen-offer
+                      commands:
+                        - tapOn: '.*10% less'
+                        - tapOn:
+                            id: offer-send
+                        - extendedWaitUntil:
+                            visible:
+                              id: offer-sent
+                            timeout: 8000
+                        - tapOn: Done
+                  - back
+      # 4. Inbox, open first row (chat or offer), scroll, back
+      - tapOn: Inbox
+      - assertVisible:
+          id: screen-inbox
+      - scroll
+      - runFlow:
+          when:
+            visible:
+              id: inbox-list-pane
+          commands:
+            - tapOn:
+                point: 50%,30%
+            - runFlow:
+                when:
+                  visible:
+                    id: chat-list
+                commands:
+                  - scroll
+                  - scroll
+                  - back
+      # 5. Search + browse results grid (pagination)
+      - tapOn: Discover
+      - tapOn:
+          id: discover-search
+      - tapOn:
+          id: search-input
+      - inputText: desk
+      - pressKey: Enter
+      - extendedWaitUntil:
+          visible:
+            id: results-grid
+          timeout: 8000
+      - repeat:
+          times: 4
+          commands:
+            - scroll
+      - back
+      - back
+      # 6. Quad feed: scroll, open a thread
+      - tapOn: Quad
+      - runFlow:
+          when:
+            visible:
+              id: quad-enter
+          commands:
+            - tapOn:
+                id: quad-enter
+      - repeat:
+          times: 4
+          commands:
+            - scroll
+      - runFlow:
+          when:
+            visible:
+              id: quad-feed
+          commands:
+            - tapOn:
+                point: 50%,40%
+            - runFlow:
+                when:
+                  visible:
+                    id: screen-quad-thread
+                commands:
+                  - scroll
+                  - back
+      # 7. Feed (campus news/events) tab, scroll
+      - tapOn: Feed
+      - repeat:
+          times: 3
+          commands:
+            - scroll
+      # 8. Profile and back to Discover to close the loop
+      - tapOn: Profile
+      - tapOn: Discover

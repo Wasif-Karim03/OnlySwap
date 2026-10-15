@@ -1,0 +1,88 @@
+env: load .env.local
+env: export EXPO_PUBLIC_APP_ENV EXPO_PUBLIC_MEDIA_URL EXPO_PUBLIC_SITE_URL EXPO_PUBLIC_SUPABASE_ANON_KEY EXPO_PUBLIC_SUPABASE_URL
+React Compiler enabled
+Expo Autolinking module resolution enabled
+Expo Atlas is required to gather bundle information, but it is not installed in
+this project. Installing expo-atlas@^0.4.0
+
+- Installing expo-atlas@^0.4.0
+env: export EXPO_PUBLIC_APP_ENV EXPO_PUBLIC_MEDIA_URL EXPO_PUBLIC_SITE_URL EXPO_PUBLIC_SUPABASE_ANON_KEY EXPO_PUBLIC_SUPABASE_URL
+- Installing expo-atlas@^0.4.0
+› Installing 1 other package using pnpm
+- Installing expo-atlas@^0.4.0
+> pnpm add --save-dev expo-atlas@^0.4.0
+- Installing expo-atlas@^0.4.0
+../..                                    | Progress: resolved 1, reused 0, downloaded 0, added 0
+ WARN  deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+../..                                    | Progress: resolved 50, reused 0, downloaded 0, added 0
+../..                                    | Progress: resolved 67, reused 0, downloaded 0, added 0
+../..                                    | Progress: resolved 142, reused 0, downloaded 0, added 0
+../..                                    | Progress: resolved 252, reused 0, downloaded 0, added 0
+../..                                    | Progress: resolved 410, reused 0, downloaded 0, added 0
+../..                                    | Progress: resolved 497, reused 0, downloaded 0, added 0
+../..                                    | Progress: resolved 668, reused 0, downloaded 0, added 0
+../..                                    | Progress: resolved 806, reused 0, downloaded 0, added 0
+../..                                    | Progress: resolved 1003, reused 0, downloaded 0, added 0
+../..                                    | Progress: resolved 1253, reused 0, downloaded 0, added 0
+../..                                    | Progress: resolved 1427, reused 0, downloaded 0, added 0
+../..                                    | Progress: resolved 1429, reused 0, downloaded 0, added 0
+../..                                    | Progress: resolved 1432, reused 0, downloaded 0, added 0
+ WARN  6 deprecated subdependencies found: abab@2.0.6, domexception@4.0.0, glob@7.2.3, inflight@1.0.6, uuid@7.0.3, whatwg-encoding@2.0.0
+../..                                    | Progress: resolved 1432, reused 0, downloaded 0, added 0, done
+
+devDependencies:
++ expo-atlas ^0.4.3
+
+../..                                    |  +30 +++
+../.. prepare$ simple-git-hooks
+../.. prepare: Done
+Done in 29.9s using pnpm v10.34.5
+✔ Installed expo-atlas@^0.4.0
+Starting Metro Bundler
+
+Android Bundled 134812ms apps/mobile/index.ts (3245 modules)
+
+› Assets (47):
+../../node_modules/.pnpm/@expo-google-fonts+material-symbols@0.4.48/node_modules/@expo-google-fonts/material-symbols/400Regular/MaterialSymbols_400Regular.ttf (967KB)
+../../node_modules/.pnpm/@maplibre+maplibre-react-native@11.4.1_@types+geojson@7946.0.16_@types+react@19.2.18_ex_d6a4f6eef87bdad2e2be80135653daad/node_modules/@maplibre/maplibre-react-native/lib/module/assets/heading.png (3 variations | 450B)
+../../node_modules/.pnpm/expo-router@57.0.27_cd2dcf9f246e107a2be6df23c4b43f55/node_modules/expo-router/assets/arrow_down.png (9.5KB)
+../../node_modules/.pnpm/expo-router@57.0.27_cd2dcf9f246e107a2be6df23c4b43f55/node_modules/expo-router/assets/arrow_right.xml (307B)
+../../node_modules/.pnpm/expo-router@57.0.27_cd2dcf9f246e107a2be6df23c4b43f55/node_modules/expo-router/assets/checkmark.xml (312B)
+../../node_modules/.pnpm/expo-router@57.0.27_cd2dcf9f246e107a2be6df23c4b43f55/node_modules/expo-router/assets/error.png (469B)
+../../node_modules/.pnpm/expo-router@57.0.27_cd2dcf9f246e107a2be6df23c4b43f55/node_modules/expo-router/assets/file.png (138B)
+../../node_modules/.pnpm/expo-router@57.0.27_cd2dcf9f246e107a2be6df23c4b43f55/node_modules/expo-router/assets/forward.png (188B)
+../../node_modules/.pnpm/expo-router@57.0.27_cd2dcf9f246e107a2be6df23c4b43f55/node_modules/expo-router/assets/pkg.png (364B)
+../../node_modules/.pnpm/expo-router@57.0.27_cd2dcf9f246e107a2be6df23c4b43f55/node_modules/expo-router/assets/react-navigation/elements/back-icon-mask.png (653B)
+../../node_modules/.pnpm/expo-router@57.0.27_cd2dcf9f246e107a2be6df23c4b43f55/node_modules/expo-router/assets/react-navigation/elements/back-icon.png (4 variations | 152B)
+../../node_modules/.pnpm/expo-router@57.0.27_cd2dcf9f246e107a2be6df23c4b43f55/node_modules/expo-router/assets/react-navigation/elements/clear-icon.png (4 variations | 425B)
+../../node_modules/.pnpm/expo-router@57.0.27_cd2dcf9f246e107a2be6df23c4b43f55/node_modules/expo-router/assets/react-navigation/elements/close-icon.png (4 variations | 235B)
+../../node_modules/.pnpm/expo-router@57.0.27_cd2dcf9f246e107a2be6df23c4b43f55/node_modules/expo-router/assets/react-navigation/elements/search-icon.png (4 variations | 599B)
+../../node_modules/.pnpm/expo-router@57.0.27_cd2dcf9f246e107a2be6df23c4b43f55/node_modules/expo-router/assets/sitemap.png (465B)
+../../node_modules/.pnpm/expo-router@57.0.27_cd2dcf9f246e107a2be6df23c4b43f55/node_modules/expo-router/assets/unmatched.png (4.8KB)
+assets/images/app-icons/mono.png (26KB)
+assets/images/app-icons/night.png (27KB)
+assets/images/app-icons/paper.png (26KB)
+assets/images/icon.png (24KB)
+assets/images/welcome/backpack.webp (16KB)
+assets/images/welcome/bicycle.webp (54KB)
+assets/images/welcome/coffee-maker.webp (44KB)
+assets/images/welcome/desk-lamp.webp (2.2KB)
+assets/images/welcome/film-camera.webp (16KB)
+assets/images/welcome/headphones.webp (8.3KB)
+assets/images/welcome/sneakers.webp (17KB)
+assets/images/welcome/textbooks.webp (15KB)
+src/features/dev/fixtures/photo1.jpg (6.2KB)
+src/features/dev/fixtures/photo2.jpg (7.3KB)
+src/features/dev/fixtures/photo3.jpg (7.7KB)
+src/features/dev/fixtures/photo4.jpg (7.2KB)
+src/lib/__fixtures__/gps.jpg (36KB)
+
+› android bundles (2):
+_expo/static/js/android/index-b21fe987d2ae85582373e007d43034d7.hbc (7.2MB)
+_expo/static/js/android/index-b21fe987d2ae85582373e007d43034d7.hbc.map (17MB)
+
+› Files (1):
+metadata.json (3.1KB)
+
+Exported: /Users/wasifkarim/Code/OnlySwap/audit/raw/export-android
+exit 0

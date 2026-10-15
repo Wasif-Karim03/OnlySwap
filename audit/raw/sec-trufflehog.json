@@ -1,0 +1,110 @@
+{
+ "note": "trufflehog git file://. ; 15 hits, all unverified, all in design/*.html mock files (base64 image data). Raw values removed.",
+ "hits": [
+  {
+   "detector": "Box",
+   "verified": false,
+   "file": "design/admin-redesign-mock.html",
+   "line": 90,
+   "commit": "6916012f"
+  },
+  {
+   "detector": "Qase",
+   "verified": false,
+   "file": "design/admin-screens-now.html",
+   "line": 8,
+   "commit": "6916012f"
+  },
+  {
+   "detector": "Box",
+   "verified": false,
+   "file": "design/app-redesign-mock.html",
+   "line": 75,
+   "commit": "863e45bd"
+  },
+  {
+   "detector": "Box",
+   "verified": false,
+   "file": "design/app-welcome-mock-3.html",
+   "line": 60,
+   "commit": "f7146904"
+  },
+  {
+   "detector": "Box",
+   "verified": false,
+   "file": "design/app-welcome-mock-2.html",
+   "line": 60,
+   "commit": "f7146904"
+  },
+  {
+   "detector": "Box",
+   "verified": false,
+   "file": "design/app-welcome-mock.html",
+   "line": 147,
+   "commit": "f7146904"
+  },
+  {
+   "detector": "Box",
+   "verified": false,
+   "file": "design/admin-screens-now.html",
+   "line": 8,
+   "commit": "2df0a4e9"
+  },
+  {
+   "detector": "TLy",
+   "verified": false,
+   "file": "design/admin-screens-now.html",
+   "line": 8,
+   "commit": "2df0a4e9"
+  },
+  {
+   "detector": "TLy",
+   "verified": false,
+   "file": "design/admin-screens-now.html",
+   "line": 8,
+   "commit": "2df0a4e9"
+  },
+  {
+   "detector": "TLy",
+   "verified": false,
+   "file": "design/app-screens-now.html",
+   "line": 6,
+   "commit": "863e45bd"
+  },
+  {
+   "detector": "Box",
+   "verified": false,
+   "file": "design/app-screens-now.html",
+   "line": 6,
+   "commit": "863e45bd"
+  },
+  {
+   "detector": "Box",
+   "verified": false,
+   "file": "design/admin-screens-now.html",
+   "line": 8,
+   "commit": "9644d849"
+  },
+  {
+   "detector": "Juro",
+   "verified": false,
+   "file": "design/admin-screens-now.html",
+   "line": 8,
+   "commit": "9644d849"
+  },
+  {
+   "detector": "TLy",
+   "verified": false,
+   "file": "design/admin-screens-now.html",
+   "line": 8,
+   "commit": "9644d849"
+  },
+  {
+   "detector": "TLy",
+   "verified": false,
+   "file": "design/admin-screens-now.html",
+   "line": 8,
+   "commit": "9644d849"
+  }
+ ]
+}

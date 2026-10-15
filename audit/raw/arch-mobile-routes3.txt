@@ -1,0 +1,87 @@
+(auth)/_layout.tsx |  |T: 
+(auth)/age.tsx | accept_rules,complete_reverify,confirm_age,get_app_config,lookup_school,update_profile |T: profiles
+(auth)/allow-notifications.tsx | accept_rules,complete_reverify,confirm_age,get_app_config,lookup_school,update_profile |T: profiles
+(auth)/email.tsx | accept_rules,complete_reverify,confirm_age,get_app_config,lookup_school,update_profile |T: profiles
+(auth)/profile-setup.tsx | accept_rules,complete_reverify,confirm_age,get_app_config,lookup_school,update_profile |T: profiles
+(auth)/rules.tsx | accept_rules,complete_reverify,confirm_age,get_app_config,lookup_school,update_profile |T: profiles
+(auth)/verify.tsx | accept_rules,complete_reverify,confirm_age,get_app_config,lookup_school,update_profile |T: profiles
+(auth)/welcome.tsx |  |T: 
+(system)/_layout.tsx |  |T: 
+(system)/account-status.tsx | create_appeal,get_account_status,get_my_report,list_blocked,unblock_user |T: 
+(system)/maintenance.tsx |  |T: 
+(system)/reverify.tsx | accept_rules,complete_reverify,confirm_age,get_app_config,lookup_school,update_profile |T: profiles
+(system)/update.tsx |  |T: 
+(system)/waitlist.tsx | mark_unlock_seen,my_waitlist_position |T: 
+(tabs)/_layout.tsx | accept_quad_rules,create_appeal,create_quad_post,create_quad_reply,create_report,delete_quad_post,get_my_quad,get_my_quad_hides,get_my_quad_mutes,get_notifications,get_quad_feed,get_quad_status,get_quad_thread,hide_quad_author,mark_notifications_read,mute_keyword,set_quad_replies,unhide_quad,unmute_keyword,vote_poll,vote_quad |T: 
+(tabs)/discover/_layout.tsx |  |T: 
+(tabs)/discover/campus.tsx |  |T: 
+(tabs)/discover/index.tsx | create_report,get_feed,get_listing,hide_listing,record_swipes,record_view,save_listing,undo_swipe,unsave_listing,watch_listing |T: 
+(tabs)/feed/_layout.tsx |  |T: 
+(tabs)/feed/index.tsx | create_listing,create_news,get_campus_feed |T: 
+(tabs)/inbox/_layout.tsx |  |T: 
+(tabs)/inbox/index.tsx | accept_offer,counter_offer,decline_offer,get_inbox,get_offer,listing_offers,make_offer,withdraw_offer |T: 
+(tabs)/profile/_layout.tsx |  |T: 
+(tabs)/profile/edit.tsx | delete_listing,get_me,listing_stats,my_listings,relist_listing,update_listing,update_profile,update_profile_flags |T: 
+(tabs)/profile/index.tsx | delete_listing,get_me,listing_stats,my_listings,relist_listing,update_listing,update_profile,update_profile_flags |T: 
+(tabs)/profile/listings.tsx | delete_listing,get_me,listing_stats,my_listings,relist_listing,update_listing,update_profile,update_profile_flags |T: 
+(tabs)/quad/_layout.tsx |  |T: 
+(tabs)/quad/index.tsx | accept_quad_rules,create_appeal,create_quad_post,create_quad_reply,create_report,delete_quad_post,get_my_quad,get_my_quad_hides,get_my_quad_mutes,get_notifications,get_quad_feed,get_quad_status,get_quad_thread,hide_quad_author,mark_notifications_read,mute_keyword,set_quad_replies,unhide_quad,unmute_keyword,vote_poll,vote_quad |T: 
+(tabs)/sell/_layout.tsx |  |T: 
+(tabs)/sell/details.tsx | check_text,create_listing,price_hint,reserve_listing_id,set_listing_share_image |T: campuses,categories,safe_spots
+(tabs)/sell/food.tsx | create_listing,create_news,get_campus_feed |T: 
+(tabs)/sell/index.tsx | check_text,create_listing,price_hint,reserve_listing_id,set_listing_share_image |T: campuses,categories,safe_spots
+(tabs)/sell/meetup.tsx | check_text,create_listing,price_hint,reserve_listing_id,set_listing_share_image |T: campuses,categories,safe_spots
+(tabs)/sell/news.tsx | create_listing,create_news,get_campus_feed |T: 
+(tabs)/sell/posted.tsx | check_text,create_listing,price_hint,reserve_listing_id,set_listing_share_image |T: campuses,categories,safe_spots
+(tabs)/sell/wanted.tsx | create_listing,create_news,get_campus_feed |T: 
++native-intent.tsx |  |T: 
++not-found.tsx |  |T: 
+_layout.tsx | accept_rules,complete_reverify,confirm_age,get_app_config,lookup_school,update_profile |T: profiles
+chat/[id]/deal.tsx | confirm_deal,get_my_rating,mark_sold,submit_rating |T: 
+chat/[id]/details.tsx | create_report,get_chat,get_messages,hide_chat,mark_chat_read,send_message,set_chat_mute |T: 
+chat/[id]/index.tsx | create_report,get_chat,get_messages,hide_chat,mark_chat_read,send_message,set_chat_mute |T: 
+chat/[id]/meetup.tsx | cancel_meetup,checkin_meetup,confirm_meetup,create_meetup_share,get_chat_meetup,get_meetup,propose_meetup,report_noshow,running_late |T: 
+deal/[chatId]/rate.tsx | confirm_deal,get_my_rating,mark_sold,submit_rating |T: 
+dev/kit.tsx |  |T: 
+dev/spikes.tsx |  |T: 
+dev/states/[id].tsx |  |T: 
+dev/states/index.tsx |  |T: 
+help/email-access.tsx |  |T: 
+help/index.tsx | create_appeal,get_account_status,get_my_report,list_blocked,unblock_user |T: 
+index.tsx | accept_rules,complete_reverify,confirm_age,get_app_config,lookup_school,update_profile |T: profiles
+legal/[doc].tsx |  |T: 
+link-error.tsx |  |T: 
+listing/[id]/edit.tsx | delete_listing,get_me,listing_stats,my_listings,relist_listing,update_listing,update_profile,update_profile_flags |T: 
+listing/[id]/index.tsx | create_report,get_feed,get_listing,hide_listing,record_swipes,record_view,save_listing,undo_swipe,unsave_listing,watch_listing |T: 
+listing/[id]/offer.tsx | accept_offer,counter_offer,decline_offer,get_inbox,get_offer,listing_offers,make_offer,withdraw_offer |T: 
+listing/[id]/offers.tsx | accept_offer,counter_offer,decline_offer,get_inbox,get_offer,listing_offers,make_offer,withdraw_offer |T: 
+listing/[id]/photos.tsx | create_report,get_feed,get_listing,hide_listing,record_swipes,record_view,save_listing,undo_swipe,unsave_listing,watch_listing |T: 
+listing/[id]/relist.tsx | delete_listing,get_me,listing_stats,my_listings,relist_listing,update_listing,update_profile,update_profile_flags |T: 
+listing/[id]/sold.tsx | confirm_deal,get_my_rating,mark_sold,submit_rating |T: 
+listing/[id]/stats.tsx | delete_listing,get_me,listing_stats,my_listings,relist_listing,update_listing,update_profile,update_profile_flags |T: 
+meetup/[id].tsx | cancel_meetup,checkin_meetup,confirm_meetup,create_meetup_share,get_chat_meetup,get_meetup,propose_meetup,report_noshow,running_late |T: 
+notifications/index.tsx | get_notification_prefs,get_notifications,mark_notifications_read,update_notification_prefs |T: 
+offer/[id].tsx | accept_offer,counter_offer,decline_offer,get_inbox,get_offer,listing_offers,make_offer,withdraw_offer |T: 
+quad/[id].tsx | accept_quad_rules,create_appeal,create_quad_post,create_quad_reply,create_report,delete_quad_post,get_my_quad,get_my_quad_hides,get_my_quad_mutes,get_notifications,get_quad_feed,get_quad_status,get_quad_thread,hide_quad_author,mark_notifications_read,mute_keyword,set_quad_replies,unhide_quad,unmute_keyword,vote_poll,vote_quad |T: 
+quad/activity.tsx | accept_quad_rules,create_appeal,create_quad_post,create_quad_reply,create_report,delete_quad_post,get_my_quad,get_my_quad_hides,get_my_quad_mutes,get_notifications,get_quad_feed,get_quad_status,get_quad_thread,hide_quad_author,mark_notifications_read,mute_keyword,set_quad_replies,unhide_quad,unmute_keyword,vote_poll,vote_quad |T: 
+quad/mine.tsx | accept_quad_rules,create_appeal,create_quad_post,create_quad_reply,create_report,delete_quad_post,get_my_quad,get_my_quad_hides,get_my_quad_mutes,get_notifications,get_quad_feed,get_quad_status,get_quad_thread,hide_quad_author,mark_notifications_read,mute_keyword,set_quad_replies,unhide_quad,unmute_keyword,vote_poll,vote_quad |T: 
+quad/muted.tsx | accept_quad_rules,create_appeal,create_quad_post,create_quad_reply,create_report,delete_quad_post,get_my_quad,get_my_quad_hides,get_my_quad_mutes,get_notifications,get_quad_feed,get_quad_status,get_quad_thread,hide_quad_author,mark_notifications_read,mute_keyword,set_quad_replies,unhide_quad,unmute_keyword,vote_poll,vote_quad |T: 
+quad/new.tsx | accept_quad_rules,create_appeal,create_quad_post,create_quad_reply,create_report,delete_quad_post,get_my_quad,get_my_quad_hides,get_my_quad_mutes,get_notifications,get_quad_feed,get_quad_status,get_quad_thread,hide_quad_author,mark_notifications_read,mute_keyword,set_quad_replies,unhide_quad,unmute_keyword,vote_poll,vote_quad |T: 
+report/[id].tsx | create_appeal,get_account_status,get_my_report,list_blocked,unblock_user |T: 
+safety/index.tsx | create_appeal,get_account_status,get_my_report,list_blocked,unblock_user |T: 
+saved/index.tsx | get_saved |T: 
+search/_layout.tsx |  |T: 
+search/index.tsx | create_saved_search,delete_saved_search,list_saved_searches,saved_search_new_counts,search_listings,search_suggest,update_saved_search |T: 
+search/results.tsx | create_saved_search,delete_saved_search,list_saved_searches,saved_search_new_counts,search_listings,search_suggest,update_saved_search |T: 
+settings/about.tsx | delete_listing,get_me,listing_stats,my_listings,relist_listing,update_listing,update_profile,update_profile_flags |T: 
+settings/appearance.tsx | delete_listing,get_me,listing_stats,my_listings,relist_listing,update_listing,update_profile,update_profile_flags |T: 
+settings/blocked.tsx | create_appeal,get_account_status,get_my_report,list_blocked,unblock_user |T: 
+settings/data.tsx | delete_listing,get_me,listing_stats,my_listings,relist_listing,update_listing,update_profile,update_profile_flags |T: 
+settings/delete.tsx | create_appeal,get_account_status,get_my_report,list_blocked,unblock_user |T: 
+settings/index.tsx | delete_listing,get_me,listing_stats,my_listings,relist_listing,update_listing,update_profile,update_profile_flags |T: 
+settings/language.tsx | delete_listing,get_me,listing_stats,my_listings,relist_listing,update_listing,update_profile,update_profile_flags |T: 
+settings/notifications.tsx | get_notification_prefs,get_notifications,mark_notifications_read,update_notification_prefs |T: 
+settings/privacy.tsx | delete_listing,get_me,listing_stats,my_listings,relist_listing,update_listing,update_profile,update_profile_flags |T: 
+settings/school.tsx | delete_listing,get_me,listing_stats,my_listings,relist_listing,update_listing,update_profile,update_profile_flags |T: 
+unlocked.tsx | mark_unlock_seen,my_waitlist_position |T: 
+user/[id].tsx | block_user,create_report,get_profile,unblock_user |T: 

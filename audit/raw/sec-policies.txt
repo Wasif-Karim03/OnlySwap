@@ -1,0 +1,36 @@
+tablename | policyname | cmd | roles | qual | with_check
+admins | admins_select_admin | SELECT | {authenticated} | private.is_admin('moderator'::admin_role) | 
+announcements | announcements_select_campus | SELECT | {authenticated} | (((campus_id IS NULL) OR (campus_id = private.my_campus())) AND (pinned_until IS NOT NULL) AND (pinned_until > private.now())) | 
+app_config | app_config_select_public | SELECT | {authenticated} | (private.is_public_config_key(key) OR private.is_admin('owner'::admin_role)) | 
+appeals | appeals_select_own | SELECT | {authenticated} | ((user_id = auth.uid()) OR private.is_admin('moderator'::admin_role)) | 
+audit_log | audit_log_select_admin | SELECT | {authenticated} | private.is_admin('moderator'::admin_role) | 
+blocks | blocks_select_own | SELECT | {authenticated} | ((blocker_id = auth.uid()) OR private.is_admin('moderator'::admin_role)) | 
+campus_domains | campus_domains_select_admin | SELECT | {authenticated} | private.is_admin('moderator'::admin_role) | 
+campuses | campuses_select_own | SELECT | {authenticated} | ((id = private.my_campus()) OR private.is_admin('moderator'::admin_role)) | 
+categories | categories_select_all | SELECT | {authenticated} | true | 
+chats | chats_select_participants | SELECT | {authenticated} | ((auth.uid() = buyer_id) OR (auth.uid() = seller_id)) | 
+data_exports | data_exports_select_own | SELECT | {authenticated} | (user_id = auth.uid()) | 
+listing_photos | listing_photos_select | SELECT | {authenticated} | (EXISTS ( SELECT 1
+   FROM listings l
+  WHERE (l.id = listing_photos.listing_id))) | 
+listings | listings_select | SELECT | {authenticated} | (private.is_admin('moderator'::admin_role) OR ((campus_id = private.my_campus()) AND (((seller_id = auth.uid()) AND (status <> 'deleted'::listing_status)) OR ((status = ANY (ARRAY['active'::listing_status, 'hold'::listing_status, 'sold'::listing_status])) AND (NOT private.is_blocked(auth.uid(), seller_id)))))) | 
+meetups | meetups_select_participants | SELECT | {authenticated} | private.is_chat_participant(chat_id) | 
+messages | messages_select_participants | SELECT | {authenticated} | private.is_chat_participant(chat_id) | 
+noshow_reports | noshow_reports_select_own | SELECT | {authenticated} | ((reporter_id = auth.uid()) OR private.is_admin('moderator'::admin_role)) | 
+notification_prefs | notification_prefs_select_own | SELECT | {authenticated} | (user_id = auth.uid()) | 
+notifications | notifications_select_own | SELECT | {authenticated} | (user_id = auth.uid()) | 
+offers | offers_select_participants | SELECT | {authenticated} | (((auth.uid() = buyer_id) OR (auth.uid() = seller_id)) OR private.is_admin('moderator'::admin_role)) | 
+profiles | profiles_select_self | SELECT | {authenticated} | ((id = auth.uid()) OR private.is_admin('moderator'::admin_role)) | 
+profiles | profiles_update_self | UPDATE | {authenticated} | (id = auth.uid()) | (id = auth.uid())
+push_tokens | push_tokens_select_own | SELECT | {authenticated} | (user_id = auth.uid()) | 
+quad_mutes | quad_mutes_self | SELECT | {authenticated} | (user_id = auth.uid()) | 
+quad_votes | quad_votes_self | SELECT | {authenticated} | (user_id = auth.uid()) | 
+ratings | ratings_select_own_given | SELECT | {authenticated} | ((rater_id = auth.uid()) OR private.is_admin('moderator'::admin_role)) | 
+reports | reports_select_admin | SELECT | {authenticated} | private.is_admin('moderator'::admin_role) | 
+safe_spots | safe_spots_select_campus | SELECT | {authenticated} | (((campus_id = private.my_campus()) AND active) OR private.is_admin('moderator'::admin_role)) | 
+saved_searches | saved_searches_select_self | SELECT | {authenticated} | ((user_id = auth.uid()) OR private.is_admin('moderator'::admin_role)) | 
+saves | saves_select_self | SELECT | {authenticated} | ((user_id = auth.uid()) OR private.is_admin('moderator'::admin_role)) | 
+strikes | strikes_select_own | SELECT | {authenticated} | ((user_id = auth.uid()) OR private.is_admin('moderator'::admin_role)) | 
+swipes | swipes_select_self | SELECT | {authenticated} | ((user_id = auth.uid()) OR private.is_admin('moderator'::admin_role)) | 
+watches | watches_select_self | SELECT | {authenticated} | ((user_id = auth.uid()) OR private.is_admin('moderator'::admin_role)) | 
+(32 rows)

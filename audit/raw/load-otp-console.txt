@@ -1,0 +1,15 @@
+./run.sh: line 20: 82833 Terminated: 15          ( while true; do
+    echo "$(date +%T) $(docker stats --no-stream --format '{{.Name}} cpu={{.CPUPerc}} mem={{.MemUsage}}' supabase_db_onlyswap supabase_rest_onlyswap supabase_kong_onlyswap supabase_realtime_onlyswap supabase_auth_onlyswap | sed 's/supabase_//; s/_onlyswap//' | tr '\n' ' ') conns=$(psql "$PGURL" -Atc 'select count(*) from pg_stat_activity' 2>/dev/null)"; sleep 5;
+done ) > "$RAW/load-$S-docker.txt"
+running (1m07.0s), 08/20 VUs, 1025 complete and 0 interrupted iterations
+running (1m08.0s), 06/20 VUs, 1033 complete and 0 interrupted iterations
+running (1m09.0s), 04/20 VUs, 1039 complete and 0 interrupted iterations
+running (1m10.0s), 02/20 VUs, 1043 complete and 0 interrupted iterations
+    otp_429........................: 2      0.028404/s
+    otp_sent.......................: 1043   14.812761/s
+    http_req_duration..............: avg=33.42ms med=28.71ms p(90)=60.26ms p(95)=76.94ms p(99)=101.07ms max=118.51ms
+    http_req_failed................: 0.00%  0 out of 2090
+    http_reqs......................: 2090   29.68233/s
+    iterations.....................: 1045   14.841165/s
+    vus_max........................: 20     min=20        max=20
+running (1m10.4s), 00/20 VUs, 1045 complete and 0 interrupted iterations

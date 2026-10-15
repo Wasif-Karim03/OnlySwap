@@ -1,0 +1,23 @@
+                              set_config                               
+-----------------------------------------------------------------------
+ {"sub":"50000000-0000-4000-8000-000000000660","role":"authenticated"}
+(1 row)
+
+LOG:  duration: 7.466 ms  plan:
+Query Text: select count(*)::int               from public.listings l
+  where l.campus_id = me.campus_id and l.status = 'active' and l.kind in ('sale', 'free')
+Aggregate  (cost=515.11..515.13 rows=1 width=4) (actual time=7.464..7.465 rows=1 loops=1)
+  Buffers: shared hit=10139 read=78 written=77
+  ->  Index Only Scan using listings_campus_id_kind_status_created_at_idx on listings l  (cost=0.29..489.66 rows=10181 width=0) (actual time=0.024..7.070 rows=10143 loops=1)
+        Index Cond: ((campus_id = '90000000-0000-4000-8000-000000000001'::uuid) AND (kind = ANY ('{sale,free}'::public.listing_kind[])) AND (status = 'active'::public.listing_status))
+        Heap Fetches: 10143
+        Buffers: shared hit=10139 read=78 written=77
+LOG:  duration: 17.924 ms  plan:
+Query Text: select public.get_campus_feed('all',null) is not null;
+Result  (cost=0.00..0.26 rows=1 width=1) (actual time=17.921..17.922 rows=1 loops=1)
+  Buffers: shared hit=13037 read=410 written=339
+ ?column? 
+----------
+ t
+(1 row)
+

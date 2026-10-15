@@ -1,0 +1,10 @@
+
+> onlyswap@ lint /Users/wasifkarim/Code/OnlySwap
+> pnpm -r --if-present lint && prettier --check .
+
+Scope: 5 of 6 workspace projects
+apps/mobile lint$ eslint . --max-warnings 0
+apps/mobile lint: Done
+Checking formatting...
+All matched files use Prettier code style!
+exit 0

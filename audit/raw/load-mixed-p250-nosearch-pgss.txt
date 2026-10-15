@@ -1,0 +1,16 @@
+                                             q                                              | calls | mean_ms | total_ms | rows  
+--------------------------------------------------------------------------------------------+-------+---------+----------+-------
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |  2402 |   11.71 |    28132 |  2402
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |  8704 |    3.17 |    27608 |  8704
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |  8699 |    1.92 |    16661 |  8699
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT "public"."get_inbox"() p |  1966 |    4.57 |     8988 |  1966
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |  1956 |    1.82 |     3566 |  1956
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |  2499 |    0.99 |     2462 |  2499
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |   983 |    1.91 |     1875 |   983
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |  1943 |    0.91 |     1767 |  1943
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |  1966 |    0.87 |     1717 |  1966
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |  1943 |    0.85 |     1648 |  1943
+ select set_config('search_path', $1, true), set_config($2, $3, true), set_config('role', $ | 33061 |    0.02 |      547 | 33061
+ select private.demo_autoplay()                                                             |     4 |   23.56 |       94 |     4
+(12 rows)
+

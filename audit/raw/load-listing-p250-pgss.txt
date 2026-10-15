@@ -1,0 +1,16 @@
+                                             q                                              | calls | mean_ms | total_ms | rows  
+--------------------------------------------------------------------------------------------+-------+---------+----------+-------
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |  8664 |   17.66 |   153035 |  8664
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT "public"."reserve_listin |  8664 |    0.61 |     5291 |  8664
+ select private.refresh_stats()                                                             |     1 |  969.77 |      970 |     1
+ select set_config('search_path', $1, true), set_config($2, $3, true), set_config('role', $ | 17328 |    0.02 |      412 | 17328
+ select private.demo_autoplay()                                                             |     2 |   36.39 |       73 |     2
+ select private.notify_push()                                                               |     2 |    4.62 |        9 |     2
+ select private.expire_listings()                                                           |     1 |    7.50 |        7 |     1
+ select count(*) from pg_stat_activity                                                      |    15 |    0.35 |        5 |    15
+ select private.email_drain()                                                               |     1 |    4.86 |        5 |     1
+ select private.reset_stuck_sends()                                                         |     1 |    4.78 |        5 |     1
+ select private.pause_lift()                                                                |     1 |    4.03 |        4 |     1
+ select private.meetup_reminders()                                                          |     1 |    3.34 |        3 |     1
+(12 rows)
+

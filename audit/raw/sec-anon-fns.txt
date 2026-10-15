@@ -1,0 +1,9 @@
+?column? | prosecdef
+get_app_config() | t
+get_invite(code text) | t
+get_listing_public_card(id uuid) | t
+get_meetup_share(token text) | t
+lookup_school(domain text) | t
+public_campus_progress() | t
+public_safe_spots(slug text) | t
+(7 rows)

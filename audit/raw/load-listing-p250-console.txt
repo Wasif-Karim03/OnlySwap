@@ -1,0 +1,14 @@
+./run.sh: line 20: 81740 Terminated: 15          ( while true; do
+    echo "$(date +%T) $(docker stats --no-stream --format '{{.Name}} cpu={{.CPUPerc}} mem={{.MemUsage}}' supabase_db_onlyswap supabase_rest_onlyswap supabase_kong_onlyswap supabase_realtime_onlyswap supabase_auth_onlyswap | sed 's/supabase_//; s/_onlyswap//' | tr '\n' ' ') conns=$(psql "$PGURL" -Atc 'select count(*) from pg_stat_activity' 2>/dev/null)"; sleep 5;
+done ) > "$RAW/load-$S-docker.txt"
+    http_req_duration
+    http_req_failed
+    server_errors
+    server_errors..................: 1963  18.897217/s
+    http_req_duration..............: avg=267.52ms med=13.54ms p(90)=887.56ms p(95)=1.33s p(99)=2.46s max=6.51s 
+    http_req_failed................: 6.51% 1963 out of 30118
+    http_reqs......................: 30118 289.937025/s
+    iterations.....................: 15784 151.947872/s
+    vus_max........................: 1000  min=1000          max=1000
+running (1m43.9s), 0000/1000 VUs, 15784 complete and 0 interrupted iterations
+time="2026-10-14T23:07:12-04:00" level=error msg="thresholds on metrics 'http_req_duration, http_req_failed, server_errors' have been crossed"

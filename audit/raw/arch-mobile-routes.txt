@@ -1,0 +1,109 @@
+F saved get_saved
+F waitlist mark_unlock_seen,my_waitlist_position
+F offers accept_offer,counter_offer,decline_offer,get_inbox,get_offer,listing_offers,make_offer,withdraw_offer
+F meetups cancel_meetup,checkin_meetup,confirm_meetup,create_meetup_share,get_chat_meetup,get_meetup,propose_meetup,report_noshow,running_late
+F sell check_text,create_listing,price_hint,reserve_listing_id,set_listing_share_image
+F quad accept_quad_rules,create_appeal,create_quad_post,create_quad_reply,create_report,delete_quad_post,get_my_quad,get_my_quad_hides,get_my_quad_mutes,get_notifications,get_quad_feed,get_quad_status,get_quad_thread,hide_quad_author,mark_notifications_read,mute_keyword,set_quad_replies,unhide_quad,unmute_keyword,vote_poll,vote_quad
+F chat create_report,get_chat,get_messages,hide_chat,mark_chat_read,send_message,set_chat_mute
+F auth accept_rules,complete_reverify,confirm_age,get_app_config,lookup_school,update_profile
+F campus create_news,get_campus_feed
+F deals confirm_deal,get_my_rating,mark_sold,submit_rating
+F search create_saved_search,delete_saved_search,list_saved_searches,saved_search_new_counts,search_listings,search_suggest,update_saved_search
+F safety create_appeal,get_account_status,get_my_report,list_blocked,unblock_user
+F system 
+F feed create_report,get_feed,get_listing,hide_listing,record_swipes,record_view,save_listing,undo_swipe,unsave_listing,watch_listing
+F me delete_listing,get_me,listing_stats,my_listings,relist_listing,update_listing,update_profile,update_profile_flags
+F appIcon 
+F dev 
+F profiles block_user,create_report,get_profile,unblock_user
+F legal 
+F notifications get_notification_prefs,get_notifications,mark_notifications_read,update_notification_prefs
+F widgets 
+F help 
+R (auth)/_layout.tsx |  |direct:  | 6
+R (auth)/age.tsx | auth |direct:  | 5
+R (auth)/allow-notifications.tsx | auth |direct:  | 5
+R (auth)/email.tsx | auth |direct:  | 5
+R (auth)/profile-setup.tsx | auth |direct:  | 5
+R (auth)/rules.tsx | auth |direct:  | 5
+R (auth)/verify.tsx | auth |direct:  | 5
+R (auth)/welcome.tsx | auth |direct:  | 3
+R (system)/_layout.tsx |  |direct:  | 6
+R (system)/account-status.tsx | safety |direct:  | 5
+R (system)/maintenance.tsx | system |direct:  | 5
+R (system)/reverify.tsx | auth |direct:  | 5
+R (system)/update.tsx | system |direct:  | 5
+R (system)/waitlist.tsx | waitlist |direct:  | 5
+R (tabs)/_layout.tsx | quad |direct:  | 82
+R (tabs)/discover/_layout.tsx |  |direct:  | 6
+R (tabs)/discover/campus.tsx |  |direct:  | 7
+R (tabs)/discover/index.tsx | feed |direct:  | 5
+R (tabs)/feed/_layout.tsx |  |direct:  | 6
+R (tabs)/feed/index.tsx | campus |direct:  | 5
+R (tabs)/inbox/_layout.tsx |  |direct:  | 6
+R (tabs)/inbox/index.tsx | offers |direct:  | 5
+R (tabs)/profile/_layout.tsx |  |direct:  | 6
+R (tabs)/profile/edit.tsx | me |direct:  | 5
+R (tabs)/profile/index.tsx | me |direct:  | 33
+R (tabs)/profile/listings.tsx | me |direct:  | 5
+R (tabs)/quad/_layout.tsx |  |direct:  | 6
+R (tabs)/quad/index.tsx | quad |direct:  | 5
+R (tabs)/sell/_layout.tsx |  |direct:  | 6
+R (tabs)/sell/details.tsx | sell |direct:  | 5
+R (tabs)/sell/food.tsx | campus |direct:  | 5
+R (tabs)/sell/index.tsx | sell |direct:  | 5
+R (tabs)/sell/meetup.tsx | sell |direct:  | 5
+R (tabs)/sell/news.tsx | campus |direct:  | 5
+R (tabs)/sell/posted.tsx | sell |direct:  | 5
+R (tabs)/sell/wanted.tsx | campus |direct:  | 5
+R +native-intent.tsx | auth |direct:  | 14
+R +not-found.tsx | system |direct:  | 5
+R _layout.tsx | auth,widgets |direct:  | 86
+R chat/[id]/deal.tsx | deals |direct:  | 13
+R chat/[id]/details.tsx | chat |direct:  | 8
+R chat/[id]/index.tsx | chat |direct:  | 8
+R chat/[id]/meetup.tsx | meetups |direct:  | 13
+R deal/[chatId]/rate.tsx | deals |direct:  | 8
+R dev/kit.tsx | dev |direct:  | 9
+R dev/spikes.tsx | dev |direct:  | 9
+R dev/states/[id].tsx | dev |direct:  | 10
+R dev/states/index.tsx | dev |direct:  | 9
+R help/email-access.tsx | help |direct:  | 5
+R help/index.tsx | safety |direct:  | 5
+R index.tsx | auth |direct:  | 3
+R legal/[doc].tsx | legal |direct:  | 8
+R link-error.tsx | system |direct:  | 5
+R listing/[id]/edit.tsx | me |direct:  | 8
+R listing/[id]/index.tsx | feed |direct:  | 9
+R listing/[id]/offer.tsx | offers |direct:  | 13
+R listing/[id]/offers.tsx | offers |direct:  | 8
+R listing/[id]/photos.tsx | feed |direct:  | 13
+R listing/[id]/relist.tsx | me |direct:  | 8
+R listing/[id]/sold.tsx | deals |direct:  | 13
+R listing/[id]/stats.tsx | me |direct:  | 8
+R meetup/[id].tsx | meetups |direct:  | 8
+R notifications/index.tsx | notifications |direct:  | 5
+R offer/[id].tsx | offers |direct:  | 8
+R quad/[id].tsx | quad |direct:  | 8
+R quad/activity.tsx | quad |direct:  | 5
+R quad/mine.tsx | quad |direct:  | 5
+R quad/muted.tsx | quad |direct:  | 5
+R quad/new.tsx | quad |direct:  | 5
+R report/[id].tsx | safety |direct:  | 8
+R safety/index.tsx | safety |direct:  | 5
+R saved/index.tsx | saved |direct:  | 5
+R search/_layout.tsx |  |direct:  | 5
+R search/index.tsx | search |direct:  | 5
+R search/results.tsx | search |direct:  | 9
+R settings/about.tsx | me |direct:  | 5
+R settings/appearance.tsx | me |direct:  | 5
+R settings/blocked.tsx | safety |direct:  | 5
+R settings/data.tsx | me |direct:  | 5
+R settings/delete.tsx | safety |direct:  | 5
+R settings/index.tsx | me |direct:  | 5
+R settings/language.tsx | me |direct:  | 5
+R settings/notifications.tsx | notifications |direct:  | 5
+R settings/privacy.tsx | me |direct:  | 5
+R settings/school.tsx | me |direct:  | 5
+R unlocked.tsx | waitlist |direct:  | 5
+R user/[id].tsx | profiles |direct:  | 8

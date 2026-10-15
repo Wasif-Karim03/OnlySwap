@@ -1,0 +1,56 @@
+PASS __tests__/meetups.test.tsx
+PASS __tests__/chatScreens.test.tsx
+  ● Console
+
+    console.warn
+      expo-notifications: Android Push notifications (remote notifications) functionality provided by expo-notifications was removed from Expo Go with the release of SDK 53. Use a development build instead of Expo Go. Learn more at https://docs.expo.dev/develop/development-builds/introduction/.
+
+       5 |   requestMediaLibraryPermissionsAsync,
+       6 | } from 'expo-image-picker';
+    >  7 | import { getPermissionsAsync, requestPermissionsAsync } from 'expo-notifications';
+         | ^
+       8 | import { useCallback, useEffect, useRef, useState } from 'react';
+       9 | import { AppState, Linking } from 'react-native';
+      10 |
+
+      at warn (../../node_modules/.pnpm/expo-notifications@57.0.23_expo@57.0.29_react-native@0.86.3_@babel+core@7.29.7_@react-n_faf2b528aa1612489db1b7c344eba40c/node_modules/expo-notifications/src/warnOfExpoGoPushUsage.ts:14:15)
+      at addPushTokenListener (../../node_modules/.pnpm/expo-notifications@57.0.23_expo@57.0.29_react-native@0.86.3_@babel+core@7.29.7_@react-n_faf2b528aa1612489db1b7c344eba40c/node_modules/expo-notifications/src/TokenEmitter.ts:44:24)
+      at Object.<anonymous> (../../node_modules/.pnpm/expo-notifications@57.0.23_expo@57.0.29_react-native@0.86.3_@babel+core@7.29.7_@react-n_faf2b528aa1612489db1b7c344eba40c/node_modules/expo-notifications/src/DevicePushTokenAutoRegistration.fx.ts:110:23)
+      at Object.require (../../node_modules/.pnpm/expo-notifications@57.0.23_expo@57.0.29_react-native@0.86.3_@babel+core@7.29.7_@react-n_faf2b528aa1612489db1b7c344eba40c/node_modules/expo-notifications/src/getExpoPushTokenAsync.ts:5:1)
+      at Object.require (../../node_modules/.pnpm/expo-notifications@57.0.23_expo@57.0.29_react-native@0.86.3_@babel+core@7.29.7_@react-n_faf2b528aa1612489db1b7c344eba40c/node_modules/expo-notifications/src/index.ts:16:1)
+      at Object.require (src/lib/permissions.ts:7:1)
+      at Object.require (src/components/PermissionPrimer.tsx:5:1)
+      at Object.require (src/features/chat/ChatScreen.tsx:18:1)
+      at Object.require (src/features/chat/ChatDetailsScreen.tsx:20:1)
+      at Object.require (__tests__/chatScreens.test.tsx:9:1)
+
+PASS __tests__/sell.test.tsx
+  ● Console
+
+    console.warn
+      expo-notifications: Android Push notifications (remote notifications) functionality provided by expo-notifications was removed from Expo Go with the release of SDK 53. Use a development build instead of Expo Go. Learn more at https://docs.expo.dev/develop/development-builds/introduction/.
+
+       5 |   requestMediaLibraryPermissionsAsync,
+       6 | } from 'expo-image-picker';
+    >  7 | import { getPermissionsAsync, requestPermissionsAsync } from 'expo-notifications';
+         | ^
+       8 | import { useCallback, useEffect, useRef, useState } from 'react';
+       9 | import { AppState, Linking } from 'react-native';
+      10 |
+
+      at warn (../../node_modules/.pnpm/expo-notifications@57.0.23_expo@57.0.29_react-native@0.86.3_@babel+core@7.29.7_@react-n_faf2b528aa1612489db1b7c344eba40c/node_modules/expo-notifications/src/warnOfExpoGoPushUsage.ts:14:15)
+      at addPushTokenListener (../../node_modules/.pnpm/expo-notifications@57.0.23_expo@57.0.29_react-native@0.86.3_@babel+core@7.29.7_@react-n_faf2b528aa1612489db1b7c344eba40c/node_modules/expo-notifications/src/TokenEmitter.ts:44:24)
+      at Object.<anonymous> (../../node_modules/.pnpm/expo-notifications@57.0.23_expo@57.0.29_react-native@0.86.3_@babel+core@7.29.7_@react-n_faf2b528aa1612489db1b7c344eba40c/node_modules/expo-notifications/src/DevicePushTokenAutoRegistration.fx.ts:110:23)
+      at Object.require (../../node_modules/.pnpm/expo-notifications@57.0.23_expo@57.0.29_react-native@0.86.3_@babel+core@7.29.7_@react-n_faf2b528aa1612489db1b7c344eba40c/node_modules/expo-notifications/src/getExpoPushTokenAsync.ts:5:1)
+      at Object.require (../../node_modules/.pnpm/expo-notifications@57.0.23_expo@57.0.29_react-native@0.86.3_@babel+core@7.29.7_@react-n_faf2b528aa1612489db1b7c344eba40c/node_modules/expo-notifications/src/index.ts:16:1)
+      at Object.require (src/lib/permissions.ts:7:1)
+      at Object.require (src/components/PermissionPrimer.tsx:5:1)
+      at Object.require (src/features/sell/SellPhotosScreen.tsx:10:1)
+      at Object.require (__tests__/sell.test.tsx:30:1)
+
+
+Test Suites: 3 passed, 3 total
+Tests:       54 passed, 54 total
+Snapshots:   0 total
+Time:        3.43 s, estimated 126 s
+Ran all test suites matching /__tests__\/meetups.test.tsx|__tests__\/chatScreens.test.tsx|__tests__\/sell.test.tsx/i.

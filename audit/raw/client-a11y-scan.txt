@@ -1,0 +1,10 @@
+total tags 296 flagged 9
+apps/mobile/src/features/dev/KitScreen.tsx:84: <Pressable> label=False role=True
+apps/mobile/src/features/dev/SpikesScreen.tsx:53: <Pressable> label=False role=True
+apps/mobile/src/features/dev/SpikesScreen.tsx:115: <Pressable> label=False role=True
+apps/mobile/src/features/dev/MediaCheck.tsx:87: <Pressable> label=False role=True
+apps/mobile/src/features/dev/MediaCheck.tsx:90: <Pressable> label=False role=True
+apps/mobile/src/components/PhotoCarousel.tsx:121: <Pressable> label=False role=False
+apps/mobile/src/components/OTPInput.tsx:78: <Pressable> label=False role=True
+apps/mobile/app/(tabs)/profile/index.tsx:15: <Pressable> label=False role=True
+apps/mobile/app/(tabs)/profile/index.tsx:22: <Pressable> label=False role=True

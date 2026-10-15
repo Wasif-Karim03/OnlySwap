@@ -1,0 +1,16 @@
+                                             q                                              | calls | mean_ms | total_ms | rows  
+--------------------------------------------------------------------------------------------+-------+---------+----------+-------
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p | 13843 |    2.22 |    30760 | 13843
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p | 13843 |    1.37 |    18898 | 13843
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p | 13845 |    0.65 |     8980 | 13845
+ select set_config('search_path', $1, true), set_config($2, $3, true), set_config('role', $ | 41531 |    0.01 |      528 | 41531
+ select private.demo_autoplay()                                                             |     1 |   13.74 |       14 |     1
+ select private.notify_push()                                                               |     1 |    6.62 |        7 |     1
+ select count(*) from pg_stat_activity                                                      |    15 |    0.20 |        3 |    15
+ select pg_stat_statements_reset()                                                          |     1 |    1.40 |        1 |     1
+ update cron.job_run_details set status = $1 where runid = $2                               |     2 |    0.38 |        1 |     2
+ select pg_size_pretty(pg_total_relation_size($1)), (select count(*) from activity_events), |     1 |    0.55 |        1 |     1
+ SELECT e0."id", e0."type", e0."settings", e0."tenant_external_id", e0."inserted_at", e0."u |     4 |    0.11 |        0 |     4
+ insert into cron.job_run_details (jobid, runid, database, username, command, status) value |     2 |    0.18 |        0 |     2
+(12 rows)
+

@@ -1,0 +1,1 @@
+- The audit brief's repo name and feature list were out of date; per the owner, the locked spec in the repo (R1.0) is the source of truth, and the audit is measured against it.

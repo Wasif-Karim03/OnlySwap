@@ -1,0 +1,16 @@
+                                             q                                              | calls | mean_ms | total_ms | rows 
+--------------------------------------------------------------------------------------------+-------+---------+----------+------
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |  3383 |  248.16 |   839514 | 3383
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |  3108 |    2.56 |     7955 | 3108
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |  1573 |    1.58 |     2485 | 1573
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |   474 |    1.15 |      547 |  474
+ select set_config('search_path', $1, true), set_config($2, $3, true), set_config('role', $ |  8538 |    0.03 |      227 | 8538
+ select private.demo_autoplay()                                                             |     2 |   14.80 |       30 |    2
+ select count(*) from pg_stat_activity                                                      |    15 |    1.65 |       25 |   15
+ select private.meetup_reminders()                                                          |     1 |    9.42 |        9 |    1
+ select private.email_drain()                                                               |     1 |    6.91 |        7 |    1
+ select private.reset_stuck_sends()                                                         |     1 |    6.56 |        7 |    1
+ select private.notify_push()                                                               |     2 |    3.04 |        6 |    2
+ insert into cron.job_run_details (jobid, runid, database, username, command, status) value |     8 |    0.23 |        2 |    8
+(12 rows)
+

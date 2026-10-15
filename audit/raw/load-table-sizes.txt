@@ -1,0 +1,16 @@
+    relname     |  rows  |   tbl   |   idx   |  total  
+----------------+--------+---------+---------+---------
+ messages       | 200000 | 28 MB   | 27 MB   | 56 MB
+ notifications  | 100844 | 16 MB   | 10 MB   | 26 MB
+ listings       |  20045 | 8248 kB | 12 MB   | 20 MB
+ swipes         | 100452 | 7536 kB | 8456 kB | 16 MB
+ listing_photos |  49961 | 8920 kB | 4648 kB | 13 MB
+ offers         |  44802 | 7664 kB | 5592 kB | 13 MB
+ chats          |  11141 | 3896 kB | 4216 kB | 8112 kB
+ quad_votes     |  39948 | 3024 kB | 3440 kB | 6464 kB
+ quad_replies   |  15003 | 1872 kB | 1704 kB | 3576 kB
+ profiles       |   5006 | 2368 kB | 992 kB  | 3360 kB
+ saves          |  19998 | 1520 kB | 1808 kB | 3328 kB
+ quad_posts     |   3010 | 1544 kB | 832 kB  | 2376 kB
+(12 rows)
+

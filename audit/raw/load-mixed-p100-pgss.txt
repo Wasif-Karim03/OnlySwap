@@ -1,0 +1,18 @@
+           statement            | calls | mean_ms | total_ms | pct 
+--------------------------------+-------+---------+----------+-----
+ search_suggest                 |   351 | 1330.55 |   467023 |  47
+ search_listings                |   351 | 1314.59 |   461421 |  46
+ get_quad_feed                  |   189 |  174.41 |    32964 |   3
+ get_campus_feed                |   583 |   18.27 |    10652 |   1
+ get_feed                       |  1671 |    4.20 |     7016 |   1
+ record_swipes                  |  1672 |    2.88 |     4815 |   0
+ get_inbox                      |   401 |    6.87 |     2754 |   0
+ send_message                   |   408 |    2.71 |     1107 |   0
+ select private.refresh_stats() |     1 |  825.16 |      825 |   0
+ get_notifications              |   400 |    1.66 |      665 |   0
+ get_listing                    |   489 |    1.31 |      640 |   0
+ make_offer                     |   186 |    3.33 |      620 |   0
+ get_messages                   |   393 |    1.15 |      450 |   0
+ get_chat                       |   393 |    1.13 |      443 |   0
+(14 rows)
+

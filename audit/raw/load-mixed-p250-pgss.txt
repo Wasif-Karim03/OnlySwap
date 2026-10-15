@@ -1,0 +1,16 @@
+                                             q                                              | calls | mean_ms | total_ms | rows 
+--------------------------------------------------------------------------------------------+-------+---------+----------+------
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |   466 | 1642.48 |   765395 |  466
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |   452 | 1596.07 |   721423 |  452
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |   233 |  307.15 |    71567 |  233
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |   618 |   28.22 |    17437 |  618
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |  2049 |    7.43 |    15216 | 2049
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |  2020 |    5.02 |    10148 | 2020
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT "public"."get_inbox"() p |   481 |   11.07 |     5325 |  481
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |   464 |    5.17 |     2399 |  464
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |   228 |    6.06 |     1382 |  228
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |   572 |    2.38 |     1360 |  572
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |   482 |    2.47 |     1192 |  482
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |   446 |    2.48 |     1104 |  446
+(12 rows)
+

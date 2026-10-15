@@ -1,0 +1,78 @@
+                              set_config                               
+-----------------------------------------------------------------------
+ {"sub":"50000000-0000-4000-8000-000000000660","role":"authenticated"}
+(1 row)
+
+LOG:  duration: 305.264 ms  plan:
+Query Text: with s as (
+    select 1 as grp, 'saved' as type, ss.query as label, null::int as count, ss.created_at::text as k
+    from public.saved_searches ss
+    where ss.user_id = me.id and ss.query is not null and lower(ss.query) like qq || '%'
+    union all
+    select 2, 'category', c.name, (
+             select count(*)::int from public.listings l
+             where l.campus_id = me.campus_id and l.status = 'active' and l.category_id = c.id), c.name
+    from public.categories c
+    where lower(c.name) like qq || '%' or lower(c.name) like '% ' || qq || '%'
+    union all
+    select 3, 'trending', t.term, t.saves, lpad(t.rank::text, 3, '0')
+    from public.campus_trending_terms t
+    where t.campus_id = me.campus_id and t.term like qq || '%'
+    union all
+    select 4, 'title', l.title, null::int, l.title
+    from public.listings l
+    where l.campus_id = me.campus_id and l.status = 'active' and l.seller_id <> me.id
+      and not private.is_blocked(me.id, l.seller_id)
+      and private.text_matches(l, qq)
+  )
+  select coalesce(jsonb_agg(jsonb_build_object('type', d.type, 'label', d.label, 'count', d.count) order by d.grp, d.k), '[]')
+               from (
+    select * from (select distinct on (lower(label)) * from s order by lower(label), grp) u
+    order by grp, k
+    limit 8
+  ) d
+Aggregate  (cost=7628.87..7628.88 rows=1 width=32) (actual time=305.260..305.263 rows=1 loops=1)
+  Buffers: shared hit=1246 read=13 written=10
+  ->  Limit  (cost=7628.72..7628.74 rows=8 width=76) (actual time=305.241..305.244 rows=8 loops=1)
+        Buffers: shared hit=1246 read=13 written=10
+        ->  Sort  (cost=7628.72..7629.22 rows=200 width=76) (actual time=305.240..305.243 rows=8 loops=1)
+              Sort Key: u.grp, u.k
+              Sort Method: top-N heapsort  Memory: 25kB
+              Buffers: shared hit=1246 read=13 written=10
+              ->  Subquery Scan on u  (cost=7610.40..7624.72 rows=200 width=76) (actual time=304.914..305.106 rows=926 loops=1)
+                    Buffers: shared hit=1240 read=13 written=10
+                    ->  Unique  (cost=7610.40..7622.72 rows=200 width=108) (actual time=304.913..305.038 rows=926 loops=1)
+                          Buffers: shared hit=1240 read=13 written=10
+                          ->  Sort  (cost=7610.40..7616.56 rows=2465 width=108) (actual time=304.912..304.941 rows=926 loops=1)
+                                Sort Key: (lower(ss.query)), (1)
+                                Sort Method: quicksort  Memory: 97kB
+                                Buffers: shared hit=1240 read=13 written=10
+                                ->  Result  (cost=0.00..7471.53 rows=2465 width=108) (actual time=0.926..304.212 rows=926 loops=1)
+                                      Buffers: shared hit=1240 read=13 written=10
+                                      ->  Append  (cost=0.00..7440.72 rows=2465 width=76) (actual time=0.925..303.856 rows=926 loops=1)
+                                            Buffers: shared hit=1240 read=13 written=10
+                                            ->  Seq Scan on saved_searches ss  (cost=0.00..0.01 rows=1 width=104) (actual time=0.002..0.002 rows=0 loops=1)
+                                                  Filter: ((query IS NOT NULL) AND (user_id = '50000000-0000-4000-8000-000000000660'::uuid) AND (lower(query) ~~ 'fri%'::text))
+                                            ->  Seq Scan on categories c  (cost=0.00..939.77 rows=1 width=60) (actual time=0.020..0.021 rows=0 loops=1)
+                                                  Filter: ((lower(name) ~~ 'fri%'::text) OR (lower(name) ~~ '% fri%'::text))
+                                                  Rows Removed by Filter: 15
+                                                  Buffers: shared read=1 written=1
+                                                  SubPlan 1
+                                                    ->  Aggregate  (cost=938.46..938.47 rows=1 width=4) (never executed)
+                                                          ->  Index Scan using listings_expires_at_idx on listings l_1  (cost=0.29..936.61 rows=739 width=0) (never executed)
+                                                                Filter: ((campus_id = '90000000-0000-4000-8000-000000000001'::uuid) AND (category_id = c.id))
+                                            ->  Seq Scan on campus_trending_terms t  (cost=0.00..0.01 rows=1 width=104) (actual time=0.001..0.001 rows=0 loops=1)
+                                                  Filter: ((term ~~ 'fri%'::text) AND (campus_id = '90000000-0000-4000-8000-000000000001'::uuid))
+                                            ->  Index Scan using listings_expires_at_idx on listings l  (cost=0.29..6488.61 rows=2462 width=76) (actual time=0.902..303.750 rows=926 loops=1)
+                                                  Filter: ((seller_id <> '50000000-0000-4000-8000-000000000660'::uuid) AND (campus_id = '90000000-0000-4000-8000-000000000001'::uuid) AND (NOT private.is_blocked('50000000-0000-4000-8000-000000000660'::uuid, seller_id)) AND private.text_matches(l.*, 'fri'::text))
+                                                  Rows Removed by Filter: 10178
+                                                  Buffers: shared hit=1240 read=12 written=9
+LOG:  duration: 311.705 ms  plan:
+Query Text: select public.search_suggest('fri') is not null;
+Result  (cost=0.00..0.26 rows=1 width=1) (actual time=311.701..311.701 rows=1 loops=1)
+  Buffers: shared hit=3186 read=50 written=47
+ ?column? 
+----------
+ t
+(1 row)
+

@@ -1,0 +1,17 @@
+Connecting to local database...
+psql:/Users/wasifkarim/Code/OnlySwap/audit/scripts/pgtap/sec_04_realtime.test.sql:116: WARNING:  WarnSendingBroadcastMessage: new row violates row-level security policy for table "messages"
+/Users/wasifkarim/Code/OnlySwap/audit/scripts/pgtap/sec_04_realtime.test.sql .. 
+# broadcast rows: user:00000000-0000-4000-8000-00000000000b/inbox, user:00000000-0000-4000-8000-00000000000a/inbox, chat:00000000-0000-4000-8000-00000000cc01/message, user:00000000-0000-4000-8000-00000000000b/inbox, user:00000000-0000-4000-8000-00000000000a/inbox
+# Failed test 13: "DEFENSE-IN-DEPTH: a student role cannot call realtime.send (not reachable via the Data API)"
+#                   ''
+#    doesn't match: 'ERROR:%'
+# Looks like you failed 1 test of 15
+Failed 1/15 subtests 
+
+Test Summary Report
+-------------------
+/Users/wasifkarim/Code/OnlySwap/audit/scripts/pgtap/sec_04_realtime.test.sql (Wstat: 0 Tests: 15 Failed: 1)
+  Failed test:  13
+Files=1, Tests=15,  0 wallclock secs ( 0.01 usr +  0.00 sys =  0.01 CPU)
+Result: FAIL
+error running container: exit 1

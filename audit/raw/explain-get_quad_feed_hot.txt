@@ -1,0 +1,50 @@
+                              set_config                               
+-----------------------------------------------------------------------
+ {"sub":"50000000-0000-4000-8000-000000000660","role":"authenticated"}
+(1 row)
+
+LOG:  duration: 174.010 ms  plan:
+Query Text: select coalesce(jsonb_agg(private.quad_post_json(x.post, me.id) order by x.ord), '[]'::jsonb), count(*)
+                    from (
+    select p as post, row_number() over (order by
+             case coalesce(sort, 'hot')
+               when 'new' then extract(epoch from p.created_at)
+               when 'top' then p.score::double precision
+               else private.quad_hot(p.score, p.created_at)
+             end desc, p.created_at desc, p.id) as ord
+    from public.quad_posts p
+    where p.campus_id = me.campus_id
+      and (p.status = 'live' or (p.author_id = me.id and p.status = 'held'))
+      and (p.expires_at is null or p.expires_at > private.now())
+      and (coalesce(sort, 'hot') <> 'top' or p.created_at > private.now() - interval '7 days')
+      and not private.quad_hidden_for(me.id, p.author_id, p.body)
+    order by ord
+    offset off limit page
+  ) x
+Aggregate  (cost=2974.95..2974.96 rows=1 width=40) (actual time=174.002..174.003 rows=1 loops=1)
+  Buffers: shared hit=6719 read=208 written=102
+  ->  Limit  (cost=2969.60..2969.65 rows=20 width=262) (actual time=168.486..168.492 rows=20 loops=1)
+        Buffers: shared hit=6373 read=195 written=89
+        ->  Sort  (cost=2969.60..2974.60 rows=2000 width=262) (actual time=168.485..168.489 rows=20 loops=1)
+              Sort Key: (row_number() OVER (?))
+              Sort Method: top-N heapsort  Memory: 30kB
+              Buffers: shared hit=6373 read=195 written=89
+              ->  WindowAgg  (cost=2371.41..2916.38 rows=2000 width=262) (actual time=167.542..168.228 rows=3000 loops=1)
+                    Buffers: shared hit=6370 read=195 written=89
+                    ->  Sort  (cost=2371.38..2376.38 rows=2000 width=254) (actual time=167.537..167.800 rows=3000 loops=1)
+                          Sort Key: (private.quad_hot(p.score, p.created_at)) DESC, p.created_at DESC, p.id
+                          Sort Method: quicksort  Memory: 722kB
+                          Buffers: shared hit=6370 read=195 written=89
+                          ->  Seq Scan on quad_posts p  (cost=0.00..2261.72 rows=2000 width=254) (actual time=0.697..162.590 rows=3000 loops=1)
+                                Filter: ((campus_id = '90000000-0000-4000-8000-000000000001'::uuid) AND ((status = 'live'::text) OR ((author_id = '50000000-0000-4000-8000-000000000660'::uuid) AND (status = 'held'::text))) AND (NOT private.quad_hidden_for('50000000-0000-4000-8000-000000000660'::uuid, author_id, body)) AND ((expires_at IS NULL) OR (expires_at > private.now())))
+                                Rows Removed by Filter: 10
+                                Buffers: shared hit=6361 read=195 written=89
+LOG:  duration: 179.109 ms  plan:
+Query Text: select public.get_quad_feed('hot',null) is not null;
+Result  (cost=0.00..0.26 rows=1 width=1) (actual time=179.106..179.106 rows=1 loops=1)
+  Buffers: shared hit=8625 read=231 written=117
+ ?column? 
+----------
+ t
+(1 row)
+

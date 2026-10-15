@@ -1,0 +1,39 @@
+### F-01 two sellers-side accepts of two different offers on one listing, concurrent (20 rounds)
+exactly-one-wins=20 both-won=0 neither=0
+
+### F-02 first offers by many buyers on ONE listing concurrently (FOR SHARE then UPDATE offer_count): deadlock probe
+number of transactions per client: 20
+number of transactions actually processed: 1/480
+number of failed transactions: 479 (99.792%)
+number of deadlock failures: 479 (99.792%)
+latency average = 23636.880 ms (including failures)
+offer_count on listing after run: 1 vs actual offers rows: 1
+
+### F-03 accept_offer (seller) vs withdraw_offer (buyer) interleaved: withdraw passes status check, then blocks on accept's row lock
+accept:{"chat_id": "b6cbbe21-6d75-43b6-bb08-084dbe76c803"}
+ERROR:  OFFER_NOT_PENDING
+PL/pgSQL function public.withdraw_offer(uuid) line 11 at PERFORM
+offer status=accepted | listing status=hold | chat rows=1
+
+### F-04 send_message with the same client_id from two concurrent sessions (10 rounds)
+rounds with duplicate row or different ids/errors: 0 / 10
+
+### F-05 create_listing with the same reserved id from two concurrent sessions (10 rounds)
+ERROR:  duplicate key value violates unique constraint "listings_pkey"
+rounds where listing row count != 1: 0 ; rounds where one caller got an error instead of the first result: 10 / 10
+
+### F-06 mark_sold (seller) in flight while buyer sends a message in the open chat
+{"sub":"50000000-0000-4000-8000-000000000101","role":"authenticated","aal":"aal2"}
+msg:218496
+(by design the buyer's own chat stays open after mark_sold with buyer_id; other chats are closed)
+chat status=open | msgs after close=0
+later send (after commit):
+{"sub":"50000000-0000-4000-8000-000000000101","role":"authenticated","aal":"aal2"}
+{"id": 218497, "body": "after", "kind": "text", "meta": null, "mine": true, "chat_id": "528c66a6-2aa8-4017-a3fa-71e023cf
+END
+clients=2
+number of transactions actually processed: 77/80
+number of deadlock failures: 3 (3.750%)
+clients=5
+number of transactions actually processed: 5/200
+number of deadlock failures: 195 (97.500%)

@@ -1,0 +1,2 @@
+onlyswap-media|t|2097152|{image/webp,image/jpeg}
+onlyswap-private|f|10485760|

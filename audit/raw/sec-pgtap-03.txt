@@ -1,0 +1,28 @@
+Connecting to local database...
+/Users/wasifkarim/Code/OnlySwap/audit/scripts/pgtap/sec_03_quad_anon.test.sql .. 
+# B reply result: {"id": "296ed9da-de6c-47ce-ba76-026a87d774b3", "reason": null, "status": "live", "alias_no": 1}
+# B post result: {"id": "90537d3d-4274-43dd-b55a-0384f5b9337d", "reason": null, "status": "live"}
+# alias_no of B in thread a001 = 1
+# notifications to A: message_new:Ben B.:{"chat_id": "00000000-0000-4000-8000-00000000cc01"} ; offer_new:SECRET-NOTE-TITLE:{} ; quad_reply:New reply on the Quad:{"post_id": "00000000-0000-4000-8000-00000000a001"}
+# realtime topics after Quad activity: chat:00000000-0000-4000-8000-00000000cc01/message, user:00000000-0000-4000-8000-00000000000a/inbox, user:00000000-0000-4000-8000-00000000000b/inbox
+# report on quad post: {"id": "8ec8b95e-65f6-4c04-b8ce-2af4eecc69d6"}
+# Failed test 28: "MODERATOR direct select of reports: Quad reports must not expose target_user_id (owner-only reveal)"
+#         have: 1
+#         want: 0
+# Failed test 29: "admin_list_reports (moderator): no Quad author identity"
+# Failed test 30: "admin_report_detail (moderator): no Quad author identity"
+# Failed test 38: "a moderator reading audit_log cannot see the revealed author_id"
+#         have: 1
+#         want: 0
+# admin_report_detail (moderator) = {"id": "8ec8b95e-65f6-4c04-b8ce-2af4eecc69d6", "reason": "spam", "status": "open", "target": {"id": "00000000-0000-4000-8000-00000000000a", "status": "active", "created_at": "2027-01-01T00:00:00+00:00", "display_name": "Aisha A.", "noshow_count": 0, "strike_count": 0}, "details": "x", "evidence": {"text": "QUAD-LIVE", "photo_keys": [], "captured_at": "2027-03-10T17:00:00+00:00"}, "priority": 2, "campus_id": "00000000-0000-4000-8000-0000000c0001", "target_id": "00000000-0000-4000-8000-00000000a001", "created_at": "2027-03-10T17:00:00+00:00", "assigned_to": null, "reporter_id": "00000000-0000-4000-8000-0000000000f3", "resolved_at": null, "target_type": "quad_post", "action_taken": null, "other_reports": 1, "reporter_name": "Eve E.", "target_user_id": "00000000-0000-4000-8000-00000000000a"}
+# reports.target_user_id (moderator) = 00000000-0000-4000-8000-00000000000a
+# Looks like you failed 4 tests of 38
+Failed 4/38 subtests 
+
+Test Summary Report
+-------------------
+/Users/wasifkarim/Code/OnlySwap/audit/scripts/pgtap/sec_03_quad_anon.test.sql (Wstat: 0 Tests: 38 Failed: 4)
+  Failed tests:  28-30, 38
+Files=1, Tests=38,  1 wallclock secs ( 0.02 usr +  0.00 sys =  0.02 CPU)
+Result: FAIL
+error running container: exit 1

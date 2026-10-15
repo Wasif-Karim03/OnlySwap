@@ -1,0 +1,9 @@
+?column? | anon | auth
+admin_rank(role admin_role) | f | t
+is_admin(min_role admin_role) | f | t
+is_blocked(a uuid, b uuid) | f | t
+is_chat_participant(p_chat uuid) | f | t
+is_public_config_key(p_key text) | f | t
+my_campus() | f | t
+now() | f | t
+(7 rows)

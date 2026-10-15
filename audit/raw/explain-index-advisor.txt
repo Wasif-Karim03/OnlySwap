@@ -1,0 +1,16 @@
+NOTICE:  installing required extension "hypopg"
+q|total_cost_before|total_cost_after|index_statements
+q1 unread count|105.90|105.52|{"CREATE INDEX ON public.notifications USING btree (user_id)"}
+(1 row)
+q|total_cost_before|total_cost_after|index_statements
+q2 quad new|4.59|4.59|{}
+(1 row)
+q|total_cost_before|total_cost_after|index_statements
+q3 campus feed|5.56|5.24|{"CREATE INDEX ON public.listings USING btree (bumped_at)"}
+(1 row)
+q|total_cost_before|total_cost_after|index_statements
+q4 messages|115.64|115.64|{}
+(1 row)
+q|total_cost_before|total_cost_after|index_statements
+q5 offers by listing|16.10|16.10|{}
+(1 row)

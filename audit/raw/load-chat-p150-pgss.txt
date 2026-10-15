@@ -1,0 +1,16 @@
+                                             q                                              | calls | mean_ms | total_ms | rows 
+--------------------------------------------------------------------------------------------+-------+---------+----------+------
+ WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_p |  3462 |    2.17 |     7518 | 3462
+ SELECT m0."id" FROM "realtime"."messages" AS m0 WHERE (m0."id" = ANY($1))                  |  1248 |    0.35 |      440 | 1248
+ INSERT INTO "realtime"."messages" ("topic","updated_at","inserted_at","extension","id") VA |  1248 |    0.08 |      105 | 1248
+ select set_config('search_path', $1, true), set_config($2, $3, true), set_config('role', $ |  3462 |    0.02 |       85 | 3462
+ WITH base_types AS ( SELECT t.oid, bt.typnamespace AS base_namespace, bt.oid AS base_type  |     2 |   29.40 |       59 |  246
+ with recursive pks_fks as ( -- pk + fk referencing col select contype::text as contype, co |     2 |   14.67 |       29 |  260
+ WITH base_types AS ( SELECT t.oid, bt.typnamespace AS base_namespace, bt.oid AS base_type  |     2 |   14.24 |       28 |  358
+ select private.demo_autoplay()                                                             |     2 |   14.23 |       28 |    2
+ SELECT set_config('role', $1, true), set_config('realtime.topic', $2, true), set_config('r |  1248 |    0.01 |       14 | 1248
+ select count(*) from pg_stat_activity                                                      |    19 |    0.49 |        9 |   19
+ select private.notify_push()                                                               |     2 |    4.55 |        9 |    2
+ with all_relations as ( select reltype from pg_class where relkind in ($2,$3,$4,$5,$6) uni |     2 |    1.91 |        4 |    0
+(12 rows)
+

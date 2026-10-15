@@ -1,0 +1,14 @@
+
+> onlyswap@ typecheck /Users/wasifkarim/Code/OnlySwap
+> pnpm -r --if-present typecheck
+
+Scope: 5 of 6 workspace projects
+e2e/web typecheck$ tsc --noEmit
+e2e/web typecheck: Done
+apps/mobile typecheck$ tsc --noEmit
+apps/site typecheck$ tsc --noEmit
+apps/admin typecheck$ tsc --noEmit
+apps/site typecheck: Done
+apps/admin typecheck: Done
+apps/mobile typecheck: Done
+exit 0

@@ -1,0 +1,163 @@
+A-01	FAIL	High	Quad author de-anonymised by any moderator, bypassing owner-only + fresh TOTP + audit reveal	A-security.md
+A-02	FAIL	High	`quad.reveal` audit row stores `author_id` in `meta`; `audit_log` is readable by every moderator	A-security.md
+A-03	FAIL	High	Age gate retry: after `confirm_age('os_signal', false)` (minor), the same account calls `confirm_age('os_signal', true)` and becomes adult	A-security.md
+A-04	RISK	Medium	Age gate trusts the client: `os_signal` `is_adult=true` and any typed `birth_date` are accepted with no server evidence	A-security.md
+A-05	FAIL	Medium	Moderator RLS is not campus-scoped: `is_admin('moderator')` lets any moderator `select` listings, profiles (email_hash, status_reason, strikes), offers, saves, 	A-security.md
+A-06	RISK	Medium	Turnstile skipped when the request has no `Origin` header (`if (req.origin)`) on waitlist-request and support-request; attacker omits the header	A-security.md
+A-07	RISK	Low	`clientIp` takes the first `x-forwarded-for` entry when `cf-connecting-ip` is missing, which a client can spoof (local/`functions serve`; hosted sits behind Clo	A-security.md
+A-08	RISK	Low	`realtime.send()` is executable by the `authenticated` DB role (could inject broadcasts into `chat:{id}`/`user:{id}`); not reachable through the Data API (expos	A-security.md
+A-09	RISK	Low	OTP guessing: only an IP-based limit (30 verifications / 5 min) plus a client-side lockout; 6 digits, 10 min. No per-account verify throttle in this repo	A-security.md
+A-10	RISK	Low	`delete-account` and `export-data` need only a valid access token (up to 1 h old) and the typed word DELETE; no recent re-auth	A-security.md
+A-11	RISK	Low	Quad auto-hide at 3 open reports does not check reporter account age (SECURITY says >=7 days), so 3 new accounts can hide any post	A-security.md
+A-12	RISK	Low	`hide_quad_author` hides every post and reply by that author, which lets the hider link posts across threads despite per-thread aliases	A-security.md
+A-13	RISK	Low	Upload server never inspects bytes: EXIF stripping (WebP re-encode, `lib/media.ts`) is client-side only, type/size are signed but content is not validated; 60 U	A-security.md
+A-14	RISK	Low	Media Worker: `workers_dev = true` keeps an un-fronted public URL; signed chat URLs are bearer links valid up to 3 h; per-isolate rate limit only	A-security.md
+A-15	RISK	Low	Web app CSP allows `connect-src https://*.workers.dev` and `img-src https:` (exfil channels); local `allowBackup="true"` in the generated Android manifest	A-security.md
+A-16	RISK	Low	Sign-up hook returns distinct codes `AGE_BLOCKED` / `BANNED` for an email, an oracle for whether a school address was flagged	A-security.md
+A-17	RISK	Low	`test-inbox` (verify_jwt=false) mints login codes for `e2e+*@e2e.onlyswap.test`; guarded by APP_ENV, E2E_SECRET (>=16) and 404 on prod	A-security.md
+A-18	RISK	Low	Dependencies: osv/pnpm audit show 3 high + 3 moderate (braces, http-cache-semantics, node-forge; all marked ignored in pnpm config, dev tooling)	A-security.md
+A-19	NOT TESTED	Low	`graphql_public` is in `[api] schemas` (config.toml:13) while SECURITY says pg_graphql is dropped; extension is absent locally	A-security.md
+A-20	PASS	-	No secrets in client bundle or EXPO_PUBLIC_*: only SUPABASE_URL/ANON_KEY, MEDIA_URL, SITE_URL, SENTRY_DSN, POSTHOG_* are public vars; bundle scan 0 findings; lo	A-security.md
+A-21	PASS	-	Git history: gitleaks 239 commits 0 leaks; trufflehog 15 unverified hits are base64 images in `design/*.html` (false positives); only `apps/mobile/.env.example`	A-security.md
+A-22	PASS	-	RLS on for all 53 public tables; grants to `authenticated` are SELECT only, none to `anon`; matviews and `admin_metrics_*` ungranted; 178 public functions all S	A-security.md
+A-23	PASS	-	5 views lack `security_invoker` (security_barrier definer views `public_profiles`, `ratings_visible`, `profile_stats`, `my_reports`, `campus_progress`) but each	A-security.md
+A-24	PASS	-	Per-role matrix: anon reads nothing; same-campus, blocked, other-campus users see only allowed listings; held/removed/deleted never visible; removal reasons/rep	A-security.md
+A-25	PASS	-	IDOR: 107 checks, E (stranger, same campus) and D (other campus) calling ~40 id-taking RPCs (offers, chats, messages, meetups, ratings, reports, saved searches,	A-security.md
+A-26	PASS	-	Quad anonymity toward students: `get_quad_feed/thread/my_quad/status`, notifications, `my_reports`, Realtime payloads carry no author id or name; held/removed p	A-security.md
+A-27	PASS	-	Quad reveal: owner only, needs TOTP within 10 min, 5/day, writes one audit row, queues a receipt email; student and moderator refused	A-security.md
+A-28	PASS	-	Realtime: `realtime.messages` has one SELECT policy (own `user:` topic; `chat:` only for participants); stranger, blocked user, other campus, moderator, anon ca	A-security.md
+A-29	PASS	-	Edge Functions: internal ones (send-push, send-email, push-receipts, cleanup-drafts, archive-chats, revoke-sessions, admin-change-email) require the service key	A-security.md
+A-30	PASS	-	Presigned PUT: 600 s expiry, content-type and content-length signed, server-built keys, per-kind caps (2 MB/200 KB/300 KB), WebP/JPEG only, 60/h limit; Worker s	A-security.md
+A-31	PASS	-	Auth: hook enforces exact-domain allowlist server-side, blocked alumni domains, demo campus admits only `review_accounts`; JWT 3600 s, refresh rotation + reuse 	A-security.md
+A-32	PASS	-	Mobile: session in SecureStore (AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY, chunked), MMKV AES key in SecureStore; `/dev` routes redirect when not `__DEV__`; `usesClea	A-security.md
+A-33	PASS	-	Semgrep (react, typescript, secrets, javascript; 121 rules, 541 files): 0 findings (1 parse error in a test file)	A-security.md
+B-01	FAIL	Medium	`track_events` is a second analytics pipeline that ignores the analytics opt-out (F12). It stores per user id: cards shown, listing views with time on page and 	B-privacy-compliance.md
+B-02	FAIL	Medium	Data export omits `activity_events` (and `account_deletions`) although they are user-linked	B-privacy-compliance.md
+B-03	FAIL	Medium	Closed-chat archives `archive/chats/{chat}.json` (private R2) are not removed on account deletion; DATA_MODEL section 5 says archives are deleted on account del	B-privacy-compliance.md
+B-04	RISK	Low	Deletion leaves the user's chat message bodies in the other person's chat (sender nulled, system "This account was deleted"); reports kept 180 d; banned hash ke	B-privacy-compliance.md
+B-05	RISK	Low	`account_deleted` email is queued inside `prepare_account_deletion`, before R2 cleanup and the Auth delete; if those fail the user got a goodbye email but the a	B-privacy-compliance.md
+B-06	RISK	Low	Sentry: `beforeSend` scrubs user/request/extra/breadcrumbs, but 5% performance transactions (`tracesSampleRate 0.05`) bypass `beforeSend` (no `beforeSendTransac	B-privacy-compliance.md
+B-07	RISK	Low	Apple privacy manifest: app config declares UserDefaults CA92.1 and FileTimestamp C617.1 only; generated prebuild also has SystemBootTime 35F9.1; DiskSpace not 	B-privacy-compliance.md
+B-08	RISK	Low	PostHog identity hash is `sha256("onlyswap:"+user_id)` without a secret; anyone holding a user id can compute it	B-privacy-compliance.md
+B-09	FAIL	High	18+ gate enforcement	B-privacy-compliance.md
+B-10	?	-	PostHog: exactly the 18 events of PRD 5.4 (`EVENT_NAMES`), values pass a strict regex and numeric cap, `personProfiles identified_only`, replay off, geoip off, 	B-privacy-compliance.md
+B-11	?	-	Sentry `sendDefaultPii:false`, no screenshots/view hierarchy, http breadcrumbs dropped, opt-out drops events, DSN only via `EXPO_PUBLIC_SENTRY_DSN`	B-privacy-compliance.md
+B-12	?	-	Permissions: iOS camera and photos strings only, no location, no microphone, no Face ID, no ATT, `NSAllowsArbitraryLoads=false`; dev-only network keys stripped 	B-privacy-compliance.md
+B-13	?	-	Account deletion in app (Settings) and on web (`apps/site/src/pages/delete.astro`, email code then the same `delete-account` function); typed confirmation; 3/da	B-privacy-compliance.md
+B-14	?	-	Data export: `export-data` (JWT, rate limited, JSON to private bucket, presigned GET with expiry, row in `data_exports`) covers profile, settings, listings, off	B-privacy-compliance.md
+B-15	?	-	UGC safety (Apple 1.2): `create_report` for listing, user, chat, message, Quad post, Quad reply with 15 reasons and evidence snapshot, rate limit 20/day; `block	B-privacy-compliance.md
+B-16	?	-	Push token handling: registered by RPC, platform and version validated, disabled on sign-out, only `token_ending` exported	B-privacy-compliance.md
+C-01	PASS	-	Effects, timers, listeners return cleanup	C-memory.md
+C-02	PASS	-	Realtime channel lifecycle	C-memory.md
+C-03	FAIL	High	Server data cached across accounts	C-memory.md
+C-04	RISK	Medium	Chat store cache	C-memory.md
+C-05	RISK	Low	Chat list growth	C-memory.md
+C-06	PASS	-	Swipe deck memory	C-memory.md
+C-07	PASS	-	expo-image config and sizes	C-memory.md
+C-08	RISK	Medium	List configs	C-memory.md
+C-09	PASS	-	TanStack Query defaults	C-memory.md
+C-10	RISK	Low	Infinite queries without `maxPages`	C-memory.md
+C-11	PASS	-	Map	C-memory.md
+C-12	RISK	Low	Tabs stay mounted	C-memory.md
+C-13	NOT TESTED	-	Long-session soak (30+ min)	C-memory.md
+C-14	NOT TESTED	-	Android/iOS memory sampling, Hermes heap	C-memory.md
+D-01	RISK	Medium	Bundle size, Android release (Hermes)	D-rendering.md
+D-02	RISK	Low	Large asset	D-rendering.md
+D-03	RISK	Medium	Startup work	D-rendering.md
+D-04	PASS	-	Animation thread	D-rendering.md
+D-05	RISK	Medium	Per-instance accessibility/motion hooks	D-rendering.md
+D-06	RISK	Low	`Text` subscribes to window size	D-rendering.md
+D-07	RISK	Low	Gesture rebuilt per render	D-rendering.md
+D-08	RISK	Low	Heavy renders	D-rendering.md
+D-09	PASS	-	Large images	D-rendering.md
+D-10	RISK	Low	Dev code in release	D-rendering.md
+D-11	NOT TESTED	-	Measured FPS / TTI / JS block	D-rendering.md
+D-12	PASS	-	Console noise in release	D-rendering.md
+E-01	FAIL	Critical	`search_listings` and `search_suggest` scan every campus listing. Predicate `private.text_matches(l,q)` is an opaque function (ts match OR word_similarity>=0.5)	E-scalability.md
+E-02	FAIL	High	`get_quad_feed` seq-scans all campus posts and computes `quad_hot` / `quad_hidden_for` per row, OFFSET paging. 144 ms (hot), 79 ms (new) at 3k posts; grows line	E-scalability.md
+E-03	FAIL	Critical	`activity_events` retention (90 d) vs 500 MB DB cap. 343 B/row incl. 5 indexes; ~64 events per DAU per day (deck_shown per card, swiped_left per swipe, listing_	E-scalability.md
+E-04	FAIL	High	Other retention vs 500 MB: swipes (only `dir='left'` pruned at 30 d, rights kept forever), notifications 60 d, messages kept 90 d after chat closes, offers and 	E-scalability.md
+E-05	FAIL	High	`make_offer` deadlocks on concurrent first offers for one listing. It takes `select ... from listings for share`, then `update listings set offer_count = offer_	E-scalability.md
+E-06	RISK	Medium	PostgREST pool is 10 connections, local `[db.pooler]` disabled. Under saturation requests queue then fail with PGRST003. Hosted Nano/Micro: 60 direct and 200 po	E-scalability.md
+E-07	RISK	High	Media Worker sets `Cache-Control: immutable` but never uses the Cache API, so every image GET runs the Worker plus an R2 GET (Class B). On workers.dev the cap i	E-scalability.md
+E-08	RISK	High	Gmail SMTP (Plan A) caps at 500 recipients/day (24 h suspension if exceeded). Launch day ~2,600 OTP emails.	E-scalability.md
+E-09	RISK	High	Realtime: each chat message calls `realtime.send` 3 times (chat topic plus two inbox topics) from `messages_ai`. Concurrent sockets and messages/month exceed fr	E-scalability.md
+E-10	RISK	Medium	`get_inbox` and `my_listings` are unbounded (all offers in window plus all chats, `chat_summary` per chat).	E-scalability.md
+E-11	FAIL	Medium	`cron.job_run_details` is never pruned. ~4,800 rows/day (~1.7 MB/day, ~600 MB/yr) from per-minute jobs.	E-scalability.md
+E-12	RISK	Low	Every RPC does a `private.hit()` upsert into `rate_counters` and `require_active` writes `activity_days`: a write per read. `rate_counters` is 2.7 MB for 76 row	E-scalability.md
+E-13	RISK	Low	`get_campus_feed` runs `count(*)` over active listings plus a profiles count on every call. 5.1 ms at 10.7k listings, linear.	E-scalability.md
+E-14	RISK	Low	RLS: 21 policies use bare `auth.uid()` (not `(select auth.uid())`) and `private.is_admin()` per row.	E-scalability.md
+E-15	RISK	Low	Unindexed FKs: `messages.sender_id` (ON DELETE SET NULL) and `listings.hold_offer_id`. Account deletion seq-scans `messages` (~20 ms at 200k, linear).	E-scalability.md
+E-16	PASS	Info	`cron` load: `refresh_stats` 425 ms every 10 min, `prune_all` 362 ms daily, `refresh_trending` 99 ms, all others under 15 ms.	E-scalability.md
+E-17	PASS	Info	Client N+1 / polling. Swipes batched (`record_swipes` at 10, max 50), events flushed every 15 s (max 50), TanStack staleTime 30 s, refetch on focus. Polling onl	E-scalability.md
+E-18	PASS	Info	`get_feed` uses keyset pagination with a swipes anti-join.	E-scalability.md
+E-19	PASS	Info	index_advisor (hypopg, temporary, dropped) found no worthwhile missing index on the hot queries.	E-scalability.md
+E-20	FAIL	High	Egress: JSON responses are large (get_feed 17 KB, get_campus_feed 19 KB, get_inbox 19 KB, search 26 KB). ~244 KB per session raw.	E-scalability.md
+E-21	NOT TESTED	Medium	OTP burst: 1043 sends in 70 s, p50 29 / p95 77 ms, 2 x 429. Local limits not enforced, so hosted behaviour unknown.	E-scalability.md
+E-22	NOT TESTED	Medium	R2 upload path (`upload-url` Edge Function plus 2 R2 PUTs per photo).	E-scalability.md
+E-23	FAIL	Critical	Search/quad drag the whole DB down: at peak 250 VUs with search+quad, 39% 5xx and DB CPU 1302%; without them 0.05% errors at ~1 core.	E-scalability.md
+FR-01	PASS	Info	Two accepts of two offers on one listing.	E-scalability.md
+FR-02	FAIL	High	Concurrent first offers on one listing.	E-scalability.md
+FR-03	PASS	Info	accept_offer vs withdraw_offer interleave.	E-scalability.md
+FR-04	PASS	Info	`send_message` same `client_id` from two sessions.	E-scalability.md
+FR-05	RISK	Low	`create_listing` double submit with same reserved id.	E-scalability.md
+FR-06	PASS	Info	`mark_sold(buyer_id)` in flight vs `send_message`.	E-scalability.md
+F-01	PASS	-	create_listing idempotent (reserved id)	F-reliability.md
+F-02	PASS	-	send_message idempotent on client_id	F-reliability.md
+F-03	PASS	-	notification dedupe_key	F-reliability.md
+F-04	PASS	-	points/streak/award farming	F-reliability.md
+F-05	PASS	-	Query retry config	F-reliability.md
+F-06	RISK	Low	Optimistic updates with rollback	F-reliability.md
+F-07	PASS	-	Chat outbox / queued sends	F-reliability.md
+F-08	FAIL	High	Error boundaries	F-reliability.md
+F-09	PASS	-	Sentry mobile	F-reliability.md
+F-10	RISK	Medium	Sentry admin + site	F-reliability.md
+F-11	PASS	-	Push routing/permission	F-reliability.md
+F-12	RISK	Medium	EAS Update strategy	F-reliability.md
+F-13	PASS	-	Kill switch / forced update	F-reliability.md
+F-14	PASS	-	Backups	F-reliability.md
+F-15	PASS	-	Migration safety	F-reliability.md
+F-16	RISK	Low	Env separation	F-reliability.md
+F-17	RISK	Medium	Crons liveness	F-reliability.md
+G-01	RISK	Medium	OTP request limits	G-abuse.md
+G-02	FAIL	High	Ban evasion via plus alias	G-abuse.md
+G-03	RISK	Low	Device bans	G-abuse.md
+G-04	PASS	-	Fake .edu domains	G-abuse.md
+G-05	PASS	-	Text filters	G-abuse.md
+G-06	RISK	Medium	Links in chat	G-abuse.md
+G-07	RISK	Medium	News link_url	G-abuse.md
+G-08	RISK	Low	Price sanity	G-abuse.md
+G-09	PASS	-	Harassment controls	G-abuse.md
+G-10	RISK	Low	record_view / relist_listing unlimited	G-abuse.md
+G-11	RISK	Medium	Admin capacity	G-abuse.md
+H-01	PASS	-	Typecheck	H-code-quality.md
+H-02	PASS	-	Lint	H-code-quality.md
+H-03	PASS	-	`react-hooks/exhaustive-deps`	H-code-quality.md
+H-04	PASS	-	expo-doctor	H-code-quality.md
+H-05	RISK	Low	knip	H-code-quality.md
+H-06	PASS	-	Suppressions	H-code-quality.md
+H-07	RISK	Medium	Unit tests	H-code-quality.md
+H-08	RISK	Low	Coverage	H-code-quality.md
+H-09	PASS	-	Coverage by area (lines)	H-code-quality.md
+H-10	RISK	Medium	Critical paths lacking tests	H-code-quality.md
+H-11	RISK	Low	CI gates (.github/workflows/ci.yml)	H-code-quality.md
+H-12	?	-	Housekeeping from this audit	H-code-quality.md
+I-01	PASS	-	Label and role on every pressable	I-accessibility.md
+I-02	PASS	-	Swipe deck screen reader support and non-gesture alternative	I-accessibility.md
+I-03	PASS	-	Dynamic Type	I-accessibility.md
+I-04	FAIL	Medium	44 pt targets	I-accessibility.md
+I-05	FAIL	High	Contrast, light	I-accessibility.md
+I-06	FAIL	Medium	Contrast, dark	I-accessibility.md
+I-07	RISK	Low	Accent usage	I-accessibility.md
+I-08	PASS	-	Dark mode	I-accessibility.md
+I-09	RISK	Medium	Small screens (iPhone SE 320-375 pt wide)	I-accessibility.md
+I-10	RISK	Low	Tappable double-tap guard	I-accessibility.md
+I-11	NOT TESTED	-	Device checks (VoiceOver/TalkBack walk, focus order, 200% type, Switch Control)	I-accessibility.md
+J-01	RISK	Medium	Monitoring	J-launch-ops.md
+J-02	FAIL	High	Incident runbook	J-launch-ops.md
+J-03	PASS	-	Status/announcement channel	J-launch-ops.md
+J-04	RISK	Medium	Store review demo account	J-launch-ops.md
+J-05	RISK	High	Store assets/metadata	J-launch-ops.md
+J-06	RISK	High	Admin MFA off on staging	J-launch-ops.md
+J-07	RISK	High	Prod environment	J-launch-ops.md
+J-08	RISK	High	Phone builds	J-launch-ops.md
