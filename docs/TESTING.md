@@ -145,6 +145,7 @@ For every table, `supabase/tests/rls_<table>.test.sql` asserts all of the follow
 | T-INT-OFF-02 | offers rate limit 10/h; new-account 5/day; paused after 2 confirmed no-shows |
 | T-INT-CHAT-01 | send_message idempotent on client_id; blocked → error; closed chat → error; chat photos flag off → error |
 | T-INT-RT-01 | Realtime: C can't receive `chat:{A-B}` (connect with C's JWT, expect no messages); A and B receive |
+| T-INT-CRON-02 | `prune_cron_history` removes cron runs that ended over 7 days ago, keeps newer and unfinished ones; scheduled daily (DEC 110) |
 | T-INT-MAIL-02 | Outbox budget: at most 150 a day counting rows in flight; `priority_report` first, `campus_open` last; the rest waits a day (DEC 109) |
 | T-INT-RT-02 | A chat message is one broadcast, to the other party's `user:{uid}` with the message; a message with no sender reaches both; nothing on `chat:{id}` (DEC 108) |
 | T-INT-MEET-01 | time windows for propose/checkin/no-show; share token expiry; `get_meetup_share` returns no price/phone/email |

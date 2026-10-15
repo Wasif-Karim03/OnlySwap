@@ -326,6 +326,7 @@ Every job that calls a function has an exists-guard (ARC-05).
 | `demo_autoplay` | `* * * * *` | Demo University bot (reviewers) |
 | `rating_reveal` | `0 * * * *` | one-sided ratings reaching 7 days (0205) |
 | `prune_activity` | `45 9 * * *` | `activity_events` > 90 d, `account_deletions` > 365 d (DEC 93) |
+| `prune_cron_history` | `50 9 * * *` | `cron.job_run_details` > 7 d (unfinished runs kept; DEC 110) |
 | `report_queue_check` | `*/30 * * * *` | oldest open report > 4 h → `report_queue` email to owners, at most once per 4 h (DEC 93) |
 
 ## 7. Notification catalog — R1.0 (21 types)
