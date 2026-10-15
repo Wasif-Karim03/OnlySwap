@@ -741,6 +741,20 @@ export const sell = {
   modeLabel: 'Sell or give away',
   titleLabel: 'Title',
   titlePlaceholder: 'What is it?',
+  /** Listing help (DEC 129): an example title for the chosen top-level category. */
+  titleExample: 'Example: {example}',
+  titleExamples: {
+    any: 'Brand, item, then size or model',
+    '1': 'IKEA Malm desk, white',
+    '2': 'Calculus: Early Transcendentals, 8th edition',
+    '3': 'Dell 27 inch monitor, 1440p',
+    '4': 'North Face puffer jacket, size M',
+    '5': 'Keurig K-Mini coffee maker',
+    '6': 'Trek city bike, 54 cm frame',
+    '7': 'Yamaha acoustic guitar with case',
+    '8': 'Yoga mat and two blocks',
+    '9': 'String lights, 33 ft, warm white',
+  },
   categoryLabel: 'Category',
   categoryPlaceholder: 'Pick a category',
   categoriesTitle: 'Pick a category',
@@ -764,6 +778,16 @@ export const sell = {
   freeBody: 'Free things usually go within a day. You pick who gets it from the people who ask.',
   descriptionLabel: 'Description',
   descriptionPlaceholder: 'Brand, size, what is included, any flaws.',
+  /** Tap to add a line to the description (DEC 129). */
+  startersLabel: 'Quick details',
+  starters: {
+    barely: 'Barely used.',
+    works: 'Works perfectly.',
+    charger: 'Comes with the charger.',
+    smoke: 'Smoke-free home.',
+    pets: 'Pet-free home.',
+    pickup: 'Pickup only.',
+  },
   fixCount: '{count} things to fix before you can post',
   fixOne: '1 thing to fix before you can post',
   errors: {

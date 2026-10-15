@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 import { trustLine, type FeedItem } from '../src/features/feed/logic';
 import { addViewed, parseViewed, rememberViewed, VIEWED_MAX } from '../src/features/feed/recent';
 import { SwipeCard, cardLabel, type DeckCard } from '../src/features/feed/SwipeCard';
+import { addStarter, titleExample } from '../src/features/sell/help';
 import type { SearchApi } from '../src/features/search/api';
 import { SearchScreen } from '../src/features/search/SearchScreen';
 
@@ -122,5 +123,23 @@ describe('T-UNIT-RECENT-01 recently viewed (DEC 128)', () => {
     expect(byIds).toHaveBeenCalledWith(['l1', 'l2']);
     fireEvent.press(screen.getByTestId('search-recently-viewed-l2'));
     await waitFor(() => expect(screen.queryByTestId('search-recently-viewed')).toBeNull());
+  });
+});
+
+describe('T-UNIT-HELP-01 listing help (DEC 129)', () => {
+  const cats = [
+    { id: 3, name: 'Tech', parentId: null },
+    { id: 32, name: 'Laptops', parentId: 3 },
+  ];
+  it('shows the example for the top-level category, or a general one', () => {
+    expect(titleExample(cats, null)).toBe('Example: Brand, item, then size or model');
+    expect(titleExample(cats, 32)).toBe('Example: Dell 27 inch monitor, 1440p');
+  });
+  it('adds a quick detail once, on its own line, within the limit', () => {
+    expect(addStarter('', 'barely')).toBe('Barely used.');
+    expect(addStarter('Blue.', 'pets')).toBe('Blue.\nPet-free home.');
+    expect(addStarter('Blue.\nPet-free home.', 'pets')).toBe('Blue.\nPet-free home.');
+    const full = 'x'.repeat(995);
+    expect(addStarter(full, 'works')).toBe(full);
   });
 });
