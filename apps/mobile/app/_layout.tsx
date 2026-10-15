@@ -1,5 +1,12 @@
 import { QueryClientProvider } from '@tanstack/react-query';
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider, usePathname } from 'expo-router';
+import {
+  DarkTheme,
+  DefaultTheme,
+  type ErrorBoundaryProps,
+  Stack,
+  ThemeProvider,
+  usePathname,
+} from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
@@ -8,6 +15,7 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 import { OfflineBanner } from '@/components/Banner';
+import { CrashScreen } from '@/components/CrashScreen';
 import { ToastHost } from '@/components/Toast';
 import { launchStartedAt } from '@/features/auth/launchTiming';
 import { SessionExpiredSheet } from '@/features/auth/SessionExpiredSheet';
@@ -32,6 +40,15 @@ startTelemetry();
 launchStartedAt.ms = performance.now();
 void SplashScreen.preventAutoHideAsync().catch(() => {});
 const SPLASH_BACKSTOP_MS = 2500;
+
+/**
+ * A render crash on any screen shows the crash screen with Try again instead
+ * of a blank one, and goes to Sentry (F-08, DEC 103). Expo Router uses this
+ * export by name.
+ */
+export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  return <CrashScreen error={error} retry={retry} />;
+}
 
 export default function RootLayout() {
   // Navigation chrome and the status bar follow the Unistyles theme (P2-TOK-03).

@@ -124,6 +124,7 @@ export const {
   banner,
   photo,
   states,
+  crash,
   nav,
   primer,
   report,

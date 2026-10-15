@@ -89,6 +89,12 @@ const states: Strings['states'] = {
   retry: 'Reintentar',
 };
 
+const crash: Strings['crash'] = {
+  title: 'Algo salió mal',
+  body: 'OnlySwap tuvo un problema en esta pantalla. Intenta de nuevo y, si sigue pasando, cierra y vuelve a abrir la app.',
+  retry: 'Reintentar',
+};
+
 const nav: Strings['nav'] = {
   back: 'Atrás',
   close: 'Cerrar',
@@ -2105,6 +2111,7 @@ export const es: Strings = {
   banner,
   photo,
   states,
+  crash,
   nav,
   primer,
   report,
