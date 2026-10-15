@@ -28,6 +28,8 @@ type Props = {
   surface?: 'bg2' | 'card' | 'accent';
   /** `onPhoto` for controls over photos or the dark photo viewer. */
   tone?: Extract<TextTone, 'ink' | 'ink3' | 'onPhoto'>;
+  /** An on state (Saved): the icon is drawn solid and screen readers hear "selected". */
+  selected?: boolean;
   /** Unread count drawn in the corner (the bell); 0 or none hides it. */
   badge?: number;
   testID?: string;
@@ -43,6 +45,7 @@ export function IconButton({
   filled,
   surface = 'bg2',
   tone = 'ink',
+  selected,
   badge,
   testID,
 }: Props) {
@@ -57,12 +60,18 @@ export function IconButton({
           : accessibilityLabel
       }
       accessibilityHint={accessibilityHint}
-      accessibilityState={{ disabled: !!disabled }}
+      accessibilityState={
+        selected === undefined ? { disabled: !!disabled } : { disabled: !!disabled, selected }
+      }
       disabled={disabled}
       onPress={onPress}
     >
       <View style={styles.hit(!!filled, !!disabled, surface)}>
-        <Icon name={icon} tone={filled && surface === 'accent' ? 'onAccent' : tone} />
+        <Icon
+          name={icon}
+          tone={filled && surface === 'accent' ? 'onAccent' : tone}
+          filled={!!selected}
+        />
         <Badge count={badge} testID={testID ? `${testID}-badge` : undefined} />
       </View>
     </Tappable>

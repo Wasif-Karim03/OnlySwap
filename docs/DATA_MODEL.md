@@ -461,6 +461,14 @@ The tables are:
 - `quad_hides(user_id, hidden_author_id, source_post_id, pk)`
 - `quad_mutes(user_id, keyword, pk)`
 
+### 2.6b Feed likes and comments — `0233_feed_comments.sql` (DEC 121)
+
+- `listings` gains `like_count`, `comment_count` (live comments and replies), `comments_enabled` (default true).
+- `listing_likes(user_id, listing_id, created_at)`, PK (user_id, listing_id).
+- `listing_comments(id, listing_id, author_id, parent_id → listing_comments, client_id, body 1..500 null once deleted, status text check in ('live','held','removed','deleted'), hold_reason, like_count, reply_count, created_at)`; unique (author_id, client_id). One level: `parent_id` is always a top-level comment.
+- `listing_comment_likes(user_id, comment_id, created_at)`, PK (user_id, comment_id).
+- Counts are kept by triggers. RLS on, no grants: reads and writes go through the RPCs (API §3). Never hard-deleted while the post exists; a deleted comment keeps its row. `reports.target_type` adds `listing_comment`; `notifications.grp` adds `comments`; `notification_prefs.comments` (default true). `export_user_data` adds `feed {liked_posts, comments, liked_comments}`.
+
 ### 2.7 Views [R1.0]
 
 | View | Definition / use |

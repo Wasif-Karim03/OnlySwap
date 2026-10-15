@@ -30,7 +30,8 @@ export type AnalyticsEvents = {
   deal_confirmed: { outcome: 'done' | 'not_yet' | 'fell_through' };
   rating_submitted: Record<string, never>;
   report_submitted: {
-    target_type: 'listing' | 'user' | 'chat' | 'message' | 'quad_post' | 'quad_reply';
+    target_type:
+      'listing' | 'user' | 'chat' | 'message' | 'quad_post' | 'quad_reply' | 'listing_comment';
   };
   share_tapped: { surface: 'posted' | 'listing' | 'meetup' };
 };

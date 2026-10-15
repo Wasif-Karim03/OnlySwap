@@ -159,6 +159,7 @@ export const {
   system,
   quad,
   campus,
+  comments,
   waitlist,
   unlocked,
   spotsMap,

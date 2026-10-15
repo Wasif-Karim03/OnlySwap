@@ -267,6 +267,7 @@ The "Data/API" column lists the calls from API.md.
 | F03 | `profile/listings.tsx` | F3, X37 | 1.0 | active/hold/sold/drafts; empty | listings (select) |
 | F04 | `listing/[id]/stats.tsx` | F4 | 1.0 | — | `listing_stats` |
 | F05 | `listing/[id]/offers.tsx` | F5 | 1.0 | — | `listing_offers` |
+| F05c | `listing/[id]/comments.tsx` | — | DEC 121 | post title link, Like with count, Top / Newest chips; threads with one level of replies and "View n more replies"; Like and Reply under each comment, long press for Copy / Delete / Report; composer with "Replying to" bar; author's ⋯ turns comments off; loading, empty, error, gone, read-only states. Feed cards: Like (filled ink heart when liked, never red or accent) and Comment, counts line; Save sits top right | `get_listing_comments`, `get_comment_replies`, `create_listing_comment`, `like_listing`, `like_listing_comment`, `delete_listing_comment`, `set_listing_comments` |
 | F06 | `listing/[id]/edit.tsx` | F6 | 1.0 | + Delete listing (soft) confirm | `update_listing`, `delete_listing` |
 | F07 | `listing/[id]/sold.tsx` | F7 | 1.0 | pick buyer or "someone not on OnlySwap" | `mark_sold` |
 | F08 | `listing/[id]/relist.tsx` | F8 | 1.0 | — | `relist_listing` |

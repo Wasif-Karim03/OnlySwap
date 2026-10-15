@@ -72,6 +72,12 @@ Helpers `tests.authenticate_as(uid, aal)` and `tests.clear_authentication()` com
 | T-UNIT-MEET-01 | Directions deep link | builds `maps://?daddr=lat,lng` (iOS) / `geo:` + `google.navigation` intent (Android) / web fallback |
 | T-UNIT-MEET-02 | Meetup state derivation | before, T−30, here/late, cancelled, rescheduled, no-show window (≥ +20 min) |
 | T-UNIT-DEAL-01 | `maybeAskForReview` | ≥3 swaps and 14 d and 120 d since last; never after fell-through/no-show |
+| T-UNIT-COMMENTS-01 | Like sender (DEC 121) | flip never below 0; one call per target in flight; last choice wins; failure reports null |
+| T-UNIT-COMMENTS-02 | Comment text | like/comment/reply counts; blocked reasons to copy |
+| T-UNIT-COMMENTS-03 | Comments cache | patch comment or reply; add comment/reply; delete keeps a thread with replies; replies merge oldest first |
+| T-UNIT-COMMENTS-04 | Push and report | comment and like types open the comments; a channel per group; listing_comment reasons and block |
+| T-UNIT-COMMENTS-05 | Comments screen | threads, more replies, sort, likes, send with client id, reply, blocked, held, delete, report, turn off, read-only, gone |
+| T-UNIT-COMMENTS-06 | Feed like and comment | optimistic like with server count; Comment opens the screen from posts and cards |
 | T-UNIT-QUAD-01 **[R1.1]** | Vote optimistic | toggle same vote removes; debounce last-wins |
 | T-UNIT-QUAD-02 **[R1.1]** | Poll builder | 2–4 options, 1–40 chars each |
 | T-UNIT-NOTIF-01 | `handleNotificationResponse` | each notification type's data.url → correct route |

@@ -30,6 +30,9 @@ export const CHANNELS: { id: string; name: string; importance: Notifications.And
     { id: 'safety', name: 'Safety', importance: Notifications.AndroidImportance.HIGH },
     { id: 'account', name: 'Account', importance: Notifications.AndroidImportance.DEFAULT },
     { id: 'campus', name: 'Campus', importance: Notifications.AndroidImportance.LOW },
+    // send-push uses the group as the channel id, so every group needs one.
+    { id: 'quad', name: 'Quad', importance: Notifications.AndroidImportance.DEFAULT },
+    { id: 'comments', name: 'Comments', importance: Notifications.AndroidImportance.DEFAULT },
   ];
 
 /** Where a tapped notification opens (the push `data` from the server). */
@@ -41,6 +44,15 @@ export function routeForNotification(
   const type = s('type') ?? '';
   if ((type === 'quad_reply' || type === 'quad_milestone') && s('post_id'))
     return { pathname: '/quad/[id]', params: { id: s('post_id')! } };
+  // Feed comments and likes (DEC 121) open the comments on the post.
+  if (
+    (type === 'listing_comment' ||
+      type === 'comment_reply' ||
+      type === 'comment_like' ||
+      type === 'listing_like') &&
+    s('listing_id')
+  )
+    return { pathname: '/listing/[id]/comments', params: { id: s('listing_id')! } };
   // Around campus and waitlist (R1.1): the new listing for a Wanted match (else
   // the Wanted itself), the food post, and the one-time "campus open" screen.
   if (type === 'campus_unlocked') return '/unlocked';
