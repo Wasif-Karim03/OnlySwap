@@ -56,7 +56,8 @@ export type MyQuadReply = QuadReply & { post_id: string; post_excerpt: string };
 
 export type QuadPinned = { id: string; type: string; title: string; body: string };
 
-export type QuadCursor = { offset: number };
+/** Opaque: pass back the server's next_cursor as is (keyset, E-02). */
+export type QuadCursor = Record<string, string | number>;
 
 export type QuadFeedPage = {
   items: QuadPost[];

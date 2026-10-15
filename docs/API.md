@@ -126,7 +126,7 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 | `get_listing` | `id` | `FeedItem & {access}`; `{id, access}` when not visible | access: buyer, owner, gone, blocked, other_campus (DEC 57) | 600/h |
 | `get_campus_feed` | `kind text?, cursor` | items (all, news, free, wanted, food, new); `all` = food, free, wanted, news and sale from the last 7 days; items carry `link_url`, `event_at` (DEC 98) | — | 120/h |
 | `create_news` | `id` (reserved), `title`, `description?`, `photos jsonb` (≤4), `link_url?`, `event_at?`, `place?` | listing | DEC 98: kind `news`, price 0, no offers; title 3–80, description ≤1000, place ≤60 (stored in `meet_note`), link `^https?://` with a dot, ≤300; `event_at` future and ≤90 days; expires at the end of the event's day in campus time, else now + 14 days; banned words and review holds as `create_listing`; `FORBIDDEN` without a reservation; idempotent on the id | create_listing 20/day + 3/day news |
-| `search_listings` | `q, filters, cursor` | listings | `websearch_to_tsquery`; trigram fallback; unknown filter keys → `INVALID:filters` | 120/h |
+| `search_listings` | `q, filters, cursor` | listings | `websearch_to_tsquery`; trigram fallback (both indexed, DEC 101); `cursor` `{offset}`; unknown filter keys → `INVALID:filters` | 120/h |
 | `search_suggest` | `q` (≥2) | `[{type, label, count}]` | — | 600/h |
 | `create_saved_search` / `update_saved_search` / `delete_saved_search` | … | row | max 20 | 30/day |
 | `saved_search_new_counts` | — | `[{id, new_count}]` | — | — |
@@ -197,7 +197,7 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 | `register_push_token` | `token, platform, app_version` | void | `ExponentPushToken[…]` format; upsert `last_seen_at` | 20/day |
 | `disable_push_token` | `token` | void | — | — |
 
-**[R1.1] Quad RPCs:** `get_quad_status`, `get_my_quad_mutes` (DEC 77), `get_quad_feed`, `get_quad_thread`, `create_quad_post`, `create_quad_reply`, `vote_quad`, `vote_poll`, `hide_quad_author`, `unhide_quad`, `get_my_quad_hides`, `set_quad_replies`, `delete_quad_post`, `get_my_quad`, `mute_keyword`, `unmute_keyword`, `accept_quad_rules`.
+**[R1.1] Quad RPCs:** `get_quad_status`, `get_my_quad_mutes` (DEC 77), `get_quad_feed`, `get_quad_thread`, `create_quad_post`, `create_quad_reply`, `vote_quad`, `vote_poll`, `hide_quad_author`, `unhide_quad`, `get_my_quad_hides`, `set_quad_replies`, `delete_quad_post`, `get_my_quad`, `mute_keyword`, `unmute_keyword`, `accept_quad_rules`. `get_quad_feed(sort, cursor)` pages by keyset: pass back `next_cursor` as is (opaque; an old `{offset}` still works; DEC 101).
 - Contracts are as in `docs/archive/blueprint-v0/backend.md` §4.
 - The feed rank is computed at read (BE-08).
 - They return `FEATURE_OFF` unless `campuses.quad_enabled`.
