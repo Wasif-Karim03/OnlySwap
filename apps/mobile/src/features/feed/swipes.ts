@@ -115,6 +115,17 @@ export function getSwipeStore(
   return appStore;
 }
 
+/**
+ * Drops the pending swipes and the store (sign-out or account switch, C-03).
+ * They can't be sent once the session is gone, and must never be sent as the
+ * next account.
+ */
+export function resetSwipeStore(): void {
+  appStore?.setState({ queue: [], last: null });
+  appStore = undefined;
+  getStorage().remove('feed.swipeQueue');
+}
+
 /** Flush triggers: screen blur, app background, network back. */
 export function useSwipeFlush(store: StoreApi<SwipeState>) {
   useFocusEffect(
