@@ -42,6 +42,7 @@ Helpers `tests.authenticate_as(uid, aal)` and `tests.clear_authentication()` com
 |---|---|---|
 | T-UNIT-LIB-01 | `lib/errors.toAppError` | P0001 parse with and without retryAt; network error → ERR_OFFLINE; 401 → SESSION_EXPIRED; unknown |
 | T-UNIT-LIB-02 | `lib/errors.errorCopy` | every code in `ErrorCode` has copy (snapshot); RATE_LIMITED time formatted in campus TZ |
+| T-UNIT-CRASH-01 | root `ErrorBoundary` (F-08, DEC 103) | a screen that throws during render shows the crash screen (title, body, Try again; the error text never shown), the error goes to Sentry once, Try again re-renders the routes; copy in en and es |
 | T-UNIT-LIB-03 | `lib/rpc` | retries once after a token refresh on 401; no args in the breadcrumb |
 | T-UNIT-LIB-04 | `lib/format` | formatPrice 0 → Free, 4000 → $40, 123456 → $1,234.56; formatRelative for minutes, hours, yesterday, dates, future |
 | T-UNIT-LIB-05 | `lib/version.compareVersions` | equal, greater, lesser, build metadata ignored |
