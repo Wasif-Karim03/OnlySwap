@@ -76,6 +76,7 @@ The client maps these to copy in `apps/mobile/src/strings/en.ts` → `errors.*`.
 | `trg_listings_price` | after update of `price_cents` | log change; drop ≥5% → `price_drop` to savers (dedupe `price_drop:{listing}:{new_cents}`) |
 | `trg_listings_status` | after update of status | hold→active: `watch_available`; sold/deleted/removed: auto-decline open offers, close other chats with a system message (BE-11) |
 | `trg_offers_notify` | after insert/update offers | `offer_new` / `offer_countered` / `offer_accepted` / `offer_declined` / `offer_expired` with `dedupe_key = type:{offer}:{round}` |
+| `trg_notifications_ping` | after insert or update of title, body, created_at on notifications | unread and `grp` not messages/offers: `realtime.send('user:'‖user_id, 'bell', {})` so the bell refetches `unread_count` (0234, DEC 122) |
 | `trg_messages_ai` | after insert messages | update chat `last_message_at`; one `realtime.send('user:'‖other, 'inbox', {chat_id, message})` (both parties for a message with no sender; nothing on `chat:{id}`, DEC 108); queue `message_new` (preview only if the recipient's `message_previews`; collapse via `dedupe_key = message_new:{chat}:{minute}`) |
 | `trg_meetups_notify` | after insert/update | `meetup_proposed` / `meetup_confirmed` / `meetup_status` / `meetup_changed` |
 | `trg_reports_ai` | after insert | priority-1 → `queue_email(priority_report)`; ≥3 distinct reporters aged >7 d within 24 h → auto-hide target (BE-09) |

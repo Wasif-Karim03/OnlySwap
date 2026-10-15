@@ -72,6 +72,7 @@ Helpers `tests.authenticate_as(uid, aal)` and `tests.clear_authentication()` com
 | T-UNIT-MEET-01 | Directions deep link | builds `maps://?daddr=lat,lng` (iOS) / `geo:` + `google.navigation` intent (Android) / web fallback |
 | T-UNIT-MEET-02 | Meetup state derivation | before, T−30, here/late, cancelled, rescheduled, no-show window (≥ +20 min) |
 | T-UNIT-DEAL-01 | `maybeAskForReview` | ≥3 swaps and 14 d and 120 d since last; never after fell-through/no-show |
+| T-UNIT-BELL-01 | Live bell (DEC 122) | `bell` and `inbox` pings refetch the count once per burst; app icon number follows |
 | T-UNIT-COMMENTS-01 | Like sender (DEC 121) | flip never below 0; one call per target in flight; last choice wins; failure reports null |
 | T-UNIT-COMMENTS-02 | Comment text | like/comment/reply counts; blocked reasons to copy |
 | T-UNIT-COMMENTS-03 | Comments cache | patch comment or reply; add comment/reply; delete keeps a thread with replies; replies merge oldest first |
