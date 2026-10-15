@@ -23,7 +23,7 @@ import { SkeletonList } from '@/components/Skeleton';
 import { Text } from '@/components/Text';
 import { ZoomableImage } from '@/components/ZoomableImage';
 import { getEnv } from '@/lib/env';
-import { fill } from '@/lib/format';
+import { fill, formatDate, formatTime } from '@/lib/format';
 import { pickPhotos, type PickedPhoto } from '@/lib/media';
 import { osPermissions, primerStep, type OsApi } from '@/lib/permissions';
 import { enterSends } from '@/lib/platform';
@@ -40,10 +40,12 @@ import { mediaUrl } from '../sell/logic';
 import { chatApi, type ChatApi } from './api';
 import {
   bubbleAspect,
+  bubbleSpots,
   chatKey,
   chatPhotoUrl,
   newContactFromItems,
   scamHint,
+  type BubbleSpot,
   type ChatItem,
 } from './logic';
 import { useChat, type ChatState } from './useChat';
@@ -117,6 +119,7 @@ export function ChatScreen({
   const [reportId, setReportId] = useState<number | null>(null);
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/inbox'));
   const data = useMemo(() => [...state.items].reverse(), [state.items]);
+  const spots = useMemo(() => bubbleSpots(data, now()), [data, now]);
   const meetupQ = useQuery({ queryKey: ['chat-meetup', id], queryFn: () => meetups.forChat(id) });
   // Every meetup change posts a `meetup` row; refetch the card when one arrives.
   useEffect(() => track('chat_opened'), []);
@@ -262,15 +265,35 @@ export function ChatScreen({
       </>
     ) : null;
 
-  const renderItem = ({ item }: { item: ChatItem }) => {
+  const renderItem = ({ item, index }: { item: ChatItem; index: number }) => {
+    const spot = spots[index] ?? { first: true, last: true, day: null };
+    const day = spot.day ? (
+      <Text
+        variant="meta"
+        tone="ink3"
+        style={styles.day}
+        accessibilityRole="header"
+        testID={`chat-day-${index}`}
+      >
+        {spot.day === 'today'
+          ? copy.dayToday
+          : spot.day === 'yesterday'
+            ? copy.dayYesterday
+            : formatDate(spot.day, { weekday: 'short', month: 'short', day: 'numeric' })}
+      </Text>
+    ) : null;
+    return (
+      <View>
+        {day}
+        {bubbleFor(item, spot)}
+      </View>
+    );
+  };
+
+  const bubbleFor = (item: ChatItem, spot: BubbleSpot) => {
     if (item.kind === 'system' || item.kind === 'meetup') {
       return (
-        <MessageBubble
-          kind="system"
-          body={item.body ?? ''}
-          surface="card"
-          testID={`msg-${String(item.id)}`}
-        />
+        <MessageBubble kind="system" body={item.body ?? ''} testID={`msg-${String(item.id)}`} />
       );
     }
     const mine = item.mine === true;
@@ -316,7 +339,9 @@ export function ChatScreen({
         onRetry={item.state === 'failed' ? () => void state.retry(item.client_id!) : undefined}
         photo={photo}
         onLongPress={!mine && sentId !== null ? () => setReportId(sentId) : undefined}
-        surface="card"
+        first={spot.first}
+        last={spot.last}
+        time={spot.last && item.state === 'sent' ? sentTime(item.created_at) : null}
         testID={`msg-${item.id ?? item.client_id}`}
       />
     );
@@ -535,9 +560,15 @@ export function ChatScreen({
   );
 }
 
+/** "4:30 PM" for a sent message; nothing when the time is missing or unreadable. */
+function sentTime(iso: string): string | null {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? null : formatTime(d);
+}
+
 const styles = StyleSheet.create((theme, rt) => ({
-  // White header and composer around a grey message area (DEC 90).
-  root: { flex: 1, backgroundColor: theme.colors.bg2 },
+  // One white surface, iMessage style (owner 2026-10-15; was grey, DEC 90).
+  root: { flex: 1, backgroundColor: theme.colors.bg },
   flex: { flex: 1 },
   header: {
     backgroundColor: theme.colors.bg,
@@ -560,7 +591,8 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingBottom: theme.space.md,
   },
   thumb: { width: theme.size.hit, height: theme.size.hit },
-  list: { paddingVertical: theme.space.md, gap: theme.space.sm },
+  list: { paddingVertical: theme.space.md },
+  day: { textAlign: 'center', marginTop: theme.space.lg, fontWeight: theme.type.label.fontWeight },
   tip: { paddingHorizontal: theme.space['2xl'], paddingVertical: theme.space.md },
   center: { textAlign: 'center' },
   strong: { fontWeight: theme.type.label.fontWeight },
@@ -588,7 +620,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     maxHeight: theme.size.hit * 3,
     paddingHorizontal: theme.space.md,
     paddingVertical: theme.space.sm,
-    borderRadius: theme.radius.card,
+    borderRadius: theme.radius.chip,
     backgroundColor: theme.colors.bg2,
     color: theme.colors.ink,
     fontSize: theme.type.body.fontSize,

@@ -1,5 +1,5 @@
 import { size } from '@onlyswap/tokens';
-import { Platform, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { fill } from '@/lib/format';
@@ -42,7 +42,10 @@ type Props = {
   activeKey: string;
   onSelect: (key: string) => void;
   onLongPress?: (key: string) => void;
-  /** Defaults to the platform: iOS labels under icons, Android pill (board N1). */
+  /**
+   * Labels under icons on every platform (owner, 2026-10-15): the Android pill
+   * (board N1) is kept for the component kit only.
+   */
   variant?: TabBarVariant;
   /** Adds the home-indicator inset. Off in the component kit preview. */
   safeBottom?: boolean;
@@ -65,7 +68,7 @@ export function TabBar({
   activeKey,
   onSelect,
   onLongPress,
-  variant = Platform.OS === 'android' ? 'android' : 'ios',
+  variant = 'ios',
   safeBottom = true,
   layout = 'bar',
   testID,

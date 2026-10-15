@@ -47,6 +47,7 @@ import {
   type CampusItem,
   type CampusPage,
 } from './logic';
+import { NotificationBell } from '@/features/notifications/NotificationBell';
 
 const FILTER_ICON: Partial<Record<CampusFilter, IconName>> = { food: 'food', free: 'gift' };
 
@@ -176,12 +177,10 @@ export function CampusFeedScreen({
           onPress={() => router.push('/search')}
           testID="feed-search"
         />
-        <IconButton
-          icon="bell"
+        <NotificationBell
           filled
           surface="card"
           accessibilityLabel={feedCopy.notifications}
-          onPress={() => router.push('/notifications')}
           testID="feed-notifications"
         />
       </View>

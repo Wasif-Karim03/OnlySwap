@@ -18,17 +18,26 @@ import { pickPhotos, type PickedPhoto } from '@/lib/media';
 import { osPermissions, type OsApi } from '@/lib/permissions';
 import { campus as copy } from '@/strings';
 import { readableColumn } from '@/theme/layout';
+import { useToastStore } from '@/components/Toast';
 
 import { sellApi, type PostedListing, type SellApi } from '../sell/api';
 import { cleanPrice, DESCRIPTION_MAX, TITLE_MAX } from '../sell/logic';
 import { campusKeys } from './api';
 import { formErrorText, validateWanted, wantedArgs, type FormError } from './logic';
-import { PhotoField, PostedView, postFailure, usePostPhoto, useReservedId } from './PostShared';
+import {
+  PhotoField,
+  PostedView,
+  postFailure,
+  usePostPhoto,
+  useReservedId,
+  type PhotoSource,
+} from './PostShared';
 
 type Deps = {
   api?: Pick<SellApi, 'reserveListingId' | 'uploadPhoto' | 'createListing' | 'categories'>;
-  pick?: () => Promise<PickedPhoto[]>;
+  pick?: (source: PhotoSource) => Promise<PickedPhoto[]>;
   photosOs?: OsApi;
+  cameraOs?: OsApi;
   openSettings?: () => Promise<unknown>;
   mediaBase?: () => string;
 };
@@ -40,8 +49,9 @@ type Deps = {
  */
 export function PostWantedScreen({
   api = sellApi,
-  pick = () => pickPhotos('library', 1),
+  pick = (source) => pickPhotos(source, 1),
   photosOs = osPermissions.photos,
+  cameraOs = osPermissions.camera,
   openSettings = () => Linking.openSettings(),
   mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
 }: Deps) {
@@ -53,7 +63,7 @@ export function PostWantedScreen({
     staleTime: Infinity,
   });
   const reserved = useReservedId(api);
-  const photo = usePostPhoto({ api, reserve: reserved.get, pick, photosOs });
+  const photo = usePostPhoto({ api, reserve: reserved.get, pick, photosOs, cameraOs });
   const [title, setTitle] = useState('');
   const [budget, setBudget] = useState('');
   const [categoryId, setCategoryId] = useState<number | null>(null);
@@ -77,6 +87,8 @@ export function PostWantedScreen({
     setError(null);
     if (errors.length > 0) {
       setShowErrors(true);
+      // The fields and the note can sit under the keyboard; say it on top too.
+      useToastStore.getState().show('error', copy.fixFirst);
       return;
     }
     setPosting(true);
@@ -89,6 +101,7 @@ export function PostWantedScreen({
       const f = postFailure(e);
       if (f.forbidden) reserved.drop();
       setError(f.text);
+      useToastStore.getState().show('error', f.text);
     } finally {
       setPosting(false);
     }

@@ -1168,6 +1168,8 @@ export const chat = {
   // Photos in chat (P8-CHAT-04, R11-PHOTO-GATE)
   addPhoto: 'Add a photo',
   photoSheetTitle: 'Send a photo',
+  dayToday: 'Today',
+  dayYesterday: 'Yesterday',
   photoLibrary: 'Choose from library',
   photoCamera: 'Take a photo',
   photoCaptionHint: 'Anything you typed goes with the photo as a caption.',
@@ -1791,6 +1793,7 @@ export const quad = {
   photoUploading: 'Uploading photo',
   photoFailed: "The photo didn't upload. Try again.",
   photosOff: 'Photos are turned off for OnlySwap. Turn them on in Settings to add one.',
+  cameraOff: 'The camera is turned off for OnlySwap. Turn it on in Settings to take a photo.',
   openSettings: 'Open Settings',
   pollQuestionLabel: 'Your question',
   pollOptionLabel: 'Option {n}',
@@ -2035,6 +2038,7 @@ export const campus = {
   photoFailed: "The photo didn't upload. Try again.",
   photoLabel: 'Your photo',
   photosOff: 'Photo access is off for OnlySwap. Turn it on in Settings to add a photo.',
+  cameraOff: 'Camera access is off for OnlySwap. Turn it on in Settings to take a photo.',
   openSettings: 'Open settings',
   fixFirst: 'Fix the highlighted fields to post.',
   errors: {

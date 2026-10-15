@@ -5,7 +5,6 @@ import { RefreshControl, ScrollView, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { EmptyState } from '@/components/EmptyState';
-import { IconButton } from '@/components/IconButton';
 import { ErrorState } from '@/components/ErrorState';
 import { NavBar } from '@/components/NavBar';
 import { Photo } from '@/components/Photo';
@@ -37,6 +36,7 @@ import {
   type InboxRow,
   type InboxSide,
 } from './logic';
+import { NotificationBell } from '@/features/notifications/NotificationBell';
 
 export const inboxKey = ['inbox'] as const;
 
@@ -240,12 +240,7 @@ export function InboxScreen({
         variant="large"
         title={copy.inboxTitle}
         trailing={
-          <IconButton
-            icon="bell"
-            accessibilityLabel={notifCopy.open}
-            onPress={() => router.push('/notifications')}
-            testID="inbox-notifications"
-          />
+          <NotificationBell accessibilityLabel={notifCopy.open} testID="inbox-notifications" />
         }
       />
       <View style={styles.tabs}>

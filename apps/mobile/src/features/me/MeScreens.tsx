@@ -46,6 +46,7 @@ import type { ClassYear } from '../profiles/api';
 import { centsToDollars, dollarsToCents } from '../search/logic';
 import { mediaUrl, priceLabel } from '../sell/logic';
 import { listingTab, meApi, type Me, type MeApi, type MyListing } from './api';
+import { NotificationBell } from '@/features/notifications/NotificationBell';
 
 export const meKey = ['me'] as const;
 const YEARS: ClassYear[] = ['freshman', 'sophomore', 'junior', 'senior', 'grad', 'other'];
@@ -276,11 +277,9 @@ export function ProfileTabScreen({
   return (
     <View style={styles.root} testID="screen-profile">
       <View style={styles.topBar}>
-        <IconButton
-          icon="bell"
+        <NotificationBell
           filled
           accessibilityLabel={copy.notifications}
-          onPress={() => router.push('/notifications')}
           testID="profile-open-notifications"
         />
         <IconButton

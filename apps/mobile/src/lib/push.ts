@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 import { router, type Href } from 'expo-router';
@@ -121,6 +122,7 @@ export async function setBadge(unread: number): Promise<void> {
  * the token fresh when the OS rotates it.
  */
 export function usePushHandling(enabled: boolean) {
+  const qc = useQueryClient();
   useEffect(() => {
     if (!enabled || isWebPlatform()) return undefined;
     const subs: { remove: () => void }[] = [];
@@ -146,6 +148,11 @@ export function usePushHandling(enabled: boolean) {
         .catch(() => {});
       const tap = Notifications.addNotificationResponseReceivedListener(open);
       if (typeof tap?.remove === 'function') subs.push(tap);
+      // A push while the app is open: the bell's unread count is stale now.
+      const received = Notifications.addNotificationReceivedListener(() => {
+        void qc.invalidateQueries({ queryKey: ['notifications'] });
+      });
+      if (typeof received?.remove === 'function') subs.push(received);
       const rotate = Notifications.addPushTokenListener(() => {
         void registerForPush().catch(() => {});
       });
@@ -157,5 +164,5 @@ export function usePushHandling(enabled: boolean) {
       // ignore
     }
     return () => subs.forEach((s) => s.remove());
-  }, [enabled]);
+  }, [enabled, qc]);
 }

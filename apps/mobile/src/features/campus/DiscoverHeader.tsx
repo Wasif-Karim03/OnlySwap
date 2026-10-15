@@ -9,6 +9,7 @@ import { feed as copy } from '@/strings';
 
 import { meApi, type Me } from '../me/api';
 import { meKey } from '../me/MeScreens';
+import { NotificationBell } from '@/features/notifications/NotificationBell';
 
 type Props = {
   /** `card` on a grey screen, so the buttons stay visible. */
@@ -50,12 +51,10 @@ export function DiscoverHeader({ surface = 'bg2', loadMe = () => meApi.me() }: P
             onPress={() => router.push('/search')}
             testID="discover-search"
           />
-          <IconButton
-            icon="bell"
+          <NotificationBell
             filled
             surface={surface}
             accessibilityLabel={copy.notifications}
-            onPress={() => router.push('/notifications')}
             testID="discover-notifications"
           />
         </View>

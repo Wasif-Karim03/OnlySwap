@@ -167,3 +167,59 @@ export function bubbleAspect(width: number | null | undefined, height: number | 
   if (!width || !height || width <= 0 || height <= 0) return 1;
   return Math.min(Math.max(width / height, 0.6), 1.8);
 }
+
+/** Messages within this many minutes from the same side share one group. */
+export const GROUP_GAP_MS = 3 * 60_000;
+
+/** Where a bubble sits in its group, and what goes around it. */
+export type BubbleSpot = {
+  /** Top of its group (older neighbour is someone else, later, or another day). */
+  first: boolean;
+  /** Bottom of its group: the time goes under it. */
+  last: boolean;
+  /** Set on the oldest message of each day: the separator above it. */
+  day: 'today' | 'yesterday' | Date | null;
+};
+
+const side = (m: ChatItem) =>
+  m.kind === 'system' || m.kind === 'meetup' ? 'system' : m.mine === true ? 'mine' : 'theirs';
+const dayStart = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+
+/**
+ * Bubble grouping for the chat list (iMessage style, owner 2026-10-15).
+ * `items` is newest first, as the inverted list gets it; so the older
+ * neighbour of i is i + 1 and the newer one is i - 1. Day and time are the
+ * phone's.
+ */
+export function bubbleSpots(items: readonly ChatItem[], now: Date): BubbleSpot[] {
+  // A message still on this phone may have no server time yet: it is "now".
+  const at = items.map((m) => {
+    const d = new Date(m.created_at);
+    return Number.isNaN(d.getTime()) ? now : d;
+  });
+  const together = (a: number, b: number) =>
+    side(items[a]!) === side(items[b]!) &&
+    side(items[a]!) !== 'system' &&
+    dayStart(at[a]!) === dayStart(at[b]!) &&
+    Math.abs(at[a]!.getTime() - at[b]!.getTime()) <= GROUP_GAP_MS;
+  const today = dayStart(now);
+  return items.map((_, i) => {
+    const older = i + 1 < items.length ? i + 1 : null;
+    const newer = i > 0 ? i - 1 : null;
+    const d = dayStart(at[i]!);
+    const newDay = older === null || dayStart(at[older]!) !== d;
+    return {
+      first: older === null || !together(i, older),
+      last: newer === null || !together(i, newer),
+      day: !newDay
+        ? null
+        : d === today
+          ? 'today'
+          : d === today - 86_400_000 ||
+              // across a daylight-saving change the day is 23 or 25 hours
+              Math.round((today - d) / 86_400_000) === 1
+            ? 'yesterday'
+            : at[i]!,
+    };
+  });
+}

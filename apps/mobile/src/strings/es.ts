@@ -1153,6 +1153,8 @@ const chat: Strings['chat'] = {
   hideDone: 'Chat oculto. Vuelve si te escriben.',
   addPhoto: 'Agregar foto',
   photoSheetTitle: 'Enviar una foto',
+  dayToday: 'Hoy',
+  dayYesterday: 'Ayer',
   photoLibrary: 'Elegir de la galería',
   photoCamera: 'Tomar una foto',
   photoCaptionHint: 'Lo que escribiste se envía con la foto como texto.',
@@ -1740,6 +1742,7 @@ const quad: Strings['quad'] = {
   photoUploading: 'Subiendo foto',
   photoFailed: 'La foto no se subió. Intenta de nuevo.',
   photosOff: 'Las fotos están desactivadas para OnlySwap. Actívalas en Ajustes para agregar una.',
+  cameraOff: 'La cámara está desactivada para OnlySwap. Actívala en Ajustes para tomar una foto.',
   openSettings: 'Abrir Ajustes',
   pollQuestionLabel: 'Tu pregunta',
   pollOptionLabel: 'Opción {n}',
@@ -1973,6 +1976,8 @@ const campus: Strings['campus'] = {
   photoLabel: 'Tu foto',
   photosOff:
     'El acceso a fotos está desactivado para OnlySwap. Actívalo en Ajustes para agregar una foto.',
+  cameraOff:
+    'El acceso a la cámara está desactivado para OnlySwap. Actívalo en Ajustes para tomar una foto.',
   openSettings: 'Abrir ajustes',
   fixFirst: 'Corrige los campos marcados para publicar.',
   errors: {

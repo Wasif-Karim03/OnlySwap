@@ -1,4 +1,5 @@
 import {
+  bubbleSpots,
   firstSentId,
   lastSentId,
   mergeMessages,
@@ -187,5 +188,59 @@ describe('T-UNIT-CHAT-05 chat store cache (C-04)', () => {
     void busy.getState().send('hold on');
     for (let i = 0; i < 25; i += 1) chatStoreFor(`c${i}`, 'me', api);
     expect(chatStoreFor('busy', 'me', api)).toBe(busy);
+  });
+});
+
+describe('T-UNIT-CHAT-06 bubble grouping (owner 2026-10-15)', () => {
+  // Local times; the list hands bubbleSpots newest first.
+  const at = (d: number, h: number, m: number) => new Date(2027, 2, d, h, m).toISOString();
+  const item = (id: number, mine: boolean, created: string, kind: Message['kind'] = 'text') =>
+    ({ ...msg(id, { kind, created_at: created }), state: 'sent', mine }) as ChatItem;
+  const NOW = new Date(2027, 2, 10, 18, 0);
+
+  it('same person within 3 minutes is one group; time under the last', () => {
+    const oldestFirst = [
+      item(1, false, at(10, 16, 0)),
+      item(2, false, at(10, 16, 2)),
+      item(3, true, at(10, 16, 3)),
+      item(4, true, at(10, 16, 10)),
+    ];
+    const spots = bubbleSpots([...oldestFirst].reverse(), NOW).reverse();
+    expect(spots.map((x) => [x.first, x.last])).toEqual([
+      [true, false],
+      [false, true],
+      [true, true],
+      [true, true],
+    ]);
+  });
+
+  it('a day separator on the oldest message of each day: Today, Yesterday, then a date', () => {
+    const oldestFirst = [
+      item(1, false, at(7, 9, 0)),
+      item(2, true, at(9, 9, 0)),
+      item(3, true, at(9, 9, 1)),
+      item(4, false, at(10, 9, 0)),
+    ];
+    const days = bubbleSpots([...oldestFirst].reverse(), NOW)
+      .reverse()
+      .map((x) => x.day);
+    expect(days[0]).toBeInstanceOf(Date);
+    expect(days.slice(1)).toEqual(['yesterday', null, 'today']);
+  });
+
+  it('a message with no server time yet counts as now (no crash)', () => {
+    const spots = bubbleSpots([pending('p1'), item(1, true, at(10, 17, 59))], NOW);
+    expect(spots[0]).toEqual({ first: false, last: true, day: null });
+  });
+
+  it('system rows never group, and a group breaks across midnight', () => {
+    const oldestFirst = [
+      item(1, true, at(9, 23, 59)),
+      item(2, true, at(10, 0, 0)),
+      item(3, false, at(10, 0, 1), 'system'),
+      item(4, false, at(10, 0, 1), 'system'),
+    ];
+    const spots = bubbleSpots([...oldestFirst].reverse(), NOW).reverse();
+    expect(spots.every((x) => x.first && x.last)).toBe(true);
   });
 });

@@ -1,9 +1,14 @@
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { fill } from '@/lib/format';
+import { nav as navCopy } from '@/strings';
 import { liftShadow } from '@/theme/shadow';
 
+import { Badge } from './Badge';
+
 import { Icon, type IconName } from './icons/Icon';
+import { badgeText } from './TabBar';
 import type { TextTone } from './Text';
 import { Tappable } from './Tappable';
 
@@ -23,6 +28,8 @@ type Props = {
   surface?: 'bg2' | 'card' | 'accent';
   /** `onPhoto` for controls over photos or the dark photo viewer. */
   tone?: Extract<TextTone, 'ink' | 'ink3' | 'onPhoto'>;
+  /** Unread count drawn in the corner (the bell); 0 or none hides it. */
+  badge?: number;
   testID?: string;
 };
 
@@ -36,13 +43,19 @@ export function IconButton({
   filled,
   surface = 'bg2',
   tone = 'ink',
+  badge,
   testID,
 }: Props) {
+  const count = badgeText(badge);
   return (
     <Tappable
       testID={testID}
       accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel}
+      accessibilityLabel={
+        count
+          ? fill(navCopy.tabWithBadge, { label: accessibilityLabel, count })
+          : accessibilityLabel
+      }
       accessibilityHint={accessibilityHint}
       accessibilityState={{ disabled: !!disabled }}
       disabled={disabled}
@@ -50,6 +63,7 @@ export function IconButton({
     >
       <View style={styles.hit(!!filled, !!disabled, surface)}>
         <Icon name={icon} tone={filled && surface === 'accent' ? 'onAccent' : tone} />
+        <Badge count={badge} testID={testID ? `${testID}-badge` : undefined} />
       </View>
     </Tappable>
   );

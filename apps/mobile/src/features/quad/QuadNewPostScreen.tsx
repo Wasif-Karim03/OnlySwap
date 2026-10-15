@@ -27,6 +27,8 @@ import { quad as copy } from '@/strings';
 import { readableColumn } from '@/theme/layout';
 
 import { mediaUrl } from '../sell/logic';
+import { PhotoSourceSheet, type PhotoSource } from '../campus/PostShared';
+
 import { quadApi, type NewQuadPost, type QuadApi } from './api';
 import { quadKeys } from './cache';
 import { OutcomeSheet, type Outcome } from './components/OutcomeSheet';
@@ -47,8 +49,9 @@ const MODES: PostMode[] = ['text', 'photo', 'poll', 'checkin'];
 
 type Deps = {
   api?: QuadApi;
-  pick?: () => Promise<PickedPhoto[]>;
+  pick?: (source: PhotoSource) => Promise<PickedPhoto[]>;
   photosOs?: OsApi;
+  cameraOs?: OsApi;
   openSettings?: () => Promise<unknown>;
   newId?: () => string;
   mediaBase?: () => string;
@@ -61,8 +64,9 @@ type Deps = {
  */
 export function QuadNewPostScreen({
   api = quadApi,
-  pick = () => pickPhotos('library', 1),
+  pick = (source) => pickPhotos(source, 1),
   photosOs = osPermissions.photos,
+  cameraOs = osPermissions.camera,
   openSettings = () => Linking.openSettings(),
   newId = uuid,
   mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
@@ -79,7 +83,8 @@ export function QuadNewPostScreen({
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [photoPath, setPhotoPath] = useState<string | null>(null);
   const [photoBusy, setPhotoBusy] = useState(false);
-  const [photosOff, setPhotosOff] = useState(false);
+  const [photosOff, setPhotosOff] = useState<PhotoSource | null>(null);
+  const [photoSheet, setPhotoSheet] = useState(false);
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
@@ -87,20 +92,22 @@ export function QuadNewPostScreen({
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/quad'));
   const valid = canPost({ mode, body, photoPath, photoBusy, options, place });
 
-  const addPhoto = async () => {
+  const addPhoto = async (source: PhotoSource) => {
+    setPhotoSheet(false);
     setError(null);
-    let step = primerStep(await photosOs.get());
-    if (step === 'primer') step = primerStep(await photosOs.request());
+    const os = source === 'camera' ? cameraOs : photosOs;
+    let step = primerStep(await os.get());
+    if (step === 'primer') step = primerStep(await os.request());
     if (step !== 'granted') {
-      setPhotosOff(true);
+      setPhotosOff(source);
       return;
     }
-    setPhotosOff(false);
+    setPhotosOff(null);
     let picked: PickedPhoto | undefined;
     try {
-      picked = (await pick())[0];
+      picked = (await pick(source))[0];
     } catch {
-      setPhotosOff(true);
+      setPhotosOff(source);
       return;
     }
     if (!picked) return;
@@ -163,6 +170,8 @@ export function QuadNewPostScreen({
         return;
       }
       setError(errorText(e));
+      // The note sits at the end of the form, often under the keyboard.
+      useToastStore.getState().show('error', errorText(e));
     } finally {
       setPosting(false);
     }
@@ -248,7 +257,7 @@ export function QuadNewPostScreen({
                   variant="secondary"
                   size="M"
                   disabled={photoBusy}
-                  onPress={() => void addPhoto()}
+                  onPress={() => setPhotoSheet(true)}
                   testID="quad-add-photo"
                 />
                 {photoUri && !photoBusy ? (
@@ -264,8 +273,14 @@ export function QuadNewPostScreen({
                 ) : null}
               </View>
               {photosOff ? (
-                <View style={styles.gap} testID="quad-photos-off">
-                  <Banner kind="warning" message={copy.photosOff} />
+                <View
+                  style={styles.gap}
+                  testID={photosOff === 'camera' ? 'quad-camera-off' : 'quad-photos-off'}
+                >
+                  <Banner
+                    kind="warning"
+                    message={photosOff === 'camera' ? copy.cameraOff : copy.photosOff}
+                  />
                   <Button
                     label={copy.openSettings}
                     variant="secondary"
@@ -332,6 +347,12 @@ export function QuadNewPostScreen({
           ) : null}
         </ScrollView>
       </KeyboardAvoidingView>
+      <PhotoSourceSheet
+        visible={photoSheet}
+        onClose={() => setPhotoSheet(false)}
+        onChoose={(source) => void addPhoto(source)}
+        testID="quad"
+      />
       <OutcomeSheet
         outcome={outcome}
         onClose={() => setOutcome(null)}
