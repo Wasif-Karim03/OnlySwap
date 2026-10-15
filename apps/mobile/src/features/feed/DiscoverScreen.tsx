@@ -227,7 +227,7 @@ export function DiscoverScreen({
     [router],
   );
 
-  const header = <DiscoverHeader value="swipe" loadMe={loadMe} />;
+  const header = <DiscoverHeader loadMe={loadMe} />;
 
   let body;
   if (phase === 'loading') {

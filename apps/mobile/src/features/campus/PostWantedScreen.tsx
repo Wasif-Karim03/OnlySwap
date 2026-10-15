@@ -102,9 +102,7 @@ export function PostWantedScreen({
           listing={posted}
           title={copy.wantedPostedTitle}
           body={copy.wantedPostedBody}
-          onSeeFeed={() =>
-            router.navigate({ pathname: '/discover/campus', params: { kind: 'wanted' } })
-          }
+          onSeeFeed={() => router.navigate({ pathname: '/feed', params: { kind: 'wanted' } })}
           onDone={leave}
           testID="wanted-posted"
         />

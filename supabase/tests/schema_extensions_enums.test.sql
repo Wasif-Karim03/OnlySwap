@@ -13,7 +13,7 @@ select enum_has_labels('public', 'campus_status', array['waitlist','live','pause
 select enum_has_labels('public', 'user_status', array['active','waitlist','reverify','paused','suspended','banned'], 'user_status labels');
 select enum_has_labels('public', 'class_year', array['freshman','sophomore','junior','senior','grad','other'], 'class_year labels');
 select enum_has_labels('public', 'age_method', array['os_signal','self_declared','review'], 'age_method labels');
-select enum_has_labels('public', 'listing_kind', array['sale','free','wanted','food'], 'listing_kind labels');
+select enum_has_labels('public', 'listing_kind', array['sale','free','wanted','food','news'], 'listing_kind labels (news: 0214, DEC 98)');
 select enum_has_labels('public', 'listing_status', array['active','hold','sold','expired','held_review','removed','deleted'], 'listing_status labels');
 select enum_has_labels('public', 'item_condition', array['new','like_new','good','fair'], 'item_condition labels');
 select enum_has_labels('public', 'swipe_dir', array['left','save'], 'swipe_dir labels');

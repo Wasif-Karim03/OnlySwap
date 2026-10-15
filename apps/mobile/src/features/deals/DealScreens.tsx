@@ -124,10 +124,13 @@ export function DidItSellScreen({
 /** F07 Mark sold: pick the buyer or "someone not on OnlySwap" (P8-DEAL-02). */
 export function MarkSoldScreen({
   listingId,
+  preselect,
   api = dealsApi,
   offers = offersApi,
 }: {
   listingId: string;
+  /** The buyer to pick first (opened from their chat, DEC 97). */
+  preselect?: string;
   api?: DealsApi;
   offers?: Pick<OffersApi, 'listingOffers'>;
 }) {
@@ -137,7 +140,7 @@ export function MarkSoldScreen({
     queryKey: ['listing-offers', listingId],
     queryFn: () => offers.listingOffers(listingId),
   });
-  const [buyer, setBuyer] = useState<string | null | undefined>(undefined);
+  const [buyer, setBuyer] = useState<string | null | undefined>(preselect);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const close = () =>
@@ -157,6 +160,9 @@ export function MarkSoldScreen({
       await api.markSold(listingId, buyer);
       void qc.invalidateQueries({ queryKey: listingKey(listingId) });
       void qc.invalidateQueries({ queryKey: ['inbox'] });
+      // Every open chat about it (the one it was opened from loses its button).
+      void qc.invalidateQueries({ queryKey: ['chat'] });
+      void qc.invalidateQueries({ queryKey: ['my-listings'] });
       close();
     } catch (e) {
       setError(errorText(e));

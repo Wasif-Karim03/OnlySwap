@@ -65,7 +65,7 @@ create type campus_status  as enum ('waitlist','live','paused');
 create type user_status    as enum ('active','waitlist','reverify','paused','suspended','banned');
 create type class_year     as enum ('freshman','sophomore','junior','senior','grad','other');
 create type age_method     as enum ('os_signal','self_declared','review');
-create type listing_kind   as enum ('sale','free','wanted','food');
+create type listing_kind   as enum ('sale','free','wanted','food','news');  -- news: DEC 98 (0214)
 create type listing_status as enum ('active','hold','sold','expired','held_review','removed','deleted');
 create type item_condition as enum ('new','like_new','good','fair');
 create type swipe_dir      as enum ('left','save');           -- right-swipe = offer (recorded as offer)
@@ -185,6 +185,8 @@ create table listings (
   open_to_offers bool not null default true,
   meet_spot_ids uuid[] not null default '{}',
   meet_note text check (char_length(meet_note) <= 60),
+  link_url text check (link_url is null or (char_length(link_url) <= 300 and link_url ~ '^https?://[^[:space:]]+$')),  -- news only (DEC 98, 0215)
+  event_at timestamptz,                                -- news event time; expires_at = end of that day (DEC 98)
   availability text[] not null default '{}',
   wanted_max_cents int check (wanted_max_cents between 0 and 200000),
   wanted_ref uuid references listings on delete set null,        -- PM-05
@@ -220,6 +222,7 @@ create table listing_photos (
 
 create table listing_reservations (id uuid primary key, user_id uuid not null, created_at timestamptz default now(), used_at timestamptz);  -- no access; purge 24 h
 create table listing_price_changes (id bigint generated always as identity primary key, listing_id uuid references listings on delete cascade, old_cents int, new_cents int, changed_at timestamptz default now()); -- no access
+create table listing_removals (listing_id uuid primary key references listings on delete cascade, reason text not null, removed_by uuid, removed_at timestamptz default now()); -- no access; the admin's reason for a removed listing, read only by the seller through my_listings and get_listing (`removed_reason`), cleared when put back (DEC 96)
 create table swipes (user_id uuid references profiles on delete cascade, listing_id uuid references listings on delete cascade, dir swipe_dir not null, created_at timestamptz default now(), primary key (user_id, listing_id));  -- self select; purge 30 d (non-save)
 create index on swipes (listing_id);
 create table saves (user_id uuid references profiles on delete cascade, listing_id uuid references listings on delete cascade, price_at_save int, created_at timestamptz default now(), primary key (user_id, listing_id));  -- self select

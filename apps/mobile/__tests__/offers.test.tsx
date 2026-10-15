@@ -128,6 +128,17 @@ describe('T-UNIT-OFF-02 offer status → UI', () => {
     ).toBe(offers.status.hold_other);
   });
 
+  it('auto-declined says sold only when it sold; a removal says the listing closed (DEC 99)', () => {
+    const closed = (status: string) =>
+      offerView(offer({ status: 'auto_declined', listing: { ...offer().listing!, status } })).line;
+    expect(closed('sold')).toBe(offers.status.auto_declined);
+    expect(closed('removed')).toBe(offers.status.listing_closed);
+    expect(closed('expired')).toBe(offers.status.listing_closed);
+    expect(offerView(offer({ status: 'auto_declined', listing: null })).line).toBe(
+      offers.status.listing_closed,
+    );
+  });
+
   it('sorts the inbox by whose turn it is', () => {
     const s = inboxSections({
       incoming: [offer({ id: 'a' }), offer({ id: 'b', status: 'countered', last_actor: 'seller' })],

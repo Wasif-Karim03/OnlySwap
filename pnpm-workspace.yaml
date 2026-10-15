@@ -16,6 +16,13 @@ peerDependencyRules:
     # The plugin works with ESLint 9 flat config; its peer range predates ESLint 9.
     eslint-plugin-react-native-a11y>eslint: '9'
 
+# expo-alternate-app-icons' config plugin requires @expo/image-utils without
+# listing it, so it only worked while that package happened to be hoisted.
+packageExtensions:
+  expo-alternate-app-icons:
+    dependencies:
+      '@expo/image-utils': '*'
+
 # Security patches for transitive dependencies (DEC 88). Same major as the
 # original, so the parents keep working.
 overrides:

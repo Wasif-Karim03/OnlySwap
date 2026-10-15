@@ -438,7 +438,7 @@ describe('C01 Around campus', () => {
   const open = (api: CampusApi, store = newStore()) =>
     renderAt(
       {
-        'discover/campus': () => (
+        feed: () => (
           <CampusFeedScreen api={api} store={store} now={() => NOW} mediaBase={() => 'http://m'} />
         ),
         'listing/[id]': () => <Stub id="screen-listing" />,
@@ -446,7 +446,7 @@ describe('C01 Around campus', () => {
         'sell/wanted': () => <Stub id="screen-wanted" />,
         discover: () => <Stub id="screen-discover" />,
       },
-      '/discover/campus',
+      '/feed',
     );
 
   it('shows food with a live countdown, gone food, Wanted and free stuff', async () => {
@@ -618,7 +618,7 @@ describe('C02 Post free food', () => {
         'sell/food': () => (
           <PostFoodScreen api={api} photosOs={granted} mediaBase={() => 'http://m'} {...extra} />
         ),
-        'discover/campus': () => <Stub id="screen-campus" />,
+        feed: () => <Stub id="screen-campus" />,
       },
       '/sell/food',
     );
@@ -872,7 +872,7 @@ describe('R11-NOTIF-01 Around campus notifications', () => {
       { type: 'free_food', listing_id: 'F1', url: '/listing/F1' },
       { pathname: '/listing/[id]', params: { id: 'F1', from: 'notification' } },
     ],
-    [{ type: 'free_food' }, { pathname: '/discover/campus', params: { kind: 'food' } }],
+    [{ type: 'free_food' }, { pathname: '/feed', params: { kind: 'food' } }],
     [{ type: 'campus_unlocked', url: '/unlocked', campus_id: 'c1' }, '/unlocked'],
   ])('%o', (data, href) => {
     expect(routeForNotification(data)).toEqual(href);

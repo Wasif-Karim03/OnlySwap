@@ -14,6 +14,7 @@ export const permissions: Readonly<{ camera: string; photos: string }> = permiss
 
 export const tabs = {
   discover: 'Discover',
+  feed: 'Feed',
   sell: 'Sell',
   inbox: 'Inbox',
   profile: 'Profile',
@@ -880,6 +881,7 @@ export const feed = {
   watching: "We'll tell you",
   sold: 'Sold',
   inReview: 'In review',
+  removed: 'Removed',
   notOpenToOffers: 'Price is firm',
   askForIt: 'Ask for it',
   goneTitle: 'This listing is gone',
@@ -1092,6 +1094,7 @@ export const offers = {
     expired: 'Expired',
     withdrawn: 'Withdrawn',
     auto_declined: 'This sold to someone else',
+    listing_closed: 'This listing closed',
     hold_other: 'On hold with someone else',
   },
   expiresIn: 'Expires {when}',
@@ -1521,7 +1524,7 @@ export const me = {
     sold: 'Sold',
     expired: 'Expired',
     held_review: 'In review',
-    removed: 'Removed',
+    removed: 'Removed by OnlySwap',
   },
   relist: 'Relist',
   stats: 'Stats',
@@ -1666,6 +1669,9 @@ export const system = {
   // X14 under review
   underReview:
     'Your listing is being checked by a moderator. It shows to others once it is approved.',
+  // Admin removed the seller's listing (DEC 96)
+  removedByAdmin: 'OnlySwap removed this listing. Reason: {reason}',
+  removedByAdminNoReason: 'OnlySwap removed this listing. Other students can no longer see it.',
 } as const;
 
 /** The Quad (R1.1, DESIGN_SYSTEM Q01 to Q14 with D7; check-in is R2). */
@@ -1858,15 +1864,12 @@ export const quad = {
 
 /** Around campus (R1.1, DESIGN_SYSTEM C01 to C03 with D16, D19, D20). */
 export const campus = {
-  // D19 segment on Discover
-  segmentLabel: 'Discover view',
-  segmentSwipe: 'For you',
-  segmentCampus: 'Around campus',
-  // C01 feed
-  title: 'Around campus',
+  // C01 Feed tab (DEC 98)
+  title: 'Feed',
   filtersLabel: 'Show',
   filters: {
     all: 'All',
+    news: 'News',
     food: 'Free food',
     free: 'Free stuff',
     wanted: 'Wanted',
@@ -1875,6 +1878,24 @@ export const campus = {
   loading: 'Loading posts',
   postFood: 'Post free food',
   askFor: 'Ask for something',
+  postNews: 'Post news',
+  composer: "What's happening on campus?",
+  composerLabel: 'Write a post for your campus',
+  // Feed posts (DEC 98)
+  save: 'Save',
+  saved: 'Saved',
+  makeOffer: 'Make offer',
+  askForIt: 'Ask for it',
+  share: 'Share',
+  openLink: 'Open link',
+  morePhotos: '+{n}',
+  saveFailed: "Couldn't save that. Try again.",
+  newsLabel: '{name} posted: {title}. {meta}',
+  postLabel: '{name} is selling {title} for {price}. {meta}',
+  postMeta: '{ago} · {place}',
+  eventWhen: '{day} at {time}',
+  photosOf: 'Photo {i} of {n}',
+  newsTag: 'News',
   foodTag: 'Free food',
   freeTag: 'Free',
   wantedTag: 'Wanted',
@@ -1900,7 +1921,11 @@ export const campus = {
   empty: {
     all: {
       title: 'Quiet around campus right now',
-      body: 'Free food, giveaways, Wanted posts and new listings show up here.',
+      body: 'News, free food, giveaways, Wanted posts and new listings show up here.',
+    },
+    news: {
+      title: 'No news yet',
+      body: 'Got an event, club news or something people should know? Post it.',
     },
     food: {
       title: 'No free food right now',
@@ -1948,7 +1973,29 @@ export const campus = {
   foodNote:
     'People on campus with free food alerts on get a notification. The post hides itself when the time runs out.',
   foodPostedTitle: 'Your free food post is up',
-  foodPostedBody: 'It shows in Around campus until the time runs out.',
+  foodPostedBody: 'It shows in the Feed until the time runs out.',
+  // Post news (DEC 98)
+  newsTitle: 'Post news',
+  newsWhat: 'Headline',
+  newsWhatPlaceholder: 'For example, Club fair on the lawn Friday',
+  newsDetails: 'Details (optional)',
+  newsDetailsPlaceholder: 'What it is, who it is for, anything to bring.',
+  newsPhotos: 'Photos (optional, up to 4)',
+  addPhotos: 'Add photos',
+  newsLink: 'Link (optional)',
+  newsLinkPlaceholder: 'https://',
+  newsLinkHint: 'A sign-up form, a page or a post.',
+  newsEvent: "It's an event",
+  newsDate: 'Date',
+  newsTime: 'Time',
+  newsPickDate: 'Pick a date',
+  newsPickTime: 'Pick a time',
+  newsPlace: 'Where (optional)',
+  newsPlacePlaceholder: 'For example, Hamilton-Williams lobby',
+  newsNote:
+    'Everyone on your campus sees it with your name. Event posts hide after the event day. Others hide after 14 days.',
+  newsPostedTitle: 'Your post is up',
+  newsPostedBody: 'It shows in the Feed for everyone on your campus.',
   // C03 Post a Wanted
   wantedTitle: 'Ask for something',
   wantedWhat: 'What are you looking for?',
@@ -1967,7 +2014,7 @@ export const campus = {
   reviewTitle: 'Your post is in review',
   reviewBody: "Most reviews take under 2 hours. We'll tell you when it's up.",
   postedCheck: 'Posted',
-  seeCampus: 'See Around campus',
+  seeCampus: 'See the Feed',
   done: 'Done',
   // Shared form bits
   post: 'Post',
@@ -1975,6 +2022,7 @@ export const campus = {
   changePhoto: 'Change photo',
   removePhoto: 'Remove photo',
   photoOptional: 'Photo (optional)',
+  removePhotoN: 'Remove photo {i}',
   photoUploading: 'Uploading photo',
   photoFailed: "The photo didn't upload. Try again.",
   photoLabel: 'Your photo',
@@ -1989,6 +2037,12 @@ export const campus = {
     minutesRange: 'Pick how long it is around.',
     budgetHigh: 'Budgets go up to $2,000.',
     descriptionLong: 'Keep the details under 1000 characters.',
+    linkInvalid: 'Use a full link, like https://example.com.',
+    linkLong: 'Keep the link under 300 characters.',
+    eventMissing: 'Pick a date and time, or turn off the event switch.',
+    eventPast: 'Pick a time that has not passed yet.',
+    eventFar: 'Events can be up to 90 days away.',
+    newsCap: "That's 3 news posts today, the most for one day. You can post again tomorrow.",
     banned: '"{term}" isn\'t allowed on OnlySwap.',
     foodCap: "That's 3 free food posts today, the most for one day. You can post again tomorrow.",
     wantedCap: "That's 5 Wanted posts today, the most for one day. You can post again tomorrow.",
@@ -2003,6 +2057,7 @@ export const campus = {
   // Food and Wanted on the listing screen (B02)
   listingFood: 'Free food',
   listingWanted: 'Wanted',
+  listingNews: 'News',
   listingFoodBody: 'Free for anyone. Go to the spot while it lasts.',
   listingWantedBody: 'Someone is looking for this. Have one? List it for them.',
   wantedOwnBody: 'We tell you when someone lists one.',

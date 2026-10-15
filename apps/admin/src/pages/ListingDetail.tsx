@@ -177,6 +177,7 @@ export function ListingDetailPage() {
                   <div className="cf">
                     <div style={{ flex: 1 }}>
                       <ReasonActions
+                        placeholder="Reason (required, saved to the audit log). If you remove a listing, the seller sees this."
                         actions={actions}
                         onDone={() => {
                           state.reload();

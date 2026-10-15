@@ -731,6 +731,7 @@ export function ActionButton({
   needsReason = true,
   confirm,
   size,
+  reasonPrompt,
 }: {
   label: string;
   run: (reason: string) => Promise<unknown>;
@@ -741,6 +742,8 @@ export function ActionButton({
   /** Asked first with OK / Cancel (for removals). */
   confirm?: string;
   size?: 'sm';
+  /** Prompt text for the reason; defaults to "<label>: reason (saved to the audit log)". */
+  reasonPrompt?: string;
 }) {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
@@ -753,7 +756,7 @@ export function ActionButton({
         onClick={async () => {
           if (confirm && !window.confirm(confirm)) return;
           const reason = needsReason
-            ? window.prompt(`${label}: reason (saved to the audit log)`)
+            ? window.prompt(reasonPrompt ?? `${label}: reason (saved to the audit log)`)
             : '';
           if (reason === null) return;
           if (needsReason && reason.trim().length < 3) {

@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { AppState, Platform, ScrollView, Share, View } from 'react-native';
+import { AppState, Linking, Platform, ScrollView, Share, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { track as trackActivity, type ActivitySource } from '@/lib/activity';
@@ -30,12 +30,15 @@ import {
   deal as dealCopy,
   feed as copy,
   nav as navCopy,
+  safety as safetyCopy,
   sell as sellCopy,
   system as systemCopy,
 } from '@/strings';
 
 import { FoodTimeTag } from '../campus/CampusCards';
-import { canAnswer } from '../campus/logic';
+import { canAnswer, eventLabel, linkHost } from '../campus/logic';
+import { AppealSheet, type AppealReason } from '../safety/AppealSheet';
+import { safetyApi } from '../safety/api';
 import { sellApi } from '../sell/api';
 import { answerWanted, getDraftStore } from '../sell/draft';
 import {
@@ -77,8 +80,10 @@ export function ListingScreen({
   mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
   site = () => getEnv().EXPO_PUBLIC_SITE_URL,
   share = (content) => Share.share(content),
+  openUrl = (url) => Linking.openURL(url),
   now = () => new Date(),
   draftStore = getDraftStore(),
+  appeal = (listingId, reason, body) => safetyApi.appeal('listing', listingId, reason, body),
 }: {
   id: string;
   /** Where it was opened from (route param `from`), for the activity event (DEC 93). */
@@ -88,10 +93,16 @@ export function ListingScreen({
   mediaBase?: () => string;
   site?: () => string;
   share?: (content: { message: string; url?: string }) => Promise<unknown>;
+  /** Opens a news post's link (DEC 98). */
+  openUrl?: (url: string) => Promise<unknown>;
   now?: () => Date;
   draftStore?: ReturnType<typeof getDraftStore>;
+  /** Appeals an admin removal (create_appeal 'listing', DEC 99). */
+  appeal?: (listingId: string, reason: AppealReason, body: string) => Promise<void>;
 }) {
   const router = useRouter();
+  const [appealOpen, setAppealOpen] = useState(false);
+  const [appealed, setAppealed] = useState(false);
   const qc = useQueryClient();
   // iPad, wide window: photos on the left, details on the right.
   const wide = useLayout().wide;
@@ -164,14 +175,18 @@ export function ListingScreen({
   const item = data;
   const owner = item.access === 'owner';
   const base = mediaBase();
-  // Food and Wanted posts (R1.1) never take offers: no price, no offer button.
-  const campusKind = item.kind === 'food' || item.kind === 'wanted';
+  // Food, Wanted (R1.1) and news (DEC 98) never take offers: no price, no offer button.
+  const news = item.kind === 'news';
+  const campusKind = item.kind === 'food' || item.kind === 'wanted' || news;
   const price =
     item.kind === 'food'
       ? campusCopy.listingFood
       : item.kind === 'wanted'
         ? campusCopy.listingWanted
-        : priceLabel(item.kind, item.price_cents, copy.free);
+        : news
+          ? campusCopy.listingNews
+          : priceLabel(item.kind, item.price_cents, copy.free);
+  const link = news ? (item.link_url ?? null) : null;
   const setItem = (patch: Partial<FeedItem>) =>
     qc.setQueryData<ListingResult>(listingKey(id), (old) =>
       old && isVisible(old) ? { ...old, ...patch } : old,
@@ -201,7 +216,7 @@ export function ListingScreen({
 
   const onShare = async () => {
     const url = listingLink(site(), id);
-    const text = fill(copy.shareMessage, { title: item.title, price });
+    const text = news ? item.title : fill(copy.shareMessage, { title: item.title, price });
     track('share_tapped', { surface: 'listing' });
     await share(Platform.OS === 'ios' ? { message: text, url } : { message: `${text} ${url}` });
   };
@@ -227,12 +242,15 @@ export function ListingScreen({
         ? copy.sold
         : item.status === 'held_review'
           ? copy.inReview
-          : null;
+          : item.status === 'removed'
+            ? copy.removed
+            : null;
 
   const statusTone = item.status === 'sold' ? 'ink3' : 'amber';
   const sellerAvatar = item.seller.avatar_path ? mediaUrl(base, item.seller.avatar_path) : null;
-  const sellerMeta = yearLabel(item.seller.year) ?? copy.sellerTitle;
-  const meetupNote = chosenSpots.length === 0 && !item.meet_note;
+  const sellerMeta = yearLabel(item.seller.year) ?? (news ? '' : copy.sellerTitle);
+  // A news post's place is in meet_note; it has no meetup to plan.
+  const meetupNote = !news && chosenSpots.length === 0 && !item.meet_note;
 
   let cta: ReactNode = null;
   if (!owner) {
@@ -259,6 +277,16 @@ export function ListingScreen({
             router.push('/sell');
           }}
           testID="listing-i-have-this"
+        />
+      ) : null;
+    } else if (news) {
+      cta = link ? (
+        <Button
+          label={campusCopy.openLink}
+          variant="dark"
+          accessibilityHint={linkHost(link)}
+          onPress={() => void openUrl(link)}
+          testID="listing-open-link"
         />
       ) : null;
     } else if (item.kind !== 'food') {
@@ -320,7 +348,20 @@ export function ListingScreen({
           <Text variant="meta" tone="ink2">
             {metaLine(item, now())}
           </Text>
-          {campusKind ? (
+          {news && item.event_at ? (
+            <View style={styles.event} testID="listing-event">
+              <Icon name="cal" size={18} tone="sky" />
+              <Text variant="bodyStrong" tone="sky" style={styles.flex}>
+                {eventLabel(item.event_at, now())}
+              </Text>
+            </View>
+          ) : null}
+          {link ? (
+            <Text variant="meta" tone="ink2" numberOfLines={1} testID="listing-link-host">
+              {linkHost(link)}
+            </Text>
+          ) : null}
+          {campusKind && !news ? (
             <Text variant="body" tone="ink2" testID="listing-campus-note">
               {item.kind === 'food'
                 ? campusCopy.listingFoodBody
@@ -337,6 +378,30 @@ export function ListingScreen({
 
           {owner && item.status === 'held_review' ? (
             <Banner kind="info" message={systemCopy.underReview} />
+          ) : null}
+          {owner && item.status === 'removed' ? (
+            <Banner
+              kind="warning"
+              message={
+                item.removed_reason
+                  ? fill(systemCopy.removedByAdmin, { reason: item.removed_reason })
+                  : systemCopy.removedByAdminNoReason
+              }
+            />
+          ) : null}
+          {owner && item.status === 'removed' ? (
+            appealed ? (
+              <Text variant="meta" tone="ink2" testID="listing-appealed">
+                {safetyCopy.appealed}
+              </Text>
+            ) : (
+              <Button
+                label={safetyCopy.appeal}
+                variant="secondary"
+                onPress={() => setAppealOpen(true)}
+                testID="listing-appeal"
+              />
+            )
           ) : null}
           {owner ? (
             <View style={styles.stats} testID="listing-owner-stats">
@@ -382,9 +447,11 @@ export function ListingScreen({
                     <Text variant="bodyStrong" numberOfLines={1}>
                       {sellerName(item)}
                     </Text>
-                    <Text variant="meta" tone="ink3">
-                      {sellerMeta}
-                    </Text>
+                    {sellerMeta ? (
+                      <Text variant="meta" tone="ink3">
+                        {sellerMeta}
+                      </Text>
+                    ) : null}
                   </View>
                   <Icon name="chev" size={18} tone="ink3" />
                 </View>
@@ -559,6 +626,17 @@ export function ListingScreen({
         }}
         testID="listing-report"
       />
+      <AppealSheet
+        visible={appealOpen}
+        onClose={() => setAppealOpen(false)}
+        onSend={(reason, body) => appeal(id, reason, body)}
+        onSent={() => {
+          setAppealOpen(false);
+          setAppealed(true);
+          useToastStore.getState().show('success', safetyCopy.appealed);
+        }}
+        testID="listing-appeal-sheet"
+      />
     </View>
   );
 }
@@ -617,6 +695,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     gap: theme.space.xs,
   },
   priceRow: { flexDirection: 'row', alignItems: 'center', gap: theme.space.sm },
+  event: { flexDirection: 'row', alignItems: 'center', gap: theme.space.xs },
   stats: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.lg, marginTop: theme.space.sm },
   hold: { gap: theme.space.xs, marginTop: theme.space.md },
   list: {

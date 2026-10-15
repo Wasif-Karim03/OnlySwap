@@ -10,10 +10,12 @@ import { useLayout } from '@/theme/layout';
 
 type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>>[0];
 
-// Tabs (DESIGN_SYSTEM D1): Discover, Quad (only when the campus has it on),
-// Sell, Inbox, Profile. Badges are wired with the inbox (P7).
+// Tabs (DESIGN_SYSTEM D1, DEC 98): Discover, Feed, Sell, Quad (only when the
+// campus has it on), Inbox, Profile. Badges are wired with the inbox (P7).
+// Without the Quad, Sell sits in the middle of five.
 const ITEMS: Record<string, Omit<TabItem, 'key'>> = {
   discover: { label: tabs.discover, icon: 'cards' },
+  feed: { label: tabs.feed, icon: 'users' },
   quad: { label: tabs.quad, icon: 'quad' },
   // DEC 90: the center Sell tab is an accent rounded rectangle with a plus.
   sell: { label: tabs.sell, icon: 'plus', prominent: true },
@@ -70,8 +72,9 @@ export default function TabsLayout() {
       screenOptions={{ headerShown: false, tabBarPosition: rail ? 'left' : 'bottom' }}
     >
       <Tabs.Screen name="discover" options={{ title: tabs.discover }} />
-      <Tabs.Screen name="quad" options={{ title: tabs.quad, href: quadOn ? undefined : null }} />
+      <Tabs.Screen name="feed" options={{ title: tabs.feed }} />
       <Tabs.Screen name="sell" options={{ title: tabs.sell }} />
+      <Tabs.Screen name="quad" options={{ title: tabs.quad, href: quadOn ? undefined : null }} />
       <Tabs.Screen name="inbox" options={{ title: tabs.inbox }} />
       <Tabs.Screen name="profile" options={{ title: tabs.profile }} />
     </Tabs>

@@ -145,11 +145,13 @@ describe('P10-QUAD-02 Quad tab', () => {
   const routes = {
     '(tabs)/_layout': TabsLayout,
     '(tabs)/discover/_layout': TabStack,
+    '(tabs)/feed/_layout': TabStack,
     '(tabs)/quad/_layout': TabStack,
     '(tabs)/sell/_layout': TabStack,
     '(tabs)/inbox/_layout': TabStack,
     '(tabs)/profile/_layout': TabStack,
     '(tabs)/discover/index': () => <Stub id="tab-discover" />,
+    '(tabs)/feed/index': () => <Stub id="tab-feed" />,
     '(tabs)/quad/index': () => <Stub id="tab-quad" />,
     '(tabs)/sell/index': () => <Stub id="tab-sell" />,
     '(tabs)/inbox/index': () => <Stub id="tab-inbox" />,
@@ -165,15 +167,22 @@ describe('P10-QUAD-02 Quad tab', () => {
     renderAt(routes, '/discover', {});
     await screen.findByTestId('tab-discover');
     await waitFor(() => expect(quadApi.status).toHaveBeenCalled());
-    expect(labels()).toEqual([tabs.discover, tabs.sell, tabs.inbox, tabs.profile]);
+    expect(labels()).toEqual([tabs.discover, tabs.feed, tabs.sell, tabs.inbox, tabs.profile]);
   });
 
-  it('is tab 2 when it is on (D1)', async () => {
+  it('sits after Sell when it is on (D1, DEC 98)', async () => {
     jest.spyOn(quadApi, 'status').mockResolvedValue({ enabled: true, rules_accepted: true });
     renderAt(routes, '/discover', {});
     await screen.findByTestId('tab-discover');
     await waitFor(() =>
-      expect(labels()).toEqual([tabs.discover, tabs.quad, tabs.sell, tabs.inbox, tabs.profile]),
+      expect(labels()).toEqual([
+        tabs.discover,
+        tabs.feed,
+        tabs.sell,
+        tabs.quad,
+        tabs.inbox,
+        tabs.profile,
+      ]),
     );
     fireEvent.press(screen.getByRole('tab', { name: tabs.quad }));
     expect(await screen.findByTestId('tab-quad')).toBeTruthy();

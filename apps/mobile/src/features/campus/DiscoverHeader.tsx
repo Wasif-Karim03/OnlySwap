@@ -9,11 +9,9 @@ import { feed as copy } from '@/strings';
 
 import { meApi, type Me } from '../me/api';
 import { meKey } from '../me/MeScreens';
-import { DiscoverSegment } from './DiscoverSegment';
 
 type Props = {
-  value: 'swipe' | 'campus';
-  /** `card` on the grey Around campus screen, so the buttons stay visible. */
+  /** `card` on a grey screen, so the buttons stay visible. */
   surface?: 'bg2' | 'card';
   /** Reads the signed-in student (campus name). Tests pass a fake. */
   loadMe?: () => Promise<Me>;
@@ -21,11 +19,12 @@ type Props = {
 
 /**
  * Discover header (DEC 90, mock screens 4 and 5): the campus name small above
- * a large "Discover", Search and Notifications buttons, then the
- * "For you | Around campus" segment. The campus name comes from the cached
+ * a large "Discover", Search and Notifications buttons. The For you |
+ * Around campus segment is gone: the feed has its own tab (DEC 98). The
+ * campus name comes from the cached
  * `get_me` the Profile tab uses; it is simply left out until it loads.
  */
-export function DiscoverHeader({ value, surface = 'bg2', loadMe = () => meApi.me() }: Props) {
+export function DiscoverHeader({ surface = 'bg2', loadMe = () => meApi.me() }: Props) {
   const router = useRouter();
   const me = useQuery({ queryKey: meKey, queryFn: loadMe, staleTime: 5 * 60_000 });
   const campus = me.data?.campus?.short_name ?? null;
@@ -61,7 +60,6 @@ export function DiscoverHeader({ value, surface = 'bg2', loadMe = () => meApi.me
           />
         </View>
       </View>
-      <DiscoverSegment value={value} surface={surface === 'card' ? 'bg3' : 'bg2'} />
     </View>
   );
 }

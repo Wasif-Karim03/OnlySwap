@@ -332,6 +332,7 @@ function ReportDetailCard({
               {r.status === 'open' ? (
                 <div style={{ width: '100%' }}>
                   <ReasonActions
+                    placeholder="Reason (required, saved to the audit log). If you remove a listing, the seller sees this."
                     actions={actions}
                     onDone={() => {
                       state.reload();

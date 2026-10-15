@@ -47,7 +47,7 @@ export function routeForNotification(
     const id = s('listing_id') ?? (type === 'wanted_match' ? s('wanted_id') : null);
     if (id) return { pathname: '/listing/[id]', params: { id, from: 'notification' } };
     return type === 'free_food'
-      ? { pathname: '/discover/campus', params: { kind: 'food' } }
+      ? { pathname: '/feed', params: { kind: 'food' } }
       : '/notifications';
   }
   if (s('meetup_id') && type.startsWith('meetup_'))

@@ -9,4 +9,4 @@ cd "$(dirname "$0")/../.." || exit 1
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 MSG="${1:-staging update $(date '+%Y-%m-%d %H:%M')}"
 (cd apps/mobile && APP_VARIANT=preview npx -y eas-cli@latest update \
-  --channel preview --environment preview --platform ios --message "$MSG" --non-interactive) 2>&1 | tee update.log
+  --channel preview --environment preview --platform "${2:-ios}" --message "$MSG" --non-interactive) 2>&1 | tee update.log

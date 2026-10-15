@@ -18,7 +18,7 @@ export const PRICE_MIN_CENTS = 100;
 
 export type ListingKind = 'sale' | 'free';
 /** Every listing kind on the server; food and Wanted posts are Around campus (R1.1). */
-export type AnyListingKind = ListingKind | 'food' | 'wanted';
+export type AnyListingKind = ListingKind | 'food' | 'wanted' | 'news';
 export type Condition = 'new' | 'like_new' | 'good' | 'fair';
 export type PickupBy = 'tomorrow' | 'sunday' | 'week';
 export type Availability = 'weekdays' | 'weekends' | 'mornings' | 'afternoons' | 'evenings';

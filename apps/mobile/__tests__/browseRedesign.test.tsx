@@ -9,7 +9,7 @@ import { imageStyles, Photo } from '../src/components/Photo';
 import type { CampusApi } from '../src/features/campus/api';
 import { CampusFeedScreen } from '../src/features/campus/CampusFeedScreen';
 import { DiscoverHeader } from '../src/features/campus/DiscoverHeader';
-import { campusRows, type CampusItem, type CampusPage } from '../src/features/campus/logic';
+import type { CampusItem, CampusPage } from '../src/features/campus/logic';
 import { yearLabel } from '../src/features/feed/logic';
 import { SwipeDeck } from '../src/features/feed/SwipeDeck';
 import type { DeckCard } from '../src/features/feed/SwipeCard';
@@ -131,20 +131,21 @@ describe('DEC 90 Discover header', () => {
   it('shows the campus name, and the bell opens notifications', async () => {
     renderAt(
       {
-        discover: () => <DiscoverHeader value="swipe" loadMe={me('Demo University')} />,
+        discover: () => <DiscoverHeader loadMe={me('Demo University')} />,
         notifications: () => <Stub id="screen-notifications" />,
       },
       '/discover',
     );
     expect(await screen.findByText('Demo University')).toBeTruthy();
     expect(screen.getByRole('header', { name: feed.title })).toBeTruthy();
-    expect(screen.getByRole('tab', { name: campus.segmentSwipe, selected: true })).toBeTruthy();
+    // DEC 98: no For you | Around campus switch; the feed has its own tab.
+    expect(screen.queryByRole('tab')).toBeNull();
     fireEvent.press(screen.getByRole('button', { name: feed.notifications }));
     expect(await screen.findByTestId('screen-notifications')).toBeTruthy();
   });
 
   it('leaves the campus line out until it is known', async () => {
-    renderAt({ discover: () => <DiscoverHeader value="swipe" loadMe={me(null)} /> }, '/discover');
+    renderAt({ discover: () => <DiscoverHeader loadMe={me(null)} /> }, '/discover');
     expect(await screen.findByTestId('discover-header')).toBeTruthy();
     expect(screen.queryByTestId('discover-campus')).toBeNull();
   });
@@ -182,25 +183,7 @@ function campusItem(id: string, over: Partial<CampusItem> = {}): CampusItem {
   };
 }
 
-describe('DEC 90 Around campus', () => {
-  it('pairs listings into grid rows; food and Wanted span the width', () => {
-    const rows = campusRows([
-      campusItem('f', { kind: 'food' }),
-      campusItem('a'),
-      campusItem('b', { kind: 'free' }),
-      campusItem('c'),
-      campusItem('w', { kind: 'wanted' }),
-      campusItem('d'),
-    ]);
-    expect(rows.map((r) => (r.kind === 'wide' ? r.item.id : r.items.map((i) => i.id)))).toEqual([
-      'f',
-      ['a', 'b'],
-      ['c'],
-      'w',
-      ['d'],
-    ]);
-  });
-
+describe('DEC 90 / DEC 98 Feed', () => {
   it('the chip row keeps its own height (no gap above the feed) and Wanted reads like a person', async () => {
     const page: CampusPage = {
       items: [
@@ -215,7 +198,7 @@ describe('DEC 90 Around campus', () => {
     const api: CampusApi = { feed: jest.fn(async () => page) } as unknown as CampusApi;
     renderAt(
       {
-        'discover/campus': () => (
+        feed: () => (
           <CampusFeedScreen
             api={api}
             now={() => NOW}
@@ -224,14 +207,14 @@ describe('DEC 90 Around campus', () => {
           />
         ),
       },
-      '/discover/campus',
+      '/feed',
     );
     expect(await screen.findByTestId('campus-item-w1')).toBeTruthy();
     const chips = StyleSheet.flatten(screen.getByTestId('campus-filters').props.style);
     expect(chips).toMatchObject({ flexGrow: 0 });
     expect(screen.getByText('Sam T. is looking for')).toBeTruthy();
     expect(screen.getByText('Up to $60')).toBeTruthy();
-    expect(screen.getByText('North dorms')).toBeTruthy();
+    expect(screen.getByText(/North dorms/)).toBeTruthy();
     expect(screen.getByRole('checkbox', { name: campus.filters.food })).toBeTruthy();
   });
 });

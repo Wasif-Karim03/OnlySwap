@@ -109,30 +109,6 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "campuses"
       referencedColumns: ["id"]
-    },{
-      foreignKeyName: "admins_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: true
-      referencedRelation: "profile_stats"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "admins_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: true
-      referencedRelation: "profile_stats_mv"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "admins_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: true
-      referencedRelation: "profiles"
-      referencedColumns: ["id"]
-    },{
-      foreignKeyName: "admins_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: true
-      referencedRelation: "public_profiles"
-      referencedColumns: ["id"]
     }
                   ]
                 },"age_blocks": {
@@ -567,6 +543,25 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"listing_removals": {
+                  Row: {
+                    "listing_id": string,"reason": string,"removed_at": string,"removed_by": string | null
+                  }
+                  Insert: {
+                    "listing_id": string,"reason": string,"removed_at"?: string,"removed_by"?: string | null
+                  }
+                  Update: {
+                    "listing_id"?: string,"reason"?: string,"removed_at"?: string,"removed_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "listing_removals_listing_id_fkey"
+      columns: ["listing_id"]
+isOneToOne: true
+      referencedRelation: "listings"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"listing_reservations": {
                   Row: {
                     "created_at": string | null,"id": string,"used_at": string | null,"user_id": string
@@ -582,13 +577,13 @@ isOneToOne: false
                   ]
                 },"listings": {
                   Row: {
-                    "availability": (string)[],"bumped_at": string,"buyer_id": string | null,"campus_id": string,"category_id": number | null,"condition": Database["public"]['Enums']["item_condition"] | null,"created_at": string,"deleted_at": string | null,"description": string | null,"expires_at": string | null,"hold_offer_id": string | null,"id": string,"kind": Database["public"]['Enums']["listing_kind"],"meet_note": string | null,"meet_spot_ids": (string)[],"offer_count": number,"open_to_offers": boolean,"price_cents": number,"save_count": number,"search": unknown,"seller_id": string | null,"share_image_path": string | null,"sold_at": string | null,"sold_in_app": boolean | null,"status": Database["public"]['Enums']["listing_status"],"title": string,"updated_at": string,"view_count": number,"wanted_max_cents": number | null,"wanted_ref": string | null
+                    "availability": (string)[],"bumped_at": string,"buyer_id": string | null,"campus_id": string,"category_id": number | null,"condition": Database["public"]['Enums']["item_condition"] | null,"created_at": string,"deleted_at": string | null,"description": string | null,"event_at": string | null,"expires_at": string | null,"hold_offer_id": string | null,"id": string,"kind": Database["public"]['Enums']["listing_kind"],"link_url": string | null,"meet_note": string | null,"meet_spot_ids": (string)[],"offer_count": number,"open_to_offers": boolean,"price_cents": number,"save_count": number,"search": unknown,"seller_id": string | null,"share_image_path": string | null,"sold_at": string | null,"sold_in_app": boolean | null,"status": Database["public"]['Enums']["listing_status"],"title": string,"updated_at": string,"view_count": number,"wanted_max_cents": number | null,"wanted_ref": string | null
                   }
                   Insert: {
-                    "availability"?: (string)[],"bumped_at"?: string,"buyer_id"?: string | null,"campus_id": string,"category_id"?: number | null,"condition"?: Database["public"]['Enums']["item_condition"] | null,"created_at"?: string,"deleted_at"?: string | null,"description"?: string | null,"expires_at"?: string | null,"hold_offer_id"?: string | null,"id": string,"kind"?: Database["public"]['Enums']["listing_kind"],"meet_note"?: string | null,"meet_spot_ids"?: (string)[],"offer_count"?: number,"open_to_offers"?: boolean,"price_cents"?: number,"save_count"?: number,"search"?: never,"seller_id"?: string | null,"share_image_path"?: string | null,"sold_at"?: string | null,"sold_in_app"?: boolean | null,"status"?: Database["public"]['Enums']["listing_status"],"title": string,"updated_at"?: string,"view_count"?: number,"wanted_max_cents"?: number | null,"wanted_ref"?: string | null
+                    "availability"?: (string)[],"bumped_at"?: string,"buyer_id"?: string | null,"campus_id": string,"category_id"?: number | null,"condition"?: Database["public"]['Enums']["item_condition"] | null,"created_at"?: string,"deleted_at"?: string | null,"description"?: string | null,"event_at"?: string | null,"expires_at"?: string | null,"hold_offer_id"?: string | null,"id": string,"kind"?: Database["public"]['Enums']["listing_kind"],"link_url"?: string | null,"meet_note"?: string | null,"meet_spot_ids"?: (string)[],"offer_count"?: number,"open_to_offers"?: boolean,"price_cents"?: number,"save_count"?: number,"search"?: never,"seller_id"?: string | null,"share_image_path"?: string | null,"sold_at"?: string | null,"sold_in_app"?: boolean | null,"status"?: Database["public"]['Enums']["listing_status"],"title": string,"updated_at"?: string,"view_count"?: number,"wanted_max_cents"?: number | null,"wanted_ref"?: string | null
                   }
                   Update: {
-                    "availability"?: (string)[],"bumped_at"?: string,"buyer_id"?: string | null,"campus_id"?: string,"category_id"?: number | null,"condition"?: Database["public"]['Enums']["item_condition"] | null,"created_at"?: string,"deleted_at"?: string | null,"description"?: string | null,"expires_at"?: string | null,"hold_offer_id"?: string | null,"id"?: string,"kind"?: Database["public"]['Enums']["listing_kind"],"meet_note"?: string | null,"meet_spot_ids"?: (string)[],"offer_count"?: number,"open_to_offers"?: boolean,"price_cents"?: number,"save_count"?: number,"search"?: never,"seller_id"?: string | null,"share_image_path"?: string | null,"sold_at"?: string | null,"sold_in_app"?: boolean | null,"status"?: Database["public"]['Enums']["listing_status"],"title"?: string,"updated_at"?: string,"view_count"?: number,"wanted_max_cents"?: number | null,"wanted_ref"?: string | null
+                    "availability"?: (string)[],"bumped_at"?: string,"buyer_id"?: string | null,"campus_id"?: string,"category_id"?: number | null,"condition"?: Database["public"]['Enums']["item_condition"] | null,"created_at"?: string,"deleted_at"?: string | null,"description"?: string | null,"event_at"?: string | null,"expires_at"?: string | null,"hold_offer_id"?: string | null,"id"?: string,"kind"?: Database["public"]['Enums']["listing_kind"],"link_url"?: string | null,"meet_note"?: string | null,"meet_spot_ids"?: (string)[],"offer_count"?: number,"open_to_offers"?: boolean,"price_cents"?: number,"save_count"?: number,"search"?: never,"seller_id"?: string | null,"share_image_path"?: string | null,"sold_at"?: string | null,"sold_in_app"?: boolean | null,"status"?: Database["public"]['Enums']["listing_status"],"title"?: string,"updated_at"?: string,"view_count"?: number,"wanted_max_cents"?: number | null,"wanted_ref"?: string | null
                   }
                   Relationships: [
                     {
@@ -2261,6 +2256,9 @@ isOneToOne: false
 "create_meetup_share":
 { Args: { "meetup_id": string }; Returns: Json
                            },
+"create_news":
+{ Args: { "description"?: string,"event_at"?: string,"id": string,"link_url"?: string,"photos"?: Json,"place"?: string,"title": string }; Returns: Json
+                           },
 "create_quad_post":
 { Args: { "body": string,"kind": string,"photo_path"?: string,"place"?: string,"poll"?: Json,"post_id"?: string }; Returns: Json
                            },
@@ -2526,7 +2524,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "admin_role": "owner"|"moderator","age_method": "os_signal"|"self_declared"|"review","campus_status": "waitlist"|"live"|"paused","chat_status": "open"|"closed"|"blocked","class_year": "freshman"|"sophomore"|"junior"|"senior"|"grad"|"other","item_condition": "new"|"like_new"|"good"|"fair","listing_kind": "sale"|"free"|"wanted"|"food","listing_status": "active"|"hold"|"sold"|"expired"|"held_review"|"removed"|"deleted","meetup_status": "proposed"|"confirmed"|"cancelled"|"completed"|"no_show","message_kind": "text"|"system"|"meetup"|"photo","offer_status": "pending"|"countered"|"accepted"|"declined"|"expired"|"withdrawn"|"auto_declined","push_state": "pending"|"sending"|"sent"|"skipped"|"failed","report_status": "open"|"actioned"|"dismissed","spot_designation": "public"|"police","swipe_dir": "left"|"save","user_status": "active"|"waitlist"|"reverify"|"paused"|"suspended"|"banned"
+            "admin_role": "owner"|"moderator","age_method": "os_signal"|"self_declared"|"review","campus_status": "waitlist"|"live"|"paused","chat_status": "open"|"closed"|"blocked","class_year": "freshman"|"sophomore"|"junior"|"senior"|"grad"|"other","item_condition": "new"|"like_new"|"good"|"fair","listing_kind": "sale"|"free"|"wanted"|"food"|"news","listing_status": "active"|"hold"|"sold"|"expired"|"held_review"|"removed"|"deleted","meetup_status": "proposed"|"confirmed"|"cancelled"|"completed"|"no_show","message_kind": "text"|"system"|"meetup"|"photo","offer_status": "pending"|"countered"|"accepted"|"declined"|"expired"|"withdrawn"|"auto_declined","push_state": "pending"|"sending"|"sent"|"skipped"|"failed","report_status": "open"|"actioned"|"dismissed","spot_designation": "public"|"police","swipe_dir": "left"|"save","user_status": "active"|"waitlist"|"reverify"|"paused"|"suspended"|"banned"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -2642,7 +2640,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "admin_role": ["owner", "moderator"],"age_method": ["os_signal", "self_declared", "review"],"campus_status": ["waitlist", "live", "paused"],"chat_status": ["open", "closed", "blocked"],"class_year": ["freshman", "sophomore", "junior", "senior", "grad", "other"],"item_condition": ["new", "like_new", "good", "fair"],"listing_kind": ["sale", "free", "wanted", "food"],"listing_status": ["active", "hold", "sold", "expired", "held_review", "removed", "deleted"],"meetup_status": ["proposed", "confirmed", "cancelled", "completed", "no_show"],"message_kind": ["text", "system", "meetup", "photo"],"offer_status": ["pending", "countered", "accepted", "declined", "expired", "withdrawn", "auto_declined"],"push_state": ["pending", "sending", "sent", "skipped", "failed"],"report_status": ["open", "actioned", "dismissed"],"spot_designation": ["public", "police"],"swipe_dir": ["left", "save"],"user_status": ["active", "waitlist", "reverify", "paused", "suspended", "banned"]
+            "admin_role": ["owner", "moderator"],"age_method": ["os_signal", "self_declared", "review"],"campus_status": ["waitlist", "live", "paused"],"chat_status": ["open", "closed", "blocked"],"class_year": ["freshman", "sophomore", "junior", "senior", "grad", "other"],"item_condition": ["new", "like_new", "good", "fair"],"listing_kind": ["sale", "free", "wanted", "food", "news"],"listing_status": ["active", "hold", "sold", "expired", "held_review", "removed", "deleted"],"meetup_status": ["proposed", "confirmed", "cancelled", "completed", "no_show"],"message_kind": ["text", "system", "meetup", "photo"],"offer_status": ["pending", "countered", "accepted", "declined", "expired", "withdrawn", "auto_declined"],"push_state": ["pending", "sending", "sent", "skipped", "failed"],"report_status": ["open", "actioned", "dismissed"],"spot_designation": ["public", "police"],"swipe_dir": ["left", "save"],"user_status": ["active", "waitlist", "reverify", "paused", "suspended", "banned"]
           }
         }
 } as const

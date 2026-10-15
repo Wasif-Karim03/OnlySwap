@@ -115,9 +115,7 @@ export function PostFoodScreen({
           listing={posted}
           title={copy.foodPostedTitle}
           body={copy.foodPostedBody}
-          onSeeFeed={() =>
-            router.navigate({ pathname: '/discover/campus', params: { kind: 'food' } })
-          }
+          onSeeFeed={() => router.navigate({ pathname: '/feed', params: { kind: 'food' } })}
           onDone={leave}
           testID="food-posted"
         />

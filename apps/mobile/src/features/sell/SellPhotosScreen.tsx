@@ -323,6 +323,14 @@ export function SellPhotosScreen({
             onPress={() => router.push('/sell/wanted')}
             testID="sell-ask-wanted"
           />
+          <Button
+            label={campusCopy.postNews}
+            variant="text"
+            size="S"
+            fullWidth={false}
+            onPress={() => router.push('/sell/news')}
+            testID="sell-post-news"
+          />
         </View>
       )}
     </SellStep>

@@ -124,7 +124,8 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 | `record_view` | `listing_id` | void | once/user/day | — |
 | `track_events` | `events jsonb` (≤50: `{kind, listing_id?, source?, dwell_ms?, query?, at?}`), `platform text?` (`ios`\|`android`\|`web`), `app_version text?` | `{accepted}` | admin v2 activity (DEC 93): kinds `app_open`, `deck_shown`, `listing_viewed`, `swiped_left`, `saved`, `unsaved`, `offer_made`, `searched`, `opened_from`; sources `discover`, `search`, `campus`, `profile`, `saved`, `link`, `notification` (else null); unknown kinds, listings not on the caller's campus or deleted, and `searched` without text are dropped; dwell capped at 600000 ms; query cut to 80; `at` kept within the last 24 h; a deck card counts once per 24 h; stamps `last_active_at`, `last_platform`, `last_app_version`; `INVALID:events` when not an array or > 50 | 120/h |
 | `get_listing` | `id` | `FeedItem & {access}`; `{id, access}` when not visible | access: buyer, owner, gone, blocked, other_campus (DEC 57) | 600/h |
-| `get_campus_feed` | `kind text?, cursor` | items (free, wanted, food, new) | — | 120/h |
+| `get_campus_feed` | `kind text?, cursor` | items (all, news, free, wanted, food, new); `all` = food, free, wanted, news and sale from the last 7 days; items carry `link_url`, `event_at` (DEC 98) | — | 120/h |
+| `create_news` | `id` (reserved), `title`, `description?`, `photos jsonb` (≤4), `link_url?`, `event_at?`, `place?` | listing | DEC 98: kind `news`, price 0, no offers; title 3–80, description ≤1000, place ≤60 (stored in `meet_note`), link `^https?://` with a dot, ≤300; `event_at` future and ≤90 days; expires at the end of the event's day in campus time, else now + 14 days; banned words and review holds as `create_listing`; `FORBIDDEN` without a reservation; idempotent on the id | create_listing 20/day + 3/day news |
 | `search_listings` | `q, filters, cursor` | listings | `websearch_to_tsquery`; trigram fallback; unknown filter keys → `INVALID:filters` | 120/h |
 | `search_suggest` | `q` (≥2) | `[{type, label, count}]` | — | 600/h |
 | `create_saved_search` / `update_saved_search` / `delete_saved_search` | … | row | max 20 | 30/day |
@@ -334,7 +335,7 @@ Every job that calls a function has an exists-guard (ARC-05).
 | offer_new | offers | ✓ | offers | "Maya offered $35 on your mini fridge" | `offer_new:{offer}:{round}` |
 | offer_accepted | offers | ✓ | offers | "Devin accepted your offer. Say hi and plan the pickup." | `offer_accepted:{offer}` |
 | offer_countered | offers | ✓ | offers | "Devin countered at $38 on the mini fridge" | `offer_countered:{offer}:{round}` |
-| offer_declined | offers | | offers | "Your offer on the desk chair wasn't accepted" / "This sold to someone else" | `offer_declined:{offer}` |
+| offer_declined | offers | | offers | "Your offer on the desk chair wasn't accepted" / the wind-down reason: "This item sold to someone else", "This listing was removed" or "The seller removed this listing" (DEC 99) | `offer_declined:{offer}` |
 | offer_expired | offers | | offers | "Your $30 offer on the desk chair expired" | `offer_expired:{offer}` |
 | message_new | messages | | messages | previews on: "Aisha: can we do 4:30?"; off: "New message from Aisha" | `message_new:{chat}:{minute}` |
 | meetup_proposed | meetups | ✓ | meetups | "Aisha suggested 4:30 PM at the Rec Center" | `meetup_proposed:{meetup}` |
@@ -348,6 +349,8 @@ Every job that calls a function has an exists-guard (ARC-05).
 | price_drop | alerts | | price_drop | "Desk chair you saved is now $30" | `price_drop:{listing}:{cents}` |
 | watch_available | alerts | | saved_search | "The lamp is available again" | `watch:{listing}:{date}` |
 | listing_stale | selling | | **tips (opt-in)** | "No offers on your lamp yet. Drop the price?" | `stale:{listing}` |
+| listing_removed | selling | | always (moderation) | "OnlySwap removed Desk lamp. Reason: {admin reason}" (DEC 96; from admin_set_listing_status, admin_bulk_set_listing_status, admin_resolve_report remove_content; `data.listing_id`) | `listing_removed:{listing}:{txid}` |
+| listing_restored | selling | | always | "Desk lamp is live again." (an admin put a removed listing back) | `listing_restored:{listing}:{txid}` |
 | report_update | safety | | always | "We reviewed your report" | `report:{id}:{status}` |
 | appeal_decided | account | | always | "Your appeal was reviewed" | `appeal:{id}` |
 | account_notice | account | | always | "Your account is paused until Oct 2" | `acct:{user}:{event}:{date}` |
