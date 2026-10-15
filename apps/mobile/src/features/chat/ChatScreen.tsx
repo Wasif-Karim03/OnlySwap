@@ -227,13 +227,37 @@ export function ChatScreen({
         testID="chat-did-it-sell"
       />
     ) : null;
+  // DEC 97: the seller can mark it sold from the chat any time it's still for
+  // sale, with this chat's buyer picked (Mark sold lets them change it).
+  const markSoldButton =
+    !readOnly &&
+    !soldButton &&
+    c.role === 'seller' &&
+    c.listing_id &&
+    c.other &&
+    (c.listing_status === 'active' || c.listing_status === 'hold') ? (
+      <Button
+        label={copy.markSold}
+        size="S"
+        variant="secondary"
+        fullWidth={false}
+        onPress={() =>
+          router.push({
+            pathname: '/listing/[id]/sold',
+            params: { id: c.listing_id!, buyer: c.other!.id },
+          })
+        }
+        testID="chat-mark-sold"
+      />
+    ) : null;
   const extra =
     !readOnly && extraActions ? extraActions({ role: c.role, listingId: c.listing_id }) : null;
   const actions =
-    planButton || soldButton || extra ? (
+    planButton || soldButton || markSoldButton || extra ? (
       <>
         {planButton}
         {soldButton}
+        {markSoldButton}
         {extra}
       </>
     ) : null;
