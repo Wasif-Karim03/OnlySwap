@@ -108,3 +108,16 @@ test('T-UNIT-TOK-01 required contrast pairs pass in light and dark for every acc
     }
   }
 });
+
+test('T-UNIT-TOK-02 secondary and status text meets 4.5:1 on every surface (I-05, I-06)', () => {
+  for (const mode of ['light', 'dark']) {
+    const c = tokens.color[mode];
+    for (const fg of ['ink2', 'ink3', 'red', 'green', 'amber']) {
+      const surfaces = ['bg', 'bg2', 'card', ...(c[`${fg}Bg`] ? [`${fg}Bg`] : [])];
+      for (const bg of surfaces) {
+        const r = contrast(c[fg], c[bg]);
+        assert.ok(r >= 4.5, `${mode} ${fg}/${bg} = ${r.toFixed(2)}`);
+      }
+    }
+  }
+});
