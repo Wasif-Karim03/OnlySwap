@@ -3,9 +3,11 @@
 -- members, drops unknown kinds and listings the caller can't see, stamps the
 -- user and campus from the session, clamps dwell and time, cuts the search
 -- text to 80, counts a deck card once per 24 h, is rate limited, and updates
--- last active / platform / app version. Retention: 90 days (prune_activity).
+-- last active / platform / app version. Retention: 30 days (prune_activity).
+-- E-03 (DEC 100): deck cards, left swipes, saves and offers are no longer
+-- stored here (swipes, saves and offers have them; time on card is on swipes).
 begin;
-select plan(35);
+select plan(36);
 select tests.create_fixtures();
 select tests.set_now('2027-03-10 12:00:00-05');
 
@@ -47,16 +49,19 @@ select is(tests.try_text_as(tests.uid('A'), format($$select public.track_events(
     jsonb_build_object('kind', 'saved', 'listing_id', '00000000-0000-4000-8000-0000000ac003'),
     jsonb_build_object('kind', 'offer_made', 'listing_id', 'not-a-uuid'),
     jsonb_build_object('kind', 'swiped_left'),
+    jsonb_build_object('kind', 'swiped_left', 'listing_id', '00000000-0000-4000-8000-0000000ac001', 'dwell_ms', 1200),
+    jsonb_build_object('kind', 'saved', 'listing_id', '00000000-0000-4000-8000-0000000ac001'),
     jsonb_build_object('kind', 'hack', 'listing_id', '00000000-0000-4000-8000-0000000ac001'),
     jsonb_build_object('kind', 'searched', 'query', '  mini    fridge  ' || repeat('x', 100)),
     jsonb_build_object('kind', 'searched', 'query', '   '),
     jsonb_build_object('kind', 'app_open', 'listing_id', '00000000-0000-4000-8000-0000000ac001', 'at', '2027-03-12T00:00:00Z'),
     jsonb_build_object('kind', 'opened_from', 'listing_id', '00000000-0000-4000-8000-0000000ac001', 'source', 'link', 'at', '2027-03-01T00:00:00Z'),
     'not an object'))),
-  '6', 'six of fourteen are kept');
-select is((select count(*)::int from public.activity_events where user_id = tests.uid('A') and campus_id = tests.uid('OSU')), 6,
+  '5', 'five of sixteen are kept');
+select is((select count(*)::int from public.activity_events where user_id = tests.uid('A') and campus_id = tests.uid('OSU')), 5,
   'stamped with the caller and their campus');
-select is((select count(*)::int from public.activity_events where kind = 'deck_shown'), 1, 'a deck card counts once');
+select is((select count(*)::int from public.activity_events where kind in ('deck_shown', 'swiped_left', 'saved', 'offer_made')), 0,
+  'deck cards, left swipes, saves and offers are not stored (E-03)');
 select is((select dwell_ms || ':' || source from public.activity_events where kind = 'listing_viewed' and source = 'search'),
   '600000:search', 'dwell is capped at 10 minutes');
 select is((select coalesce(dwell_ms::text, 'null') || ':' || coalesce(source, 'null') from public.activity_events
@@ -82,10 +87,13 @@ select is(tests.try_text_as(tests.uid('A'), $$select public.track_events('[]', '
 select is((select last_platform || ':' || last_app_version from public.profiles where id = tests.uid('A')), 'ios:1.2.3',
   'bad platform or version values are ignored');
 
--- A day later the card counts again.
+-- Older app builds still send deck cards: accepted as a call, nothing stored.
 select tests.set_now('2027-03-11 12:30:00-05');
 select is(tests.try_text_as(tests.uid('A'), $$select public.track_events('[{"kind":"deck_shown","listing_id":"00000000-0000-4000-8000-0000000ac001"}]') ->> 'accepted'$$),
-  '1', 'a deck card counts again after 24 hours');
+  '0', 'a deck card from an older build is dropped without an error');
+select throws_ok($$insert into public.activity_events (user_id, campus_id, kind, listing_id) values
+                   (tests.uid('A'), tests.uid('OSU'), 'deck_shown', '00000000-0000-4000-8000-0000000ac001')$$,
+  '23514', null, 'the table no longer takes the dropped kinds');
 
 -- Rate limit: 120 batches an hour.
 insert into public.rate_counters (user_id, action, window_start, count)
@@ -96,9 +104,9 @@ select is(tests.try_text_as(tests.uid('A'), $$select public.track_events('[{"kin
 
 -- Retention ------------------------------------------------------------------------------------------
 insert into public.activity_events (user_id, campus_id, kind, created_at) values
-  (tests.uid('B'), tests.uid('OSU'), 'app_open', '2026-12-01 12:00:00-05'),
-  (tests.uid('B'), tests.uid('OSU'), 'app_open', '2027-01-01 12:00:00-05');
-select is((select private.prune_activity() ->> 'activity_events'), '1', 'events older than 90 days are deleted');
+  (tests.uid('B'), tests.uid('OSU'), 'app_open', '2027-02-08 12:00:00-05'),
+  (tests.uid('B'), tests.uid('OSU'), 'app_open', '2027-02-12 12:00:00-05');
+select is((select private.prune_activity() ->> 'activity_events'), '1', 'events older than 30 days are deleted');
 select is((select count(*)::int from public.activity_events where user_id = tests.uid('B')), 1, 'newer ones stay');
 select is((select schedule from cron.job where jobname = 'prune_activity'), '45 9 * * *', 'the prune_activity job runs daily');
 select is((select command from cron.job where jobname = 'prune_activity'), 'select private.prune_activity()', 'and calls prune_activity');
@@ -107,7 +115,7 @@ select is((select schedule from cron.job where jobname = 'prune'), '30 9 * * *',
 -- Deleting the account deletes the events (FK cascade).
 delete from auth.users where id = tests.uid('B');
 select is((select count(*)::int from public.activity_events where user_id = tests.uid('B')), 0, 'events go with the account');
-select is((select count(*)::int from public.activity_events where user_id = tests.uid('A')), 7, 'others keep theirs');
+select is((select count(*)::int from public.activity_events where user_id = tests.uid('A')), 5, 'others keep theirs');
 select ok(not has_function_privilege('authenticated', 'private.prune_activity()', 'execute'), 'members cannot run the prune');
 
 select * from finish();
