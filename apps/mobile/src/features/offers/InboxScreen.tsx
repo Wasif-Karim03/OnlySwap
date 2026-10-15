@@ -240,10 +240,7 @@ export function InboxScreen({
         variant="large"
         title={copy.inboxTitle}
         trailing={
-          <NotificationBell
-            accessibilityLabel={notifCopy.open}
-            testID="inbox-notifications"
-          />
+          <NotificationBell accessibilityLabel={notifCopy.open} testID="inbox-notifications" />
         }
       />
       <View style={styles.tabs}>
