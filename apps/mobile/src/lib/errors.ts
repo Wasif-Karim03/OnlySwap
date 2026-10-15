@@ -27,6 +27,7 @@ export const SERVER_ERROR_CODES = [
   'DOMAIN_BLOCKED',
   'AGE_BLOCKED',
   'BANNED',
+  'EMAIL_ALIAS',
   'FEATURE_OFF',
 ] as const;
 

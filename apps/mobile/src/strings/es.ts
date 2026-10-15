@@ -56,6 +56,8 @@ const errors: Strings['errors'] = {
   DOMAIN_BLOCKED: 'Ese dominio de correo no se puede usar. Usa tu correo universitario.',
   AGE_BLOCKED: 'OnlySwap es para personas de 18 años o más.',
   BANNED: 'Esta cuenta fue eliminada de OnlySwap.',
+  EMAIL_ALIAS:
+    'Ese correo universitario ya tiene una cuenta. Inicia sesión con la dirección que usaste primero.',
   FEATURE_OFF: 'Eso todavía no está disponible.',
   ERR_OFFLINE: 'No tienes conexión. Revisa tu conexión e intenta de nuevo.',
   SESSION_EXPIRED: 'Tu sesión terminó. Inicia sesión otra vez.',
