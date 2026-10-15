@@ -46,6 +46,9 @@ import {
 } from './logic';
 
 const MODES: PostMode[] = ['text', 'photo', 'poll', 'checkin'];
+// DEC 130: the Quad is the Feed's Quad chip; after posting it opens on New.
+const QUAD_HOME = { pathname: '/feed', params: { kind: 'quad' } } as const;
+const QUAD_NEW = { pathname: '/feed', params: { kind: 'quad', sort: 'new' } } as const;
 
 type Deps = {
   api?: QuadApi;
@@ -89,7 +92,7 @@ export function QuadNewPostScreen({
   const [error, setError] = useState<string | null>(null);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
 
-  const leave = () => (router.canGoBack() ? router.back() : router.replace('/quad'));
+  const leave = () => (router.canGoBack() ? router.back() : router.replace(QUAD_HOME));
   const valid = canPost({ mode, body, photoPath, photoBusy, options, place });
 
   const addPhoto = async (source: PhotoSource) => {
@@ -157,8 +160,8 @@ export function QuadNewPostScreen({
       if (res.status === 'live') {
         void qc.invalidateQueries({ queryKey: quadKeys.feeds });
         useToastStore.getState().show('success', copy.posted);
-        if (router.canDismiss()) router.dismissTo({ pathname: '/quad', params: { sort: 'new' } });
-        else router.replace({ pathname: '/quad', params: { sort: 'new' } });
+        if (router.canDismiss()) router.dismissTo(QUAD_NEW);
+        else router.replace(QUAD_NEW);
         return;
       }
       setOutcome({ status: res.status, reason: res.reason });
@@ -166,7 +169,7 @@ export function QuadNewPostScreen({
       const err = toAppError(e);
       if (err.code === 'RULES_REQUIRED' || err.code === 'FEATURE_OFF') {
         await qc.invalidateQueries({ queryKey: quadKeys.status });
-        router.replace('/quad');
+        router.replace(QUAD_HOME);
         return;
       }
       setError(errorText(e));

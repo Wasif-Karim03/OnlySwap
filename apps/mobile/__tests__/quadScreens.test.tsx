@@ -10,7 +10,7 @@ import { Text } from 'react-native';
 import TabsLayout from '../app/(tabs)/_layout';
 import { canBlock, ReportSheet, reportReasons } from '../src/components/ReportSheet';
 import { useToastStore } from '../src/components/Toast';
-import { quadApi, type QuadApi, type QuadPost, type QuadReply } from '../src/features/quad/api';
+import { type QuadApi, type QuadPost, type QuadReply } from '../src/features/quad/api';
 import { NotificationSettingsScreen } from '../src/features/notifications/NotificationSettingsScreen';
 import { QuadScreen } from '../src/features/quad/QuadFeedScreen';
 import {
@@ -141,7 +141,7 @@ afterEach(() => {
   act(() => useToastStore.getState().dismiss());
 });
 
-describe('P10-QUAD-02 Quad tab', () => {
+describe('P10-QUAD-02 / DEC 130 no Quad tab', () => {
   const routes = {
     '(tabs)/_layout': TabsLayout,
     '(tabs)/discover/_layout': TabStack,
@@ -162,30 +162,10 @@ describe('P10-QUAD-02 Quad tab', () => {
 
   afterEach(() => jest.restoreAllMocks());
 
-  it('is hidden when the campus has the Quad off', async () => {
-    jest.spyOn(quadApi, 'status').mockResolvedValue({ enabled: false, rules_accepted: false });
+  it('five tabs whether or not the campus has the Quad on; it is a Feed chip', async () => {
     renderAt(routes, '/discover', {});
     await screen.findByTestId('tab-discover');
-    await waitFor(() => expect(quadApi.status).toHaveBeenCalled());
     expect(labels()).toEqual([tabs.discover, tabs.feed, tabs.sell, tabs.inbox, tabs.profile]);
-  });
-
-  it('sits after Sell when it is on (D1, DEC 98)', async () => {
-    jest.spyOn(quadApi, 'status').mockResolvedValue({ enabled: true, rules_accepted: true });
-    renderAt(routes, '/discover', {});
-    await screen.findByTestId('tab-discover');
-    await waitFor(() =>
-      expect(labels()).toEqual([
-        tabs.discover,
-        tabs.feed,
-        tabs.sell,
-        tabs.quad,
-        tabs.inbox,
-        tabs.profile,
-      ]),
-    );
-    fireEvent.press(screen.getByRole('tab', { name: tabs.quad }));
-    expect(await screen.findByTestId('tab-quad')).toBeTruthy();
   });
 });
 
@@ -425,7 +405,7 @@ describe('Q05 Thread', () => {
 
 describe('Q07 New post', () => {
   const routes = (api: QuadApi) => ({
-    quad: () => <Stub id="screen-quad" />,
+    feed: () => <Stub id="screen-quad" />,
     'quad/new': () => <QuadNewPostScreen api={api} newId={() => 'new-id'} />,
   });
 
@@ -444,7 +424,8 @@ describe('Q07 New post', () => {
       }),
     );
     expect(await screen.findByTestId('screen-quad')).toBeTruthy();
-    expect(router.getSearchParams()).toMatchObject({ sort: 'new' });
+    // DEC 130: back to the Feed's Quad chip, on New.
+    expect(router.getSearchParams()).toMatchObject({ kind: 'quad', sort: 'new' });
   });
 
   it('held: Sent for review with the reason', async () => {

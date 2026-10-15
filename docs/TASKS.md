@@ -391,7 +391,7 @@ Branch `feat/ux-pack`. Order keeps every step OTA-able until UX-09 (native camer
 - [x] UX-04 Wanted need by + alert me (DEC 127). Done when: pgTAP + Jest pass.
 - [x] UX-05 Recently viewed + More like this (DEC 128). Done when: pgTAP + Jest pass.
 - [x] UX-06 Listing help (DEC 129). Done when: Jest passes.
-- [ ] UX-07 Quad inside Feed (DEC 130). Done when: Jest passes.
+- [x] UX-07 Quad inside Feed (DEC 130). Done when: Jest passes.
 - [ ] UX-08 Handoff code (DEC 132). Done when: pgTAP + Jest pass.
 - [ ] UX-09 Moving out mode + bundle offers (DEC 133). Done when: pgTAP + Jest pass.
 - [ ] UX-10 Scan ISBN (DEC 131, needs new builds). Done when: Jest passes; device check after the build.
