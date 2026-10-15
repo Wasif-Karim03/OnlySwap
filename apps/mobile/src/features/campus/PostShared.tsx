@@ -8,6 +8,7 @@ import { Photo } from '@/components/Photo';
 import { SuccessCheck } from '@/components/SuccessCheck';
 import { Text } from '@/components/Text';
 import { errorText, toAppError } from '@/lib/errors';
+import { fill } from '@/lib/format';
 import type { PickedPhoto } from '@/lib/media';
 import { primerStep, type OsApi } from '@/lib/permissions';
 import { campus as copy } from '@/strings';
@@ -152,6 +153,154 @@ export function PhotoField({
           />
         ) : null}
       </View>
+      {error ? (
+        <Text variant="meta" tone="red" accessibilityLiveRegion="polite">
+          {error}
+        </Text>
+      ) : null}
+      {off ? (
+        <View style={styles.gap} testID={`${testID}-photos-off`}>
+          <Banner kind="warning" message={copy.photosOff} />
+          <Button label={copy.openSettings} variant="secondary" size="M" onPress={onOpenSettings} />
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+type PostPhotoItem = { key: string; uri: string; photo: UploadedPhotoRef | null };
+
+/**
+ * Up to `max` photos through the Sell photo pipeline (news posts, DEC 98).
+ * Each picked photo uploads on its own; a failed one is dropped with a note.
+ * `pick(n)` asks the library for at most n more.
+ */
+export function usePostPhotos({
+  api,
+  reserve,
+  pick,
+  photosOs,
+  max,
+}: {
+  api: Pick<SellApi, 'uploadPhoto'>;
+  reserve: () => Promise<string>;
+  pick: (limit: number) => Promise<PickedPhoto[]>;
+  photosOs: OsApi;
+  max: number;
+}) {
+  const [items, setItems] = useState<PostPhotoItem[]>([]);
+  const [uploading, setUploading] = useState(0);
+  const [off, setOff] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const seq = useRef(0);
+
+  const add = async () => {
+    setError(null);
+    const room = max - items.length;
+    if (room <= 0) return;
+    let step = primerStep(await photosOs.get());
+    if (step === 'primer') step = primerStep(await photosOs.request());
+    if (step !== 'granted') {
+      setOff(true);
+      return;
+    }
+    setOff(false);
+    let picked: PickedPhoto[];
+    try {
+      picked = (await pick(room)).slice(0, room);
+    } catch {
+      setOff(true);
+      return;
+    }
+    if (picked.length === 0) return;
+    const added = picked.map((p) => ({ key: `p${(seq.current += 1)}`, uri: p.uri, photo: null }));
+    setItems((cur) => [...cur, ...added]);
+    setUploading((n) => n + added.length);
+    await Promise.all(
+      picked.map(async (p, i) => {
+        const key = added[i]!.key;
+        try {
+          const id = await reserve();
+          const photo = await api.uploadPhoto(id, p, () => {});
+          setItems((cur) => cur.map((x) => (x.key === key ? { ...x, photo } : x)));
+        } catch {
+          setItems((cur) => cur.filter((x) => x.key !== key));
+          setError(copy.photoFailed);
+        } finally {
+          setUploading((n) => n - 1);
+        }
+      }),
+    );
+  };
+
+  const remove = (key: string) => setItems((cur) => cur.filter((x) => x.key !== key));
+
+  const photos = items.flatMap((x) => (x.photo ? [x.photo] : []));
+  return { items, photos, busy: uploading > 0, off, error, max, add, remove };
+}
+
+export function PhotosField({
+  state,
+  label,
+  mediaBase,
+  onOpenSettings,
+  testID,
+}: {
+  state: ReturnType<typeof usePostPhotos>;
+  label: string;
+  mediaBase: string;
+  onOpenSettings: () => void;
+  testID: string;
+}) {
+  const { items, busy, off, error, max } = state;
+  return (
+    <View style={styles.gap}>
+      <Text variant="label" tone="ink2">
+        {label}
+      </Text>
+      {items.length > 0 ? (
+        <View style={styles.row} testID={`${testID}-photos`}>
+          {items.map((x, i) => (
+            <View key={x.key} style={styles.preview}>
+              <Photo
+                source={x.photo ? mediaUrl(mediaBase, x.photo.thumbPath) : x.uri}
+                blurhash={x.photo?.blurhash}
+                rounded="thumb"
+                accessibilityLabel={copy.photoLabel}
+              />
+              {x.photo ? (
+                <Button
+                  label={copy.removePhoto}
+                  accessibilityHint={fill(copy.removePhotoN, { i: i + 1 })}
+                  variant="text"
+                  size="S"
+                  fullWidth={false}
+                  onPress={() => state.remove(x.key)}
+                  testID={`${testID}-remove-photo-${i}`}
+                />
+              ) : null}
+            </View>
+          ))}
+        </View>
+      ) : null}
+      {busy ? (
+        <Text variant="meta" tone="ink2" accessibilityLiveRegion="polite">
+          {copy.photoUploading}
+        </Text>
+      ) : null}
+      {items.length < max ? (
+        <View style={styles.row}>
+          <Button
+            label={copy.addPhotos}
+            variant="secondary"
+            size="M"
+            fullWidth={false}
+            disabled={busy}
+            onPress={() => void state.add()}
+            testID={`${testID}-add-photo`}
+          />
+        </View>
+      ) : null}
       {error ? (
         <Text variant="meta" tone="red" accessibilityLiveRegion="polite">
           {error}

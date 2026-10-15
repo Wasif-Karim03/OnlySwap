@@ -2,6 +2,7 @@ import { fill, money } from '@/lib/format';
 import { campus as copy } from '@/strings';
 
 import type { FeedCursor, FeedItem } from '../feed/logic';
+import { whenParts } from '../meetups/logic';
 import {
   cleanPrice,
   DESCRIPTION_MAX,
@@ -19,8 +20,8 @@ import {
  * server re-checks everything in create_listing and get_campus_feed.
  */
 
-export type CampusFilter = 'all' | 'food' | 'free' | 'wanted' | 'new';
-export const CAMPUS_FILTERS: CampusFilter[] = ['all', 'food', 'free', 'wanted', 'new'];
+export type CampusFilter = 'all' | 'news' | 'food' | 'free' | 'wanted' | 'new';
+export const CAMPUS_FILTERS: CampusFilter[] = ['all', 'news', 'food', 'free', 'wanted', 'new'];
 
 export function isCampusFilter(x: unknown): x is CampusFilter {
   return typeof x === 'string' && (CAMPUS_FILTERS as string[]).includes(x);
@@ -113,35 +114,6 @@ export function mergeCampusPages(pages: CampusPage[]): CampusItem[] {
 }
 
 /** "I have this" shows on other people's open Wanted posts only. */
-/** One feed row: a full-width food or Wanted card, or up to two listing tiles side by side. */
-export type CampusRow =
-  | { key: string; kind: 'wide'; item: CampusItem }
-  | { key: string; kind: 'pair'; items: CampusItem[] };
-
-/**
- * Groups the feed for the Around campus layout (DEC 90 mock screen 5): food
- * and Wanted posts span the width; listings (sale and free) pair up into a
- * two-column grid, keeping the server's order.
- */
-export function campusRows(items: CampusItem[]): CampusRow[] {
-  const rows: CampusRow[] = [];
-  let pair: CampusItem[] = [];
-  const flush = () => {
-    if (pair.length) rows.push({ key: pair.map((p) => p.id).join('+'), kind: 'pair', items: pair });
-    pair = [];
-  };
-  for (const item of items) {
-    if (item.kind === 'food' || item.kind === 'wanted') {
-      flush();
-      rows.push({ key: item.id, kind: 'wide', item });
-    } else {
-      pair.push(item);
-      if (pair.length === 2) flush();
-    }
-  }
-  flush();
-  return rows;
-}
 
 export function canAnswer(item: Pick<CampusItem, 'kind' | 'is_own' | 'status'>): boolean {
   return item.kind === 'wanted' && !item.is_own && item.status === 'active';
@@ -204,7 +176,9 @@ export type FormError =
   | { field: 'place'; kind: 'missing' | 'long' }
   | { field: 'minutes'; kind: 'range' }
   | { field: 'budget'; kind: 'high' }
-  | { field: 'description'; kind: 'long' };
+  | { field: 'description'; kind: 'long' }
+  | { field: 'link'; kind: 'invalid' | 'long' }
+  | { field: 'event'; kind: 'missing' | 'past' | 'far' };
 
 function titleErrors(title: string): FormError[] {
   const t = title.trim();
@@ -314,6 +288,14 @@ export function formErrorText(e: FormError): string {
       return copy.errors.descriptionLong;
     case 'minutes':
       return copy.errors.minutesRange;
+    case 'link':
+      return e.kind === 'long' ? copy.errors.linkLong : copy.errors.linkInvalid;
+    case 'event':
+      return e.kind === 'missing'
+        ? copy.errors.eventMissing
+        : e.kind === 'past'
+          ? copy.errors.eventPast
+          : copy.errors.eventFar;
   }
 }
 
@@ -333,6 +315,8 @@ export function postErrorText(e: {
         return copy.errors.foodCap;
       case 'create_wanted':
         return copy.errors.wantedCap;
+      case 'create_news':
+        return copy.errors.newsCap;
       case 'create_listing_new':
         return copy.errors.newAccountCap;
       case 'create_listing':
@@ -344,4 +328,103 @@ export function postErrorText(e: {
   if (e.code === 'BANNED_TERM' && e.detail) return fill(copy.errors.banned, { term: e.detail });
   if (e.code === 'ERR_OFFLINE' || e.code === 'UNKNOWN') return copy.errors.postFailed;
   return null;
+}
+
+// ---------------------------------------------------------------------------
+// Post news (DEC 98)
+
+export const NEWS_PHOTOS_MAX = 4;
+export const LINK_MAX = 300;
+export const EVENT_DAYS_MAX = 90;
+
+export type NewsForm = {
+  title: string;
+  description: string;
+  /** As typed; "example.com" gets https:// added. */
+  link: string;
+  /** On when "It's an event" is switched on. */
+  isEvent: boolean;
+  /** The picked day and time, combined; null until both are picked. */
+  eventAt: Date | null;
+  place: string;
+  photos: UploadedPhotoRef[];
+};
+
+export type CreateNewsArgs = {
+  id: string;
+  title: string;
+  description: string | null;
+  photos: ReturnType<typeof photoArg>[];
+  link_url: string | null;
+  event_at: string | null;
+  place: string | null;
+};
+
+/** The link as it will be saved: trimmed, https:// added when there's no scheme. Empty is null. */
+export function normalizeLink(link: string): string | null {
+  const t = link.trim();
+  if (t === '') return null;
+  return /^https?:\/\//i.test(t) ? t : `https://${t}`;
+}
+
+/** Mirrors create_news: http(s), no spaces, a dot in the host part. */
+export function isValidLink(link: string): boolean {
+  return /^https?:\/\/[^\s]+\.[^\s]+$/i.test(link);
+}
+
+/** Every problem at once, in screen order. */
+export function validateNews(f: NewsForm, now: Date): FormError[] {
+  const errors = titleErrors(f.title);
+  if (f.description.trim().length > DESCRIPTION_MAX) {
+    errors.push({ field: 'description', kind: 'long' });
+  }
+  const link = normalizeLink(f.link);
+  if (link !== null) {
+    if (link.length > LINK_MAX) errors.push({ field: 'link', kind: 'long' });
+    else if (!isValidLink(link)) errors.push({ field: 'link', kind: 'invalid' });
+  }
+  if (f.isEvent) {
+    if (!f.eventAt) errors.push({ field: 'event', kind: 'missing' });
+    else if (f.eventAt.getTime() <= now.getTime()) errors.push({ field: 'event', kind: 'past' });
+    else if (f.eventAt.getTime() > now.getTime() + EVENT_DAYS_MAX * 86_400_000) {
+      errors.push({ field: 'event', kind: 'far' });
+    }
+  }
+  if (f.place.trim().length > MEET_NOTE_MAX) errors.push({ field: 'place', kind: 'long' });
+  return errors;
+}
+
+export function newsArgs(id: string, f: NewsForm): CreateNewsArgs {
+  return {
+    id,
+    title: f.title.trim(),
+    description: f.description.trim() || null,
+    photos: f.photos.slice(0, NEWS_PHOTOS_MAX).map(photoArg),
+    link_url: normalizeLink(f.link),
+    event_at: f.isEvent && f.eventAt ? f.eventAt.toISOString() : null,
+    place: f.place.trim() || null,
+  };
+}
+
+/** "example.com" from a link, for the link row on a post. */
+export function linkHost(link: string): string {
+  const m = /^https?:\/\/([^/?#\s]+)/i.exec(link);
+  return (m?.[1] ?? link).replace(/^www\./i, '');
+}
+
+/** A day and a time picked separately, as one Date. */
+export function combineDayTime(day: Date, time: Date): Date {
+  return new Date(
+    day.getFullYear(),
+    day.getMonth(),
+    day.getDate(),
+    time.getHours(),
+    time.getMinutes(),
+  );
+}
+
+/** "Friday, Mar 12 at 7:00 PM" (Today / Tomorrow when close) for an event post. */
+export function eventLabel(iso: string, now: Date): string {
+  const p = whenParts(iso, now);
+  return fill(copy.eventWhen, { day: p.dayTitle, time: p.time });
 }

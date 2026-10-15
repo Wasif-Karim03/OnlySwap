@@ -45,6 +45,9 @@ export type FeedItem = {
   }[];
   /** Only on the seller's own listing when an admin removed it (DEC 96). */
   removed_reason?: string | null;
+  /** News posts (DEC 98): an optional link and event time. */
+  link_url?: string | null;
+  event_at?: string | null;
 };
 
 export type FeedCursor = { bumped_at: string; id: string };

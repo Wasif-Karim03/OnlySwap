@@ -29,7 +29,13 @@ import { useToastStore } from '@/components/Toast';
 import { getEnv } from '@/lib/env';
 import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
-import { feed as feedCopy, me as copy, profileView, intlLocale } from '@/strings';
+import {
+  campus as campusCopy,
+  feed as feedCopy,
+  me as copy,
+  profileView,
+  intlLocale,
+} from '@/strings';
 import { readableColumn } from '@/theme/layout';
 
 import { avatarDeps, type AvatarDeps } from '../auth/avatar';
@@ -473,7 +479,11 @@ export function MyListingsScreen({
             <View key={l.id} style={styles.cell}>
               <ListingTile
                 title={l.title}
-                price={priceLabel(l.kind, l.price_cents, feedCopy.free)}
+                price={
+                  l.kind === 'news'
+                    ? campusCopy.listingNews
+                    : priceLabel(l.kind, l.price_cents, feedCopy.free)
+                }
                 photo={l.photos[0] ? mediaUrl(mediaBase(), l.photos[0].thumb_path) : null}
                 state={l.status === 'sold' ? 'sold' : l.status === 'hold' ? 'hold' : 'default'}
                 note={
@@ -639,7 +649,8 @@ export function EditListingScreen({
     setBusy(true);
     setError(null);
     try {
-      const cents = l.kind === 'free' ? undefined : dollarsToCents(d.price);
+      // Only a sale has a price; free, food, Wanted and news posts don't (DEC 98).
+      const cents = l.kind === 'sale' ? dollarsToCents(d.price) : undefined;
       await api.updateListing(id, {
         title: d.title.trim(),
         description: d.description.trim(),
@@ -672,7 +683,7 @@ export function EditListingScreen({
           onChangeText={(v) => set({ description: v })}
           maxLength={1000}
         />
-        {l.kind !== 'free' ? (
+        {l.kind === 'sale' ? (
           <>
             <Input
               kind="price"
