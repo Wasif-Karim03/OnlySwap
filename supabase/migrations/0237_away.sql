@@ -318,6 +318,16 @@ begin
     select l.bumped_at into last_at from public.listings l where l.id = last_id;
   end if;
 
+  -- The day-one hero and founding card are read from page one only, so later
+  -- pages skip both counts (E-13).
+  if get_campus_feed.cursor is not null then
+    return jsonb_build_object(
+      'items', items,
+      'next_cursor', case when last_id is null then null
+                          else jsonb_build_object('bumped_at', last_at, 'id', last_id) end,
+      'day_one', null, 'active_listings', null, 'founding', null);
+  end if;
+
   select * into c from public.campuses x where x.id = me.campus_id;
   select count(*)::int into active_n from public.listings l
   where l.campus_id = me.campus_id and l.status = 'active' and l.kind in ('sale', 'free');
