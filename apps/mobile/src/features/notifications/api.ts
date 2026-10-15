@@ -48,6 +48,9 @@ export const notificationsApi: NotificationsApi = {
   updatePrefs: (patch) => rpc<NotificationPrefs>('update_notification_prefs', { prefs: patch }),
 };
 
+/** Unread notifications for the bell badge (`unread_count`, DEC 120). */
+export const unreadCount = () => rpc<number>('unread_count');
+
 /** "Today" / "Yesterday" / "Earlier" sections for the list (F09). */
 export function daySection(iso: string, now: Date): 'today' | 'yesterday' | 'earlier' {
   const d = new Date(iso);
