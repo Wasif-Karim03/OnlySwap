@@ -188,15 +188,23 @@ export async function renderListing(
     card.share_image_path && env.MEDIA_URL
       ? `${env.MEDIA_URL.replace(/\/$/, '')}/${card.share_image_path}`
       : undefined;
-  const title = `${card.title} · ${price}`;
-  const description = `For sale to students at ${card.campus_name} on OnlySwap. Verified students can see details and make an offer in the app.`;
+  // News posts (DEC 98) have no price and take no offers.
+  const news = card.kind === 'news';
+  const title = news ? card.title : `${card.title} · ${price}`;
+  const description = news
+    ? `Posted for students at ${card.campus_name} on OnlySwap. Verified students can see the whole post in the app.`
+    : `For sale to students at ${card.campus_name} on OnlySwap. Verified students can see details and make an offer in the app.`;
   const body = `
 <div class="wall">
   ${image ? `<img class="blur" src="${esc(image)}" alt="" width="600" height="600" />` : ''}
   <div class="over">
     <h1>${esc(card.title)}</h1>
-    <p class="price">${esc(price)}</p>
-    <p class="muted">At ${esc(card.campus_name)}. Only verified students can see the details and make an offer.</p>
+    ${news ? '' : `<p class="price">${esc(price)}</p>`}
+    <p class="muted">${
+      news
+        ? `At ${esc(card.campus_name)}. Only verified students can see the whole post.`
+        : `At ${esc(card.campus_name)}. Only verified students can see the details and make an offer.`
+    }</p>
     <p><a class="btn" href="${esc(url)}">Open in OnlySwap</a></p>
     <p class="muted">Don't have the app yet?</p>
     ${storeButtons(env)}
