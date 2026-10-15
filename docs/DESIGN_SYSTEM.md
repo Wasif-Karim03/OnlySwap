@@ -129,14 +129,15 @@ Components live in `apps/mobile/src/components/`. Each is built with every state
 | SwipeCard / SwipeDeck | — | idle, dragging, stamped, flying, undo | 3 mounted cards |
 | ListingTile / ListingCardH | — | default, sold (overlay), hold (overlay) | |
 | OfferCard | incoming, outgoing | pending, countered, accepted, declined, expired, withdrawn | |
-| MessageBubble | mine / theirs / system / meetup | pending, sent, failed (retry) | scam hint row (SEC-06) |
+| MessageBubble | mine (accent fill, ink text) / theirs (bg2) / system / meetup | pending, sent, failed (retry); grouped (first / middle / last, tight corners where they meet) | scam hint row (SEC-06); time under the last bubble of a group; day separators in the list (DEC 120) |
 | MeetupCard | proposed, confirmed, changed, cancelled | + here/late badges | |
 | SpotRow | public / police-designated | selected | "Directions" opens Maps |
 | RatingThumbs | up / down + tags | — | |
 | EmptyState / ErrorState / Skeleton | per layout | — | |
 | PermissionPrimer | camera, photos, notifications | undetermined, denied → Settings | (no location in R1.0) |
 | ReportSheet | listing, user, chat, message | reason, details, block toggle, submitting, duplicate | |
-| ProgressBar / StepIndicator / NavBar / TabBar | — | — | tab roots large title, pushed screens inline title (UX-04) |
+| ProgressBar / StepIndicator / NavBar / TabBar | — | — | tab roots large title, pushed screens inline title (UX-04); TabBar uses the labelled iOS style on Android too, no accent pill (DEC 120) |
+| IconButton badge | bell | 0 hidden, 1 to 99, 99+ | red count in the corner; the button's label says the count (DEC 120) |
 
 **Share card (MOB-06):** render on-screen at opacity 0 with `collapsable={false}`, capture with view-shot at 1200×630 JPEG q0.8. On failure, share without an image.
 
