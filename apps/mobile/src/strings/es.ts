@@ -1153,6 +1153,8 @@ const chat: Strings['chat'] = {
   hideDone: 'Chat oculto. Vuelve si te escriben.',
   addPhoto: 'Agregar foto',
   photoSheetTitle: 'Enviar una foto',
+  dayToday: 'Hoy',
+  dayYesterday: 'Ayer',
   photoLibrary: 'Elegir de la galería',
   photoCamera: 'Tomar una foto',
   photoCaptionHint: 'Lo que escribiste se envía con la foto como texto.',

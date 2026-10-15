@@ -1168,6 +1168,8 @@ export const chat = {
   // Photos in chat (P8-CHAT-04, R11-PHOTO-GATE)
   addPhoto: 'Add a photo',
   photoSheetTitle: 'Send a photo',
+  dayToday: 'Today',
+  dayYesterday: 'Yesterday',
   photoLibrary: 'Choose from library',
   photoCamera: 'Take a photo',
   photoCaptionHint: 'Anything you typed goes with the photo as a caption.',

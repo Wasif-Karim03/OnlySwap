@@ -51,6 +51,15 @@ type Props = {
    * area (DEC 90): theirs on white, system rows as small white pills.
    */
   surface?: 'bg' | 'card';
+  /**
+   * Grouping (iMessage style, owner 2026-10-15): bubbles from the same person
+   * a few minutes apart sit close with tighter corners where they meet.
+   * `first` is the top of a group, `last` the bottom. Both default to true.
+   */
+  first?: boolean;
+  last?: boolean;
+  /** Shown under the last bubble of a group, e.g. "4:30 PM". */
+  time?: string | null;
   testID?: string;
 };
 
@@ -65,6 +74,9 @@ export function MessageBubble({
   photo,
   onLongPress,
   surface = 'bg',
+  first = true,
+  last = true,
+  time,
   testID,
 }: Props) {
   if (kind === 'system') {
@@ -150,14 +162,18 @@ export function MessageBubble({
 
   const inner = (
     <View
-      style={[styles.bubble(mine, state, surface), photo ? styles.photoBubble : null]}
+      style={[
+        styles.bubble(mine, state, surface),
+        styles.corners(mine, first, last),
+        photo ? styles.photoBubble : null,
+      ]}
       accessible={!retrying && !pressable}
       accessibilityLabel={label}
     >
       {photoView}
       {body ? (
         <View style={photo ? styles.caption : null}>
-          <Text variant="body" tone={mine ? 'inverse' : 'ink'}>
+          <Text variant="body" tone={mine ? 'onAccent' : 'ink'}>
             {body}
           </Text>
         </View>
@@ -198,8 +214,20 @@ export function MessageBubble({
   }
 
   return (
-    <View style={styles.wrap(mine)} testID={testID}>
+    <View style={styles.wrap(mine, first)} testID={testID}>
       {photo ? <View style={styles.photoBox}>{bubble}</View> : bubble}
+      {time && last && state === 'sent' ? (
+        <Text
+          variant="meta"
+          tone="ink3"
+          style={styles.time}
+          importantForAccessibility="no"
+          accessibilityElementsHidden
+          testID={testID ? `${testID}-time` : undefined}
+        >
+          {time}
+        </Text>
+      ) : null}
       {state === 'failed' ? (
         <View style={styles.row}>
           <Icon name="alert" size={14} tone="red" />
@@ -225,23 +253,37 @@ export function MessageBubble({
 }
 
 const styles = StyleSheet.create((theme) => ({
-  wrap: (mine: boolean) => ({
+  wrap: (mine: boolean, first: boolean) => ({
     alignItems: mine ? 'flex-end' : 'flex-start',
     gap: theme.space.xs,
-    paddingHorizontal: theme.space.screen,
+    paddingHorizontal: theme.space.md,
+    // Close inside a group, a clear gap between groups.
+    marginTop: first ? theme.space.md : theme.space.xs / 2,
   }),
   bubble: (mine: boolean, state: BubbleState, surface: 'bg' | 'card' = 'bg') => ({
-    maxWidth: '80%',
+    maxWidth: '78%',
     paddingHorizontal: theme.space.md,
     paddingVertical: theme.space.sm,
-    borderRadius: theme.radius.card,
+    // Mine: the accent as a fill with ink text (UX-03 allows it as a fill).
     backgroundColor: mine
-      ? theme.colors.ink
+      ? theme.colors.accent
       : surface === 'card'
         ? theme.colors.card
         : theme.colors.bg2,
     opacity: state === 'pending' ? 0.6 : 1,
   }),
+  // Round everywhere except where two bubbles of a group meet, on their side.
+  corners: (mine: boolean, first: boolean, last: boolean) => {
+    const round = theme.radius.card;
+    const joined = theme.space.xs;
+    return {
+      borderTopLeftRadius: !mine && !first ? joined : round,
+      borderBottomLeftRadius: !mine && !last ? joined : round,
+      borderTopRightRadius: mine && !first ? joined : round,
+      borderBottomRightRadius: mine && !last ? joined : round,
+    };
+  },
+  time: { paddingHorizontal: theme.space.xs },
   // Photo bubbles: the photo runs to the edges, the caption keeps the padding.
   photoBox: { width: '65%' },
   photoBubble: {
