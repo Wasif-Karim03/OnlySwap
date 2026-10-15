@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
@@ -79,6 +80,11 @@ export function MessageBubble({
   time,
   testID,
 }: Props) {
+  // Android sized a bubble for one line at the full row width, then the 78% cap
+  // wrapped the text and cut the second line off (owner's Samsung, 2026-10-15).
+  // A measured number instead of a percentage makes the text measure at the
+  // width it draws at.
+  const [rowWidth, setRowWidth] = useState(0);
   if (kind === 'system') {
     if (surface === 'card') {
       return (
@@ -163,7 +169,7 @@ export function MessageBubble({
   const inner = (
     <View
       style={[
-        styles.bubble(mine, state, surface),
+        styles.bubble(mine, state, surface, rowWidth),
         styles.corners(mine, first, last),
         photo ? styles.photoBubble : null,
       ]}
@@ -173,7 +179,7 @@ export function MessageBubble({
       {photoView}
       {body ? (
         <View style={photo ? styles.caption : null}>
-          <Text variant="body" tone={mine ? 'onAccent' : 'ink'}>
+          <Text variant="body" tone={mine ? 'onAccent' : 'ink'} style={styles.flex}>
             {body}
           </Text>
         </View>
@@ -214,7 +220,14 @@ export function MessageBubble({
   }
 
   return (
-    <View style={styles.wrap(mine, first)} testID={testID}>
+    <View
+      style={styles.wrap(mine, first)}
+      onLayout={(e) => {
+        const w = Math.round(e.nativeEvent.layout.width);
+        if (w !== rowWidth) setRowWidth(w);
+      }}
+      testID={testID}
+    >
       {photo ? <View style={styles.photoBox}>{bubble}</View> : bubble}
       {time && last && state === 'sent' ? (
         <Text
@@ -260,8 +273,9 @@ const styles = StyleSheet.create((theme) => ({
     // Close inside a group, a clear gap between groups.
     marginTop: first ? theme.space.md : theme.space.xs / 2,
   }),
-  bubble: (mine: boolean, state: BubbleState, surface: 'bg' | 'card' = 'bg') => ({
-    maxWidth: '78%',
+  bubble: (mine: boolean, state: BubbleState, surface: 'bg' | 'card' = 'bg', rowWidth = 0) => ({
+    // 78% of the row inside its side padding; a percentage until the row is measured.
+    maxWidth: rowWidth > 0 ? Math.floor((rowWidth - theme.space.md * 2) * 0.78) : '78%',
     paddingHorizontal: theme.space.md,
     paddingVertical: theme.space.sm,
     // Mine: the accent as a fill with ink text (UX-03 allows it as a fill).
