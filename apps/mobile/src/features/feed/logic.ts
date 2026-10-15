@@ -119,17 +119,37 @@ export const DAY_ONE_MAX = 10;
 // ---------------------------------------------------------------------------
 // Swipe queue (T-UNIT-FEED-01)
 
-export type QueuedSwipe = { listing_id: string; dir: SwipeDir; at: string };
+/** `dwell_ms` is time on card (E-03, DEC 100); the server keeps it on the swipe. */
+export type QueuedSwipe = { listing_id: string; dir: SwipeDir; at: string; dwell_ms?: number };
 /** The server keeps `left` and `save`; a right swipe opens the offer sheet and is recorded as seen (left). */
-export type ServerSwipe = { listing_id: string; dir: 'left' | 'save'; at: string };
+export type ServerSwipe = {
+  listing_id: string;
+  dir: 'left' | 'save';
+  at: string;
+  dwell_ms?: number;
+};
 
 export const FLUSH_AT = 10;
 export const QUEUE_CAP = 200;
 export const BATCH_MAX = 50;
 export const UNDO_MS = 5000;
+/** Same cap as the server (10 minutes). */
+export const DWELL_MAX = 600_000;
+
+/** Time on card as whole ms in 0..10 min, or undefined when unknown. */
+export function cleanDwell(ms: unknown): number | undefined {
+  if (typeof ms !== 'number' || !Number.isFinite(ms) || ms < 0) return undefined;
+  return Math.min(Math.round(ms), DWELL_MAX);
+}
 
 export function toServer(s: QueuedSwipe): ServerSwipe {
-  return { listing_id: s.listing_id, dir: s.dir === 'save' ? 'save' : 'left', at: s.at };
+  const out: ServerSwipe = {
+    listing_id: s.listing_id,
+    dir: s.dir === 'save' ? 'save' : 'left',
+    at: s.at,
+  };
+  if (s.dwell_ms !== undefined) out.dwell_ms = s.dwell_ms;
+  return out;
 }
 
 /** Adds a swipe (replacing an older one for the same listing) and keeps the newest 200. */
@@ -167,5 +187,11 @@ export function parseQueue(raw: unknown): QueuedSwipe[] {
         ['left', 'right', 'save'].includes((q as QueuedSwipe).dir) &&
         typeof (q as QueuedSwipe).at === 'string',
     )
+    .map((q) => {
+      const s: QueuedSwipe = { listing_id: q.listing_id, dir: q.dir, at: q.at };
+      const dwell = cleanDwell(q.dwell_ms);
+      if (dwell !== undefined) s.dwell_ms = dwell;
+      return s;
+    })
     .slice(-QUEUE_CAP);
 }

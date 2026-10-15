@@ -109,11 +109,18 @@ describe('T-UNIT-LIB-ACT-01 activity queue (DEC 93, track_events)', () => {
   });
 
   it('builds only events the server keeps', () => {
-    expect(makeEvent('deck_shown', {}, T0)).toBeNull(); // needs a listing
+    expect(makeEvent('listing_viewed', {}, T0)).toBeNull(); // needs a listing
+    // Kept by swipes, saves and offers now (E-03, DEC 100); old kinds are not built.
+    expect(makeEvent('deck_shown' as never, { listingId: 'x' }, T0)).toBeNull();
+    expect(makeEvent('swiped_left' as never, { listingId: 'x' }, T0)).toBeNull();
     expect(makeEvent('searched', { query: '   ' }, T0)).toBeNull(); // needs text
     expect(makeEvent('nope' as never, {}, T0)).toBeNull();
-    expect(makeEvent('saved', { listingId: 'x', dwellMs: 10 ** 9 }, T0)?.dwell_ms).toBe(DWELL_MAX);
-    expect(makeEvent('saved', { listingId: 'x', dwellMs: -1 }, T0)).not.toHaveProperty('dwell_ms');
+    expect(makeEvent('listing_viewed', { listingId: 'x', dwellMs: 10 ** 9 }, T0)?.dwell_ms).toBe(
+      DWELL_MAX,
+    );
+    expect(makeEvent('listing_viewed', { listingId: 'x', dwellMs: -1 }, T0)).not.toHaveProperty(
+      'dwell_ms',
+    );
     expect(makeEvent('searched', { query: 'a'.repeat(200) }, T0)?.query).toHaveLength(80);
     // app_open carries no listing even if one is passed
     expect(makeEvent('app_open', { listingId: 'x' }, T0)).not.toHaveProperty('listing_id');
@@ -125,7 +132,8 @@ describe('T-UNIT-LIB-ACT-01 activity queue (DEC 93, track_events)', () => {
   it('51 events go out as two batches (50 + 1)', async () => {
     const h = harness();
     h.q.start('u1');
-    for (let i = 0; i < 51; i++) h.q.track('deck_shown', { listingId: L(i), source: 'discover' });
+    for (let i = 0; i < 51; i++)
+      h.q.track('listing_viewed', { listingId: L(i), source: 'discover' });
     await h.q.flush();
     expect(h.send).toHaveBeenCalledTimes(2);
     expect(h.send.mock.calls[0]![0].events).toHaveLength(BATCH_MAX);
@@ -136,9 +144,9 @@ describe('T-UNIT-LIB-ACT-01 activity queue (DEC 93, track_events)', () => {
   it('flushes on its own at 50 waiting and every 15 s', async () => {
     const h = harness();
     h.q.start('u1');
-    for (let i = 0; i < 49; i++) h.q.track('deck_shown', { listingId: L(i) });
+    for (let i = 0; i < 49; i++) h.q.track('listing_viewed', { listingId: L(i) });
     expect(h.send).not.toHaveBeenCalled();
-    h.q.track('deck_shown', { listingId: L(49) });
+    h.q.track('listing_viewed', { listingId: L(49) });
     await waitFor(() => expect(h.send).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(h.q.pending()).toHaveLength(0));
 
@@ -155,7 +163,7 @@ describe('T-UNIT-LIB-ACT-01 activity queue (DEC 93, track_events)', () => {
     });
     const a = harness({ send: offline });
     a.q.start('u1');
-    a.q.track('saved', { listingId: L(1), dwellMs: 900, source: 'discover' });
+    a.q.track('listing_viewed', { listingId: L(1), dwellMs: 900, source: 'discover' });
     await a.q.flush();
     expect(a.stored.value?.owner).toBe('u1');
     expect(a.stored.value?.events).toHaveLength(1);
@@ -165,7 +173,10 @@ describe('T-UNIT-LIB-ACT-01 activity queue (DEC 93, track_events)', () => {
     b.q.start('u1');
     expect(b.q.pending()).toEqual(a.stored.value!.events);
     await b.q.flush();
-    expect(b.send.mock.calls[0]![0].events[0]).toMatchObject({ kind: 'saved', dwell_ms: 900 });
+    expect(b.send.mock.calls[0]![0].events[0]).toMatchObject({
+      kind: 'listing_viewed',
+      dwell_ms: 900,
+    });
 
     // Someone else signs in on this phone: the old queue is not theirs.
     const c = harness({ initial: a.stored.value });
@@ -187,7 +198,7 @@ describe('T-UNIT-LIB-ACT-01 activity queue (DEC 93, track_events)', () => {
 
     // Cap: offline, so nothing leaves; only the newest QUEUE_MAX stay.
     h.send.mockRejectedValue(new TypeError('Network request failed'));
-    for (let i = 0; i < QUEUE_MAX + 20; i++) h.q.track('deck_shown', { listingId: L(i) });
+    for (let i = 0; i < QUEUE_MAX + 20; i++) h.q.track('listing_viewed', { listingId: L(i) });
     await h.q.flush();
     const left = h.q.pending();
     expect(left).toHaveLength(QUEUE_MAX);
@@ -457,7 +468,7 @@ describe('activity events from the screens', () => {
   });
   afterEach(() => jest.restoreAllMocks());
 
-  it('Discover sends deck_shown for the top card, then swiped_left with time on card', async () => {
+  it('Discover sends no per-card events; time on card goes with the swipe (E-03)', async () => {
     const page = [item(1), item(2), item(3)];
     const api = fakeApi({ getFeed: jest.fn(async (c) => (c ? [] : page)) });
     let v: unknown;
@@ -481,32 +492,17 @@ describe('activity events from the screens', () => {
       '/discover',
     );
     await screen.findByTestId('deck-card-' + L(1));
-    await waitFor(() =>
-      expect(trackMock).toHaveBeenCalledWith('deck_shown', { listingId: L(1), source: 'discover' }),
-    );
-    // Only the top card counts as shown.
-    expect(trackMock.mock.calls.filter((c) => c[0] === 'deck_shown')).toHaveLength(1);
-
     fireEvent.press(screen.getByTestId('deck-skip'));
-    await waitFor(() =>
-      expect(trackMock).toHaveBeenCalledWith('swiped_left', {
-        listingId: L(1),
-        source: 'discover',
-        dwellMs: expect.any(Number),
-      }),
-    );
-    await waitFor(() =>
-      expect(trackMock).toHaveBeenCalledWith('deck_shown', { listingId: L(2), source: 'discover' }),
-    );
-
+    await screen.findByTestId('deck-card-' + L(2));
     fireEvent.press(screen.getByTestId('deck-save'));
-    await waitFor(() =>
-      expect(trackMock).toHaveBeenCalledWith('saved', {
-        listingId: L(2),
-        source: 'discover',
-        dwellMs: expect.any(Number),
-      }),
-    );
+    await waitFor(() => expect(swipes.getState().queue).toHaveLength(2));
+
+    expect(trackMock).not.toHaveBeenCalled();
+    const [left, saved] = swipes.getState().queue;
+    expect(left).toMatchObject({ listing_id: L(1), dir: 'left' });
+    expect(saved).toMatchObject({ listing_id: L(2), dir: 'save' });
+    expect(left!.dwell_ms).toBeGreaterThanOrEqual(0);
+    expect(saved!.dwell_ms).toBeGreaterThanOrEqual(0);
   });
 
   it('Listing sends one listing_viewed with the source and time on page when it closes', async () => {
@@ -534,10 +530,10 @@ describe('activity events from the screens', () => {
     await waitFor(() => expect(api.recordView).toHaveBeenCalledWith('L1'));
     expect(trackMock.mock.calls.filter((c) => c[0] === 'listing_viewed')).toHaveLength(0);
 
+    // A save is in the saves table; no event (E-03).
     fireEvent.press(screen.getByTestId('listing-save'));
-    await waitFor(() =>
-      expect(trackMock).toHaveBeenCalledWith('saved', { listingId: 'L1', source: 'search' }),
-    );
+    await waitFor(() => expect(api.save).toHaveBeenCalledWith('L1'));
+    expect(trackMock.mock.calls.map((c) => c[0] as string)).not.toContain('saved');
 
     r.unmount();
     const views = trackMock.mock.calls.filter((c) => c[0] === 'listing_viewed');

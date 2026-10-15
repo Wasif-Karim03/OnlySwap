@@ -488,7 +488,7 @@ export const ACTIVITY_GROUPS = [
   {
     id: 'browsing',
     label: 'Browsing',
-    kinds: ['listing_viewed', 'searched', 'opened_from', 'app_open', 'deck_shown'],
+    kinds: ['listing_viewed', 'searched', 'opened_from', 'app_open'],
   },
   { id: 'swipes', label: 'Swipes', kinds: ['swiped_left', 'saved', 'unsaved'] },
   {
