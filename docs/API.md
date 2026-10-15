@@ -76,7 +76,7 @@ The client maps these to copy in `apps/mobile/src/strings/en.ts` → `errors.*`.
 | `trg_listings_price` | after update of `price_cents` | log change; drop ≥5% → `price_drop` to savers (dedupe `price_drop:{listing}:{new_cents}`) |
 | `trg_listings_status` | after update of status | hold→active: `watch_available`; sold/deleted/removed: auto-decline open offers, close other chats with a system message (BE-11) |
 | `trg_offers_notify` | after insert/update offers | `offer_new` / `offer_countered` / `offer_accepted` / `offer_declined` / `offer_expired` with `dedupe_key = type:{offer}:{round}` |
-| `trg_messages_ai` | after insert messages | update chat `last_message_at`; `realtime.broadcast_changes('chat:'‖id)`; `realtime.send('user:'‖other, 'inbox')`; queue `message_new` (preview only if the recipient's `message_previews`; collapse via `dedupe_key = message_new:{chat}:{minute}`) |
+| `trg_messages_ai` | after insert messages | update chat `last_message_at`; one `realtime.send('user:'‖other, 'inbox', {chat_id, message})` (both parties for a message with no sender; nothing on `chat:{id}`, DEC 108); queue `message_new` (preview only if the recipient's `message_previews`; collapse via `dedupe_key = message_new:{chat}:{minute}`) |
 | `trg_meetups_notify` | after insert/update | `meetup_proposed` / `meetup_confirmed` / `meetup_status` / `meetup_changed` |
 | `trg_reports_ai` | after insert | priority-1 → `queue_email(priority_report)`; ≥3 distinct reporters aged >7 d within 24 h → auto-hide target (BE-09) |
 | `trg_audit_immutable` | before update/delete audit_log | raise |
@@ -287,7 +287,7 @@ Same rules as above: `require_admin` (AAL2), moderators scoped to their campus (
 | `upload-url` | POST, user JWT | `{kind:'listing'\|'avatar'\|'share', target_id, files:[{idx, variant, type, size}]}` → `[{key, url, headers}]` | `can_upload` check; sizes and types per DATA_MODEL §6; **signs content-length + content-type** (SEC-02); ≤16 files; 60/h. `chat`/`quad` kinds in R1.1 |
 | `send-push` | cron (service) | — → `{sent, skipped}` | claims ≤500 due rows with `for update skip locked` → `sending`; prefs, quiet hours (campus TZ), cap 6/day non-urgent, time-sensitive bypass; batches of 100 to Expo; tickets; `DeviceNotRegistered` → disable token; resets stuck `sending` > 10 min |
 | `push-receipts` | cron | — | check tickets > 15 min old; disable bad tokens |
-| `send-email` | cron | — | claims ≤50 outbox rows (skip locked); global 400/day; templates; provider by `EMAIL_PROVIDER` (`gmail_smtp` port 465 \| `resend`) |
+| `send-email` | cron | — | claims ≤50 outbox rows (skip locked); global 150/day counting rows in flight, `priority_report` first, `campus_open` last (DEC 109); templates; provider by `EMAIL_PROVIDER` (`gmail_smtp` port 465 \| `resend`) |
 | `delete-account` | POST, user JWT (or internal `mode=underage`) | `{confirm:'DELETE'}` → `{ok}` | 1) move photo keys referenced by open reports to `onlyswap-private/evidence/` (BE-02); 2) delete R2 prefixes `c/*/u/{uid}/`, listing folders of own listings; 3) close own open chats with a system message; 4) if banned → `banned_hashes`; 5) `auth.admin.deleteUser`; 6) queue `account_deleted` (not underage); 7) PostHog person delete via API; 3/day |
 | `export-data` | POST, user JWT | → `{status:'queued'}` | JSON of profile, listings, offers, messages, ratings, saved, prefs → private bucket → 7-day presigned link by email; 1/day |
 | `revoke-sessions` | internal (service) | `{user_id}` | `auth.admin.signOut(user_id, 'global')` (ARC-01) |
@@ -326,6 +326,7 @@ Every job that calls a function has an exists-guard (ARC-05).
 | `demo_autoplay` | `* * * * *` | Demo University bot (reviewers) |
 | `rating_reveal` | `0 * * * *` | one-sided ratings reaching 7 days (0205) |
 | `prune_activity` | `45 9 * * *` | `activity_events` > 90 d, `account_deletions` > 365 d (DEC 93) |
+| `prune_cron_history` | `50 9 * * *` | `cron.job_run_details` > 7 d (unfinished runs kept; DEC 110) |
 | `report_queue_check` | `*/30 * * * *` | oldest open report > 4 h → `report_queue` email to owners, at most once per 4 h (DEC 93) |
 
 ## 7. Notification catalog — R1.0 (21 types)

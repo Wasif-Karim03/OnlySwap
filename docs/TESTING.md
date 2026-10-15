@@ -77,6 +77,9 @@ Helpers `tests.authenticate_as(uid, aal)` and `tests.clear_authentication()` com
 | T-UNIT-NOTIF-01 | `handleNotificationResponse` | each notification type's data.url → correct route |
 | T-UNIT-NOTIF-02 | Android channels | created with the correct importance per group |
 | T-UNIT-TOK-01 | Token contrast | all body text pairs ≥ 4.5:1, large text ≥ 3:1, in light and dark, for every accent option |
+| T-UNIT-TOK-02 | Secondary text contrast | `ink2`, `ink3`, `red`, `green`, `amber` ≥ 4.5:1 on `bg`, `bg2`, `card` and their own tint, light and dark (DEC 108) |
+| T-UNIT-A11Y-44 | Button S and Chip reach 44 pt with hitSlop; Button M has none (DEC 111) |
+| T-UNIT-RT-01 | Realtime hub | one join per topic for many listeners; leave all in the background; rejoin and catch up on resume; chat reads its messages from `user:{me}` (DEC 108) |
 | T-UNIT-CMP-* | Components | Button loading keeps width and blocks double tap; Input error announces; Sheet closes on Android back; PermissionPrimer state machine |
 | T-FN-01 | `_shared/expoPush` | chunks of 100; backoff on 429; DeviceNotRegistered handling |
 | T-FN-02 | `send-push` rules | prefs off → skipped; quiet hours skip non-urgent (campus TZ); time-sensitive bypass; cap 6; message preview off → generic body |
@@ -143,6 +146,9 @@ For every table, `supabase/tests/rls_<table>.test.sql` asserts all of the follow
 | T-INT-OFF-02 | offers rate limit 10/h; new-account 5/day; paused after 2 confirmed no-shows |
 | T-INT-CHAT-01 | send_message idempotent on client_id; blocked → error; closed chat → error; chat photos flag off → error |
 | T-INT-RT-01 | Realtime: C can't receive `chat:{A-B}` (connect with C's JWT, expect no messages); A and B receive |
+| T-INT-CRON-02 | `prune_cron_history` removes cron runs that ended over 7 days ago, keeps newer and unfinished ones; scheduled daily (DEC 110) |
+| T-INT-MAIL-02 | Outbox budget: at most 150 a day counting rows in flight; `priority_report` first, `campus_open` last; the rest waits a day (DEC 109) |
+| T-INT-RT-02 | A chat message is one broadcast, to the other party's `user:{uid}` with the message; a message with no sender reaches both; nothing on `chat:{id}` (DEC 108) |
 | T-INT-MEET-01 | time windows for propose/checkin/no-show; share token expiry; `get_meetup_share` returns no price/phone/email |
 | T-INT-DEAL-01 | ratings reveal only when both sides have rated, or after 7 d; deleted rater anonymized |
 | T-INT-QUAD-ANON **[R1.1]** | for every quad RPC, the JSON response has no `author_id` / `user_id` field, including for own posts |

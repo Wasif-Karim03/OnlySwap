@@ -235,7 +235,7 @@ export function resetChatStores(): void {
 }
 
 /**
- * useChat: subscribes to `chat:{id}` while focused, catches up on reconnect,
+ * useChat: listens on `user:{me}` while focused, catches up on reconnect or resume,
  * sends queued messages when the network comes back, marks the chat read.
  */
 export function useChat(
@@ -269,12 +269,31 @@ export function useChat(
 
   useFocusEffect(
     useCallback(() => {
-      const stop = realtime.subscribe(`chat:${chatId}`, 'message', (payload) => {
-        store.getState().receive(payload as Message);
-        void api.markRead(chatId).catch(() => {});
-      });
+      let stop: (() => void) | null = null;
+      let alive = true;
+      const catchUp = () => {
+        if (store.getState().items.length) void store.getState().catchUp();
+      };
+      // The other party's messages arrive on our own user channel (one
+      // broadcast per message, E-09); anything else on it is for the inbox.
+      const listen = (uid: string | null) => {
+        if (!alive || !uid) return;
+        stop = realtime.subscribe(
+          `user:${uid}`,
+          'inbox',
+          (payload) => {
+            const p = payload as { chat_id?: string; message?: Message } | null;
+            if (p?.chat_id !== chatId || !p.message) return;
+            store.getState().receive(p.message);
+            void api.markRead(chatId).catch(() => {});
+          },
+          catchUp,
+        );
+      };
+      if (me) listen(me);
+      else void realtime.userId().then(listen);
       // Coming back to the screen: anything missed while away.
-      if (store.getState().items.length) void store.getState().catchUp();
+      catchUp();
       void api.markRead(chatId).catch(() => {});
       const net = NetInfo.addEventListener((s) => {
         if (s.isConnected) {
@@ -283,10 +302,11 @@ export function useChat(
         }
       });
       return () => {
-        stop();
+        alive = false;
+        stop?.();
         net();
       };
-    }, [chatId, realtime, store, api]),
+    }, [chatId, me, realtime, store, api]),
   );
 
   return state;

@@ -3,7 +3,7 @@ import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 import { haptic, type HapticKind } from '@/lib/haptics';
 
-import { Tappable } from './Tappable';
+import { SMALL_SLOP, Tappable } from './Tappable';
 import { Text, type TextTone } from './Text';
 
 /**
@@ -74,6 +74,7 @@ export function Button({
       accessibilityLabel={label}
       accessibilityHint={accessibilityHint}
       accessibilityState={{ disabled: inactive, busy: loading }}
+      hitSlop={size === 'S' ? SMALL_SLOP : undefined}
       disabled={inactive}
       onPress={() => {
         if (hapticOnPress) haptic(hapticOnPress);

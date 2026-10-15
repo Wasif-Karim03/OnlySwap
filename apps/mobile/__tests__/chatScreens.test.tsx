@@ -71,11 +71,16 @@ function fakeApi(over: Partial<ChatApi> = {}): ChatApi {
   };
 }
 
+// Messages arrive on user:{me} as an inbox event carrying the message (E-09).
 let push: (m: Message) => void = () => {};
+let resume: () => void = () => {};
+const joined: string[] = [];
 const realtime: RealtimeSource = {
   userId: async () => 'me',
-  subscribe: (_t, _e, cb) => {
-    push = (m) => cb(m);
+  subscribe: (topic, event, cb, onJoin) => {
+    joined.push(`${topic} ${event}`);
+    push = (m) => cb({ chat_id: m.chat_id, message: m });
+    resume = () => onJoin?.();
     return () => {};
   },
 };
@@ -141,6 +146,18 @@ describe('E03 Chat', () => {
     await act(async () => push(msg(4, { body: 'Sure, see you' })));
     expect(await screen.findByText('Sure, see you')).toBeTruthy();
     expect(api.markRead).toHaveBeenCalledWith('c1');
+    expect(joined).toContain('user:me inbox');
+  });
+
+  it('T-UNIT-RT-01 ignores other chats and catches up when the channel rejoins', async () => {
+    const api = fakeApi();
+    render(chatRoute(api), '/chat/c1');
+    expect(await screen.findByTestId('chat-deal-bar')).toBeTruthy();
+    await act(async () => push(msg(9, { chat_id: 'c2', body: 'Wrong chat' })));
+    expect(screen.queryByText('Wrong chat')).toBeNull();
+    const before = (api.messages as jest.Mock).mock.calls.length;
+    await act(async () => resume());
+    await waitFor(() => expect((api.messages as jest.Mock).mock.calls.length).toBe(before + 1));
   });
 
   it('a failed message offers retry', async () => {

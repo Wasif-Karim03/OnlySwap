@@ -31,11 +31,11 @@ App code never uses raw hex values, font sizes or spacing numbers.
 | `line2` | #CFCFC9 | #3D3D41 | borders, radio rings |
 | `ink` | #111110 | #F3F3EF | primary text, dark buttons |
 | `ink2` | #5A5A54 | #A6A69F | secondary text |
-| `ink3` | #9A9A93 | #6D6D67 | tertiary / placeholders (large text only in light) |
+| `ink3` | #6F6F68 | #9A9A93 | tertiary / placeholders (4.5:1 on bg, bg2 and card, DEC 108) |
 | `accent` | #C8E27D (Pistachio default) | same | primary fills, selection |
 | `onAccent` | #111110 | #0C0C0D | text/icons on accent |
-| `red` / `redBg` | #E8432A / #FCEBE7 | #FF5A40 / #2C1511 | destructive, errors |
-| `green` / `greenBg` | #17804A / #E5F3EA | #3DD68C / #0F2A1C | verified, success |
+| `red` / `redBg` | #C8321C / #FCEBE7 | #FF5A40 / #2C1511 | destructive, errors |
+| `green` / `greenBg` | #12703F / #E5F3EA | #3DD68C / #0F2A1C | verified, success |
 | `amber` / `amberBg` | #9A6200 / #FBF0DA | #F5B84B / #2A2110 | warnings, held |
 | `sky` / `skyBg` | #1A5FA6 / #E2F0FF | #8CC3FF / #13263A | meetups (DEC 90) |
 | `peach` / `peachBg` | #9A4414 / #FFE9D9 | #FFB58A / #36200F | free food (DEC 90) |
@@ -47,7 +47,7 @@ App code never uses raw hex values, font sizes or spacing numbers.
 **Contrast rules** (tested in T-UNIT-TOK-01):
 - `ink` on `bg` / `bg2` ≥ 7:1.
 - `ink2` on `bg` ≥ 4.5:1.
-- `ink3` only for text ≥ 17 pt or non-essential meta.
+- `ink3` for meta and placeholders; it passes 4.5:1 on `bg`, `bg2` and `card` in both modes (T-UNIT-TOK-02).
 - `onAccent` on `accent` ≥ 4.5:1.
 - `sky`, `peach`, `lilac` text and `ink` on their `*Bg` ≥ 4.5:1.
 - **`accent` as text or icon on `bg` is banned** (UX-03).

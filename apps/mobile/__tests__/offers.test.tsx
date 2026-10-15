@@ -390,6 +390,36 @@ describe('E01 Inbox', () => {
     expect(await screen.findByTestId('screen-chat')).toBeTruthy();
   });
 
+  it('E-20: a burst of realtime pings refetches the inbox once', async () => {
+    let ping: () => void = () => {};
+    const realtime: RealtimeSource = {
+      userId: async () => 'me',
+      subscribe: (_t, _e, cb) => {
+        ping = () => cb({});
+        return () => {};
+      },
+    };
+    const inbox = jest.fn(async () => ({
+      incoming: [offer({ id: 'a' })],
+      outgoing: [],
+      chats: [],
+    }));
+    render({ inbox: () => <InboxScreen api={api({ inbox })} realtime={realtime} /> }, '/inbox');
+    expect(await screen.findByTestId('inbox-offer-a')).toBeTruthy();
+    const before = inbox.mock.calls.length;
+    await act(async () => {
+      ping();
+      ping();
+      ping();
+    });
+    await waitFor(() => expect(inbox.mock.calls.length).toBe(before + 1));
+    // renderRouter runs on fake timers.
+    await act(async () => {
+      jest.advanceTimersByTime(600);
+    });
+    expect(inbox.mock.calls.length).toBe(before + 1);
+  });
+
   it('empty state', async () => {
     render(
       {

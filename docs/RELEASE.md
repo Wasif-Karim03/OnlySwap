@@ -149,6 +149,12 @@ Legal pages are drafted by the owner. A lawyer review is optional and not free (
 | Priority-1 reports | DB trigger → email | immediate |
 | R2 billing | Cloudflare notification at $1 | email |
 
+**Opening campuses (free-tier limits, DEC 109):**
+- Open one campus at a time and wait a day before the next. Gmail stops sending for 24 h after 500 recipients a day, and sign-in codes share that account with the outbox (capped at 150 a day, so codes keep about 350).
+- The `campus_open` waitlist email goes out at most 150 a day, so a big waitlist takes several days. That is on purpose: it spaces out sign-ups.
+- If sign-ups run above about 300 a day for a week, move the outbox to a second free provider (Plan B) so codes get the whole Gmail allowance.
+- Images stay on `workers.dev` (no paid domain under the $0 rule), so the Worker's 100k requests a day is the cap. Watch it in the weekly usage report; at about 70k a day, raise it with the owner.
+
 **Backups:**
 - Nightly encrypted dump, kept 30 days.
 - **Restore drill monthly** (`docs/runbooks/restore.md`: restore into local Docker, verify row counts).

@@ -673,6 +673,7 @@ Suspensions and bans revoke sessions (ADR-013).
 | Notifications | 60 d |
 | Swipes (non-save) | 30 d |
 | Activity events (`activity_events`) | 30 d (daily `prune_activity` job, DEC 100) |
+| pg_cron run history (`cron.job_run_details`) | 7 d (daily `prune_cron_history` job, DEC 110) |
 | Account deletion records (`account_deletions`, no name or email) | 365 d |
 | Reports + evidence | 180 d after resolution (reporter nulled on deletion) |
 | Audit log | 2 years |

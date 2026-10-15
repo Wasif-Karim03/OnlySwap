@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
@@ -50,6 +50,9 @@ const defaultChatPane = (id: string) => <ChatScreen key={id} id={id} pane />;
  * words. Live while focused. On a wide iPad window it is two panes (board N6):
  * the list on the left and the open chat on the right, the way Messages works.
  */
+/** Realtime pings closer together than this become one inbox refetch. */
+const PING_DEBOUNCE_MS = 300;
+
 export function InboxScreen({
   api = offersApi,
   realtime,
@@ -69,7 +72,25 @@ export function InboxScreen({
   const [picked, setPicked] = useState<InboxSide | null>(null);
   const [openChat, setOpenChat] = useState<string | null>(null);
   const query = useQuery({ queryKey: inboxKey, queryFn: () => api.inbox() });
-  useUserChannel('inbox', () => void query.refetch(), realtime);
+  // A burst of pings (several messages in a row) refetches once (E-20).
+  const pingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (pingTimer.current) clearTimeout(pingTimer.current);
+    },
+    [],
+  );
+  useUserChannel(
+    'inbox',
+    () => {
+      if (pingTimer.current) clearTimeout(pingTimer.current);
+      pingTimer.current = setTimeout(() => {
+        pingTimer.current = null;
+        void query.refetch();
+      }, PING_DEBOUNCE_MS);
+    },
+    realtime,
+  );
   // Also refresh whenever the tab comes back into view, in case a ping was missed.
   const refetchInbox = query.refetch;
   useFocusEffect(
