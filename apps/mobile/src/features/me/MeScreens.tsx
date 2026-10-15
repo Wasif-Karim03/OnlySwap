@@ -455,6 +455,24 @@ export function MyListingsScreen({
   const q = useQuery({ queryKey: ['my-listings'], queryFn: () => api.listings() });
   const [tab, setTab] = useState<'active' | 'sold' | 'other'>('active');
   const [renewing, setRenewing] = useState<string | null>(null);
+  // Away mode (DEC 126): the switch reads get_me and flips it optimistically.
+  const meQ = useQuery({ queryKey: meKey, queryFn: () => api.me() });
+  const [awayBusy, setAwayBusy] = useState(false);
+  const setAway = async (away: boolean) => {
+    setAwayBusy(true);
+    try {
+      await api.setAway(away);
+      qc.setQueryData(meKey, (m: Me | undefined) =>
+        m ? { ...m, away_since: away ? new Date().toISOString() : null } : m,
+      );
+      void qc.invalidateQueries({ queryKey: meKey });
+      useToastStore.getState().show('success', away ? copy.awayOn : copy.awayOff);
+    } catch (e) {
+      useToastStore.getState().show('error', errorText(e));
+    } finally {
+      setAwayBusy(false);
+    }
+  };
   // Renew (DEC 125): one tap moves an active listing back to the top; no screen.
   const renew = async (id: string) => {
     setRenewing(id);
@@ -554,6 +572,17 @@ export function MyListingsScreen({
   }
   return (
     <Screen title={copy.listingsTitle} testID="screen-my-listings" onBack={leave}>
+      {meQ.data ? (
+        <View style={styles.tabs} testID="away-toggle">
+          <Toggle
+            label={copy.away}
+            description={copy.awayBody}
+            value={Boolean(meQ.data.away_since)}
+            disabled={awayBusy}
+            onChange={(v) => void setAway(v)}
+          />
+        </View>
+      ) : null}
       <View style={styles.tabs}>
         <SegmentedControl
           label={copy.listingsTitle}

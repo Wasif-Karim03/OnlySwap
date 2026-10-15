@@ -1657,6 +1657,16 @@
     ]
   },
   {
+    "name": "set_away",
+    "args": "away boolean",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "set_chat_mute",
     "args": "chat_id uuid, muted boolean",
     "returns": "void",

@@ -151,6 +151,7 @@ export function ProfileViewScreen({
           <View style={styles.tags}>
             {p.founding_seller ? <Tag label={copy.founding} tone="accent" /> : null}
             {p.new_seller ? <Tag label={copy.newSeller} tone="amber" /> : null}
+            {p.away ? <Tag label={copy.away} /> : null}
           </View>
           <View style={styles.stats}>
             <Text variant="label">{swapsLabel(p.swaps_count)}</Text>

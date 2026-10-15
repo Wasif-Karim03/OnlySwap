@@ -42,6 +42,7 @@ export const errors = {
   RATE_LIMITED: "You're doing that a lot. Try again in a little while.",
   RATE_LIMITED_UNTIL: "You're doing that a lot. Try again after {time}.",
   OFFERS_PAUSED: 'Offers are paused on your account after a missed meetup.',
+  SELLER_AWAY: 'This seller paused their listings. Save it and check back later.',
   LISTING_UNAVAILABLE: "This item isn't taking offers right now.",
   OFFER_NOT_PENDING: 'This offer changed. Pull to refresh.',
   ALREADY_REPORTED: "You've already reported this. We're on it.",
@@ -892,6 +893,9 @@ export const feed = {
   onHold: 'On hold',
   onHoldBody: 'Someone is meeting up for this. It may come back.',
   tellMe: 'Tell me if it comes back',
+  /** Away mode (DEC 126). */
+  sellerAway: 'Seller is away',
+  sellerAwayBody: '{name} paused their listings for now. Save it and check back later.',
   watching: "We'll tell you",
   sold: 'Sold',
   inReview: 'In review',
@@ -996,6 +1000,7 @@ export const profileView = {
   minutes: '{n} min',
   hours: '{n} h',
   newSeller: 'New seller',
+  away: 'Away',
   newSellerBody:
     "They haven't finished a swap here yet. Meet at a Meetup spot and check the item first.",
   founding: 'Founding seller',
@@ -1546,6 +1551,11 @@ export const me = {
     removed: 'Removed by OnlySwap',
   },
   relist: 'Relist',
+  /** Away mode (DEC 126). */
+  away: 'Pause my listings',
+  awayBody: 'Your items leave Discover and search, and no one can make new offers. Chats stay open. Expiry dates move by the time you are away.',
+  awayOn: 'Your listings are paused',
+  awayOff: 'Your listings are back',
   /** Renew an active listing (DEC 125). */
   renew: 'Renew',
   renewAt: 'Renew {date}',

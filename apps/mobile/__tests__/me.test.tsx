@@ -89,6 +89,7 @@ function api(over: Partial<MeApi> = {}): MeApi {
     updateListing: jest.fn(async () => {}),
     deleteListing: jest.fn(async () => {}),
     relist: jest.fn(async () => {}),
+    setAway: jest.fn(async () => {}),
     ...over,
   };
 }
@@ -470,5 +471,21 @@ describe('T-UNIT-RENEW-01 renew from My listings (DEC 125)', () => {
     fireEvent.press(screen.getByTestId('renew-a'));
     await waitFor(() => expect(relist).toHaveBeenCalledWith('a', null));
     expect(screen.queryByTestId('screen-relist-stub')).toBeNull();
+  });
+});
+
+describe('T-UNIT-AWAY-01 pause my listings (DEC 126)', () => {
+  it('turns away mode on from My listings', async () => {
+    const setAway = jest.fn(async () => {});
+    render(
+      {
+        'profile/listings': () => (
+          <MyListingsScreen api={api({ setAway })} mediaBase={() => 'http://m'} />
+        ),
+      },
+      '/profile/listings',
+    );
+    fireEvent.press(await screen.findByLabelText(meCopy.away));
+    await waitFor(() => expect(setAway).toHaveBeenCalledWith(true));
   });
 });

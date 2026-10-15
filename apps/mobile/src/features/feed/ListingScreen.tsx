@@ -290,6 +290,8 @@ export function ListingScreen({
           testID="listing-open-link"
         />
       ) : null;
+    } else if (item.seller.away && (item.kind === 'sale' || item.kind === 'free')) {
+      cta = <Button label={copy.sellerAway} disabled onPress={() => {}} testID="listing-away" />;
     } else if (item.kind !== 'food') {
       cta = (
         <Button
@@ -349,6 +351,11 @@ export function ListingScreen({
           <Text variant="meta" tone="ink2">
             {metaLine(item, now())}
           </Text>
+          {!owner && item.seller.away && (item.kind === 'sale' || item.kind === 'free') ? (
+            <Text variant="body" tone="ink2" testID="listing-away-note">
+              {fill(copy.sellerAwayBody, { name: sellerName(item) })}
+            </Text>
+          ) : null}
           {news && item.event_at ? (
             <View style={styles.event} testID="listing-event">
               <Icon name="cal" size={18} tone="sky" />

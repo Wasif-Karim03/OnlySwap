@@ -33,6 +33,7 @@ The client maps these to copy in `apps/mobile/src/strings/en.ts` → `errors.*`.
 | `BANNED_TERM:<term>` | text blocked by banned words |
 | `RATE_LIMITED:<action>:<retry_at>` | limit hit |
 | `OFFERS_PAUSED` | no-show pause |
+| `SELLER_AWAY` | the seller paused their listings (DEC 126) |
 | `LISTING_UNAVAILABLE` | not active / not open to offers |
 | `OFFER_NOT_PENDING` | state changed |
 | `ALREADY_REPORTED` | duplicate open report |
@@ -142,6 +143,7 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 | `update_listing` | `id, …` | listing | seller; not sold/deleted; price change logged | 50/day |
 | `delete_listing` | `id` | void | **soft**: status `deleted`, `deleted_at`; auto-declines, closes chats | — |
 | `relist_listing` | `id, price_cents` | listing | expired, or Renew an active sale/free listing; once / 3 d (DEC 125); `my_listings` adds `renew_at` | — |
+| `set_away` | `away bool` | `{away_since}` | Away mode (DEC 126): hides own sale/free listings from deck, search, campus feed; new offers → `SELLER_AWAY` (trigger); off adds the time away to active listings' `expires_at`. `get_me.away_since`, `get_profile.away`, `FeedItem.seller.away` | — |
 | `set_listing_share_image` | `id` | `{share_image_path}` | seller; not deleted; records `share/{id}.jpg` after the app uploads the share card (DEC 55) | 30/day |
 | `mark_sold` | `id, buyer_id?` | void | buyer must be a chat participant; closes other chats | — |
 | `listing_stats` / `listing_offers` | `id` | stats / offers | seller only | — |

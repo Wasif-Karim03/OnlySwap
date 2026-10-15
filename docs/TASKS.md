@@ -387,7 +387,7 @@ Branch `feat/ux-pack`. Order keeps every step OTA-able until UX-09 (native camer
 
 - [x] UX-01 Trust on the swipe card (DEC 124): `feed_item` seller stats; card + listing seller row. Done when: pgTAP + Jest pass.
 - [x] UX-02 Renew (DEC 125): 72 h cooldown; Renew in My listings. Done when: pgTAP + Jest pass.
-- [ ] UX-03 Away mode (DEC 126): `set_away`, filters, `SELLER_AWAY`, settings switch, Away tag. Done when: pgTAP + Jest pass.
+- [x] UX-03 Away mode (DEC 126): `set_away`, filters, `SELLER_AWAY`, settings switch, Away tag. Done when: pgTAP + Jest pass.
 - [ ] UX-04 Wanted need by + alert me (DEC 127). Done when: pgTAP + Jest pass.
 - [ ] UX-05 Recently viewed + More like this (DEC 128). Done when: pgTAP + Jest pass.
 - [ ] UX-06 Listing help (DEC 129). Done when: Jest passes.

@@ -44,6 +44,8 @@ export type FeedItem = {
     swaps_count?: number;
     thumbs_up?: number;
     thumbs_total?: number;
+    /** Away mode (DEC 126, 0237). */
+    away?: boolean;
   };
   photos: {
     path: string;

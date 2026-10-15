@@ -28,6 +28,8 @@ export type PublicProfile = {
   thumbs_total: number;
   median_reply_minutes: number | null;
   new_seller: boolean;
+  /** Away mode (DEC 126, 0237). */
+  away?: boolean;
   listings: FeedItem[];
   reviews: Review[];
 };
