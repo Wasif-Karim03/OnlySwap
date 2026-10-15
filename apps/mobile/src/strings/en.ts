@@ -110,7 +110,7 @@ export const primer = {
   openSettings: 'Open Settings',
   camera: {
     title: 'Take photos of your stuff',
-    body: 'OnlySwap uses the camera only when you add photos to a listing, your profile or a chat. Nothing is recorded in the background.',
+    body: "OnlySwap uses the camera only when you add photos to a listing, your profile or a chat, or scan a book's barcode. Nothing is recorded in the background.",
     cta: 'Continue',
     alternative: 'Choose from library instead',
     deniedTitle: 'Camera is turned off',
@@ -742,6 +742,17 @@ export const sell = {
   modeLabel: 'Sell or give away',
   titleLabel: 'Title',
   titlePlaceholder: 'What is it?',
+  /** Scan ISBN (DEC 131). */
+  scanBook: 'Scan a book barcode',
+  scanTitle: 'Scan the barcode',
+  scanBody: 'Point the camera at the barcode on the back cover. We fill in the title for you.',
+  scanLooking: 'Looking up the book',
+  scanNotBook: "That barcode isn't a book. Try the one that starts with 978 or 979.",
+  scanNotFound: "We couldn't find that book. Type the title instead.",
+  scanOffline: "You're offline. Type the title, or scan again once you're back online.",
+  scanAgain: 'Scan again',
+  scanType: 'Type it instead',
+  scanFound: 'Title filled in from the barcode',
   /** Listing help (DEC 129): an example title for the chosen top-level category. */
   titleExample: 'Example: {example}',
   titleExamples: {

@@ -383,7 +383,7 @@ Each session ends runnable and with its tests green. **P0 tasks are yours** (man
 
 ## UX pack (DEC 124 to 134, owner approved 2026-10-15): before the first store submission
 
-Branch `feat/ux-pack`. Order keeps every step OTA-able until UX-09 (native camera).
+Branch `feat/ux-pack`. Order keeps every step OTA-able until UX-10 (native camera).
 
 - [x] UX-01 Trust on the swipe card (DEC 124): `feed_item` seller stats; card + listing seller row. Done when: pgTAP + Jest pass.
 - [x] UX-02 Renew (DEC 125): 72 h cooldown; Renew in My listings. Done when: pgTAP + Jest pass.
@@ -394,5 +394,5 @@ Branch `feat/ux-pack`. Order keeps every step OTA-able until UX-09 (native camer
 - [x] UX-07 Quad inside Feed (DEC 130). Done when: Jest passes.
 - [x] UX-08 Handoff code (DEC 132). Done when: pgTAP + Jest pass.
 - [x] UX-09 Moving out mode + bundle offers (DEC 133). Done when: pgTAP + Jest pass.
-- [ ] UX-10 Scan ISBN (DEC 131, needs new builds). Done when: Jest passes; device check after the build.
+- [x] UX-10 Scan ISBN (DEC 131, needs new builds). Done when: Jest passes (T-UNIT-ISBN-01..05); device check after the build is still open.
 - [x] UX-11 Campus launch playbook (DEC 134). Done when: RELEASE.md §9 written.

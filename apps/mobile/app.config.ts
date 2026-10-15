@@ -211,6 +211,15 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           microphonePermission: false,
         },
       ],
+      // Scan ISBN (DEC 131): barcode only, no audio.
+      [
+        'expo-camera',
+        {
+          cameraPermission: permissions.camera,
+          microphonePermission: false,
+          recordAudioAndroid: false,
+        },
+      ],
       [
         'expo-notifications',
         {

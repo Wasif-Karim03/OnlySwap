@@ -11,7 +11,7 @@ import type { Strings } from './en';
 
 const permissions: Strings['permissions'] = {
   camera:
-    'OnlySwap usa la cámara para que tomes fotos de lo que vendes y una foto tuya para tu perfil.',
+    'OnlySwap usa la cámara para que tomes fotos de lo que vendes y una foto tuya para tu perfil, y para escanear el código de barras de un libro.',
   photos: 'OnlySwap abre tus fotos para que elijas imágenes de lo que vendes y una foto de perfil.',
 };
 
@@ -110,7 +110,7 @@ const primer: Strings['primer'] = {
   openSettings: 'Abrir Ajustes',
   camera: {
     title: 'Toma fotos de tus cosas',
-    body: 'OnlySwap usa la cámara solo cuando agregas fotos a una publicación, a tu perfil o a un chat. No se graba nada en segundo plano.',
+    body: 'OnlySwap usa la cámara solo cuando agregas fotos a una publicación, a tu perfil o a un chat, o escaneas el código de barras de un libro. No se graba nada en segundo plano.',
     cta: 'Continuar',
     alternative: 'Elegir de la galería',
     deniedTitle: 'La cámara está desactivada',
@@ -737,6 +737,16 @@ const sell: Strings['sell'] = {
   modeLabel: 'Vender o regalar',
   titleLabel: 'Título',
   titlePlaceholder: '¿Qué es?',
+  scanBook: 'Escanear el código de un libro',
+  scanTitle: 'Escanea el código de barras',
+  scanBody: 'Apunta la cámara al código de barras de la contraportada. Llenamos el título por ti.',
+  scanLooking: 'Buscando el libro',
+  scanNotBook: 'Ese código no es de un libro. Prueba el que empieza con 978 o 979.',
+  scanNotFound: 'No encontramos ese libro. Escribe el título.',
+  scanOffline: 'No tienes conexión. Escribe el título o vuelve a escanear cuando tengas conexión.',
+  scanAgain: 'Escanear otra vez',
+  scanType: 'Escribirlo',
+  scanFound: 'Título llenado con el código de barras',
   titleExample: 'Ejemplo: {example}',
   titleExamples: {
     any: 'Marca, artículo y luego talla o modelo',
