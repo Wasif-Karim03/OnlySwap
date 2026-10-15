@@ -151,3 +151,34 @@ test('a failed evidence copy stops before deleting any media or the account', as
   });
   assert.deepEqual(calls, []);
 });
+
+test('B-03: archived chats are deleted from the private bucket before the auth user', async () => {
+  const { d, calls } = deps({
+    prepare: async () => ({
+      email: 'a@osu.edu',
+      r2_prefixes: ['c/x/u/u1/'],
+      archives: ['archive/chats/C1.json', 'archive/chats/C2.json'],
+    }),
+    deleteArchive: async (k) => void calls.push(`archive:${k}`),
+  });
+  const res = await handleDeleteAccount(req({ confirm: 'DELETE' }), d);
+  assert.equal(res.status, 200);
+  assert.deepEqual(calls, [
+    'r2:c/x/u/u1/',
+    'archive:archive/chats/C1.json',
+    'archive:archive/chats/C2.json',
+    'deleteUser:u1',
+  ]);
+});
+
+test('B-03: a failed archive delete stops before the account is deleted', async () => {
+  const { d, calls } = deps({
+    prepare: async () => ({ email: null, r2_prefixes: [], archives: ['archive/chats/C1.json'] }),
+    deleteArchive: async () => {
+      throw new Error('r2 DELETE 500');
+    },
+  });
+  const res = await handleDeleteAccount(req({ confirm: 'DELETE' }), d);
+  assert.deepEqual(res, { status: 500, body: { error: 'UNKNOWN' } });
+  assert.ok(!calls.some((c) => c.startsWith('deleteUser')));
+});

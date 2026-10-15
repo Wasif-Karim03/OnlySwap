@@ -67,6 +67,7 @@ Deno.serve(
                 deleteR2Prefix: async (prefix: string) => {
                   await r2.deletePrefix(r2cfg.mediaBucket, prefix);
                 },
+                deleteArchive: (key: string) => r2.delete(r2cfg.privateBucket, key),
               }
             : {}),
           deleteUser: async (userId) => {

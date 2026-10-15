@@ -77,7 +77,7 @@ Your invite link includes a short code. When someone joins with it, we record th
 
 ### Download your data
 
-In Settings you can request a copy of your data once every 24 hours. It's a JSON file with your account, profile and settings, your listings, offers, chats and messages, ratings, saves, saved searches, notifications, blocks, reports you made, strikes, appeals, and your own Quad posts, replies and votes. Other people appear only by the name you already see in the app, never by their account id, and never as the author of a Quad post. We email you a private link that works for 7 days; the file is deleted on day 8.
+In Settings you can request a copy of your data once every 24 hours. It's a JSON file with your account, profile and settings, your listings, offers, chats and messages, ratings, saves, saved searches, notifications, your activity in the app (listings you opened and for how long, searches, device type), blocks, reports you made, strikes, appeals, and your own Quad posts, replies and votes. Other people appear only by the name you already see in the app, never by their account id, and never as the author of a Quad post. We email you a private link that works for 7 days; the file is deleted on day 8.
 
 ### Price hints
 
