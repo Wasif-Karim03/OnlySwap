@@ -91,13 +91,13 @@ select ok(private.names_student('I saw Maya at the rec'), 'a capitalized common 
 select ok(not private.names_student('maya is a word here'), 'lowercase words are not names');
 
 -- anon can call nothing in private; authenticated only the read-only helpers
--- that RLS policies use (0008).
+-- that RLS policies use (0008, 0220).
 select is(
   array(
     select p.proname::text from pg_proc p join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'private' and has_function_privilege('authenticated', p.oid, 'execute')
     order by 1),
-  array['admin_rank','is_admin','is_blocked','is_chat_participant','is_public_config_key','my_campus','now'],
+  array['admin_rank','audit_meta_safe','is_admin','is_blocked','is_chat_participant','is_public_config_key','my_campus','now'],
   'authenticated can execute only the policy helpers in private'
 );
 select is(

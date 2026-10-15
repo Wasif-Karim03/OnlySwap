@@ -54,6 +54,7 @@ export const errors = {
   DOMAIN_BLOCKED: "That email domain can't be used. Use your school email.",
   AGE_BLOCKED: 'OnlySwap is for people 18 and older.',
   BANNED: 'This account has been removed from OnlySwap.',
+  EMAIL_ALIAS: 'That school email already has an account. Sign in with the address you used first.',
   FEATURE_OFF: "That isn't available yet.",
   ERR_OFFLINE: "You're offline. Check your connection and try again.",
   SESSION_EXPIRED: 'Your session ended. Sign in again.',

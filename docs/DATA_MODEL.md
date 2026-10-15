@@ -68,7 +68,7 @@ create type age_method     as enum ('os_signal','self_declared','review');
 create type listing_kind   as enum ('sale','free','wanted','food','news');  -- news: DEC 98 (0214)
 create type listing_status as enum ('active','hold','sold','expired','held_review','removed','deleted');
 create type item_condition as enum ('new','like_new','good','fair');
-create type swipe_dir      as enum ('left','save');           -- right-swipe = offer (recorded as offer)
+create type swipe_dir      as enum ('left','save','right');   -- 'right' added in 0222 (DEC 106): a right swipe that opened the offer sheet; the offer itself is in offers
 create type offer_status   as enum ('pending','countered','accepted','declined','expired','withdrawn','auto_declined');
 create type chat_status    as enum ('open','closed','blocked');
 create type message_kind   as enum ('text','system','meetup','photo');   -- 'photo' used from R1.1
@@ -360,7 +360,7 @@ create table reports (
   reporter_id uuid references profiles on delete set null,
   target_type text not null check (target_type in ('listing','user','chat','message','quad_post','quad_reply')),
   target_id text not null,
-  target_user_id uuid references profiles on delete set null,     -- never returned to reporter
+  target_user_id uuid references profiles on delete set null,     -- never returned to reporter; always null for quad_post/quad_reply (0220, DEC 104)
   reason text not null check (reason in ('scam','not_allowed','stolen','counterfeit','misleading','harassment','threat',
          'hate','sexual','minor_safety','calls_out_student','spam','self_harm','no_show','other')),
   details text check (char_length(details) <= 500),

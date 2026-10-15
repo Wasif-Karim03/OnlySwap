@@ -17,9 +17,12 @@ import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { OfflineBanner } from '@/components/Banner';
 import { CrashScreen } from '@/components/CrashScreen';
 import { ToastHost } from '@/components/Toast';
+import { watchAccountReset } from '@/features/auth/accountReset';
 import { launchStartedAt } from '@/features/auth/launchTiming';
 import { SessionExpiredSheet } from '@/features/auth/SessionExpiredSheet';
 import { watchSessionExpiry } from '@/features/auth/sessionExpiry';
+import { resetChatStores } from '@/features/chat/useChat';
+import { resetSwipeStore } from '@/features/feed/swipes';
 import { startWidgetSync } from '@/features/widgets/sync';
 import { startActivity } from '@/lib/activity';
 import { getEnv } from '@/lib/env';
@@ -61,6 +64,11 @@ export default function RootLayout() {
   useWebTitle();
   useTelemetry();
   useEffect(() => watchSessionExpiry(getSupabase().auth), []);
+  // Sign-out or another account: drop the last account's cached data (C-03).
+  useEffect(
+    () => watchAccountReset(getSupabase().auth, queryClient, [resetChatStores, resetSwipeStore]),
+    [queryClient],
+  );
   // Home screen widget + meetup Live Activity follow the meetups the app loads (P17-FEAT-01).
   useEffect(() => startWidgetSync(queryClient), [queryClient]);
   // Activity events for the admin console (DEC 93): follows sign-in, flushes on background.

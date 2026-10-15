@@ -16,7 +16,7 @@ select enum_has_labels('public', 'age_method', array['os_signal','self_declared'
 select enum_has_labels('public', 'listing_kind', array['sale','free','wanted','food','news'], 'listing_kind labels (news: 0214, DEC 98)');
 select enum_has_labels('public', 'listing_status', array['active','hold','sold','expired','held_review','removed','deleted'], 'listing_status labels');
 select enum_has_labels('public', 'item_condition', array['new','like_new','good','fair'], 'item_condition labels');
-select enum_has_labels('public', 'swipe_dir', array['left','save'], 'swipe_dir labels');
+select enum_has_labels('public', 'swipe_dir', array['left','save','right'], 'swipe_dir labels (right: 0222, DEC 106)');
 select enum_has_labels('public', 'offer_status', array['pending','countered','accepted','declined','expired','withdrawn','auto_declined'], 'offer_status labels');
 select enum_has_labels('public', 'chat_status', array['open','closed','blocked'], 'chat_status labels');
 select enum_has_labels('public', 'message_kind', array['text','system','meetup','photo'], 'message_kind labels');

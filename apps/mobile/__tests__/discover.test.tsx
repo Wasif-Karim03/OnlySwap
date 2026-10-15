@@ -174,8 +174,10 @@ describe('T-UNIT-FEED-01 useSwipe batching', () => {
     expect(undoPlan([s], null, NOW).kind).toBe('expired');
   });
 
-  it('sends a right swipe as seen (left) and ignores junk in storage', () => {
-    expect(toServer(swipe('a', NOW, 'right')).dir).toBe('left');
+  it('sends a right swipe as right (DEC 106) and ignores junk in storage', () => {
+    expect(toServer(swipe('a', NOW, 'right')).dir).toBe('right');
+    expect(toServer(swipe('a', NOW, 'left')).dir).toBe('left');
+    expect(toServer(swipe('a', NOW, 'save')).dir).toBe('save');
     expect(
       parseQueue([{ listing_id: 'a', dir: 'up', at: 'x' }, swipe('b', NOW), null]),
     ).toHaveLength(1);

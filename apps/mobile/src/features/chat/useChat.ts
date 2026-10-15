@@ -229,6 +229,11 @@ export function createChatStore(chatId: string, deps: Deps): StoreApi<ChatState>
 
 const stores = new Map<string, StoreApi<ChatState>>();
 
+/** Drops every cached chat (sign-out or account switch, C-03). */
+export function resetChatStores(): void {
+  stores.clear();
+}
+
 /**
  * useChat: subscribes to `chat:{id}` while focused, catches up on reconnect,
  * sends queued messages when the network comes back, marks the chat read.
