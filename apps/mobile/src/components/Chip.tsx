@@ -2,7 +2,7 @@ import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { Icon, type IconName } from './icons/Icon';
-import { Tappable } from './Tappable';
+import { SMALL_SLOP, Tappable } from './Tappable';
 import { Text } from './Text';
 
 type ChipProps = {
@@ -49,6 +49,7 @@ export function Chip({
       }
       disabled={disabled}
       onPress={removable ? onRemove : onPress}
+      hitSlop={SMALL_SLOP}
       guard={false}
       testID={testID}
     >

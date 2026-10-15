@@ -78,6 +78,7 @@ Helpers `tests.authenticate_as(uid, aal)` and `tests.clear_authentication()` com
 | T-UNIT-NOTIF-02 | Android channels | created with the correct importance per group |
 | T-UNIT-TOK-01 | Token contrast | all body text pairs ≥ 4.5:1, large text ≥ 3:1, in light and dark, for every accent option |
 | T-UNIT-TOK-02 | Secondary text contrast | `ink2`, `ink3`, `red`, `green`, `amber` ≥ 4.5:1 on `bg`, `bg2`, `card` and their own tint, light and dark (DEC 108) |
+| T-UNIT-A11Y-44 | Button S and Chip reach 44 pt with hitSlop; Button M has none (DEC 111) |
 | T-UNIT-RT-01 | Realtime hub | one join per topic for many listeners; leave all in the background; rejoin and catch up on resume; chat reads its messages from `user:{me}` (DEC 108) |
 | T-UNIT-CMP-* | Components | Button loading keeps width and blocks double tap; Input error announces; Sheet closes on Android back; PermissionPrimer state machine |
 | T-FN-01 | `_shared/expoPush` | chunks of 100; backoff on 429; DeviceNotRegistered handling |
