@@ -2,7 +2,7 @@
 // `email_drain` cron calls it every 5 minutes when the outbox has mail due.
 //   {} → { ok, claimed, sent }
 // Transport by EMAIL_PROVIDER: `gmail` (SMTP 465, app password in GMAIL_APP_PASSWORD)
-// or `resend` (RESEND_API_KEY). The 400/day cap is in private.claim_emails.
+// or `resend` (RESEND_API_KEY). The 150/day cap is in private.claim_emails (0224).
 import nodemailer from 'npm:nodemailer@6.9.16';
 import postgres from 'npm:postgres@3.4.7';
 

@@ -83,7 +83,7 @@ select is((select state from public.email_outbox where dedupe_key = 'e2'), 'pend
 insert into public.email_outbox (to_email, template, state, sent_at)
 select 'x@osu.edu', 'account_deleted', 'sent', '2027-03-10 11:00-05' from generate_series(1, 400);
 select tests.set_now('2027-03-10 13:00:00-05');
-select is(jsonb_array_length(private.claim_emails(50)), 0, '400 a day, then it waits');
+select is(jsonb_array_length(private.claim_emails(50)), 0, 'the daily cap, then it waits');
 
 -- archive ---------------------------------------------------------------------------------------------------------------
 insert into public.chats (id, buyer_id, seller_id, listing_title, listing_price_cents, agreed_cents, status, closed_at)

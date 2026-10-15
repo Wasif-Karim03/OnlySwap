@@ -111,7 +111,7 @@ flowchart LR
 | PostHog | 1M events | 18 events, no autocapture | 600k |
 | Sentry | 5k errors | sampling 5% traces; ignore network noise | 3.5k |
 | GitHub Actions | 2,000 min | Linux only; DB tests only on `supabase/**` changes | 1,500 |
-| Gmail SMTP (Plan A) | ~500/day | codes only at sign-up/re-verify; drip at 400/day | 350/day |
+| Gmail SMTP (Plan A) | ~500/day | codes only at sign-up/re-verify; outbox drip at 150/day so codes keep 350 (DEC 109) | 350/day |
 
 `scripts/usage-report.ts` (R1.0) emails a weekly report of these figures.
 
