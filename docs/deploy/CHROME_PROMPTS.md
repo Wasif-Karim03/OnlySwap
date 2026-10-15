@@ -94,3 +94,23 @@ List every project with its status (Active or Paused). Do not change anything. I
 ```
 In https://supabase.com/dashboard/projects, open the project named <NAME I CHOSE>. Go to Project Settings > General and click "Pause project", then confirm. Do not delete it. Tell me when it shows Paused.
 ```
+
+## H. Supabase: one login code per minute per person (after staging-supabase)
+
+Matches `max_frequency = "60s"` in `supabase/config.toml`; hosted projects need
+it set by hand. Staging ref is `fdrcwxiohleqeviiyhbv`; for production, swap in
+the production ref.
+
+```
+Go to https://supabase.com/dashboard/project/fdrcwxiohleqeviiyhbv/auth/smtp. If I'm not signed in, stop and let me sign in myself (I'll type my own email, password and any 2-step code).
+
+Check the page header shows the project with ref fdrcwxiohleqeviiyhbv (the OnlySwap staging project). If it's a different project, stop and tell me.
+
+On Authentication > Emails > SMTP Settings, find the field named like "Minimum interval between emails being sent" (it may say "per user"). Tell me its current value, then set it to 60 seconds and click Save for that section. Change nothing else on the page: don't touch the SMTP host, port, username, password, sender name or sender email, and don't turn custom SMTP off.
+
+If that field isn't on the SMTP page, open https://supabase.com/dashboard/project/fdrcwxiohleqeviiyhbv/auth/rate-limits and look there for a per-user minimum interval for emails. Set only that one to 60 seconds and save. Don't change any other rate limit.
+
+If you can't find the setting on either page, stop and tell me what fields you see; don't guess.
+
+Finally reload the page and tell me: the old value, the new value as shown after reload, and which page it was on.
+```
