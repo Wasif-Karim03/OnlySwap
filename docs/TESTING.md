@@ -334,6 +334,8 @@ Each is a YAML flow in `.maestro/`, run against staging with seeded data. Steps 
 | T-INT-MEET-03 | pgTAP | BE-07 | no-show rejected when the reporter didn't check in, when the other checked in, and before +20 min; auto-confirm after 24 h; 2 confirmed → offers paused |
 | T-INT-SAFE-03 | pgTAP | BE-09 | 3 reports from accounts younger than 7 days → no auto-hide; 3 from aged distinct accounts → held + still open |
 | T-INT-OFF-RACE-02 | pgTAP (2 sessions) | BE-10 | `make_offer` concurrent with `mark_sold` → offer rejected `LISTING_UNAVAILABLE` or auto-declined, never pending on a sold listing |
+| T-INT-OFF-RACE-03 | parallel sessions + `scripts/verify/offer-race.mjs` | E-05, DEC 102 | many first offers on one listing at once all land, none fails with a deadlock; `offer_count` equals the offers (`offer_lock.test.sql` pins the lock) |
+| T-INT-AGE-RETRY | pgTAP | A-03, DEC 102 | after `confirm_age` answers minor, a retry (os_signal true or an adult birth date) answers adult:false and the account stays unconfirmed (`age_gate_retry.test.sql`) |
 | T-INT-SOLD-01 | pgTAP | BE-11 | `mark_sold` closes other chats with a system message and notifies those buyers |
 | T-INT-TZ-01 | pgTAP | BE-12 | DST boundary: meetup reminders fire 30 min before local time on the transition days; quiet hours in the campus TZ |
 | T-UNIT-AUTH-06 | Jest | PM-04 | gate routes to Updated rules when `rules_version` changes |
