@@ -40,9 +40,10 @@ export type Founding = { limit: number; left: number; mine: boolean };
 export type CampusPage = {
   items: CampusItem[];
   next_cursor: FeedCursor | null;
-  day_one: boolean;
-  active_listings: number;
-  founding: Founding;
+  // Page one only; later pages send null (E-13).
+  day_one: boolean | null;
+  active_listings: number | null;
+  founding: Founding | null;
 };
 
 // ---------------------------------------------------------------------------

@@ -294,7 +294,7 @@ export function CampusFeedScreen({
                   {copy.dayOneTitle}
                 </Text>
                 <Text variant="body" tone="ink2">
-                  {dayOneBody(first.active_listings)}
+                  {dayOneBody(first.active_listings ?? 0)}
                 </Text>
                 <Button label={copy.dayOneAction} size="M" onPress={sell} />
               </View>
@@ -308,8 +308,8 @@ export function CampusFeedScreen({
                   {founding === 'mine'
                     ? copy.foundingMineBody
                     : fill(copy.foundingBody, {
-                        left: first?.founding.left ?? 0,
-                        limit: first?.founding.limit ?? 0,
+                        left: first?.founding?.left ?? 0,
+                        limit: first?.founding?.limit ?? 0,
                       })}
                 </Text>
                 {founding === 'open' && !first?.day_one ? (
