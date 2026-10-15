@@ -2492,6 +2492,9 @@ isOneToOne: false
 "unmute_keyword":
 { Args: { "keyword": string }; Returns: undefined
                            },
+"unread_count":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
 "unsave_listing":
 { Args: { "listing_id": string }; Returns: Json
                            },
