@@ -52,7 +52,9 @@ export function IconButton({
       testID={testID}
       accessibilityRole="button"
       accessibilityLabel={
-        count ? fill(navCopy.tabWithBadge, { label: accessibilityLabel, count }) : accessibilityLabel
+        count
+          ? fill(navCopy.tabWithBadge, { label: accessibilityLabel, count })
+          : accessibilityLabel
       }
       accessibilityHint={accessibilityHint}
       accessibilityState={{ disabled: !!disabled }}

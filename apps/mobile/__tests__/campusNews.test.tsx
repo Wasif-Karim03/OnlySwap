@@ -29,7 +29,7 @@ import { ListingScreen } from '../src/features/feed/ListingScreen';
 import type { ListingResult } from '../src/features/feed/logic';
 import type { Me } from '../src/features/me/api';
 import type { PostedListing, SellApi } from '../src/features/sell/api';
-import { campus } from '../src/strings/en';
+import { campus, chat } from '../src/strings/en';
 
 jest.mock('expo-haptics', () => ({
   selectionAsync: jest.fn(async () => {}),
@@ -333,7 +333,15 @@ describe('DEC 98 Post news', () => {
     get: jest.fn(async () => ({ status: 'granted' as const, canAskAgain: true })),
     request: jest.fn(async () => ({ status: 'granted' as const, canAskAgain: true })),
   };
-  const show = (api: ReturnType<typeof fakeApi>, pick = jest.fn(async () => [])) =>
+  const denied = {
+    get: jest.fn(async () => ({ status: 'denied' as const, canAskAgain: false })),
+    request: jest.fn(async () => ({ status: 'denied' as const, canAskAgain: false })),
+  };
+  const show = (
+    api: ReturnType<typeof fakeApi>,
+    pick = jest.fn(async () => []),
+    cameraOs: typeof granted = granted,
+  ) =>
     renderAt(
       {
         'sell/news': () => (
@@ -341,6 +349,7 @@ describe('DEC 98 Post news', () => {
             api={api}
             pick={pick}
             photosOs={granted}
+            cameraOs={cameraOs}
             mediaBase={() => 'http://m'}
             now={() => NOW}
           />
@@ -360,20 +369,45 @@ describe('DEC 98 Post news', () => {
     expect(screen.getByText(campus.errors.titleShort)).toBeTruthy();
     expect(screen.getByText(campus.errors.linkInvalid)).toBeTruthy();
     expect(screen.getByTestId('news-event-error')).toBeTruthy();
+    // Said on top too: the note can sit under the keyboard (owner, 2026-10-15).
+    expect(useToastStore.getState().current?.message).toBe(campus.fixFirst);
     expect(api.createNews).not.toHaveBeenCalled();
+  });
+
+  it('Add photos offers the camera or the library (owner, 2026-10-15)', async () => {
+    const api = fakeApi();
+    const pick = jest.fn(async () => [{ uri: 'cam', width: 100, height: 80 }]);
+    show(api, pick as never);
+    fireEvent.press(await screen.findByTestId('news-add-photo'));
+    expect(screen.getByText(chat.photoCamera)).toBeTruthy();
+    expect(screen.getByText(chat.photoLibrary)).toBeTruthy();
+    fireEvent.press(screen.getByTestId('news-photo-camera'));
+    await waitFor(() => expect(pick).toHaveBeenCalledWith('camera', 4));
+    await waitFor(() => expect(api.uploadPhoto).toHaveBeenCalledTimes(1));
+  });
+
+  it('camera off: says so and offers Settings, nothing is picked', async () => {
+    const pick = jest.fn(async () => []);
+    show(fakeApi(), pick as never, denied as never);
+    fireEvent.press(await screen.findByTestId('news-add-photo'));
+    fireEvent.press(screen.getByTestId('news-photo-camera'));
+    expect(await screen.findByTestId('news-camera-off')).toBeTruthy();
+    expect(screen.getByText(campus.cameraOff)).toBeTruthy();
+    expect(pick).not.toHaveBeenCalled();
   });
 
   it('posts with up to 4 photos and a link, then offers the Feed', async () => {
     const api = fakeApi();
-    const pick = jest.fn(async (n: number) =>
+    const pick = jest.fn(async (_source: string, n: number) =>
       ['a', 'b', 'c', 'd', 'e'].slice(0, n).map((uri) => ({ uri, width: 100, height: 80 })),
     );
     show(api, pick as never);
     fireEvent.changeText(await screen.findByTestId('news-title'), 'Club fair Friday');
     fireEvent.changeText(screen.getByTestId('news-link'), 'forms.example.com/fair');
     fireEvent.press(screen.getByTestId('news-add-photo'));
+    fireEvent.press(screen.getByTestId('news-photo-library'));
     await waitFor(() => expect(api.uploadPhoto).toHaveBeenCalledTimes(4));
-    expect(pick).toHaveBeenCalledWith(4);
+    expect(pick).toHaveBeenCalledWith('library', 4);
     // Full: no more Add photos.
     await waitFor(() => expect(screen.queryByTestId('news-add-photo')).toBeNull());
     fireEvent.press(screen.getByTestId('news-post'));

@@ -22,6 +22,7 @@ import { osPermissions, type OsApi } from '@/lib/permissions';
 import { isWebPlatform } from '@/lib/platform';
 import { campus as copy, intlLocale } from '@/strings';
 import { readableColumn } from '@/theme/layout';
+import { useToastStore } from '@/components/Toast';
 
 import { sellApi, type PostedListing, type SellApi } from '../sell/api';
 import { DESCRIPTION_MAX, MEET_NOTE_MAX, TITLE_MAX } from '../sell/logic';
@@ -36,12 +37,20 @@ import {
   validateNews,
   type FormError,
 } from './logic';
-import { PhotosField, PostedView, postFailure, usePostPhotos, useReservedId } from './PostShared';
+import {
+  PhotosField,
+  PostedView,
+  postFailure,
+  usePostPhotos,
+  useReservedId,
+  type PhotoSource,
+} from './PostShared';
 
 type Deps = {
   api?: Pick<SellApi, 'reserveListingId' | 'uploadPhoto'> & NewsApi;
-  pick?: (limit: number) => Promise<PickedPhoto[]>;
+  pick?: (source: PhotoSource, limit: number) => Promise<PickedPhoto[]>;
   photosOs?: OsApi;
+  cameraOs?: OsApi;
   openSettings?: () => Promise<unknown>;
   mediaBase?: () => string;
   now?: () => Date;
@@ -57,8 +66,9 @@ const defaultApi = { ...sellApi, ...newsApi };
  */
 export function PostNewsScreen({
   api = defaultApi,
-  pick = (limit) => pickPhotos('library', limit),
+  pick = (source, limit) => pickPhotos(source, limit),
   photosOs = osPermissions.photos,
+  cameraOs = osPermissions.camera,
   openSettings = () => Linking.openSettings(),
   mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
   now = () => new Date(),
@@ -71,6 +81,7 @@ export function PostNewsScreen({
     reserve: reserved.get,
     pick,
     photosOs,
+    cameraOs,
     max: NEWS_PHOTOS_MAX,
   });
   const [title, setTitle] = useState('');
@@ -108,6 +119,8 @@ export function PostNewsScreen({
     setError(null);
     if (errors.length > 0) {
       setShowErrors(true);
+      // The fields and the note can sit under the keyboard; say it on top too.
+      useToastStore.getState().show('error', copy.fixFirst);
       return;
     }
     setPosting(true);
@@ -120,6 +133,7 @@ export function PostNewsScreen({
       const f = postFailure(e);
       if (f.forbidden) reserved.drop();
       setError(f.text);
+      useToastStore.getState().show('error', f.text);
     } finally {
       setPosting(false);
     }

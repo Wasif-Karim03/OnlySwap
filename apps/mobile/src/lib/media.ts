@@ -229,6 +229,9 @@ const defaultPicker: PickerDeps = {
 };
 
 /** XHR PUT with upload progress; the body is the file read as a Blob. */
+/** One photo PUT gives up after this; the upload loop then retries (UPLOAD_RETRIES). */
+export const PUT_TIMEOUT_MS = 60_000;
+
 export function xhrPut(
   target: UploadTarget,
   file: UploadFile,
@@ -249,6 +252,9 @@ export function xhrPut(
           xhr.upload.onprogress = (e) => onBytes(e.loaded);
           xhr.onload = () => resolve(xhr.status);
           xhr.onerror = () => reject(new TypeError('Network request failed'));
+          // A stalled upload must fail, or the form waits on it forever.
+          xhr.timeout = PUT_TIMEOUT_MS;
+          xhr.ontimeout = () => reject(new TypeError('Network request timed out'));
           xhr.send(blob);
         }),
     );

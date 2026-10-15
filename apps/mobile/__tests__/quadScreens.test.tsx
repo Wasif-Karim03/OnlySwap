@@ -565,6 +565,7 @@ describe('Q07 New post', () => {
     fireEvent.press(await screen.findByRole('tab', { name: quad.modes.photo }));
     fireEvent.changeText(screen.getByTestId('quad-body'), 'The Oval right now');
     fireEvent.press(screen.getByTestId('quad-add-photo'));
+    fireEvent.press(screen.getByTestId('quad-photo-library'));
     await waitFor(() => expect(api.uploadPhoto).toHaveBeenCalled());
     expect((api.uploadPhoto as jest.Mock).mock.calls[0][0]).toBe('new-id');
     await waitFor(() =>

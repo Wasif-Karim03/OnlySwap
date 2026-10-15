@@ -5,17 +5,79 @@ import { StyleSheet } from 'react-native-unistyles';
 import { Banner } from '@/components/Banner';
 import { Button } from '@/components/Button';
 import { Photo } from '@/components/Photo';
+import { Sheet } from '@/components/Sheet';
 import { SuccessCheck } from '@/components/SuccessCheck';
 import { Text } from '@/components/Text';
 import { errorText, toAppError } from '@/lib/errors';
 import { fill } from '@/lib/format';
 import type { PickedPhoto } from '@/lib/media';
 import { primerStep, type OsApi } from '@/lib/permissions';
-import { campus as copy } from '@/strings';
+import { chat as chatCopy, campus as copy } from '@/strings';
 
 import type { PostedListing, SellApi } from '../sell/api';
 import { mediaUrl } from '../sell/logic';
 import { postErrorText, type UploadedPhotoRef } from './logic';
+
+export type PhotoSource = 'camera' | 'library';
+
+/** Asks the OS for the camera or the photo library; true when allowed. */
+async function allowed(os: OsApi): Promise<boolean> {
+  let step = primerStep(await os.get());
+  if (step === 'primer') step = primerStep(await os.request());
+  return step === 'granted';
+}
+
+/**
+ * "Take a photo" or "Choose from library" (owner, 2026-10-15): the same two
+ * choices as a chat photo, for every post form.
+ */
+export function PhotoSourceSheet({
+  visible,
+  onClose,
+  onChoose,
+  testID,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  onChoose: (source: PhotoSource) => void;
+  testID: string;
+}) {
+  return (
+    <Sheet
+      visible={visible}
+      onClose={onClose}
+      title={copy.addPhoto}
+      testID={`${testID}-photo-sheet`}
+    >
+      <Button
+        label={chatCopy.photoCamera}
+        variant="secondary"
+        onPress={() => onChoose('camera')}
+        testID={`${testID}-photo-camera`}
+      />
+      <Button
+        label={chatCopy.photoLibrary}
+        variant="secondary"
+        onPress={() => onChoose('library')}
+        testID={`${testID}-photo-library`}
+      />
+    </Sheet>
+  );
+}
+
+/** The sheet's open state and the pick it leads to. */
+function useSourceSheet(add: (source: PhotoSource) => Promise<void>) {
+  const [open, setOpen] = useState(false);
+  return {
+    open,
+    show: () => setOpen(true),
+    close: () => setOpen(false),
+    choose: (source: PhotoSource) => {
+      setOpen(false);
+      void add(source);
+    },
+  };
+}
 
 export type PostApi = Pick<SellApi, 'reserveListingId' | 'uploadPhoto' | 'createListing'>;
 
@@ -49,32 +111,32 @@ export function usePostPhoto({
   reserve,
   pick,
   photosOs,
+  cameraOs,
 }: {
   api: Pick<SellApi, 'uploadPhoto'>;
   reserve: () => Promise<string>;
-  pick: () => Promise<PickedPhoto[]>;
+  pick: (source: PhotoSource) => Promise<PickedPhoto[]>;
   photosOs: OsApi;
+  cameraOs: OsApi;
 }) {
   const [uri, setUri] = useState<string | null>(null);
   const [photo, setPhoto] = useState<UploadedPhotoRef | null>(null);
   const [busy, setBusy] = useState(false);
-  const [off, setOff] = useState(false);
+  const [off, setOff] = useState<PhotoSource | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const add = async () => {
+  const add = async (source: PhotoSource = 'library') => {
     setError(null);
-    let step = primerStep(await photosOs.get());
-    if (step === 'primer') step = primerStep(await photosOs.request());
-    if (step !== 'granted') {
-      setOff(true);
+    if (!(await allowed(source === 'camera' ? cameraOs : photosOs))) {
+      setOff(source);
       return;
     }
-    setOff(false);
+    setOff(null);
     let picked: PickedPhoto | undefined;
     try {
-      picked = (await pick())[0];
+      picked = (await pick(source))[0];
     } catch {
-      setOff(true);
+      setOff(source);
       return;
     }
     if (!picked) return;
@@ -112,6 +174,7 @@ export function PhotoField({
   testID: string;
 }) {
   const { uri, photo, busy, off, error } = state;
+  const sheet = useSourceSheet(state.add);
   return (
     <View style={styles.gap}>
       <Text variant="label" tone="ink2">
@@ -139,7 +202,7 @@ export function PhotoField({
           size="M"
           fullWidth={false}
           disabled={busy}
-          onPress={() => void state.add()}
+          onPress={sheet.show}
           testID={`${testID}-add-photo`}
         />
         {uri && !busy ? (
@@ -159,11 +222,17 @@ export function PhotoField({
         </Text>
       ) : null}
       {off ? (
-        <View style={styles.gap} testID={`${testID}-photos-off`}>
-          <Banner kind="warning" message={copy.photosOff} />
+        <View style={styles.gap} testID={`${testID}-${off === 'camera' ? 'camera' : 'photos'}-off`}>
+          <Banner kind="warning" message={off === 'camera' ? copy.cameraOff : copy.photosOff} />
           <Button label={copy.openSettings} variant="secondary" size="M" onPress={onOpenSettings} />
         </View>
       ) : null}
+      <PhotoSourceSheet
+        visible={sheet.open}
+        onClose={sheet.close}
+        onChoose={sheet.choose}
+        testID={testID}
+      />
     </View>
   );
 }
@@ -180,36 +249,36 @@ export function usePostPhotos({
   reserve,
   pick,
   photosOs,
+  cameraOs,
   max,
 }: {
   api: Pick<SellApi, 'uploadPhoto'>;
   reserve: () => Promise<string>;
-  pick: (limit: number) => Promise<PickedPhoto[]>;
+  pick: (source: PhotoSource, limit: number) => Promise<PickedPhoto[]>;
   photosOs: OsApi;
+  cameraOs: OsApi;
   max: number;
 }) {
   const [items, setItems] = useState<PostPhotoItem[]>([]);
   const [uploading, setUploading] = useState(0);
-  const [off, setOff] = useState(false);
+  const [off, setOff] = useState<PhotoSource | null>(null);
   const [error, setError] = useState<string | null>(null);
   const seq = useRef(0);
 
-  const add = async () => {
+  const add = async (source: PhotoSource = 'library') => {
     setError(null);
     const room = max - items.length;
     if (room <= 0) return;
-    let step = primerStep(await photosOs.get());
-    if (step === 'primer') step = primerStep(await photosOs.request());
-    if (step !== 'granted') {
-      setOff(true);
+    if (!(await allowed(source === 'camera' ? cameraOs : photosOs))) {
+      setOff(source);
       return;
     }
-    setOff(false);
+    setOff(null);
     let picked: PickedPhoto[];
     try {
-      picked = (await pick(room)).slice(0, room);
+      picked = (await pick(source, room)).slice(0, room);
     } catch {
-      setOff(true);
+      setOff(source);
       return;
     }
     if (picked.length === 0) return;
@@ -253,6 +322,7 @@ export function PhotosField({
   testID: string;
 }) {
   const { items, busy, off, error, max } = state;
+  const sheet = useSourceSheet(state.add);
   return (
     <View style={styles.gap}>
       <Text variant="label" tone="ink2">
@@ -296,7 +366,7 @@ export function PhotosField({
             size="M"
             fullWidth={false}
             disabled={busy}
-            onPress={() => void state.add()}
+            onPress={sheet.show}
             testID={`${testID}-add-photo`}
           />
         </View>
@@ -307,11 +377,17 @@ export function PhotosField({
         </Text>
       ) : null}
       {off ? (
-        <View style={styles.gap} testID={`${testID}-photos-off`}>
-          <Banner kind="warning" message={copy.photosOff} />
+        <View style={styles.gap} testID={`${testID}-${off === 'camera' ? 'camera' : 'photos'}-off`}>
+          <Banner kind="warning" message={off === 'camera' ? copy.cameraOff : copy.photosOff} />
           <Button label={copy.openSettings} variant="secondary" size="M" onPress={onOpenSettings} />
         </View>
       ) : null}
+      <PhotoSourceSheet
+        visible={sheet.open}
+        onClose={sheet.close}
+        onChoose={sheet.choose}
+        testID={testID}
+      />
     </View>
   );
 }

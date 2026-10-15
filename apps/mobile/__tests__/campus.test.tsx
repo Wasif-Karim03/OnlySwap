@@ -695,6 +695,7 @@ describe('C02 Post free food', () => {
     fireEvent.changeText(await screen.findByTestId('food-title'), 'Leftover pizza');
     fireEvent.press(await screen.findByRole('checkbox', { name: 'Ohio Union' }));
     fireEvent.press(screen.getByTestId('food-add-photo'));
+    fireEvent.press(screen.getByTestId('food-photo-library'));
     await waitFor(() => expect(api.uploadPhoto).toHaveBeenCalled());
     expect((api.uploadPhoto as jest.Mock).mock.calls[0][0]).toBe('L9');
     await waitFor(() => expect(screen.getByText(campus.changePhoto)).toBeTruthy());
@@ -725,6 +726,7 @@ describe('C02 Post free food', () => {
     const openSettings = jest.fn(async () => {});
     food(fakeSell(), { photosOs: denied, openSettings });
     fireEvent.press(await screen.findByTestId('food-add-photo'));
+    fireEvent.press(screen.getByTestId('food-photo-library'));
     expect(await screen.findByTestId('food-photos-off')).toBeTruthy();
     fireEvent.press(screen.getByRole('button', { name: campus.openSettings }));
     expect(openSettings).toHaveBeenCalled();
