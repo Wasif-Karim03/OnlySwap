@@ -204,7 +204,12 @@ test('E-07: 404s, HEAD misses and signed chat photos are never put in the shared
   const exp = Math.floor(now / 1000) + 600;
   const sig = await signChat('k', key, exp);
   const { store, pending, edge } = fakeEdge();
-  const ok = await handle(new Request(`https://m.test/${key}?exp=${exp}&sig=${sig}`), signed, now, edge);
+  const ok = await handle(
+    new Request(`https://m.test/${key}?exp=${exp}&sig=${sig}`),
+    signed,
+    now,
+    edge,
+  );
   assert.equal(ok.status, 200);
   await handle(new Request('https://m.test/c/osu/l/L1/missing_full.webp'), env, now, edge);
   await handle(new Request('https://m.test/share/L1.jpg', { method: 'HEAD' }), env, now, edge);

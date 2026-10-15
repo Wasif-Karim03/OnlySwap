@@ -56,7 +56,7 @@ flowchart LR
 4. **Offer → chat.**
    - `make_offer` → trigger → `notifications` row → cron → `send-push` → Expo → APNs/FCM.
    - `accept_offer` locks the listing, creates the chat with a snapshot, and auto-declines the others.
-5. **Chat.** `send_message` (idempotent on `client_id`) → trigger → `realtime.broadcast_changes('chat:{id}')` → subscribed clients; offline recipients get a push.
+5. **Chat.** `send_message` (idempotent on `client_id`) → trigger → one `realtime.send` on the other party's `user:{uid}` (event `inbox`, carrying the message; the open chat and the inbox share that channel) → offline recipients get a push. The app leaves its channels in the background and catches up on resume (DEC 108).
 6. **Meetups and deals.** `propose_meetup` / `confirm_meetup` / `checkin_meetup` → cron reminders → `deal_check` → `mark_sold` + `submit_rating`.
 7. **Safety.** `create_report` (evidence snapshot) → admin queue → `admin_resolve_report` (audit log) → notification to the reporter.
 8. **Account deletion.** The `delete-account` Edge Function:
