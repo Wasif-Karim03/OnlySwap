@@ -180,7 +180,7 @@ select is(
 select matches(pg_temp.q('B', format('select public.create_report(%L, %L, %L)::text', 'quad_post', pg_temp.pid('best study spot?'), 'harassment')),
   '^\{"id"', 'a Quad post can be reported');
 select is((select target_user_id from public.reports where reporter_id = tests.uid('B') and target_type = 'quad_post'),
-  tests.uid('A'), 'the author is resolved on the server (and never returned)');
+  null, 'the report row keeps no author (A-01, quad_author_privacy.test.sql)');
 select matches(pg_temp.q('A', format('select public.create_appeal(%L, %L, %L)::text', 'quad_post', pg_temp.pid('sunset from the oval'), 'mistake')),
   '^\{"id"', 'the author can appeal a hidden post');
 
