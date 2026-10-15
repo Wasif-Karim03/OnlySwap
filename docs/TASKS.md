@@ -395,4 +395,4 @@ Branch `feat/ux-pack`. Order keeps every step OTA-able until UX-09 (native camer
 - [x] UX-08 Handoff code (DEC 132). Done when: pgTAP + Jest pass.
 - [x] UX-09 Moving out mode + bundle offers (DEC 133). Done when: pgTAP + Jest pass.
 - [ ] UX-10 Scan ISBN (DEC 131, needs new builds). Done when: Jest passes; device check after the build.
-- [ ] UX-11 Campus launch playbook (DEC 134). Done when: RELEASE.md §12 written.
+- [x] UX-11 Campus launch playbook (DEC 134). Done when: RELEASE.md §9 written.
