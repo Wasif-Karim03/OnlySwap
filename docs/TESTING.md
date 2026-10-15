@@ -354,6 +354,7 @@ Each is a YAML flow in `.maestro/`, run against staging with seeded data. Steps 
 | T-INT-AUTH-ALIAS | pgTAP | G-02, DEC 105 | `email_hash` drops a `+tag` (dots kept, untagged hash unchanged); a ban or age block can't be dodged on a +alias; a second account on an alias gets `EMAIL_ALIAS`; an owner ban by any spelling is one hash (`email_alias.test.sql`) |
 | T-INT-FEED-RIGHT | pgTAP | DEC 106 | a right swipe is stored as `right` with its time on card, stays off the deck, isn't counted as a pass on the person or listing pages, and is purged after 30 days like a left swipe (`right_swipes.test.sql`) |
 | T-UNIT-AUTH-07 | Jest | C-03, DEC 107 | sign-out or a different account clears the query cache and the chat and swipe stores; same-account events keep them; one failing reset doesn't stop the rest (`accountReset.test.ts`) |
+| T-UNIT-AUTH-08 | Jest | DEC 123 | returning to the foreground re-reads `get_app_config`: maintenance or a forced update sends the person to that screen, the end of maintenance sends them back through the gate, the launch screen and a failed fetch are left alone (`systemWatch.test.ts`) |
 | T-INT-SOLD-01 | pgTAP | BE-11 | `mark_sold` closes other chats with a system message and notifies those buyers |
 | T-INT-TZ-01 | pgTAP | BE-12 | DST boundary: meetup reminders fire 30 min before local time on the transition days; quiet hours in the campus TZ |
 | T-UNIT-AUTH-06 | Jest | PM-04 | gate routes to Updated rules when `rules_version` changes |

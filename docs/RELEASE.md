@@ -216,6 +216,7 @@ Legal pages are drafted by the owner. A lawyer review is optional and not free (
 - legal pages published
 - reviewer accounts + demo autoplay working in prod
 - `test-inbox` absent in prod
+- admin MFA on in prod: `update private.admin_settings set mfa_required = true;` (0211 seeds false), then sign in to the admin console with TOTP to confirm (audit J-06)
 - backups verified
 - monitors green
 - Q2 and Q4 decided

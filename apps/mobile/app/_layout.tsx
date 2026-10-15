@@ -3,13 +3,17 @@ import {
   DarkTheme,
   DefaultTheme,
   type ErrorBoundaryProps,
+  type Href,
   Stack,
   ThemeProvider,
   usePathname,
+  useRouter,
 } from 'expo-router';
+import * as Application from 'expo-application';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { AppState, Platform } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
@@ -20,7 +24,9 @@ import { ToastHost } from '@/components/Toast';
 import { watchAccountReset } from '@/features/auth/accountReset';
 import { launchStartedAt } from '@/features/auth/launchTiming';
 import { SessionExpiredSheet } from '@/features/auth/SessionExpiredSheet';
+import { authApi } from '@/features/auth/api';
 import { watchSessionExpiry } from '@/features/auth/sessionExpiry';
+import { watchSystemGate } from '@/features/auth/systemWatch';
 import { resetChatStores } from '@/features/chat/useChat';
 import { resetSwipeStore } from '@/features/feed/swipes';
 import { startWidgetSync } from '@/features/widgets/sync';
@@ -73,6 +79,8 @@ export default function RootLayout() {
   useEffect(() => startWidgetSync(queryClient), [queryClient]);
   // Activity events for the admin console (DEC 93): follows sign-in, flushes on background.
   useEffect(() => startActivity(), []);
+  // Maintenance or a forced update turned on while the app was in the background.
+  useSystemWatch(queryClient);
   useEffect(() => {
     const t = setTimeout(() => void SplashScreen.hideAsync().catch(() => {}), SPLASH_BACKSTOP_MS);
     return () => clearTimeout(t);
@@ -108,4 +116,26 @@ function useDevRouteLog() {
       console.log(`[route] ${pathname}`);
     }
   }, [pathname]);
+}
+
+function useSystemWatch(queryClient: ReturnType<typeof createQueryClient>) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const path = useRef(pathname);
+  useEffect(() => {
+    path.current = pathname;
+  }, [pathname]);
+  useEffect(
+    () =>
+      watchSystemGate({
+        appState: AppState,
+        queryClient,
+        fetchConfig: () => authApi.getAppConfig(),
+        appVersion: Application.nativeApplicationVersion ?? '0',
+        platform: Platform.OS === 'android' ? 'android' : Platform.OS === 'web' ? 'web' : 'ios',
+        currentPath: () => path.current,
+        navigate: (href) => router.replace(href as Href),
+      }),
+    [queryClient, router],
+  );
 }
