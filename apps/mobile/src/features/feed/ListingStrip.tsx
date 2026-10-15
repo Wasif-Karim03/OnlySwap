@@ -57,5 +57,7 @@ export function ListingStrip({
 const styles = StyleSheet.create((theme) => ({
   root: { gap: theme.space.sm },
   row: { gap: theme.space.md },
-  cell: { width: theme.size.stripTile },
+  // About two large avatars wide; a size from the existing scale keeps
+  // tokens.json (a native config input) unchanged.
+  cell: { width: theme.size.avatarL * 2 },
 }));
