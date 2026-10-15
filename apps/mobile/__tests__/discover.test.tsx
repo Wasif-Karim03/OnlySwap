@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
-import type { ReactNode } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import { AccessibilityInfo, Text } from 'react-native';
 
 import { useToastStore } from '../src/components/Toast';
@@ -22,7 +22,7 @@ import {
   type QueuedSwipe,
 } from '../src/features/feed/logic';
 import { createSwipeStore } from '../src/features/feed/swipes';
-import { feed, system } from '../src/strings/en';
+import { feed, safety, system } from '../src/strings/en';
 
 jest.mock('expo-haptics', () => ({
   selectionAsync: jest.fn(async () => {}),
@@ -351,7 +351,7 @@ describe('B02 Listing', () => {
   });
   afterEach(() => jest.restoreAllMocks());
 
-  const listing = (api: FeedApi) =>
+  const listing = (api: FeedApi, extra: Partial<ComponentProps<typeof ListingScreen>> = {}) =>
     render(
       {
         'listing/[id]/index': () => (
@@ -363,6 +363,7 @@ describe('B02 Listing', () => {
             site={() => 'https://site'}
             share={jest.fn(async () => {})}
             now={() => NOW}
+            {...extra}
           />
         ),
         'listing/[id]/offer': () => <Stub id="screen-offer" />,
@@ -421,6 +422,47 @@ describe('B02 Listing', () => {
     });
     listing(api);
     expect(await screen.findByText(system.removedByAdminNoReason)).toBeTruthy();
+  });
+
+  it('owner: appeals an admin removal, and a repeat counts as sent (DEC 99)', async () => {
+    const api = fakeApi({
+      getListing: jest.fn(
+        async () => ({ ...item(1, { status: 'removed' }), access: 'owner' }) as ListingResult,
+      ),
+    });
+    const appeal = jest.fn(async () => {});
+    listing(api, { appeal });
+    fireEvent.press(await screen.findByTestId('listing-appeal'));
+    fireEvent.press(screen.getByText(safety.appealReasons.context));
+    fireEvent.changeText(screen.getByPlaceholderText(safety.appealPlaceholder), 'It was a toy');
+    fireEvent.press(screen.getByTestId('listing-appeal-sheet-send'));
+    await waitFor(() => expect(appeal).toHaveBeenCalledWith('L1', 'context', 'It was a toy'));
+    expect(await screen.findByTestId('listing-appealed')).toBeTruthy();
+    expect(screen.queryByTestId('listing-appeal')).toBeNull();
+  });
+
+  it('owner: ALREADY_APPEALED shows the appeal as sent', async () => {
+    const api = fakeApi({
+      getListing: jest.fn(
+        async () => ({ ...item(1, { status: 'removed' }), access: 'owner' }) as ListingResult,
+      ),
+    });
+    const appeal = jest.fn(async () => {
+      throw { kind: 'app_error', code: 'ALREADY_APPEALED' };
+    });
+    listing(api, { appeal });
+    fireEvent.press(await screen.findByTestId('listing-appeal'));
+    fireEvent.press(screen.getByTestId('listing-appeal-sheet-send'));
+    expect(await screen.findByTestId('listing-appealed')).toBeTruthy();
+  });
+
+  it('a buyer never sees Appeal on a listing', async () => {
+    const api = fakeApi({
+      getListing: jest.fn(async () => ({ ...item(1), access: 'buyer' }) as ListingResult),
+    });
+    listing(api);
+    await screen.findByText(item(1).title);
+    expect(screen.queryByTestId('listing-appeal')).toBeNull();
   });
 
   it('on hold: "Tell me" watches it', async () => {

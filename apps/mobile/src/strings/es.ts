@@ -1082,6 +1082,7 @@ const offers: Strings['offers'] = {
     expired: 'Vencida',
     withdrawn: 'Retirada',
     auto_declined: 'Se vendió a otra persona',
+    listing_closed: 'Esta publicación se cerró',
     hold_other: 'Apartado con otra persona',
   },
   expiresIn: 'Vence {when}',

@@ -30,12 +30,15 @@ import {
   deal as dealCopy,
   feed as copy,
   nav as navCopy,
+  safety as safetyCopy,
   sell as sellCopy,
   system as systemCopy,
 } from '@/strings';
 
 import { FoodTimeTag } from '../campus/CampusCards';
 import { canAnswer, eventLabel, linkHost } from '../campus/logic';
+import { AppealSheet, type AppealReason } from '../safety/AppealSheet';
+import { safetyApi } from '../safety/api';
 import { sellApi } from '../sell/api';
 import { answerWanted, getDraftStore } from '../sell/draft';
 import {
@@ -80,6 +83,7 @@ export function ListingScreen({
   openUrl = (url) => Linking.openURL(url),
   now = () => new Date(),
   draftStore = getDraftStore(),
+  appeal = (listingId, reason, body) => safetyApi.appeal('listing', listingId, reason, body),
 }: {
   id: string;
   /** Where it was opened from (route param `from`), for the activity event (DEC 93). */
@@ -93,8 +97,12 @@ export function ListingScreen({
   openUrl?: (url: string) => Promise<unknown>;
   now?: () => Date;
   draftStore?: ReturnType<typeof getDraftStore>;
+  /** Appeals an admin removal (create_appeal 'listing', DEC 99). */
+  appeal?: (listingId: string, reason: AppealReason, body: string) => Promise<void>;
 }) {
   const router = useRouter();
+  const [appealOpen, setAppealOpen] = useState(false);
+  const [appealed, setAppealed] = useState(false);
   const qc = useQueryClient();
   // iPad, wide window: photos on the left, details on the right.
   const wide = useLayout().wide;
@@ -381,6 +389,20 @@ export function ListingScreen({
               }
             />
           ) : null}
+          {owner && item.status === 'removed' ? (
+            appealed ? (
+              <Text variant="meta" tone="ink2" testID="listing-appealed">
+                {safetyCopy.appealed}
+              </Text>
+            ) : (
+              <Button
+                label={safetyCopy.appeal}
+                variant="secondary"
+                onPress={() => setAppealOpen(true)}
+                testID="listing-appeal"
+              />
+            )
+          ) : null}
           {owner ? (
             <View style={styles.stats} testID="listing-owner-stats">
               <Text variant="label" tone="ink2">
@@ -603,6 +625,17 @@ export function ListingScreen({
           track('report_submitted', { target_type: 'listing' });
         }}
         testID="listing-report"
+      />
+      <AppealSheet
+        visible={appealOpen}
+        onClose={() => setAppealOpen(false)}
+        onSend={(reason, body) => appeal(id, reason, body)}
+        onSent={() => {
+          setAppealOpen(false);
+          setAppealed(true);
+          useToastStore.getState().show('success', safetyCopy.appealed);
+        }}
+        testID="listing-appeal-sheet"
       />
     </View>
   );

@@ -27,7 +27,7 @@ export type ReportStatus = {
   status: 'received' | 'reviewed';
   timeline: { event: string; at: string }[];
 };
-export type AppealSubject = 'strike' | 'noshow' | 'suspension';
+export type AppealSubject = 'strike' | 'noshow' | 'suspension' | 'listing';
 
 /** Safety and account calls (P11-SAFE-02..04). */
 export type SafetyApi = {

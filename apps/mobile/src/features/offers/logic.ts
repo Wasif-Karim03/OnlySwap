@@ -137,7 +137,7 @@ export function offerView(
     case 'auto_declined':
       return {
         frame: 'E8',
-        line: o.listing?.status === 'hold' ? copy.status.hold_other : copy.status.auto_declined,
+        line: autoDeclinedLine(o),
         actions: [],
         open: false,
       };
@@ -227,10 +227,15 @@ export function offerStatusShort(
     return fill(myTurn ? copy.inboxStatus.countered : copy.inboxStatus.youCountered, { amount });
   }
   if (o.status === 'accepted') return fill(copy.inboxStatus.accepted, { amount });
-  if (o.status === 'auto_declined') {
-    return o.listing?.status === 'hold' ? copy.status.hold_other : copy.status.auto_declined;
-  }
+  if (o.status === 'auto_declined') return autoDeclinedLine(o);
   return copy.status[o.status];
+}
+
+/** Why an offer closed on its own: on hold or sold to someone else, otherwise the listing closed (removed, expired or deleted). */
+function autoDeclinedLine(o: Pick<Offer, 'listing'>): string {
+  if (o.listing?.status === 'hold') return copy.status.hold_other;
+  if (o.listing?.status === 'sold') return copy.status.auto_declined;
+  return copy.status.listing_closed;
 }
 
 /** "now", "12m", "3h", then the weekday within a week, then the date. */

@@ -1094,6 +1094,7 @@ export const offers = {
     expired: 'Expired',
     withdrawn: 'Withdrawn',
     auto_declined: 'This sold to someone else',
+    listing_closed: 'This listing closed',
     hold_other: 'On hold with someone else',
   },
   expiresIn: 'Expires {when}',
