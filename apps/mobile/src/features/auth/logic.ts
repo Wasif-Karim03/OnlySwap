@@ -154,6 +154,22 @@ export const GATE_HREF = {
 } as const satisfies Record<GateRoute, string>;
 
 /**
+ * The system states that win over everything else: maintenance, then a
+ * forced update. Shared by the launch gate and the foreground watch.
+ */
+export function systemGate(
+  config: AppConfig,
+  appVersion: string,
+  platform: GateInput['platform'],
+): 'maintenance' | 'update' | null {
+  if (config.maintenance.enabled) return 'maintenance';
+  // The web app is always the latest deploy, so there is nothing to update.
+  if (platform === 'web') return null;
+  const min = platform === 'ios' ? config.minVersionIos : config.minVersionAndroid;
+  return compareVersions(appVersion, min) < 0 ? 'update' : null;
+}
+
+/**
  * The one place that decides where the app opens. Order matters: system
  * states first, then the session, then account status, then onboarding steps.
  * Returns null while something it needs is still loading.
@@ -163,12 +179,8 @@ export function computeGate(input: GateInput): GateRoute | null {
   if (session === 'loading' || config === undefined) return null;
 
   if (config) {
-    if (config.maintenance.enabled) return 'maintenance';
-    // The web app is always the latest deploy, so there is nothing to update.
-    if (input.platform !== 'web') {
-      const min = input.platform === 'ios' ? config.minVersionIos : config.minVersionAndroid;
-      if (compareVersions(input.appVersion, min) < 0) return 'update';
-    }
+    const system = systemGate(config, input.appVersion, input.platform);
+    if (system) return system;
   }
 
   if (session === 'signedOut') return 'welcome';
