@@ -54,6 +54,7 @@ import {
   isVisible,
   metaLine,
   sellerName,
+  trustLine,
   yearLabel,
   type FeedItem,
   type ListingResult,
@@ -452,6 +453,12 @@ export function ListingScreen({
                         {sellerMeta}
                       </Text>
                     ) : null}
+                    <View style={styles.trust} testID="listing-trust">
+                      <Icon name="shield" size={14} tone="green" />
+                      <Text variant="meta" tone="ink2" style={styles.flex}>
+                        {trustLine(item.seller)}
+                      </Text>
+                    </View>
                   </View>
                   <Icon name="chev" size={18} tone="ink3" />
                 </View>
@@ -677,6 +684,7 @@ const styles = StyleSheet.create((theme, rt) => ({
   photoPane: { flex: 1, borderRadius: theme.radius.card, overflow: 'hidden' },
   infoPane: { flex: 1, paddingHorizontal: 0, paddingTop: 0 },
   flex: { flex: 1 },
+  trust: { flexDirection: 'row', alignItems: 'center', gap: theme.space.xs },
   row: { flexDirection: 'row', gap: theme.space.sm },
   top: (wide: boolean) => ({
     position: 'absolute',

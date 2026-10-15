@@ -40,6 +40,10 @@ export type FeedItem = {
     avatar_path: string | null;
     year: string | null;
     created_at: string | null;
+    /** Seller stats (DEC 124, 0235); optional so older cached cards still parse. */
+    swaps_count?: number;
+    thumbs_up?: number;
+    thumbs_total?: number;
   };
   photos: {
     path: string;
@@ -98,6 +102,28 @@ export function yearLabel(year: string | null | undefined): string | null {
   return years[year] ?? null;
 }
 
+/** Ratings needed before a percentage shows; one bad rating shouldn't read as "0%". */
+export const TRUST_MIN_RATINGS = 3;
+
+/**
+ * "Verified student · 95% thumbs up" (DEC 124). Every account is a verified
+ * student; the stat is the percentage once rated enough, else the swaps.
+ */
+export function trustLine(seller: FeedItem['seller']): string {
+  const up = seller.thumbs_up ?? 0;
+  const total = seller.thumbs_total ?? 0;
+  const swaps = seller.swaps_count ?? 0;
+  const stat =
+    total >= TRUST_MIN_RATINGS
+      ? fill(copy.trustThumbs, { pct: Math.round((up / total) * 100) })
+      : swaps === 1
+        ? copy.trustSwapsOne
+        : swaps > 1
+          ? fill(copy.trustSwaps, { n: swaps })
+          : null;
+  return [copy.verified, stat].filter(Boolean).join(copy.metaSeparator);
+}
+
 export function toDeckCard(item: FeedItem, mediaBase: string, now: Date): DeckCard {
   return {
     id: item.id,
@@ -107,6 +133,7 @@ export function toDeckCard(item: FeedItem, mediaBase: string, now: Date): DeckCa
     sellerName: sellerName(item),
     sellerAvatar: item.seller.avatar_path ? mediaUrl(mediaBase, item.seller.avatar_path) : null,
     sellerYear: yearLabel(item.seller.year),
+    trust: trustLine(item.seller),
     photos: item.photos.map((p) => ({ uri: mediaUrl(mediaBase, p.path), blurhash: p.blurhash })),
     saveCount: item.save_count,
   };

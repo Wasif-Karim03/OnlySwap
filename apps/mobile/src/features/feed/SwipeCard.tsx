@@ -2,6 +2,7 @@ import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { Avatar } from '@/components/Avatar';
+import { Icon } from '@/components/icons/Icon';
 import { Photo } from '@/components/Photo';
 import { Text } from '@/components/Text';
 import { fill } from '@/lib/format';
@@ -19,6 +20,8 @@ export type DeckCard = {
   sellerAvatar: string | null;
   /** "Junior", when the seller shared their class year. */
   sellerYear?: string | null;
+  /** "Verified student · 95% thumbs up" (DEC 124). */
+  trust?: string | null;
   photos: { uri: string; blurhash: string | null }[];
   saveCount: number;
 };
@@ -28,6 +31,7 @@ export function cardLabel(card: DeckCard): string {
     fill(copy.cardLabel, { title: card.title, price: card.price }),
     card.meta,
     card.sellerName,
+    card.trust,
   ]
     .filter(Boolean)
     .join('. ');
@@ -97,6 +101,14 @@ export function SwipeCard({ card, compact = false, testID }: Props) {
             ) : null}
           </View>
         ) : null}
+        {card.trust && !compact ? (
+          <View style={styles.trust} testID="card-trust">
+            <Icon name="shield" size={14} tone="green" />
+            <Text variant="meta" tone="ink2" numberOfLines={1} style={styles.sellerMeta}>
+              {card.trust}
+            </Text>
+          </View>
+        ) : null}
       </View>
     </View>
   );
@@ -146,4 +158,5 @@ const styles = StyleSheet.create((theme) => ({
   // First name and initial stay whole; the year and saves line gives way.
   sellerName: { flexShrink: 0, maxWidth: '60%' },
   sellerMeta: { flex: 1, minWidth: 0 },
+  trust: { flexDirection: 'row', alignItems: 'center', gap: theme.space.xs },
 }));

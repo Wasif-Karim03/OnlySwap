@@ -116,7 +116,7 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 
 | RPC | Args | Returns | Errors / rules | Limit |
 |---|---|---|---|---|
-| `get_feed` | `cursor jsonb, limit int=20` | `FeedItem[]` | excludes own, swiped 30 d, blocked, deleted; <5 results → `daily_counters.feed_exhausted++` | 120/h |
+| `get_feed` | `cursor jsonb, limit int=20` | `FeedItem[]` (`seller` has `swaps_count, thumbs_up, thumbs_total`, DEC 124) | excludes own, swiped 30 d, blocked, deleted; <5 results → `daily_counters.feed_exhausted++` | 120/h |
 | `record_swipes` | `items jsonb` (≤50: `{listing_id, dir: left\|right\|save, at, dwell_ms?}`) | void | upsert; unknown ids and dirs ignored; `right` since DEC 106 (older apps send a right swipe as `left`); `dwell_ms` is time on card, capped at 600000, anything else stored as null (DEC 100) | 60/h |
 | `undo_swipe` | `listing_id` | void | within 60 s | — |
 | `save_listing` / `unsave_listing` | `listing_id` | `{save_count}` | not own; same campus | 200/day |

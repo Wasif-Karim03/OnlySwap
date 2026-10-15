@@ -844,6 +844,11 @@ export const feed = {
   cardHint: 'Swipe right to make an offer, left to skip. Actions menu has more.',
   savedBy: '{n} people saved this',
   savedByOne: '1 person saved this',
+  /** Trust line on the card and the listing seller row (DEC 124). */
+  verified: 'Verified student',
+  trustThumbs: '{pct}% thumbs up',
+  trustSwaps: '{n} swaps',
+  trustSwapsOne: '1 swap',
   photoCount: 'Photo {n} of {total}',
   listTitle: 'Listings',
   metaSeparator: ' · ',
