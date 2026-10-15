@@ -40,7 +40,7 @@ The client maps these to copy in `apps/mobile/src/strings/en.ts` → `errors.*`.
 | `MEETUP_WINDOW` | action outside allowed time |
 | `CHAT_CLOSED` / `CHAT_BLOCKED` | cannot send |
 | `NOT_ADMIN` | admin check failed (role or AAL) |
-| `SCHOOL_UNKNOWN` / `DOMAIN_BLOCKED` / `AGE_BLOCKED` / `BANNED` | auth hook rejections (surface via Auth error message) |
+| `SCHOOL_UNKNOWN` / `DOMAIN_BLOCKED` / `AGE_BLOCKED` / `BANNED` / `EMAIL_ALIAS` | auth hook rejections (surface via Auth error message); `EMAIL_ALIAS`: the address is a +tag alias of an existing account (DEC 105) |
 | `FEATURE_OFF` | flag disabled (R1.1 features) |
 
 ## 1. Private helpers (`0007_helpers.sql`)
@@ -53,7 +53,7 @@ The client maps these to copy in `apps/mobile/src/strings/en.ts` → `errors.*`.
 | `private.hit(action, lim int, win interval)` | increments `rate_counters` bucket; raises `RATE_LIMITED` |
 | `private.hit_ip(action, lim, win)` | same, keyed by `x-forwarded-for` hash |
 | `private.check_text(txt, scope) → text` | `ok`, `block:<term>` or `review:<term>`. Normalizes (lowercase, unaccent, leetspeak, repeats); bumps `fired_count` |
-| `private.email_hash(email) → text` | sha256(lower(email) ‖ pepper from Vault) |
+| `private.email_hash(email) → text` | sha256(lower(trim(email)) with any `+tag` dropped from the name part ‖ pepper from Vault) (DEC 105) |
 | `private.is_blocked(a, b) → bool` | either direction |
 | `private.queue_notification(user, type, grp, title, body, data, time_sensitive, dedupe_key, push_after)` | insert … on conflict do nothing (BE-04) |
 | `private.queue_email(to, template, vars, dedupe_key)` | insert into `email_outbox` on conflict do nothing |
@@ -67,7 +67,7 @@ The client maps these to copy in `apps/mobile/src/strings/en.ts` → `errors.*`.
 
 | Name | Type | Logic |
 |---|---|---|
-| `private.hook_before_user_created(event jsonb)` | Auth hook | 1. `email_hash` in `age_blocks` → `AGE_BLOCKED`. 2. In `banned_hashes` → `BANNED`. 3. Email in `review_accounts` → allow. 4. `campus_domains` lookup: missing → `SCHOOL_UNKNOWN`; `blocked` → `DOMAIN_BLOCKED`. 5. Allow. |
+| `private.hook_before_user_created(event jsonb)` | Auth hook | 1. `email_hash` in `age_blocks` → `AGE_BLOCKED`. 2. In `banned_hashes` → `BANNED`. 2b. A profile already has that hash (a `+tag` alias) → `EMAIL_ALIAS`. 3. Email in `review_accounts` → allow. 4. `campus_domains` lookup: missing → `SCHOOL_UNKNOWN`; `blocked` → `DOMAIN_BLOCKED`. 5. Allow. |
 | `private.hook_custom_access_token(event jsonb)` | Auth hook | claims `campus_id`, `status`, `adult`, `admin_role` |
 | `on_auth_user_created` | after insert `auth.users` | create profile (campus, status waitlist if campus not live, `verified_until`, `invited_by` from metadata `invite_code`), `notification_prefs` row |
 | `on_auth_user_email_changed` | after update of email | re-resolve campus by domain (Change school, email-access recovery) |
@@ -116,7 +116,7 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 | RPC | Args | Returns | Errors / rules | Limit |
 |---|---|---|---|---|
 | `get_feed` | `cursor jsonb, limit int=20` | `FeedItem[]` | excludes own, swiped 30 d, blocked, deleted; <5 results → `daily_counters.feed_exhausted++` | 120/h |
-| `record_swipes` | `items jsonb` (≤50: `{listing_id, dir, at, dwell_ms?}`) | void | upsert; unknown ids ignored; `dwell_ms` is time on card, capped at 600000, anything else stored as null (DEC 100) | 60/h |
+| `record_swipes` | `items jsonb` (≤50: `{listing_id, dir: left\|right\|save, at, dwell_ms?}`) | void | upsert; unknown ids and dirs ignored; `right` since DEC 106 (older apps send a right swipe as `left`); `dwell_ms` is time on card, capped at 600000, anything else stored as null (DEC 100) | 60/h |
 | `undo_swipe` | `listing_id` | void | within 60 s | — |
 | `save_listing` / `unsave_listing` | `listing_id` | `{save_count}` | not own; same campus | 200/day |
 | `hide_listing` | `listing_id` | void | = permanent left | — |
