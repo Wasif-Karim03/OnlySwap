@@ -74,7 +74,7 @@ The expected total is about 900 of 2,000 free minutes a month.
   - **no override**: the expected calculated rating is **13+** (DEC 136); keep whatever App Store Connect calculates if higher
   - Wording and the Apple 1.2 UGC checklist: `docs/store/listing.md`.
 - Export compliance: `usesNonExemptEncryption: false`.
-- Privacy manifest: `ios.privacyManifests` (UserDefaults CA92.1, File timestamp C617.1) plus SDK manifests.
+- Privacy manifest (AR-06): `ios.privacyManifests` (UserDefaults CA92.1 + 1C8F.1 App Group, File timestamp C617.1, System boot time 35F9.1), SDK manifests merged at pod install (`apple.privacyManifestAggregationEnabled`), and the widget extension's own manifest (`plugins/withWidgetPrivacyManifest.js`, UserDefaults 1C8F.1). `check-prebuild.mjs` asserts all of it. After the first production upload, check the App Store Connect email for ITMS-91053 warnings.
 - **App Review notes** (full text in `docs/store/listing.md`):
   - demo accounts `appreview@review.onlyswap.test` (+ password)
   - steps to complete a swap on Demo University

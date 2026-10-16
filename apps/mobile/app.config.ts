@@ -142,11 +142,17 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         NSPrivacyAccessedAPITypes: [
           {
             NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryUserDefaults',
-            NSPrivacyAccessedAPITypeReasons: ['CA92.1'],
+            // CA92.1 the app's own; 1C8F.1 the widget App Group (AR-06).
+            NSPrivacyAccessedAPITypeReasons: ['CA92.1', '1C8F.1'],
           },
           {
             NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryFileTimestamp',
             NSPrivacyAccessedAPITypeReasons: ['C617.1'],
+          },
+          {
+            // React Native core (also merged from its pod at pod install).
+            NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategorySystemBootTime',
+            NSPrivacyAccessedAPITypeReasons: ['35F9.1'],
           },
         ],
       },
@@ -236,6 +242,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       // hooks; its manifest asks for location, which BLOCKED_ANDROID_PERMISSIONS
       // strips. No NSLocation* usage string is added (spots only, DEC 35).
       '@maplibre/maplibre-react-native',
+      // AR-06: widget privacy manifest. Listed BEFORE expo-widgets because mods
+      // run in reverse order, so it runs after the widget target exists.
+      './plugins/withWidgetPrivacyManifest',
       // P17-FEAT-01: iOS "Next meetup" widget + meetup Live Activity (WidgetKit
       // extension, App Group). No push to Live Activities: the app starts,
       // updates and ends them itself ($0, no APNs server).
