@@ -70,7 +70,8 @@ automatically. Every feature is turned on there.
   press.
 - **Safety:** report and block from any listing, chat, message or profile;
   report from any Quad post or reply; a person reviews reports within 24 hours.
-  Age check at sign-up (13 or older; under 13 is blocked and the account deleted). Account deletion in Profile → Settings → Delete
+  Age check at sign-up (13 or older; under 13 is blocked and the account deleted;
+  the review accounts are already age-checked, so you won't see it). Account deletion in Profile → Settings → Delete
   account and on the web at /delete. Download your data in Profile → Settings.
 - **Payments:** the app sells physical goods paid in person (3.1.3(e)); there
   are no in-app purchases.
