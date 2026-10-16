@@ -11,6 +11,7 @@ import { Icon, type IconName } from './icons/Icon';
 import { badgeText } from './TabBar';
 import type { TextTone } from './Text';
 import { Tappable } from './Tappable';
+import { a11yState } from '@/lib/a11y';
 
 type Props = {
   icon: IconName;
@@ -60,9 +61,9 @@ export function IconButton({
           : accessibilityLabel
       }
       accessibilityHint={accessibilityHint}
-      accessibilityState={
-        selected === undefined ? { disabled: !!disabled } : { disabled: !!disabled, selected }
-      }
+      {...a11yState(
+        selected === undefined ? { disabled: !!disabled } : { disabled: !!disabled, selected },
+      )}
       disabled={disabled}
       onPress={onPress}
     >

@@ -8,6 +8,7 @@ import { fill } from '@/lib/format';
 import { quad as copy } from '@/strings';
 
 import type { VoteValue } from '../api';
+import { a11yState } from '@/lib/a11y';
 
 export function pointsLabel(score: number): string {
   return score === 1 ? copy.point1 : fill(copy.points, { n: score });
@@ -53,7 +54,7 @@ export function VoteControl({ score, myVote, onVote, readOnly, readOnlyLabel, te
         guard={false}
         accessibilityRole="button"
         accessibilityLabel={fill(copy.voteLabel, { action: copy.upvote, points })}
-        accessibilityState={{ selected: myVote === 1 }}
+        {...a11yState({ selected: myVote === 1 })}
         onPress={() => onVote(1)}
         testID={testID ? `${testID}-up` : undefined}
       >
@@ -79,7 +80,7 @@ export function VoteControl({ score, myVote, onVote, readOnly, readOnlyLabel, te
         guard={false}
         accessibilityRole="button"
         accessibilityLabel={fill(copy.voteLabel, { action: copy.downvote, points })}
-        accessibilityState={{ selected: myVote === -1 }}
+        {...a11yState({ selected: myVote === -1 })}
         onPress={() => onVote(-1)}
         testID={testID ? `${testID}-down` : undefined}
       >

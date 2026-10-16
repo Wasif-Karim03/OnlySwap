@@ -7,6 +7,7 @@ import { Text } from '@/components/Text';
 import { comments as copy } from '@/strings';
 
 import { commentsText, likesText } from '../logic';
+import { a11yState } from '@/lib/a11y';
 
 /**
  * Like and Comment for the compact Feed cards (food, wanted; DEC 121), with
@@ -33,7 +34,7 @@ export function SocialBar({
       <Tappable
         accessibilityRole="button"
         accessibilityLabel={copy.likePost}
-        accessibilityState={{ selected: liked }}
+        {...a11yState({ selected: liked })}
         onPress={onLike}
         testID={testID ? `${testID}-like` : undefined}
       >

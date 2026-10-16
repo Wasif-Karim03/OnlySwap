@@ -9,6 +9,7 @@ import { fill } from '@/lib/format';
 import { comments as copy } from '@/strings';
 
 import type { FeedComment } from '../api';
+import { a11yState } from '@/lib/a11y';
 
 /**
  * One comment or reply (DEC 121), Facebook style: avatar, a grey bubble with
@@ -104,7 +105,7 @@ export function CommentRow({
             <Tappable
               accessibilityRole="button"
               accessibilityLabel={fill(copy.likeComment, { name })}
-              accessibilityState={{ selected: comment.liked }}
+              {...a11yState({ selected: comment.liked })}
               onPress={onLike}
               testID={testID ? `${testID}-like` : undefined}
             >

@@ -26,6 +26,7 @@ import { SpotsMap } from '../meetups/SpotsMap';
 import { sellApi } from '../sell/api';
 import { directionsUrl, sortSpots, type Spot } from '../sell/logic';
 import { safetyApi, type SafetyApi } from './api';
+import { a11yState } from '@/lib/a11y';
 
 /** E21 Report update (P11-SAFE-02): received → reviewed, generic outcome only. */
 export function ReportUpdateScreen({ id, api = safetyApi }: { id: string; api?: SafetyApi }) {
@@ -146,7 +147,7 @@ export function SafetyCenterScreen({
           <View
             key={s.id}
             style={styles.row(s.id === selected)}
-            accessibilityState={{ selected: s.id === selected }}
+            {...a11yState({ selected: s.id === selected })}
             testID={`safety-spot-${s.id}`}
           >
             <View style={styles.flex}>
@@ -229,7 +230,7 @@ export function HelpScreen({
           <Tappable
             key={f.q}
             accessibilityRole="button"
-            accessibilityState={{ expanded: open === i }}
+            {...a11yState({ expanded: open === i })}
             accessibilityLabel={f.q}
             onPress={() => setOpen(open === i ? null : i)}
           >
