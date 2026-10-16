@@ -59,7 +59,7 @@ function fakeApi(over: Partial<Record<keyof AuthApi, jest.Mock>> = {}) {
     signInReviewer: jest.fn(async () => ({})),
     signOut: jest.fn(async () => {}),
     joinWaitlist: jest.fn(async () => {}),
-    confirmAge: jest.fn(async () => ({ adult: true })),
+    confirmAge: jest.fn(async () => ({ eligible: true, ageBand: '18_plus' as const })),
     deleteUnderageAccount: jest.fn(async () => {}),
     ...over,
   };
@@ -295,16 +295,28 @@ describe('P4-AUTH-07 A05 age check', () => {
       age: { ageModule: signal({ lowerBound: 18 }), device: ios26 },
     });
     await waitFor(() => expect(router.getPathname()).toBe('/'));
-    expect(api.confirmAge).toHaveBeenCalledWith({ method: 'os_signal', isAdult: true });
+    expect(api.confirmAge).toHaveBeenCalledWith({ method: 'os_signal', band: '18_plus' });
   });
 
-  it('a minor OS signal deletes the account, signs out and shows Not eligible', async () => {
-    const api = fakeApi({ confirmAge: jest.fn(async () => ({ adult: false })) });
+  it('a 13 to 17 OS signal confirms and goes on (minimum age 13)', async () => {
+    const api = fakeApi({
+      confirmAge: jest.fn(async () => ({ eligible: true, ageBand: '13_17' as const })),
+    });
     const router = setup('/age', api, {
       age: { ageModule: signal({ lowerBound: 13, upperBound: 17 }), device: ios26 },
     });
+    await waitFor(() => expect(router.getPathname()).toBe('/'));
+    expect(api.confirmAge).toHaveBeenCalledWith({ method: 'os_signal', band: '13_17' });
+    expect(api.deleteUnderageAccount).not.toHaveBeenCalled();
+  });
+
+  it('an under 13 OS signal deletes the account, signs out and shows Not eligible', async () => {
+    const api = fakeApi({ confirmAge: jest.fn(async () => ({ eligible: false, ageBand: null })) });
+    const router = setup('/age', api, {
+      age: { ageModule: signal({ upperBound: 12 }), device: ios26 },
+    });
     expect(await screen.findByText(ageCopy.blockedTitle)).toBeTruthy();
-    expect(api.confirmAge).toHaveBeenCalledWith({ method: 'os_signal', isAdult: false });
+    expect(api.confirmAge).toHaveBeenCalledWith({ method: 'os_signal', band: 'under_13' });
     expect(api.deleteUnderageAccount).toHaveBeenCalled();
     expect(api.signOut).toHaveBeenCalledWith('local');
     fireEvent.press(screen.getByTestId('age-close'));
@@ -340,8 +352,8 @@ describe('P4-AUTH-07 A05 age check', () => {
     });
   });
 
-  it('a birthday under 18 takes the minor path', async () => {
-    const api = fakeApi({ confirmAge: jest.fn(async () => ({ adult: false })) });
+  it('a birthday under 13 takes the blocked path', async () => {
+    const api = fakeApi({ confirmAge: jest.fn(async () => ({ eligible: false, ageBand: null })) });
     setup('/age', api, { age: { ageModule: null, device: ios26 } });
     await screen.findByRole('header', { name: ageCopy.title });
     act(() => {

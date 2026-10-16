@@ -85,7 +85,7 @@ Copy: plain student tone, no em dashes, no emoji, verbs on buttons.
 | `/support`, `/support/$id` | Support inbox | `admin_list_support`, `admin_support_detail`, `admin_update_support` |
 | `/waitlist` | Waitlist demand, Open school | `admin_waitlist_demand`, `admin_open_campus` |
 | `/meetups` | Meetups and who keeps missing | `admin_list_meetups`, `admin_noshow_summary` |
-| `/metrics` | plus Ratings and Under-18 attempts cards | `admin_ratings_summary`, `admin_age_blocks_summary` |
+| `/metrics` | plus Ratings and Age-check blocks cards | `admin_ratings_summary`, `admin_age_blocks_summary` |
 | `/campuses?add=1` | Add school dialog | `admin_create_campus` |
 | `/settings/data`, `/health`, `/review`, `/blocked-emails`, `/categories` | owner-only Settings sections | see API §4.1 |
 | `/settings/staging` | Staging tools (owner, staging builds only): mock data counts, mock bot job, recent actions and failures; "Mock data isn't installed" when the function is missing | `admin_mock_status` (only on staging, from `supabase/campuses/owu-mock.sql`) |

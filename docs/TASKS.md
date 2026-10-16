@@ -397,3 +397,16 @@ Branch `feat/ux-pack`. Order keeps every step OTA-able until UX-10 (native camer
 - [x] UX-10 Scan ISBN (DEC 131, needs new builds). Done when: Jest passes (T-UNIT-ISBN-01..05); device check after the build is still open.
 - [x] UX-11 Campus launch playbook (DEC 134). Done when: RELEASE.md §9 written.
 - [x] UX-12 Launch animation (DEC 135). Done when: Jest passes (T-UNIT-LAUNCH-01); checked on the Simulator.
+
+## Apple readiness pack (DEC 136, owner approved 2026-10-16): before the first store submission
+
+Branch `feat/app-store-ready`. From the App Store readiness research (2026-10-16). AR-01 to AR-03 change the native fingerprint only through expo-age-range use (already installed), so they are OTA-able.
+
+- [x] AR-01 Minimum age 13 (DEC 136): `confirm_age_v2` (threshold 13, records `age_band`), client thresholds 13/18, AgeScreen + strings, under-13 block kept, admin labels, rpc-contract. Done when: pgTAP + Jest pass; no "18 or older" eligibility copy left in the app.
+- [ ] AR-02 Legal, site and store copy to 13+: terms, rules, privacy (teen section), child-safety, site home, `sync-legal`, `docs/store/listing.md`, RELEASE age rating answers, PRD/DATA_MODEL/API/SECURITY/TESTING rows. Done when: `sync-legal --check` passes; grep finds no 18+ eligibility claim.
+- [ ] AR-03 Apple age assurance (TX/UT/LA): ask `getRequiredRegulatoryFeaturesAsync`; where Declared Age Range is required, use the OS answer (no birthday fallback) and store parental-consent state; significant-update acknowledgment helper. Done when: Jest passes with fake signals.
+- [ ] AR-04 Consent revoked: Edge Function `app-store-notifications` (verifies Apple's signed payload, handles `RESCIND_CONSENT` by locking the account; deal data kept). Done when: Deno tests pass; owner sets the URL in App Store Connect.
+- [ ] AR-05 Minor safeguards (owner to confirm the defaults): reword the `minor_safety` report reason, CSAM scanning on before launch (OWNER_TODO 19), plus any limits for 13-17 accounts. Done when: owner signs off; pgTAP + Jest pass.
+- [ ] AR-06 Privacy manifest: every required-reason API the merged `PrivacyInfo.xcprivacy` needs is declared; `check-prebuild.mjs` asserts it. Done when: CI prebuild check passes.
+- [ ] AR-07 Review account: `appreview@` signs in on production without an emailed code and is already age-confirmed. Done when: checked against the code and RELEASE.md.
+- [ ] AR-08 Owner submission checklist: App Store Connect age rating (13+ answers), App Privacy labels, export compliance, URLs, review notes, iPhone 6.9-inch and iPad 13-inch screenshots, production TestFlight build, legal review of minors meeting in person. Done when: RELEASE.md §5 lists every step.

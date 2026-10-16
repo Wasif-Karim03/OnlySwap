@@ -2,6 +2,7 @@ import { Link, useParams, useSearch } from '@tanstack/react-router';
 import { useState, type ReactNode } from 'react';
 
 import {
+  ageBand,
   ageMethod,
   appealStatus,
   appealSubject,
@@ -325,6 +326,8 @@ function SideColumn({ d, owner, reload }: { d: PersonFull; owner: boolean; reloa
               ? `${ageMethod(p.age_method)}${p.adult_confirmed_at ? `, ${dateLabel(p.adult_confirmed_at)}` : ''}`
               : 'Not done'}
           </dd>
+          <dt>Age group</dt>
+          <dd>{p.age_band ? ageBand(p.age_band) : 'Not recorded'}</dd>
           <dt>Verified until</dt>
           <dd>{p.verified_until ? dateLabel(p.verified_until) : 'Not set'}</dd>
           <dt>Invited by</dt>

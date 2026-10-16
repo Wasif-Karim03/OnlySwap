@@ -106,7 +106,8 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 
 | RPC | Args | Returns | Errors / rules | Limit |
 |---|---|---|---|---|
-| `confirm_age` | `method, is_adult?, birth_date?` | `{adult}` | computes in campus TZ; minor → `age_blocks` + returns false; never stores DOB | 3/day |
+| `confirm_age` | `method, is_adult?, birth_date?` | `{adult}` | old builds only (DEC 136); computes in campus TZ; minor → `age_blocks` + returns false; never stores DOB | 3/day |
+| `confirm_age_v2` | `method, band?, birth_date?` | `{eligible, age_band}` | AR-01, DEC 136: minimum age 13. `band` is `under_13`, `13_17` or `18_plus` for `os_signal`; a birth date is banded in campus TZ. Under 13 → `age_blocks` + `{eligible:false, age_band:null}`; a blocked email never passes; a confirmed band is never overwritten; never stores DOB | 3/day (shared with `confirm_age`) |
 | `update_profile` | `first_name, last_initial, year, areas, bio, avatar_path` | profile | name regex; bio `check_text(profile)`; avatar path prefix `c/{campus}/u/{uid}/` | 20/day |
 | `update_profile_flags` | `analytics_opt_in?, crash_reports_opt_in?, theme_mode?` | void | — | — |
 | `accept_rules` | `version` | void | must equal `app_config.rules_version` | — |

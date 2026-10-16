@@ -15,7 +15,13 @@ import { errorCopy, toAppError } from '@/lib/errors';
 import { isWebPlatform } from '@/lib/platform';
 import { age as copy } from '@/strings';
 
-import { requestAgeSignal, toIsoDate, type AgeRangeModule, type Device } from './age';
+import {
+  bandForSignal,
+  requestAgeSignal,
+  toIsoDate,
+  type AgeRangeModule,
+  type Device,
+} from './age';
 import { authApi, type AuthApi } from './api';
 import { AuthStep } from './AuthStep';
 import { hadLoginIntent } from './loginIntent';
@@ -38,7 +44,7 @@ export const PICKER_START_YEARS_AGO = 20;
 /**
  * A05 Age check (P4-AUTH-07; boards A7 Birthday, A8 Not eligible; D4 native
  * date picker). The OS signal goes first; the date field is the fallback.
- * A minor's account is deleted right away (delete-account, underage mode)
+ * Under 13, the account is deleted right away (delete-account, underage mode)
  * and the email stays blocked (age_blocks), so there is no retry.
  */
 export function AgeScreen({
@@ -63,9 +69,9 @@ export function AgeScreen({
   const [error, setError] = useState<string | null>(null);
   const started = useRef(false);
 
-  const finishAdult = useGateHandoff();
+  const finishEligible = useGateHandoff();
 
-  const finishMinor = async () => {
+  const finishUnderMinimum = async () => {
     // Delete first, then sign out; either failing still ends on the blocked
     // screen because the email is already in age_blocks.
     try {
@@ -85,9 +91,9 @@ export function AgeScreen({
     setPhase('saving');
     setError(null);
     try {
-      const { adult } = await api.confirmAge(input);
-      if (adult) finishAdult();
-      else await finishMinor();
+      const { eligible } = await api.confirmAge(input);
+      if (eligible) finishEligible();
+      else await finishUnderMinimum();
     } catch (e) {
       const err = toAppError(e);
       setError(
@@ -102,7 +108,7 @@ export function AgeScreen({
     started.current = true;
     void requestAgeSignal(ageModule, device).then((signal) => {
       if (signal === 'unknown') setPhase('form');
-      else void submit({ method: 'os_signal', isAdult: signal === 'adult' });
+      else void submit({ method: 'os_signal', band: bandForSignal(signal) });
     });
     // Runs once on mount; the signal is asked a single time.
     // eslint-disable-next-line react-hooks/exhaustive-deps

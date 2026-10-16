@@ -147,6 +147,7 @@ export type PersonFull = {
     last_app_version: string | null;
     age_method: string | null;
     adult_confirmed_at: string | null;
+    age_band?: string | null;
     verified_until: string | null;
     invited_by: Person;
     strikes: number;

@@ -125,7 +125,8 @@ create table profiles (
   bio text check (char_length(bio) <= 80),
   avatar_path text,
   verified_until date not null,
-  adult_confirmed_at timestamptz, age_method age_method,
+  adult_confirmed_at timestamptz, age_method age_method,   -- adult_confirmed_at: met the minimum age (13 since DEC 136, 18 before)
+  age_band text check (age_band in ('13_17','18_plus')),   -- AR-01: set by confirm_age_v2; null until confirmed; a trigger fills 18_plus for v1, seeds and fixtures and clears it on a reset. Never a birth date
   rules_accepted_at timestamptz, rules_version text,
   invite_code text unique not null default private.new_invite_code(),
   invited_by uuid references profiles on delete set null,

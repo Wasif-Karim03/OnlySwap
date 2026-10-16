@@ -124,11 +124,14 @@ export const role = (v: string | null | undefined) =>
 
 const AGE_METHODS: Record<string, string> = {
   os_signal: 'Phone age range',
-  self_declared: 'Said they are 18+',
+  self_declared: 'Gave a birthday',
   review: 'Checked by staff',
 };
 export const ageMethod = (v: string | null | undefined) =>
   v ? (AGE_METHODS[v] ?? humanize(v)) : '';
+
+export const ageBand = (v: string | null | undefined) =>
+  v === '13_17' ? 'Age 13 to 17' : v === '18_plus' ? '18 or older' : '';
 
 // ---------------------------------------------------------------------------
 // Listings

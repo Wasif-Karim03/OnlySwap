@@ -26,7 +26,7 @@ export function DataRequestsSection() {
         <>
           <div className="kpis k4" style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}>
             <Kpi label="Accounts deleted, 30 days" value={d.counts.deletions_30d} />
-            <Kpi label="Under-18 removals, 30 days" value={d.counts.underage_30d} />
+            <Kpi label="Age-check removals, 30 days" value={d.counts.underage_30d} />
             <Kpi
               label="Deletions stuck"
               value={d.counts.stuck ? <span className="error">{d.counts.stuck}</span> : 0}
@@ -62,7 +62,7 @@ export function DataRequestsSection() {
                         )}
                         {x.underage ? (
                           <span style={{ marginLeft: 8 }}>
-                            <Pill tone="lilac" dot={false} label="Under 18" />
+                            <Pill tone="lilac" dot={false} label="Age check" />
                           </span>
                         ) : null}
                       </td>

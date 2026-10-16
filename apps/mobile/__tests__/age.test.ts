@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import {
+  bandForSignal,
   classifyRange,
   requestAgeSignal,
   supportsAgeSignal,
@@ -33,16 +34,25 @@ function mod(
 }
 
 describe('T-UNIT-AUTH-04 auth/age.requestAgeSignal', () => {
-  it('adult, minor, unknown', async () => {
+  it('adult, teen, under_minimum, unknown', async () => {
     await expect(requestAgeSignal(mod({ lowerBound: 18, upperBound: null }), ios26)).resolves.toBe(
       'adult',
     );
     await expect(requestAgeSignal(mod({ lowerBound: 13, upperBound: 17 }), ios26)).resolves.toBe(
-      'minor',
+      'teen',
+    );
+    await expect(requestAgeSignal(mod({ lowerBound: 0, upperBound: 12 }), ios26)).resolves.toBe(
+      'under_minimum',
     );
     await expect(
       requestAgeSignal(mod({ lowerBound: null, upperBound: null }), ios26),
     ).resolves.toBe('unknown');
+  });
+
+  it('asks the OS the 13 and 18 questions', async () => {
+    const m = mod({ lowerBound: 13, upperBound: 17 });
+    await expect(requestAgeSignal(m, ios26)).resolves.toBe('teen');
+    expect(m.requestAgeRangeAsync).toHaveBeenCalledWith({ threshold1: 13, threshold2: 18 });
   });
 
   it('an error or a declined prompt is unknown', async () => {
@@ -90,8 +100,20 @@ describe('T-UNIT-AUTH-04 auth/age.requestAgeSignal', () => {
 describe('age helpers', () => {
   it('classifyRange', () => {
     expect(classifyRange(null)).toBe('unknown');
+    expect(classifyRange({ lowerBound: null, upperBound: null })).toBe('unknown');
     expect(classifyRange({ lowerBound: 21 })).toBe('adult');
-    expect(classifyRange({ upperBound: 12 })).toBe('minor');
+    expect(classifyRange({ lowerBound: 18 })).toBe('adult');
+    expect(classifyRange({ lowerBound: 13, upperBound: 17 })).toBe('teen');
+    expect(classifyRange({ lowerBound: 16, upperBound: 17 })).toBe('teen');
+    expect(classifyRange({ upperBound: 12 })).toBe('under_minimum');
+    expect(classifyRange({ lowerBound: 0, upperBound: 12 })).toBe('under_minimum');
+    // "Under 18" with no lower bound may still be under 13.
+    expect(classifyRange({ upperBound: 17 })).toBe('unknown');
+  });
+  it('bandForSignal', () => {
+    expect(bandForSignal('adult')).toBe('18_plus');
+    expect(bandForSignal('teen')).toBe('13_17');
+    expect(bandForSignal('under_minimum')).toBe('under_13');
   });
   it('toIsoDate keeps the local date', () => {
     expect(toIsoDate(new Date(2008, 8, 26, 23, 30))).toBe('2008-09-26');

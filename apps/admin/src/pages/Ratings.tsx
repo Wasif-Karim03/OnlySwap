@@ -96,7 +96,7 @@ export function RatingsSection({ campusId }: { campusId: string | null }) {
   );
 }
 
-/** Under-18 attempts (admin_age_blocks_summary): age check blocks per campus, for compliance. */
+/** Age-check blocks (admin_age_blocks_summary): age check blocks per campus, for compliance. */
 export function AgeBlocksSection({ campusId }: { campusId: string | null }) {
   const state = useRpc<AgeBlocks>('admin_age_blocks_summary', { campus_id: campusId, days: 30 });
   const { campuses } = useSession();
@@ -104,7 +104,7 @@ export function AgeBlocksSection({ campusId }: { campusId: string | null }) {
     id ? (campuses.find((c) => c.id === id)?.short_name ?? 'Unknown campus') : 'No campus';
   return (
     <Card
-      title="Under-18 attempts"
+      title="Age-check blocks"
       right={
         state.data ? (
           <span className="muted">
@@ -117,7 +117,7 @@ export function AgeBlocksSection({ campusId }: { campusId: string | null }) {
         state={state}
         rows={3}
         empty={(d) => d.total === 0}
-        emptyText="Nobody under 18 tried to sign up in the last 30 days."
+        emptyText="Nobody was blocked by the age check in the last 30 days."
       >
         {(d) => (
           <div className="grid2" style={{ gridTemplateColumns: '1fr 1fr', gap: 0 }}>

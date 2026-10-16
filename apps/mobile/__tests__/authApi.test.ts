@@ -1,6 +1,13 @@
 import { createAuthApi, type AuthClient, type ProfileQuery } from '../src/features/auth/api';
 
-function setup(opts: { rpcData?: unknown; rpcError?: unknown; authError?: unknown } = {}) {
+function setup(
+  opts: {
+    rpcData?: unknown;
+    rpcError?: unknown;
+    authError?: unknown;
+    profileExtra?: Record<string, unknown>;
+  } = {},
+) {
   const rpc = jest.fn(async () => ({ data: opts.rpcData ?? null, error: opts.rpcError ?? null }));
   const session = { access_token: 't', user: { id: 'u1' } };
   const auth = {
@@ -21,6 +28,7 @@ function setup(opts: { rpcData?: unknown; rpcError?: unknown; authError?: unknow
       first_name: 'Aisha',
       adult_confirmed_at: '2026-09-01T00:00:00Z',
       rules_version: '1',
+      ...opts.profileExtra,
     },
     error: null,
   }));
@@ -141,11 +149,17 @@ describe('auth/api codes and sessions', () => {
       status: 'active',
       firstName: 'Aisha',
       adultConfirmed: true,
+      ageBand: null,
       rulesVersion: '1',
       verifiedUntil: null,
       showUnlocked: false,
     });
     expect(profile).toHaveBeenCalledWith('u1');
+  });
+
+  it('getGateProfile reads the age band', async () => {
+    const { api } = setup({ profileExtra: { age_band: '13_17' } });
+    await expect(api.getGateProfile('u1')).resolves.toMatchObject({ ageBand: '13_17' });
   });
 
   it('getAppConfig parses get_app_config', async () => {
@@ -155,5 +169,37 @@ describe('auth/api codes and sessions', () => {
       minVersionIos: '1.0.1',
     });
     expect(rpc).toHaveBeenCalledWith('get_app_config', undefined);
+  });
+});
+
+describe('T-UNIT-AUTH-09 auth/api.confirmAge', () => {
+  it('sends the OS band to confirm_age_v2', async () => {
+    const { api, rpc } = setup({ rpcData: { eligible: true, age_band: '13_17' } });
+    await expect(api.confirmAge({ method: 'os_signal', band: '13_17' })).resolves.toEqual({
+      eligible: true,
+      ageBand: '13_17',
+    });
+    expect(rpc).toHaveBeenCalledTimes(1);
+    expect(rpc).toHaveBeenCalledWith('confirm_age_v2', { method: 'os_signal', band: '13_17' });
+  });
+
+  it('sends a birth date once, with no is_adult key', async () => {
+    const { api, rpc } = setup({ rpcData: { eligible: true, age_band: '18_plus' } });
+    await expect(
+      api.confirmAge({ method: 'self_declared', birthDate: '2000-05-17' }),
+    ).resolves.toEqual({ eligible: true, ageBand: '18_plus' });
+    expect(rpc).toHaveBeenCalledWith('confirm_age_v2', {
+      method: 'self_declared',
+      birth_date: '2000-05-17',
+    });
+  });
+
+  it('maps an under 13 answer', async () => {
+    const { api, rpc } = setup({ rpcData: { eligible: false, age_band: null } });
+    await expect(api.confirmAge({ method: 'os_signal', band: 'under_13' })).resolves.toEqual({
+      eligible: false,
+      ageBand: null,
+    });
+    expect(rpc).toHaveBeenCalledWith('confirm_age_v2', { method: 'os_signal', band: 'under_13' });
   });
 });
