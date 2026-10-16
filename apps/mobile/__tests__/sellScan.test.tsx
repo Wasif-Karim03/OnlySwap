@@ -81,11 +81,11 @@ describe('T-UNIT-ISBN-02 Open Library answer', () => {
     ).toHaveLength(TITLE_MAX);
   });
   it('looks up only the ISBN and throws on a server error', async () => {
-    const ok = jest.fn(async () => ({ ok: true, json: async () => answer }));
+    const ok = jest.fn(async (_url: string) => ({ ok: true, json: async () => answer }));
     await expect(lookupIsbn(ISBN, ok as unknown as typeof fetch)).resolves.toMatchObject({
       title: 'Calculus: Early Transcendentals',
     });
-    expect(ok.mock.calls[0][0]).toBe(
+    expect(ok.mock.calls[0]?.[0]).toBe(
       `https://openlibrary.org/api/books?bibkeys=ISBN:${ISBN}&format=json&jscmd=data`,
     );
     const bad = jest.fn(async () => ({ ok: false, status: 503 }));
