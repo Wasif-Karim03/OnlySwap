@@ -413,5 +413,5 @@ Branch `feat/app-store-ready`. From the App Store readiness research (2026-10-16
 
 ### Web app (DEC 138, owner: app work on hold)
 
-- [ ] WEB-01 The whole student flow works in a browser (desktop and phone sizes) against staging: sign up, sell with photos, discover, offer, accept, chat, meetup, did it sell, rate, search and saved search, notification settings, report and block, sign out and in, delete account. Done when: `e2e/web/tests/webapp.spec.ts` WEB-E2E-01..11 pass at both sizes with no browser errors.
+- [x] WEB-01 The whole student flow works in a browser (desktop and phone sizes) against staging: sign up, sell with photos, discover, offer, accept, chat, meetup, did it sell, rate, search and saved search, notification settings, report and block, sign out and in, delete account. Done when: `e2e/web/tests/webapp.spec.ts` WEB-E2E-01..11 pass at both sizes with no browser errors.
 - [ ] WEB-02 Redeploy `onlyswap-web` (Cloudflare Pages, staging backend) from this branch after WEB-01. Done when: the live site serves the new bundle and WEB-E2E passes against it.

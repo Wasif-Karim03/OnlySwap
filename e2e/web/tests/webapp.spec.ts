@@ -40,7 +40,11 @@ async function newStudent(browser: Browser, tag: string) {
   return { page, email: `e2e-${tag}${RUN}@e2e.onlyswap.test` };
 }
 
+/** When each address last got a code: Auth allows one per 60 s (DEC 105). */
+const lastCode = new Map<string, number>();
+
 async function otp(email: string): Promise<string> {
+  lastCode.set(email, Date.now());
   for (let i = 0; i < 10; i++) {
     const res = await fetch(`${FUNCTIONS}/test-inbox`, {
       method: 'POST',
@@ -320,6 +324,7 @@ test('WEB-E2E-09 report and block from the chat', async () => {
 });
 
 test('WEB-E2E-10 sign out and back in with the same school email', async () => {
+  test.setTimeout(150_000);
   const page = seller.page;
   await page.goto(APP + '/discover');
   await go(page, 'Profile');
@@ -327,18 +332,20 @@ test('WEB-E2E-10 sign out and back in with the same school email', async () => {
     .getByRole('button', { name: /^Settings/ })
     .first()
     .click();
-  await page
-    .getByRole('button', { name: /^Sign out/ })
-    .first()
-    .click();
-  const confirm = page.getByRole('button', { name: /^Sign out$/ });
-  if (await confirm.count()) await confirm.last().click();
+  await page.getByRole('button', { name: /^Sign out$/ }).click();
+  await page.waitForURL(/\/welcome/, { timeout: 20_000 });
   await expect(page.getByTestId('screen-welcome')).toBeVisible({ timeout: 20_000 });
   await page.getByRole('button', { name: 'I already have an account' }).click();
   await page.getByTestId('email-input').fill(seller.email);
+  const wait = (lastCode.get(seller.email) ?? 0) + 62_000 - Date.now();
+  if (wait > 0) await page.waitForTimeout(wait);
   await page.getByTestId('email-send').click();
+  // Ask test-inbox only after the app's own send landed, or that send replaces the code.
+  await expect(page.getByTestId('screen-verify')).toBeVisible({ timeout: 20_000 });
   await page.getByTestId('otp-input').fill(await otp(seller.email));
-  await expect(page.getByTestId('screen-discover')).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByTestId('screen-discover').filter({ visible: true })).toBeVisible({
+    timeout: 30_000,
+  });
 });
 
 test('WEB-E2E-11 delete the account on the web', async () => {
