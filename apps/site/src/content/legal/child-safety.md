@@ -30,7 +30,7 @@ OnlySwap is only for verified students who are 13 or older. Some of them are tee
 
 ## How to report
 
-- In the app: report the message, chat or profile and choose "Involves someone under 18". You can also report any Quad post, reply or photo.
+- In the app: report the message, chat or profile and choose "Puts a minor at risk". You can also report any Quad post, reply or photo.
 - On the web: use the [Help page](/help) and pick "Safety".
 - If a child is in immediate danger, call 911.
 
