@@ -1441,6 +1441,8 @@ export const safety = {
     suspended:
       'A moderator suspended your account after a report. You can appeal once and a person reviews it.',
     banned: 'This account broke the rules in a way that ends access to OnlySwap.',
+    consent:
+      'A parent or guardian turned off OnlySwap for you in the App Store. Once they allow it again, contact us to turn your account back on.',
   },
   reasons: {
     noshow: 'Missed meetups',

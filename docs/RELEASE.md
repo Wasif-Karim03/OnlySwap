@@ -50,6 +50,19 @@ The expected total is about 900 of 2,000 free minutes a month.
 
 ## 5. Store submission
 
+**Apple submission checklist (AR-08, owner, in this order):** each step points at the detail below.
+1. Server first: production has migrations `0242`, `0243`, `0244` and the `app-store-notifications` function deployed (§3), before any build or OTA that calls `confirm_age_v2`, `record_age_assurance` or `link_app_transaction`.
+2. App Store Server Notifications URLs set and a test notification logged (Age assurance block below).
+3. Production build: `eas build --profile production -p ios`, then `eas submit`. It must be a new native build (age range, App Store download id module, privacy manifests). Install it from TestFlight and run the age check, sign-in with the review account and one full swap.
+4. App Information: age rating questionnaire as below (expect 13+, no override); category Shopping; Content Rights: no third-party content.
+5. App Privacy: the label below, plus Other Data → age range (`age_band`, linked, app functionality, not tracking). No birthday is stored.
+6. Export compliance: no non-exempt encryption (`usesNonExemptEncryption: false`, so no per-build question).
+7. URLs: Privacy Policy `https://onlyswap.pages.dev/privacy`, Support `https://onlyswap.pages.dev/help`, Marketing `https://onlyswap.pages.dev`. Open each one first.
+8. App Review Information: the review account and notes from `docs/store/listing.md` (the account skips the age check, AR-07). Sign-in required: yes.
+9. Screenshots: iPhone 6.9-inch 1320×2868 and, because `supportsTablet` is on, iPad 13-inch 2064×2752 (fictional school, no university names or marks).
+10. Legal review before submitting: a lawyer has read the 13+ terms, privacy (teen section) and child safety pages, and the plan for minors meeting adults in person (DEC 136, DEC 137). CSAM scanning is live (OWNER_TODO 19).
+11. Release: manual release, phased 7 days.
+
 **Apple (App Store Connect):**
 - App record: bundle `app.onlyswap`, SKU `onlyswap-ios`.
 - Primary category Shopping.
@@ -83,7 +96,7 @@ The expected total is about 900 of 2,000 free minutes a month.
   - age check at sign-up: 13 or older, under 13 blocked (DEC 136)
   - physical goods, cash in person, 3.1.3(e)
   - **No hidden features (2.3.1):** before submitting, Demo University must have the Quad on (`scripts/seed-review.ts` sets `campuses.quad_enabled`; the owner turns on the global `app_config.quad_enabled` in admin Config, real campuses stay off) and the seeded Quad and Around campus posts.
-- Screenshots: 6.9" 1320×2868 ×5 (fictional school). Optional preview video 886×1920.
+- Screenshots: 6.9" 1320×2868 ×5 and iPad 13" 2064×2752 ×5 (fictional school). Optional preview video 886×1920.
 - Release: manual release, **phased release 7 days**.
 
 **Google Play Console:**
@@ -104,6 +117,8 @@ The expected total is about 900 of 2,000 free minutes a month.
 - The age check asks Apple whether the law applies (`isEligibleForAgeFeaturesAsync`, iOS 26.2+; `getRequiredRegulatoryFeaturesAsync`, iOS 26.4+). If it does, only the Declared Age Range answer counts (no birthday), and `record_age_assurance` stores the declaration and parental consent.
 - Significant updates (Texas): before turning on a change that alters what a teen can do or what data is collected, call `acknowledgeSignificantUpdate` (`auth/age.ts`). Adults see Apple's sheet. For `needs_parental_consent`, expo-age-range has no PermissionKit request yet, so hold the change back for regulated 13 to 17 accounts (`profiles.parental_consent`) until that exists.
 - Test on a device with iOS 26.4+ and Sandbox age assurance testing (Settings, Developer). The Simulator answers 18+ for everyone.
+- Consent withdrawn (AR-04): App Store Connect, App Information, App Store Server Notifications: set both Production and Sandbox URLs to `https://<prod-ref>.supabase.co/functions/v1/app-store-notifications`, Version 2. Then send a test notification (App Store Server API "Request a Test Notification", or the button in App Store Connect) and check the function log shows `appstore_ignored` with type `TEST`. A `RESCIND_CONSENT` locks every account linked to that download (`status_reason = 'parental_consent'`). To turn one back on after the parent allows the app again, an admin unsuspends it.
+- The iOS app links its download id on every signed-in launch (`link_app_transaction`, local module `modules/app-transaction`), so this needs a new native build, not an OTA.
 
 **Rejection playbook:** see REVIEW.md §10 plus:
 - Reply within 24 h.

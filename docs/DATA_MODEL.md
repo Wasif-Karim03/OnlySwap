@@ -473,6 +473,11 @@ The tables are:
 - `listing_comment_likes(user_id, comment_id, created_at)`, PK (user_id, comment_id).
 - Counts are kept by triggers. RLS on, no grants: reads and writes go through the RPCs (API §3). Never hard-deleted while the post exists; a deleted comment keeps its row. `reports.target_type` adds `listing_comment`; `notifications.grp` adds `comments`; `notification_prefs.comments` (default true). `export_user_data` adds `feed {liked_posts, comments, liked_comments}`.
 
+### 2.6c App Store consent — `0244_app_store_consent.sql` (AR-04, DEC 136)
+
+- `app_transactions(app_transaction_id text, user_id → profiles on delete cascade, created_at, last_seen_at)`, PK (app_transaction_id, user_id). One Apple download can hold several accounts and one account several downloads. RLS on, no policies, no client grants: written only by `link_app_transaction`, read only by `private.rescind_consent` (service role).
+- `private.rescind_consent(id)`: every linked profile gets `parental_consent = 'revoked'`, `status = 'suspended'`, `status_reason = 'parental_consent'` (a banned account stays banned). Idempotent; returns the count. Deal data is untouched.
+
 ### 2.7 Views [R1.0]
 
 | View | Definition / use |
@@ -662,7 +667,7 @@ stateDiagram-v2
 | `active` | — | — | app | everything |
 | `reverify` | `verified_until` < today | `complete_reverify` | X9 | nothing but re-verify |
 | `paused` | 2 no-shows or 1st strike (auto, 7 d max) | `paused_until` passes (cron) | X10 | read, finish open chats |
-| `suspended` | admin (moderator ≤ 7 d) | admin, or `paused_until` passes | X10 | read, finish open chats |
+| `suspended` | admin (moderator ≤ 7 d); or a parent withdrew consent in the App Store (`status_reason = 'parental_consent'`, AR-04) | admin, or `paused_until` passes; for consent, an admin after the parent allows the app again | X10 (consent copy, no appeal) | read, finish open chats |
 | `banned` | admin (owner only) | appeal overturned | X10 banned | appeal only; `banned_hashes` stored on deletion |
 
 Suspensions and bans revoke sessions (ADR-013).

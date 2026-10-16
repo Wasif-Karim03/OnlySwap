@@ -201,6 +201,14 @@ export function createAuthApi(deps: Deps) {
       });
     },
 
+    /**
+     * AR-04: links this iPhone's App Store download id to the account, so a
+     * RESCIND_CONSENT notification can find it.
+     */
+    async linkAppTransaction(appTransactionId: string): Promise<void> {
+      await rpc<unknown>('link_app_transaction', { app_transaction_id: appTransactionId });
+    },
+
     /** After confirm_age_v2 said under 13: remove the account right away (F02, P4-DEL-01). */
     async deleteUnderageAccount(): Promise<void> {
       if (!deps.functions) throw toAppError({ message: 'functions unavailable' });

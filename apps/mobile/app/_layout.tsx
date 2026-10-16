@@ -26,6 +26,7 @@ import { LaunchIntro } from '@/features/auth/LaunchIntro';
 import { launchStartedAt } from '@/features/auth/launchTiming';
 import { SessionExpiredSheet } from '@/features/auth/SessionExpiredSheet';
 import { authApi } from '@/features/auth/api';
+import { startAppTransactionLink } from '@/features/auth/appTransaction';
 import { watchSessionExpiry } from '@/features/auth/sessionExpiry';
 import { watchSystemGate } from '@/features/auth/systemWatch';
 import { resetChatStores } from '@/features/chat/useChat';
@@ -38,6 +39,8 @@ import { createQueryClient, wireQueryManagers } from '@/lib/queryClient';
 import { startTelemetry, useTelemetry } from '@/lib/telemetry';
 import { useWebTitle } from '@/lib/webTitle';
 import { useKeepModeOnFontScale } from '@/theme/mode';
+
+import { appTransactionNative } from '../modules/app-transaction';
 
 // Fail fast: a missing or invalid EXPO_PUBLIC_* value stops the app at launch
 // with a message naming each variable (P1-ENV-01).
@@ -80,6 +83,16 @@ export default function RootLayout() {
   useEffect(() => startWidgetSync(queryClient), [queryClient]);
   // Activity events for the admin console (DEC 93): follows sign-in, flushes on background.
   useEffect(() => startActivity(), []);
+  useEffect(
+    () =>
+      startAppTransactionLink(
+        getSupabase().auth,
+        appTransactionNative,
+        authApi.linkAppTransaction,
+        Platform.OS,
+      ),
+    [],
+  );
   // Maintenance or a forced update turned on while the app was in the background.
   useSystemWatch(queryClient);
   useEffect(() => {

@@ -1413,6 +1413,8 @@ const safety: Strings['safety'] = {
     suspended:
       'Un moderador suspendió tu cuenta después de un reporte. Puedes apelar una vez y una persona lo revisa.',
     banned: 'Esta cuenta rompió las reglas de una forma que termina el acceso a OnlySwap.',
+    consent:
+      'Tu madre, padre o tutor apagó OnlySwap para ti en el App Store. Cuando lo vuelva a permitir, contáctanos para reactivar tu cuenta.',
   },
   reasons: {
     noshow: 'Encuentros a los que no llegaste',

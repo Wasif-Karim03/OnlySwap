@@ -162,6 +162,43 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"app_transactions": {
+                  Row: {
+                    "app_transaction_id": string,"created_at": string,"last_seen_at": string,"user_id": string
+                  }
+                  Insert: {
+                    "app_transaction_id": string,"created_at"?: string,"last_seen_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "app_transaction_id"?: string,"created_at"?: string,"last_seen_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "app_transactions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "app_transactions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "app_transactions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "app_transactions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"appeals": {
                   Row: {
                     "body": string | null,"created_at": string | null,"decided_at": string | null,"decided_by": string | null,"decision_note": string | null,"id": string,"reason_choice": string | null,"status": string,"subject_id": string,"subject_type": string,"user_id": string
@@ -2537,6 +2574,9 @@ isOneToOne: false
                            },
 "like_listing_comment":
 { Args: { "comment_id": string,"liked": boolean }; Returns: Json
+                           },
+"link_app_transaction":
+{ Args: { "app_transaction_id": string }; Returns: undefined
                            },
 "list_blocked":
 { Args: Record<PropertyKey, never>; Returns: Json

@@ -220,3 +220,13 @@ describe('T-UNIT-AGE-ASSURE AR-03 auth/api.recordAgeAssurance', () => {
     expect(rpc).toHaveBeenCalledWith('record_age_assurance', { regulated: true });
   });
 });
+
+describe('T-UNIT-CONSENT AR-04 auth/api.linkAppTransaction', () => {
+  it('sends the App Store download id', async () => {
+    const { api, rpc } = setup({ rpcData: null });
+    await api.linkAppTransaction('704289572311552426');
+    expect(rpc).toHaveBeenCalledWith('link_app_transaction', {
+      app_transaction_id: '704289572311552426',
+    });
+  });
+});

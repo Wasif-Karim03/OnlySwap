@@ -67,7 +67,9 @@ export function AccountStatusScreen({
       </View>
     );
   }
-  const target = kind === 'banned' ? null : appealTarget(s, me);
+  // AR-04: a parent withdrew consent in the App Store. Nothing to appeal.
+  const consent = kind === 'suspended' && s.reason === 'parental_consent';
+  const target = kind === 'banned' || consent ? null : appealTarget(s, me);
   const latestAppeal = s.appeals[0];
   const until = s.paused_until
     ? new Date(s.paused_until).toLocaleDateString(intlLocale, { month: 'short', day: 'numeric' })
@@ -99,7 +101,9 @@ export function AccountStatusScreen({
             ? until
               ? fill(copy.statusBody.paused, { until })
               : copy.statusBody.pausedNoDate
-            : copy.statusBody[kind]}
+            : consent
+              ? copy.statusBody.consent
+              : copy.statusBody[kind]}
         </Text>
         {s.reason && s.reason in copy.reasons ? (
           <Text variant="bodyStrong">{copy.reasons[s.reason as keyof typeof copy.reasons]}</Text>

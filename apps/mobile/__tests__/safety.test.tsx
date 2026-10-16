@@ -133,6 +133,28 @@ describe('X10 account status', () => {
     await waitFor(() => expect(signOut).toHaveBeenCalled());
     expect(await screen.findByTestId('screen-welcome')).toBeTruthy();
   });
+
+  it('AR-04 parental consent withdrawn: consent copy, no appeal', async () => {
+    render(
+      {
+        'account-status': () => (
+          <AccountStatusScreen
+            api={api({
+              status: jest.fn(async () =>
+                status({ status: 'suspended', reason: 'parental_consent', noshows: [] }),
+              ),
+            })}
+            auth={{ signOut: jest.fn(async () => {}) }}
+            me="me"
+          />
+        ),
+      },
+      '/account-status',
+    );
+    expect(await screen.findByText(safety.statusBody.consent)).toBeTruthy();
+    expect(screen.queryByText(safety.statusBody.suspended)).toBeNull();
+    expect(screen.queryByTestId('status-appeal')).toBeNull();
+  });
 });
 
 describe('F13 blocked', () => {
