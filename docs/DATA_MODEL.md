@@ -127,6 +127,9 @@ create table profiles (
   verified_until date not null,
   adult_confirmed_at timestamptz, age_method age_method,   -- adult_confirmed_at: met the minimum age (13 since DEC 136, 18 before)
   age_band text check (age_band in ('13_17','18_plus')),   -- AR-01: set by confirm_age_v2; null until confirmed; a trigger fills 18_plus for v1, seeds and fixtures and clears it on a reset. Never a birth date
+  age_regulated boolean,                                   -- AR-03: Apple age assurance applied at the age check; null = not asked or unknown
+  age_declaration text check (age_declaration in ('self_declared','guardian_declared','confirmed')),  -- AR-03: Declared Age Range declaration type; never a birth date
+  parental_consent text check (parental_consent in ('granted','revoked')),  -- AR-03: granted for a regulated 13_17 account; revoked only by the App Store notification endpoint (AR-04)
   rules_accepted_at timestamptz, rules_version text,
   invite_code text unique not null default private.new_invite_code(),
   invited_by uuid references profiles on delete set null,

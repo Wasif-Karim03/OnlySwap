@@ -566,6 +566,11 @@ export const age = {
   blockedCardTitle: 'Selling something before then?',
   blockedCardBody: 'Ask a parent or an older friend to post it for you and go along together.',
   close: 'Close',
+  osRequiredTitle: 'Share your age range to continue',
+  osRequiredBody:
+    "Where you live, the law asks apps to get your age range from Apple. We only learn whether you're 13 to 17 or 18 and older, never your birthday.",
+  osRequiredHint: 'If a parent manages your Apple Account, they may need to approve it first.',
+  osRequiredRetry: 'Share age range',
 } as const;
 
 /** A06 Profile setup (board A10). */

@@ -203,3 +203,20 @@ describe('T-UNIT-AUTH-09 auth/api.confirmAge', () => {
     expect(rpc).toHaveBeenCalledWith('confirm_age_v2', { method: 'os_signal', band: 'under_13' });
   });
 });
+
+describe('T-UNIT-AGE-ASSURE AR-03 auth/api.recordAgeAssurance', () => {
+  it('sends regulated and the declaration', async () => {
+    const { api, rpc } = setup({ rpcData: { regulated: true, parental_consent: 'granted' } });
+    await api.recordAgeAssurance({ regulated: true, declaration: 'guardian_declared' });
+    expect(rpc).toHaveBeenCalledWith('record_age_assurance', {
+      regulated: true,
+      declaration: 'guardian_declared',
+    });
+  });
+
+  it('leaves the declaration out when the OS gave none', async () => {
+    const { api, rpc } = setup({ rpcData: { regulated: true, parental_consent: null } });
+    await api.recordAgeAssurance({ regulated: true, declaration: null });
+    expect(rpc).toHaveBeenCalledWith('record_age_assurance', { regulated: true });
+  });
+});

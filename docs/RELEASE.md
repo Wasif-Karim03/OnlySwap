@@ -100,6 +100,11 @@ The expected total is about 900 of 2,000 free minutes a month.
 - Store listing: title "OnlySwap: Campus Marketplace" (≤30 characters), short and full description, icon 512, feature graphic 1024×500, 5 phone screenshots ≥1080 px. Countries: United States.
 - Release: staged rollout 20% → 50% → 100%.
 
+**Age assurance (AR-03, DEC 136; Texas, Utah, Louisiana):**
+- The age check asks Apple whether the law applies (`isEligibleForAgeFeaturesAsync`, iOS 26.2+; `getRequiredRegulatoryFeaturesAsync`, iOS 26.4+). If it does, only the Declared Age Range answer counts (no birthday), and `record_age_assurance` stores the declaration and parental consent.
+- Significant updates (Texas): before turning on a change that alters what a teen can do or what data is collected, call `acknowledgeSignificantUpdate` (`auth/age.ts`). Adults see Apple's sheet. For `needs_parental_consent`, expo-age-range has no PermissionKit request yet, so hold the change back for regulated 13 to 17 accounts (`profiles.parental_consent`) until that exists.
+- Test on a device with iOS 26.4+ and Sandbox age assurance testing (Settings, Developer). The Simulator answers 18+ for everyone.
+
 **Rejection playbook:** see REVIEW.md §10 plus:
 - Reply within 24 h.
 - For metadata-only fixes (labels, notes), use no new build.

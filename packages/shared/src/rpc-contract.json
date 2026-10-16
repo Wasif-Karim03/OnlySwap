@@ -1577,6 +1577,16 @@
     ]
   },
   {
+    "name": "record_age_assurance",
+    "args": "regulated boolean, declaration text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "record_swipes",
     "args": "items jsonb",
     "returns": "void",

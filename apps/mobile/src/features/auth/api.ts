@@ -4,7 +4,7 @@ import { toAppError } from '@/lib/errors';
 import { createRpc, type RpcClient } from '@/lib/rpc';
 import { getSupabase } from '@/lib/supabase';
 
-import type { AgeBand } from './age';
+import type { AgeBand, AgeDeclaration } from './age';
 import {
   emailDomain,
   isPersonalDomain,
@@ -185,6 +185,20 @@ export function createAuthApi(deps: Deps) {
           : { method: 'self_declared', birth_date: input.birthDate },
       );
       return { eligible: res.eligible, ageBand: res.age_band ?? null };
+    },
+
+    /**
+     * Apple age assurance (AR-03): whether the law applied and how the OS
+     * range was declared. Called after confirmAge said eligible.
+     */
+    async recordAgeAssurance(input: {
+      regulated: boolean;
+      declaration: AgeDeclaration | null;
+    }): Promise<void> {
+      await rpc<unknown>('record_age_assurance', {
+        regulated: input.regulated,
+        ...(input.declaration ? { declaration: input.declaration } : {}),
+      });
     },
 
     /** After confirm_age_v2 said under 13: remove the account right away (F02, P4-DEL-01). */
