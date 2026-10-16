@@ -14,6 +14,7 @@ import { commentsText, likesText } from '../comments/logic';
 import { agoLabel, sellerName } from '../feed/logic';
 import { mediaUrl, priceLabel } from '../sell/logic';
 import { eventLabel, linkHost, type CampusItem } from './logic';
+import { a11yState } from '@/lib/a11y';
 
 type Props = {
   item: CampusItem;
@@ -283,7 +284,7 @@ function Action({
     <Tappable
       accessibilityRole="button"
       accessibilityLabel={a11yLabel ?? label}
-      accessibilityState={{ selected }}
+      {...a11yState({ selected })}
       onPress={onPress}
       style={styles.grow}
       testID={testID}

@@ -2,6 +2,7 @@ import { Pressable, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { Text } from './Text';
+import { a11yState } from '@/lib/a11y';
 
 type Props = {
   label: string;
@@ -18,7 +19,7 @@ export function Toggle({ label, value, onChange, disabled = false, description }
       accessibilityRole="switch"
       accessibilityLabel={label}
       accessibilityHint={description}
-      accessibilityState={{ checked: value, disabled }}
+      {...a11yState({ checked: value, disabled })}
       disabled={disabled}
       onPress={() => onChange(!value)}
       style={styles.row(disabled)}

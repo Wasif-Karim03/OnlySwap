@@ -17,6 +17,7 @@ import { rules as copy, states } from '@/strings';
 import { authApi, type AuthApi } from './api';
 import { AuthStep } from './AuthStep';
 import { useGateHandoff } from './useAppGate';
+import { a11yState } from '@/lib/a11y';
 
 const deviceTz = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -156,7 +157,7 @@ export function RulesScreen({
       <View style={styles.agreeRow}>
         <Tappable
           accessibilityRole="checkbox"
-          accessibilityState={{ checked }}
+          {...a11yState({ checked })}
           accessibilityLabel={copy.agreeLabel}
           onPress={() => {
             haptic('selection');

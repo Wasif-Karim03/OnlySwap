@@ -15,6 +15,7 @@ import { THEME_MODES, useThemeModeStore, type ThemeMode } from '@/theme/mode';
 import { usePressFeedback } from '@/theme/motion';
 import { dev, spotsMap } from '@/strings';
 import { useReducedMotion } from '@/theme/reducedMotion';
+import { a11yState } from '@/lib/a11y';
 
 /**
  * Dev builds only: P1-SPIKE-02/03/04 checks plus the S4 type, theme and motion
@@ -115,7 +116,7 @@ export function SpikesScreen() {
               <Pressable
                 key={m}
                 accessibilityRole="button"
-                accessibilityState={{ selected: m === mode }}
+                {...a11yState({ selected: m === mode })}
                 accessibilityHint={dev.themeHint}
                 onPress={() => setMode(m)}
                 style={[styles.segment, m === mode && styles.segmentOn]}

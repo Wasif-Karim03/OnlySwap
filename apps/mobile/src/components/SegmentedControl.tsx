@@ -2,6 +2,7 @@ import { Pressable, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { Text } from './Text';
+import { a11yState } from '@/lib/a11y';
 
 type Props<T extends string> = {
   label: string;
@@ -39,7 +40,7 @@ export function SegmentedControl<T extends string>({
             accessibilityLabel={
               badge !== null ? `${s.label}, ${s.badgeLabel ?? String(badge)}` : s.label
             }
-            accessibilityState={{ selected }}
+            {...a11yState({ selected })}
             onPress={() => onChange(s.value)}
             style={styles.segment(selected)}
           >

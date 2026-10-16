@@ -14,6 +14,7 @@ import { StyleSheet } from 'react-native-unistyles';
 
 import { states as statesCopy } from '@/strings';
 import { useReducedMotion } from '@/theme/reducedMotion';
+import { a11yState } from '@/lib/a11y';
 
 /**
  * True only once `loading` has lasted longer than `delay` (board X3: loads
@@ -115,7 +116,7 @@ function SkeletonGroup({
       accessible
       accessibilityRole="progressbar"
       accessibilityLabel={statesCopy.loading}
-      accessibilityState={{ busy: true }}
+      {...a11yState({ busy: true })}
       style={styles.group(grow)}
     >
       {children}

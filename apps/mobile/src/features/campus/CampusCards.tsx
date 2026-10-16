@@ -22,6 +22,7 @@ import {
   type CampusItem,
   type Countdown,
 } from './logic';
+import { a11yState } from '@/lib/a11y';
 
 /**
  * Live countdown for a free food post. Re-renders every 15 s (every second in
@@ -110,7 +111,7 @@ function FoodCard(props: CardProps) {
       <Tappable
         accessibilityRole="button"
         accessibilityLabel={fill(copy.foodLabel, { title: item.title, place, time })}
-        accessibilityState={{ disabled: gone }}
+        {...a11yState({ disabled: gone })}
         disabled={gone}
         onPress={onOpen}
       >

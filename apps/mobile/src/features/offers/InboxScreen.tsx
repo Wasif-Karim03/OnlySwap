@@ -38,6 +38,7 @@ import {
   type InboxSide,
 } from './logic';
 import { NotificationBell } from '@/features/notifications/NotificationBell';
+import { a11yState } from '@/lib/a11y';
 
 export const inboxKey = ['inbox'] as const;
 
@@ -137,7 +138,7 @@ export function InboxScreen({
         key={`${r.kind}-${r.id}`}
         accessibilityRole="button"
         accessibilityLabel={label}
-        accessibilityState={twoPane && r.kind === 'chat' ? { selected: open } : undefined}
+        {...a11yState(twoPane && r.kind === 'chat' ? { selected: open } : undefined)}
         onPress={() =>
           r.kind === 'offer'
             ? router.push({ pathname: '/offer/[id]', params: { id: r.id } })

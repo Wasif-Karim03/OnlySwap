@@ -9,6 +9,7 @@ import { LAYOUT } from '@/theme/layout';
 import { Icon, type IconName } from './icons/Icon';
 import { Mark } from './Mark';
 import { Text } from './Text';
+import { a11yState } from '@/lib/a11y';
 
 export type TabItem = {
   key: string;
@@ -96,7 +97,7 @@ export function TabBar({
             testID={testID ? `${testID}-${item.key}` : undefined}
             accessibilityRole="tab"
             accessibilityLabel={tabAccessibilityLabel(item)}
-            accessibilityState={{ selected: active }}
+            {...a11yState({ selected: active })}
             onPress={() => onSelect(item.key)}
             onLongPress={onLongPress ? () => onLongPress(item.key) : undefined}
             style={styles.item}
@@ -163,7 +164,7 @@ function TabRail({
               testID={testID ? `${testID}-${item.key}` : undefined}
               accessibilityRole="tab"
               accessibilityLabel={tabAccessibilityLabel(item)}
-              accessibilityState={{ selected: active }}
+              {...a11yState({ selected: active })}
               onPress={() => onSelect(item.key)}
               onLongPress={onLongPress ? () => onLongPress(item.key) : undefined}
               style={styles.railItem(active)}

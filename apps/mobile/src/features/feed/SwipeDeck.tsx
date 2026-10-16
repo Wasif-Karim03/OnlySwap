@@ -28,7 +28,7 @@ import { motion } from '@onlyswap/tokens';
 import { Icon } from '@/components/icons/Icon';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
-import { useScreenReader } from '@/lib/a11y';
+import { useScreenReader, a11yState } from '@/lib/a11y';
 import { haptic } from '@/lib/haptics';
 import { feed as copy } from '@/strings';
 import { LAYOUT, gridCellWidth, gridColumns } from '@/theme/layout';
@@ -188,7 +188,7 @@ function DeckActions({ size, short, disabled, onSkip, onOffer, onSave, testID }:
       <Tappable
         accessibilityRole="button"
         accessibilityLabel={copy.skip}
-        accessibilityState={{ disabled: !!disabled }}
+        {...a11yState({ disabled: !!disabled })}
         disabled={disabled}
         onPress={onSkip}
         testID={`${testID}-skip`}
@@ -200,7 +200,7 @@ function DeckActions({ size, short, disabled, onSkip, onOffer, onSave, testID }:
       <Tappable
         accessibilityRole="button"
         accessibilityLabel={copy.offer}
-        accessibilityState={{ disabled: !!disabled }}
+        {...a11yState({ disabled: !!disabled })}
         disabled={disabled}
         onPress={onOffer}
         style={size === 'M' ? styles.offerFlex : undefined}
@@ -215,7 +215,7 @@ function DeckActions({ size, short, disabled, onSkip, onOffer, onSave, testID }:
       <Tappable
         accessibilityRole="button"
         accessibilityLabel={copy.save}
-        accessibilityState={{ disabled: !!disabled }}
+        {...a11yState({ disabled: !!disabled })}
         disabled={disabled}
         onPress={onSave}
         testID={`${testID}-save`}

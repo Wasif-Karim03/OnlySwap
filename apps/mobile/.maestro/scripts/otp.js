@@ -1,4 +1,4 @@
-// Fetches a fresh sign-in code for an e2e+ address from the staging-only
+// Fetches a fresh sign-in code for an e2e- address from the staging-only
 // test-inbox function (P14-E2E-00). Sets output.code.
 const res = http.post(`${FUNCTIONS_URL}/test-inbox`, {
   headers: { 'content-type': 'application/json', 'x-e2e-secret': E2E_SECRET },

@@ -5,6 +5,7 @@ import { haptic, type HapticKind } from '@/lib/haptics';
 
 import { SMALL_SLOP, Tappable } from './Tappable';
 import { Text, type TextTone } from './Text';
+import { a11yState } from '@/lib/a11y';
 
 /**
  * `onAccent` and `textOnAccent` sit on an accent-filled screen (Welcome, DEC 89):
@@ -73,7 +74,7 @@ export function Button({
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityHint={accessibilityHint}
-      accessibilityState={{ disabled: inactive, busy: loading }}
+      {...a11yState({ disabled: inactive, busy: loading })}
       hitSlop={size === 'S' ? SMALL_SLOP : undefined}
       disabled={inactive}
       onPress={() => {

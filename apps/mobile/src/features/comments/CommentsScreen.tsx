@@ -56,6 +56,7 @@ import {
   toggleLike,
   viewRepliesText,
 } from './logic';
+import { a11yState } from '@/lib/a11y';
 
 type Data = InfiniteData<CommentsPage>;
 type ReplyTo = { parentId: string; name: string };
@@ -379,7 +380,7 @@ export function CommentsScreen({
                   <Tappable
                     accessibilityRole="button"
                     accessibilityLabel={copy.likePost}
-                    accessibilityState={{ selected: first.liked }}
+                    {...a11yState({ selected: first.liked })}
                     onPress={likePost}
                     testID="comments-like-post"
                   >
