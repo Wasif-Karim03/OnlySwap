@@ -29,6 +29,12 @@ export type Meetup = {
   previous_starts_at: string | null;
   share_token: string | null;
   my_noshow_report: string | null;
+  /** DEC 132: the viewer is the seller (enters the code). */
+  i_am_seller?: boolean;
+  /** The buyer's 4-digit code while confirmed; null for the seller. */
+  handoff_code?: string | null;
+  handoff_at?: string | null;
+  handoff_tries_left?: number;
 };
 
 export const LATE_OPTIONS = [5, 10, 15, 30] as const;

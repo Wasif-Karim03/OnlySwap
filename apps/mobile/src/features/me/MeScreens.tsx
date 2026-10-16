@@ -41,7 +41,8 @@ import { readableColumn } from '@/theme/layout';
 import { avatarDeps, type AvatarDeps } from '../auth/avatar';
 import { feedApi, type FeedApi } from '../feed/api';
 import { listingKey } from '../feed/ListingScreen';
-import { isVisible } from '../feed/logic';
+import { NEED_BY, needByDate, type NeedBy } from '../campus/logic';
+import { isVisible, movingOutLine } from '../feed/logic';
 import type { ClassYear } from '../profiles/api';
 import { centsToDollars, dollarsToCents } from '../search/logic';
 import { mediaUrl, priceLabel } from '../sell/logic';
@@ -451,8 +452,57 @@ export function MyListingsScreen({
   mediaBase?: () => string;
 }) {
   const router = useRouter();
+  const qc = useQueryClient();
   const q = useQuery({ queryKey: ['my-listings'], queryFn: () => api.listings() });
   const [tab, setTab] = useState<'active' | 'sold' | 'other'>('active');
+  const [renewing, setRenewing] = useState<string | null>(null);
+  // Away mode (DEC 126): the switch reads get_me and flips it optimistically.
+  const meQ = useQuery({ queryKey: meKey, queryFn: () => api.me() });
+  const [awayBusy, setAwayBusy] = useState(false);
+  const setAway = async (away: boolean) => {
+    setAwayBusy(true);
+    try {
+      await api.setAway(away);
+      qc.setQueryData(meKey, (m: Me | undefined) =>
+        m ? { ...m, away_since: away ? new Date().toISOString() : null } : m,
+      );
+      void qc.invalidateQueries({ queryKey: meKey });
+      useToastStore.getState().show('success', away ? copy.awayOn : copy.awayOff);
+    } catch (e) {
+      useToastStore.getState().show('error', errorText(e));
+    } finally {
+      setAwayBusy(false);
+    }
+  };
+  // DEC 133 moving out: a date buyers see, and bundle offers while it is set.
+  const movingOut = meQ.data?.moving_out_by ?? null;
+  const setMovingOut = async (choice: NeedBy) => {
+    const by = needByDate(choice, new Date());
+    setAwayBusy(true);
+    try {
+      await api.setMovingOut(by);
+      qc.setQueryData(meKey, (m: Me | undefined) => (m ? { ...m, moving_out_by: by } : m));
+      void qc.invalidateQueries({ queryKey: meKey });
+      useToastStore.getState().show('success', by ? copy.movingOutSet : copy.movingOutCleared);
+    } catch (e) {
+      useToastStore.getState().show('error', errorText(e));
+    } finally {
+      setAwayBusy(false);
+    }
+  };
+  // Renew (DEC 125): one tap moves an active listing back to the top; no screen.
+  const renew = async (id: string) => {
+    setRenewing(id);
+    try {
+      await api.relist(id, null);
+      void qc.invalidateQueries({ queryKey: ['my-listings'] });
+      useToastStore.getState().show('success', copy.renewed);
+    } catch (e) {
+      useToastStore.getState().show('error', errorText(e));
+    } finally {
+      setRenewing(null);
+    }
+  };
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/profile'));
   let body;
   if (q.isPending) body = <SkeletonList />;
@@ -502,7 +552,25 @@ export function MyListingsScreen({
                     router.push({ pathname: '/listing/[id]/stats', params: { id: l.id } })
                   }
                 />
-                {l.can_relist ? (
+                {l.can_relist && l.status === 'active' ? (
+                  <Button
+                    label={copy.renew}
+                    variant="text"
+                    size="S"
+                    loading={renewing === l.id}
+                    onPress={() => void renew(l.id)}
+                    testID={`renew-${l.id}`}
+                  />
+                ) : l.status === 'active' && l.renew_at ? (
+                  <Text variant="meta" tone="ink3" testID={`renew-at-${l.id}`}>
+                    {fill(copy.renewAt, {
+                      date: new Date(l.renew_at).toLocaleDateString(intlLocale, {
+                        month: 'short',
+                        day: 'numeric',
+                      }),
+                    })}
+                  </Text>
+                ) : l.can_relist ? (
                   <Button
                     label={copy.relist}
                     variant="text"
@@ -521,6 +589,37 @@ export function MyListingsScreen({
   }
   return (
     <Screen title={copy.listingsTitle} testID="screen-my-listings" onBack={leave}>
+      {meQ.data ? (
+        <View style={styles.tabs} testID="away-toggle">
+          <Toggle
+            label={copy.away}
+            description={copy.awayBody}
+            value={Boolean(meQ.data.away_since)}
+            disabled={awayBusy}
+            onChange={(v) => void setAway(v)}
+          />
+        </View>
+      ) : null}
+      {meQ.data ? (
+        <View style={styles.tabs} testID="moving-out">
+          <Text variant="label">{copy.movingOut}</Text>
+          <Text variant="meta" tone="ink2">
+            {movingOutLine(movingOut) ?? copy.movingOutBody}
+          </Text>
+          <View style={styles.chipRow}>
+            {NEED_BY.map((n) => (
+              <Chip
+                key={n}
+                label={copy.movingOutChoices[n]}
+                selected={n === 'none' ? !movingOut : needByDate(n, new Date()) === movingOut}
+                disabled={awayBusy}
+                onPress={() => void setMovingOut(n)}
+                testID={`moving-out-${n}`}
+              />
+            ))}
+          </View>
+        </View>
+      ) : null}
       <View style={styles.tabs}>
         <SegmentedControl
           label={copy.listingsTitle}
@@ -810,7 +909,17 @@ const styles = StyleSheet.create((theme, rt) => ({
   tagRow: { flexDirection: 'row', marginTop: theme.space.xs },
   stats: { marginTop: -theme.space.xs },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
-  tabs: { paddingHorizontal: theme.space.screen, paddingBottom: theme.space.md },
+  tabs: {
+    paddingHorizontal: theme.space.screen,
+    paddingBottom: theme.space.md,
+    gap: theme.space.xs,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.space.sm,
+    paddingTop: theme.space.xs,
+  },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',

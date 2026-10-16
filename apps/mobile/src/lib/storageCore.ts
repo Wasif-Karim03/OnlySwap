@@ -21,6 +21,8 @@ export type StorageSchema = {
   'feed.swipeQueue': unknown;
   /** Activity events not yet sent to track_events, with their owner (lib/activity.ts PersistedQueue). */
   'activity.queue': unknown;
+  /** Listing ids opened recently, newest first, max 20 (features/feed/recent.ts, DEC 128). */
+  'feed.recentlyViewed': unknown;
   /** Recent search text, newest first (features/search/logic.ts). */
   'search.recent': unknown;
   /** Last time we asked for an App Store / Play review (ISO), X26. */

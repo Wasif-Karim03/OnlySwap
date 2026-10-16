@@ -9,6 +9,7 @@ import { AccessibilityInfo, Text } from 'react-native';
 
 import { useToastStore } from '../src/components/Toast';
 import type { CampusApi, NewsApi } from '../src/features/campus/api';
+import type { QuadApi } from '../src/features/quad/api';
 import { CampusFeedScreen } from '../src/features/campus/CampusFeedScreen';
 import {
   combineDayTime,
@@ -472,5 +473,53 @@ describe('DEC 98 news on the listing screen', () => {
     expect(screen.queryByText(/meetup/i)).toBeNull();
     fireEvent.press(screen.getByTestId('listing-open-link'));
     expect(openUrl).toHaveBeenCalledWith('https://www.forms.example.com/fair');
+  });
+});
+
+// ---------------------------------------------------------------------------------------------
+describe('T-UNIT-QUADCHIP-01 the Quad is a Feed chip (DEC 130)', () => {
+  const quadFake = (enabled: boolean) =>
+    ({
+      status: jest.fn(async () => ({ enabled, rules_accepted: true })),
+      feed: jest.fn(async () => ({ items: [], next_cursor: null, pinned: null })),
+    }) as unknown as QuadApi;
+  const open = (quad: QuadApi, url = '/feed') =>
+    renderAt(
+      {
+        feed: () => (
+          <CampusFeedScreen
+            api={{ feed: jest.fn(async () => page([SALE])) } as unknown as CampusApi}
+            quad={quad}
+            now={() => NOW}
+            mediaBase={() => 'http://m'}
+            loadMe={me}
+          />
+        ),
+      },
+      url,
+    );
+
+  it('no chip where the campus has the Quad off', async () => {
+    open(quadFake(false));
+    expect(await screen.findByText('Desk lamp')).toBeTruthy();
+    await waitFor(() => expect(screen.queryByTestId('campus-filter-quad')).toBeNull());
+  });
+
+  it('the chip opens the Quad under the Feed header, another chip goes back', async () => {
+    const quad = quadFake(true);
+    open(quad);
+    fireEvent.press(await screen.findByTestId('campus-filter-quad'));
+    expect(await screen.findByTestId('screen-quad')).toBeTruthy();
+    expect(screen.getByTestId('feed-header')).toBeTruthy();
+    expect(screen.getByTestId('quad-new-post')).toBeTruthy();
+    await waitFor(() => expect(quad.feed).toHaveBeenCalled());
+    fireEvent.press(screen.getByText(campus.filters.all));
+    expect(await screen.findByText('Desk lamp')).toBeTruthy();
+    expect(screen.queryByTestId('screen-quad')).toBeNull();
+  });
+
+  it('/feed?kind=quad (old /quad links) opens on the chip', async () => {
+    open(quadFake(true), '/feed?kind=quad');
+    expect(await screen.findByTestId('screen-quad')).toBeTruthy();
   });
 });

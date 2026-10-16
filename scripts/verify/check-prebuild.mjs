@@ -342,10 +342,16 @@ check(
   diff(removed, BLOCKED),
 );
 const kept = perms.filter((p) => !p.removed).map((p) => p.name);
+// CAMERA is for the ISBN scan (DEC 131).
+const DIRECT = [
+  'android.permission.INTERNET',
+  'android.permission.CAMERA',
+  'android.permission.VIBRATE',
+];
 check(
-  'app manifest requests only INTERNET and VIBRATE directly',
-  sameSet(kept, ['android.permission.INTERNET', 'android.permission.VIBRATE']),
-  diff(kept, ['android.permission.INTERNET', 'android.permission.VIBRATE']),
+  'app manifest requests only INTERNET, CAMERA and VIBRATE directly',
+  sameSet(kept, DIRECT),
+  diff(kept, DIRECT),
 );
 check('activity is portrait', /android:screenOrientation="portrait"/.test(manifest));
 check('deep link scheme onlyswap', /<data android:scheme="onlyswap"\/>/.test(manifest));

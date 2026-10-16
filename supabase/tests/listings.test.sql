@@ -196,7 +196,7 @@ update public.listings set status = 'expired', bumped_at = '2027-01-01' where id
 select is(tests.try_text_as(tests.uid('A'), format($$select public.relist_listing(%L, 1000) ->> 'status'$$, (select id from ids where name = 'v'))),
   'active', 'an expired listing comes back');
 select is(tests.try_text_as(tests.uid('A'), format($$select public.relist_listing(%L)::text$$, (select id from ids where name = 'v'))),
-  'ERROR: RATE_LIMITED:relist_listing:2027-03-17T17:00:00Z', 'bumping again within 7 days is refused');
+  'ERROR: RATE_LIMITED:relist_listing:2027-03-13T17:00:00Z', 'bumping again within 3 days is refused (DEC 125)');
 
 select * from finish();
 rollback;

@@ -1,5 +1,5 @@
 import { fill } from '@/lib/format';
-import { feed as copy, profileView, sell as sellCopy } from '@/strings';
+import { feed as copy, intlLocale, profileView, sell as sellCopy } from '@/strings';
 
 import { ago, mediaUrl, priceLabel, type AnyListingKind, type Condition } from '../sell/logic';
 import type { SwipeDir } from './deckMath';
@@ -40,6 +40,14 @@ export type FeedItem = {
     avatar_path: string | null;
     year: string | null;
     created_at: string | null;
+    /** Seller stats (DEC 124, 0235); optional so older cached cards still parse. */
+    swaps_count?: number;
+    thumbs_up?: number;
+    thumbs_total?: number;
+    /** Away mode (DEC 126, 0237). */
+    away?: boolean;
+    /** DEC 133: "YYYY-MM-DD" while the seller is moving out. */
+    moving_out_by?: string | null;
   };
   photos: {
     path: string;
@@ -53,6 +61,9 @@ export type FeedItem = {
   /** News posts (DEC 98): an optional link and event time. */
   link_url?: string | null;
   event_at?: string | null;
+  /** Wanted posts (DEC 127, 0238). */
+  need_by?: string | null;
+  wanted_alerts?: boolean;
 };
 
 export type FeedCursor = { bumped_at: string; id: string };
@@ -98,6 +109,41 @@ export function yearLabel(year: string | null | undefined): string | null {
   return years[year] ?? null;
 }
 
+/** Ratings needed before a percentage shows; one bad rating shouldn't read as "0%". */
+export const TRUST_MIN_RATINGS = 3;
+
+/**
+ * "Verified student · 95% thumbs up" (DEC 124). Every account is a verified
+ * student; the stat is the percentage once rated enough, else the swaps.
+ */
+export function trustLine(seller: FeedItem['seller']): string {
+  const up = seller.thumbs_up ?? 0;
+  const total = seller.thumbs_total ?? 0;
+  const swaps = seller.swaps_count ?? 0;
+  const stat =
+    total >= TRUST_MIN_RATINGS
+      ? fill(copy.trustThumbs, { pct: Math.round((up / total) * 100) })
+      : swaps === 1
+        ? copy.trustSwapsOne
+        : swaps > 1
+          ? fill(copy.trustSwaps, { n: swaps })
+          : null;
+  return [copy.verified, stat, movingOutLine(seller.moving_out_by)]
+    .filter(Boolean)
+    .join(copy.metaSeparator);
+}
+
+/** "Moving out by Mar 30" (DEC 133); null when the seller isn't moving out. */
+export function movingOutLine(date: string | null | undefined): string | null {
+  if (!date) return null;
+  const [y, m, d] = date.split('-').map(Number);
+  const shown = new Date(y ?? 1970, (m ?? 1) - 1, d ?? 1).toLocaleDateString(intlLocale, {
+    month: 'short',
+    day: 'numeric',
+  });
+  return fill(copy.movingOut, { date: shown });
+}
+
 export function toDeckCard(item: FeedItem, mediaBase: string, now: Date): DeckCard {
   return {
     id: item.id,
@@ -107,6 +153,7 @@ export function toDeckCard(item: FeedItem, mediaBase: string, now: Date): DeckCa
     sellerName: sellerName(item),
     sellerAvatar: item.seller.avatar_path ? mediaUrl(mediaBase, item.seller.avatar_path) : null,
     sellerYear: yearLabel(item.seller.year),
+    trust: trustLine(item.seller),
     photos: item.photos.map((p) => ({ uri: mediaUrl(mediaBase, p.path), blurhash: p.blurhash })),
     saveCount: item.save_count,
   };

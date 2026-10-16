@@ -33,6 +33,8 @@ The client maps these to copy in `apps/mobile/src/strings/en.ts` → `errors.*`.
 | `BANNED_TERM:<term>` | text blocked by banned words |
 | `RATE_LIMITED:<action>:<retry_at>` | limit hit |
 | `OFFERS_PAUSED` | no-show pause |
+| `SELLER_AWAY` | the seller paused their listings (DEC 126) |
+| `HANDOFF_LOCKED` | 5 wrong handoff codes on this meetup (DEC 132) |
 | `LISTING_UNAVAILABLE` | not active / not open to offers |
 | `OFFER_NOT_PENDING` | state changed |
 | `ALREADY_REPORTED` | duplicate open report |
@@ -116,7 +118,7 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 
 | RPC | Args | Returns | Errors / rules | Limit |
 |---|---|---|---|---|
-| `get_feed` | `cursor jsonb, limit int=20` | `FeedItem[]` | excludes own, swiped 30 d, blocked, deleted; <5 results → `daily_counters.feed_exhausted++` | 120/h |
+| `get_feed` | `cursor jsonb, limit int=20` | `FeedItem[]` (`seller` has `swaps_count, thumbs_up, thumbs_total`, DEC 124) | excludes own, swiped 30 d, blocked, deleted; <5 results → `daily_counters.feed_exhausted++` | 120/h |
 | `record_swipes` | `items jsonb` (≤50: `{listing_id, dir: left\|right\|save, at, dwell_ms?}`) | void | upsert; unknown ids and dirs ignored; `right` since DEC 106 (older apps send a right swipe as `left`); `dwell_ms` is time on card, capped at 600000, anything else stored as null (DEC 100) | 60/h |
 | `undo_swipe` | `listing_id` | void | within 60 s | — |
 | `save_listing` / `unsave_listing` | `listing_id` | `{save_count}` | not own; same campus | 200/day |
@@ -125,6 +127,8 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 | `record_view` | `listing_id` | void | once/user/day | — |
 | `track_events` | `events jsonb` (≤50: `{kind, listing_id?, source?, dwell_ms?, query?, at?}`), `platform text?` (`ios`\|`android`\|`web`), `app_version text?` | `{accepted}` | admin v2 activity (DEC 93): kinds `app_open`, `listing_viewed`, `unsaved`, `searched`, `opened_from` (DEC 100: `deck_shown`, `swiped_left`, `saved` and `offer_made` from older builds are dropped without an error); sources `discover`, `search`, `campus`, `profile`, `saved`, `link`, `notification` (else null); unknown kinds, listings not on the caller's campus or deleted, and `searched` without text are dropped; dwell capped at 600000 ms; query cut to 80; `at` kept within the last 24 h; stamps `last_active_at`, `last_platform`, `last_app_version`; `INVALID:events` when not an array or > 50 | 120/h |
 | `get_listing` | `id` | `FeedItem & {access}`; `{id, access}` when not visible | access: buyer, owner, gone, blocked, other_campus (DEC 57) | 600/h |
+| `similar_listings` | `id` | `FeedItem[]` | More like this (DEC 128): same campus + category, active sale/free, not own, not blocked, not away; nearest price first; 10 | 600/h |
+| `get_listings_by_ids` | `ids uuid[]` (≤ 20) | `FeedItem[]` | Recently viewed (DEC 128; ids kept on the phone): active/hold sale/free on my campus, not blocked, in the given order | 300/h |
 | `get_campus_feed` | `kind text?, cursor` | items (all, news, free, wanted, food, new); `all` = food, free, wanted, news and sale from the last 7 days; items carry `link_url`, `event_at` (DEC 98); `day_one`, `active_listings`, `founding` on page one only, null after (0229) | — | 120/h |
 | `create_news` | `id` (reserved), `title`, `description?`, `photos jsonb` (≤4), `link_url?`, `event_at?`, `place?` | listing | DEC 98: kind `news`, price 0, no offers; title 3–80, description ≤1000, place ≤60 (stored in `meet_note`), link `^https?://` with a dot, ≤300; `event_at` future and ≤90 days; expires at the end of the event's day in campus time, else now + 14 days; banned words and review holds as `create_listing`; `FORBIDDEN` without a reservation; idempotent on the id | create_listing 20/day + 3/day news |
 | `search_listings` | `q, filters, cursor` | listings | `websearch_to_tsquery`; trigram fallback (both indexed, DEC 101); `cursor` `{offset}`; unknown filter keys → `INVALID:filters` | 120/h |
@@ -141,7 +145,10 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 | `create_listing` | `id, kind, title, description, category_id, condition, price_cents, open_to_offers, photos jsonb, meet_spot_ids, meet_note, availability, wanted_max_cents, wanted_ref, food_minutes, pickup_by` | listing | id must be reserved by the caller; **idempotent** (`on conflict (id) do nothing`, returns existing); photos 1–8 (sale/free), 0–1 (wanted/food); path prefix check; `BANNED_TERM`; review → `held_review`; price ≤ 200000; food ≤ 180 min; `pickup_by` (free only, today…+14 d) sets the expiry (DEC 54) | 20/day (3 in first 24 h); wanted 5/day; food 3/day |
 | `update_listing` | `id, …` | listing | seller; not sold/deleted; price change logged | 50/day |
 | `delete_listing` | `id` | void | **soft**: status `deleted`, `deleted_at`; auto-declines, closes chats | — |
-| `relist_listing` | `id, price_cents` | listing | expired or fell-through; bump once / 7 d | — |
+| `relist_listing` | `id, price_cents` | listing | expired, or Renew an active sale/free listing; once / 3 d (DEC 125); `my_listings` adds `renew_at` | — |
+| `set_moving_out` | `by date` (null clears) | `{moving_out_by}` | Moving out (DEC 133): campus today to +60 days, else `INVALID:by`. `get_me.moving_out_by`, `get_profile.moving_out_by`, `FeedItem.seller.moving_out_by` (null once the date passes) | — |
+| `set_away` | `away bool` | `{away_since}` | Away mode (DEC 126): hides own sale/free listings from deck, search, campus feed; new offers → `SELLER_AWAY` (trigger); off adds the time away to active listings' `expires_at`. `get_me.away_since`, `get_profile.away`, `FeedItem.seller.away` | — |
+| `set_wanted_prefs` | `id, need_by date, alerts bool` | `{need_by, wanted_alerts}` | own Wanted post (DEC 127): need_by today..+60 campus days, the post ends that day; alerts off → no `wanted_match`; with alerts on a title match also alerts. `FeedItem.need_by`, `wanted_alerts` | — |
 | `set_listing_share_image` | `id` | `{share_image_path}` | seller; not deleted; records `share/{id}.jpg` after the app uploads the share card (DEC 55) | 30/day |
 | `mark_sold` | `id, buyer_id?` | void | buyer must be a chat participant; closes other chats | — |
 | `listing_stats` / `listing_offers` | `id` | stats / offers | seller only | — |
@@ -151,7 +158,8 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 | RPC | Args | Returns | Errors / rules | Limit |
 |---|---|---|---|---|
 | `make_offer` | `listing_id, amount_cents, note, quick_notes` | offer | not own; `FOR SHARE` lock; active + open; not blocked; `check_text(note)`; existing open offer → updates amount; `OFFERS_PAUSED` | campus `offers_per_hour` (10)/h; 5/day in first 24 h |
-| `accept_offer` | `offer_id` | `{chat_id}` | correct party; `FOR UPDATE` listing; creates chat with snapshot; auto-declines others | — |
+| `make_bundle_offer` | `listing_id, bundle_ids, amount_cents, note?, quick_notes?` | offer (with `bundle`) | DEC 133: seller moving out; 1 to 10 other active sale/free items of the same seller (`INVALID:bundle_ids`, `LISTING_UNAVAILABLE`); amount is for everything: 0 if all free, else $1 to $2,000, no firm-price rule; an open offer on the main item is replaced | shares `make_offer`'s limit |
+| `accept_offer` | `offer_id` | `{chat_id}` | correct party; `FOR UPDATE` listing; creates chat with snapshot; auto-declines others. Bundle (DEC 133): holds every item or fails `LISTING_UNAVAILABLE`, chat title "X + N more", declines open offers on all items; a trigger carries the main item's sold / back-to-active onto the bundle | — |
 | `counter_offer` | `offer_id, amount_cents, note` | offer | round < 4; alternating | 30/day |
 | `decline_offer` | `offer_id, reason` | void | — | — |
 | `withdraw_offer` | `offer_id` | void | buyer | — |
@@ -163,16 +171,17 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 | RPC | Args | Returns | Errors / rules | Limit |
 |---|---|---|---|---|
 | `get_messages` | `chat_id, before bigint?, limit=50, after bigint?` | messages | participant; `after` for reconnect (DEC 61) | — |
-| `get_chat` | `chat_id` | chat summary + state | participant (DEC 61) | — |
+| `get_chat` | `chat_id` | chat summary + state; `bundle` (other items, DEC 133) | participant (DEC 61) | — |
 | `send_message` | `chat_id, kind='text', body, client_id` | message | participant; open; not blocked; **idempotent on client_id**; `kind='photo'` → `FEATURE_OFF` in R1.0 | 60/min, 1000/day |
 | `mark_chat_read` / `set_chat_mute` / `hide_chat` | `chat_id, …` | void | — | — |
 | `propose_meetup` | `chat_id, spot_id?, custom_place?, starts_at` | meetup | now+15 min ≤ starts_at ≤ now+14 d; cancels previous active in the same tx | 20/day |
 | `confirm_meetup` | `meetup_id` | void | other party | — |
 | `checkin_meetup` | `meetup_id` | void | start −60 … +60 min | — |
+| `confirm_handoff` | `meetup_id, code` | `{ok, tries_left}` | seller only, confirmed meetup; a wrong code counts a try (5, then HANDOFF_LOCKED); the right one completes the meetup, sets both outcomes done, sells to this buyer, sends both rate prompts (DEC 132) | FORBIDDEN, MEETUP_WINDOW, INVALID:code, HANDOFF_LOCKED |
 | `running_late` | `meetup_id, minutes` | void | 5/10/15/30 | — |
 | `cancel_meetup` | `meetup_id, reason` | void | — | — |
 | `create_meetup_share` | `meetup_id` | `{url}` | 22-char token; expires start + 24 h | 10/day |
-| `get_meetup` / `get_chat_meetup` | `meetup_id` / `chat_id` | meetup (or null) | participants (DEC 62) | — |
+| `get_meetup` / `get_chat_meetup` | `meetup_id` / `chat_id` | meetup (or null); adds `i_am_seller`, `handoff_code` (buyer only, while confirmed), `handoff_at`, `handoff_tries_left` (DEC 132) | participants (DEC 62) | — |
 | `report_noshow` | `meetup_id, note` | void | reporter checked in; ≥ start+20 min; other not checked in → else `MEETUP_WINDOW` | — |
 | `confirm_deal` | `chat_id, outcome` | void | `done` / `not_yet` / `fell_through` (listing back to active) | — |
 | `get_my_rating` | `chat_id` | `{mine, theirs, theirs_waiting}` | theirs only once revealed (DEC 63) | — |

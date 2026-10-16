@@ -464,6 +464,20 @@ describe('P5-SELL-03 D02 Sell · details', () => {
     await waitFor(() => expect(router.getPathname()).toBe('/sell/meetup'));
   });
 
+  it('T-UNIT-ISBN-05: Scan a book barcode opens the scanner on a sale only', async () => {
+    const store = createDraftStore(memoryStorage(), { now: () => NOW });
+    const router = setup('/sell/details', {
+      ...detailsRoute(fakeApi(), store),
+      'sell/scan': () => <Stub id="screen-scan-stub" />,
+    });
+    await screen.findByTestId('sell-scan-book');
+    tap('sell-scan-book');
+    await waitFor(() => expect(router.getPathname()).toBe('/sell/scan'));
+    act(() => jest.requireActual('expo-router').router.back());
+    fireEvent.press(await screen.findByLabelText(sell.giveAway));
+    await waitFor(() => expect(screen.queryByTestId('sell-scan-book')).toBeNull());
+  });
+
   it('D4: give it away hides category and price and asks for a pickup day', async () => {
     const store = createDraftStore(memoryStorage(), { now: () => NOW });
     setup('/sell/details', detailsRoute(fakeApi(), store));

@@ -32,6 +32,7 @@ import {
   money,
   needsYouCounts,
   offerStatusShort,
+  offerTitle,
   shortAgo,
   type InboxRow,
   type InboxSide,
@@ -112,7 +113,7 @@ export function InboxScreen({
     const other = r.kind === 'offer' ? r.offer.other : r.chat.other;
     const name = other?.display_name ?? copy.deletedUser;
     const avatar = other?.avatar_path ? mediaUrl(base, other.avatar_path) : null;
-    const title = r.kind === 'offer' ? (r.offer.listing?.title ?? '') : r.chat.listing_title;
+    const title = r.kind === 'offer' ? offerTitle(r.offer) : r.chat.listing_title;
     const thumb =
       r.kind === 'offer' ? (r.offer.listing?.thumb_path ?? null) : r.chat.listing_thumb_path;
     let status: string;

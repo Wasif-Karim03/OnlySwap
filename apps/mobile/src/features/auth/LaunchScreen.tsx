@@ -9,14 +9,12 @@ import { Mark } from '@/components/Mark';
 import { launch as copy } from '@/strings';
 
 import { clearInviteCode } from './invite';
-import { launchStartedAt } from './launchTiming';
+import { useLaunchIntro } from './LaunchIntro';
+import { launchStartedAt, SPLASH_MARK } from './launchTiming';
 import { GATE_HREF } from './logic';
 import { useAppGate } from './useAppGate';
 
 const SIGNED_OUT_ROUTES = new Set<string>(['welcome', 'maintenance', 'update']);
-
-/** Native splash icon width (app.config.ts `imageWidth`), so the handoff doesn't jump. */
-const SPLASH_MARK = 88;
 
 /**
  * S-A01 Launch (P4-AUTH-03). The native splash stays up while the session
@@ -36,6 +34,7 @@ export function LaunchScreen() {
     // link only opens the app, so a kept code is dropped (R11-INVITE-01).
     if (!SIGNED_OUT_ROUTES.has(gate.route)) clearInviteCode();
     router.replace(GATE_HREF[gate.route] as Href);
+    useLaunchIntro.getState().setReady();
     void SplashScreen.hideAsync().catch(() => {});
     if (__DEV__ && launchStartedAt.ms && process.env.NODE_ENV !== 'test') {
       // eslint-disable-next-line no-console -- dev-only cold-start timing for P4-AUTH-03, stripped from release
@@ -46,7 +45,9 @@ export function LaunchScreen() {
   }, [gate.route, router]);
 
   useEffect(() => {
-    if (gate.failed) void SplashScreen.hideAsync().catch(() => {});
+    if (!gate.failed) return;
+    useLaunchIntro.getState().setReady();
+    void SplashScreen.hideAsync().catch(() => {});
   }, [gate.failed]);
 
   if (gate.failed) {

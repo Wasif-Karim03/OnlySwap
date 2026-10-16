@@ -22,7 +22,14 @@ const RULES: { icon: IconName; title: string; body: string }[] = [
  * Q01 Welcome to the Quad (first visit). The anonymity disclosure is the first
  * rule and first in reading order; nobody can post until they agree.
  */
-export function QuadWelcome({ onAccept }: { onAccept: () => Promise<void> }) {
+export function QuadWelcome({
+  onAccept,
+  embedded = false,
+}: {
+  onAccept: () => Promise<void>;
+  /** Inside the Feed (DEC 130): the Feed header already sits above, so no inset. */
+  embedded?: boolean;
+}) {
   const [agreed, setAgreed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +47,7 @@ export function QuadWelcome({ onAccept }: { onAccept: () => Promise<void> }) {
 
   return (
     <View style={styles.root} testID="quad-welcome">
-      <ScrollView contentContainerStyle={styles.body}>
+      <ScrollView contentContainerStyle={[styles.body, embedded && styles.bodyEmbedded]}>
         <GlyphTile icon="quad" tile="accent" />
         <Text variant="title" accessibilityRole="header">
           {copy.welcomeTitle}
@@ -90,6 +97,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingTop: rt.insets.top + theme.space.xl,
     paddingBottom: theme.space.xl,
   },
+  bodyEmbedded: { paddingTop: theme.space.lg },
   rule: { flexDirection: 'row', gap: theme.space.md },
   ruleIcon: {
     width: theme.size.hit,

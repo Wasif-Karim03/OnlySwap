@@ -243,3 +243,34 @@ Legal pages are drafted by the owner. A lawyer review is optional and not free (
 - widget and Live Activity text follows Dynamic Type and uses system fonts and colors; VoiceOver reads the Android widget's label
 - alternate icons use only the OnlySwap mark (no school names or marks), and the default icon in the store listing is the main icon
 - manual check on a device: add the small and medium widget, confirm a meetup within 2 h, see the countdown on the Lock Screen and in the Dynamic Island, check in ("I'm here"), cancel, switch the setting off; Android: add the widget, switch each icon
+
+## 9. Campus launch playbook (DEC 134)
+
+Campus marketplaces fail on an empty first deck, not on missing features. Launch one campus at a time, and only when the first deck will be full. $0 only: no paid ads, no prizes, no gift cards (DEC 8, sweepstakes law).
+
+**Pick the window.** Time launch day to the start of a move-out or move-in window, when students list and buy the most:
+- move-out: the last 3 weeks of the spring term, and the week before winter break
+- move-in: the first 2 weeks of the fall term
+
+**4 weeks before (recruit founding sellers).**
+- Goal: 10 to 20 founding sellers with 30+ listings between them before launch day (the R1.0 go/no-go asks for 30+ founding listings).
+- Ask in person: friends, RAs, club officers, students posting in class group chats. One message, one link, no mass email to lists.
+- Each founding seller gets the Founding seller badge (status only, DEC 8, `campuses.founding_seller_limit`, 50 by default). Nothing else is promised.
+- Ask them to set "Moving out by" if they are, so buyers can bundle (DEC 133).
+
+**2 weeks before (fill the deck).**
+- Founding sellers list with the Sell flow; "List another" keeps their spots, note and times, so 5 items take minutes.
+- Check the Meetup spots for the campus are right: names, hours, and "Police-designated" only where it is official.
+- Seed 3 to 5 Wanted posts from founding sellers ("Need a mini fridge by Sept 1") so the Feed has more than listings.
+
+**Launch day.**
+- The Day one hero and the founding sellers card show on the Feed while the campus is new.
+- Founding sellers share their invite links and listing links (`/l/:id` share cards) in their own group chats.
+- Flyers: only where the campus posting rules allow, with permission where needed. No school names, logos or marks on any material (same rule as store assets).
+
+**Weeks 1 and 2 (keep it alive).**
+- Every morning: check the admin queue, new reports and stuck offers; answer support the same day.
+- Watch the PRD §5.4 launch metrics daily: listings posted, offers made, offers accepted, swaps done. If offers stall, ask founding sellers to renew (every 3 days, DEC 125) rather than relist.
+- Thank founding sellers in person; ask what was confusing and log it.
+
+**Next campus** only when this one has swaps happening every day without founding sellers pushing them.

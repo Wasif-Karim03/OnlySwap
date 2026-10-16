@@ -2,7 +2,7 @@ import { useNetInfo } from '@react-native-community/netinfo';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { Platform, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { Banner, isOffline } from '@/components/Banner';
@@ -21,6 +21,7 @@ import { sell as copy } from '@/strings';
 
 import { sellApi, type SellApi } from './api';
 import { getDraftStore, useDraft, type DraftState } from './draft';
+import { addStarter, STARTERS, titleExample } from './help';
 import {
   centsToPrice,
   cleanPrice,
@@ -315,6 +316,19 @@ export function SellDetailsScreen({
         error={errorFor('title')}
         testID="sell-title"
       />
+      <Text variant="meta" tone="ink2" testID="sell-title-example">
+        {titleExample(categories.data ?? [], draft.categoryId)}
+      </Text>
+      {/* Scan ISBN (DEC 131): native only, the web has no barcode camera. */}
+      {Platform.OS !== 'web' && sale ? (
+        <Button
+          label={copy.scanBook}
+          variant="secondary"
+          size="S"
+          onPress={() => router.push('/sell/scan')}
+          testID="sell-scan-book"
+        />
+      ) : null}
       {sale ? (
         <View style={styles.priceRow}>
           <View style={styles.priceField}>
@@ -421,6 +435,22 @@ export function SellDetailsScreen({
         error={errorFor('description')}
         testID="sell-description"
       />
+      <View style={styles.field}>
+        <Text variant="label" tone="ink3">
+          {copy.startersLabel}
+        </Text>
+        <View style={styles.chips} testID="sell-starters">
+          {STARTERS.map((s) => (
+            <Chip
+              key={s}
+              label={copy.starters[s]}
+              selected={draft.description.includes(copy.starters[s])}
+              onPress={() => update({ description: addStarter(draft.description, s) })}
+              testID={`sell-starter-${s}`}
+            />
+          ))}
+        </View>
+      </View>
     </SellStep>
   );
 }

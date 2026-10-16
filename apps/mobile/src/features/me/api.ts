@@ -20,6 +20,10 @@ export type Me = {
   analytics_opt_in: boolean;
   crash_reports_opt_in: boolean;
   theme_mode: 'system' | 'light' | 'dark';
+  /** Away mode (DEC 126, 0237); optional for older cached rows. */
+  away_since?: string | null;
+  /** DEC 133: "YYYY-MM-DD" while moving out. */
+  moving_out_by?: string | null;
   counts: {
     active: number;
     sold: number;
@@ -30,7 +34,8 @@ export type Me = {
   };
 };
 
-export type MyListing = FeedItem & { can_relist: boolean };
+/** `renew_at`: when an active sale/free listing can next be renewed (DEC 125, 0236). */
+export type MyListing = FeedItem & { can_relist: boolean; renew_at?: string | null };
 
 export type ListingStats = {
   views: number;
@@ -73,6 +78,8 @@ export type MeApi = {
   updateListing: (id: string, patch: ListingPatch) => Promise<void>;
   deleteListing: (id: string) => Promise<void>;
   relist: (id: string, priceCents: number | null) => Promise<void>;
+  setAway: (away: boolean) => Promise<void>;
+  setMovingOut: (by: string | null) => Promise<void>;
 };
 
 const rpc = createRpc(() => getSupabase() as unknown as RpcClient);
@@ -105,6 +112,12 @@ export const meApi: MeApi = {
   },
   relist: async (id, priceCents) => {
     await rpc('relist_listing', { id, price_cents: priceCents });
+  },
+  setAway: async (away) => {
+    await rpc('set_away', { away });
+  },
+  setMovingOut: async (by) => {
+    await rpc('set_moving_out', { by });
   },
 };
 

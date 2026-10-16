@@ -42,6 +42,8 @@ export const errors = {
   RATE_LIMITED: "You're doing that a lot. Try again in a little while.",
   RATE_LIMITED_UNTIL: "You're doing that a lot. Try again after {time}.",
   OFFERS_PAUSED: 'Offers are paused on your account after a missed meetup.',
+  SELLER_AWAY: 'This seller paused their listings. Save it and check back later.',
+  HANDOFF_LOCKED: 'Too many wrong codes. Use Did it sell? in the chat instead.',
   LISTING_UNAVAILABLE: "This item isn't taking offers right now.",
   OFFER_NOT_PENDING: 'This offer changed. Pull to refresh.',
   ALREADY_REPORTED: "You've already reported this. We're on it.",
@@ -108,7 +110,7 @@ export const primer = {
   openSettings: 'Open Settings',
   camera: {
     title: 'Take photos of your stuff',
-    body: 'OnlySwap uses the camera only when you add photos to a listing, your profile or a chat. Nothing is recorded in the background.',
+    body: "OnlySwap uses the camera only when you add photos to a listing, your profile or a chat, or scan a book's barcode. Nothing is recorded in the background.",
     cta: 'Continue',
     alternative: 'Choose from library instead',
     deniedTitle: 'Camera is turned off',
@@ -740,6 +742,31 @@ export const sell = {
   modeLabel: 'Sell or give away',
   titleLabel: 'Title',
   titlePlaceholder: 'What is it?',
+  /** Scan ISBN (DEC 131). */
+  scanBook: 'Scan a book barcode',
+  scanTitle: 'Scan the barcode',
+  scanBody: 'Point the camera at the barcode on the back cover. We fill in the title for you.',
+  scanLooking: 'Looking up the book',
+  scanNotBook: "That barcode isn't a book. Try the one that starts with 978 or 979.",
+  scanNotFound: "We couldn't find that book. Type the title instead.",
+  scanOffline: "You're offline. Type the title, or scan again once you're back online.",
+  scanAgain: 'Scan again',
+  scanType: 'Type it instead',
+  scanFound: 'Title filled in from the barcode',
+  /** Listing help (DEC 129): an example title for the chosen top-level category. */
+  titleExample: 'Example: {example}',
+  titleExamples: {
+    any: 'Brand, item, then size or model',
+    '1': 'IKEA Malm desk, white',
+    '2': 'Calculus: Early Transcendentals, 8th edition',
+    '3': 'Dell 27 inch monitor, 1440p',
+    '4': 'North Face puffer jacket, size M',
+    '5': 'Keurig K-Mini coffee maker',
+    '6': 'Trek city bike, 54 cm frame',
+    '7': 'Yamaha acoustic guitar with case',
+    '8': 'Yoga mat and two blocks',
+    '9': 'String lights, 33 ft, warm white',
+  },
   categoryLabel: 'Category',
   categoryPlaceholder: 'Pick a category',
   categoriesTitle: 'Pick a category',
@@ -763,6 +790,16 @@ export const sell = {
   freeBody: 'Free things usually go within a day. You pick who gets it from the people who ask.',
   descriptionLabel: 'Description',
   descriptionPlaceholder: 'Brand, size, what is included, any flaws.',
+  /** Tap to add a line to the description (DEC 129). */
+  startersLabel: 'Quick details',
+  starters: {
+    barely: 'Barely used.',
+    works: 'Works perfectly.',
+    charger: 'Comes with the charger.',
+    smoke: 'Smoke-free home.',
+    pets: 'Pet-free home.',
+    pickup: 'Pickup only.',
+  },
   fixCount: '{count} things to fix before you can post',
   fixOne: '1 thing to fix before you can post',
   errors: {
@@ -844,6 +881,12 @@ export const feed = {
   cardHint: 'Swipe right to make an offer, left to skip. Actions menu has more.',
   savedBy: '{n} people saved this',
   savedByOne: '1 person saved this',
+  /** Trust line on the card and the listing seller row (DEC 124). */
+  verified: 'Verified student',
+  trustThumbs: '{pct}% thumbs up',
+  trustSwaps: '{n} swaps',
+  trustSwapsOne: '1 swap',
+  movingOut: 'Moving out by {date}',
   photoCount: 'Photo {n} of {total}',
   listTitle: 'Listings',
   metaSeparator: ' · ',
@@ -874,6 +917,8 @@ export const feed = {
   more: 'More options',
   shareMessage: '{title}, {price} on OnlySwap',
   descriptionTitle: 'About this item',
+  /** DEC 128. */
+  moreLikeThis: 'More like this',
   meetupTitle: 'Meetup',
   meetupDecide: 'You and the seller pick a spot in chat.',
   availabilityTitle: 'Usually free',
@@ -887,6 +932,9 @@ export const feed = {
   onHold: 'On hold',
   onHoldBody: 'Someone is meeting up for this. It may come back.',
   tellMe: 'Tell me if it comes back',
+  /** Away mode (DEC 126). */
+  sellerAway: 'Seller is away',
+  sellerAwayBody: '{name} paused their listings for now. Save it and check back later.',
   watching: "We'll tell you",
   sold: 'Sold',
   inReview: 'In review',
@@ -916,6 +964,8 @@ export const search = {
   placeholder: 'Search your campus',
   inputLabel: 'Search',
   cancel: 'Cancel',
+  /** DEC 128: kept on the phone only. */
+  recentlyViewed: 'Recently viewed',
   recent: 'Recent',
   clearRecent: 'Clear',
   removeRecent: 'Remove {q}',
@@ -991,6 +1041,7 @@ export const profileView = {
   minutes: '{n} min',
   hours: '{n} h',
   newSeller: 'New seller',
+  away: 'Away',
   newSellerBody:
     "They haven't finished a swap here yet. Meet at a Meetup spot and check the item first.",
   founding: 'Founding seller',
@@ -1023,6 +1074,11 @@ export const profileView = {
 } as const;
 
 export const offers = {
+  // Moving out bundles (DEC 133)
+  bundleBody: 'Add more of their items to this offer. Your amount is for everything.',
+  bundleAsk: 'Asking {price} for {n} items',
+  bundleMore: '{title} + {n} more',
+  bundleAlso: 'Also in this deal: {items}',
   // Offer sheet (B05)
   sheetTitle: 'Make an offer',
   askTitle: 'Ask for it',
@@ -1130,6 +1186,7 @@ export const offers = {
 } as const;
 
 export const chat = {
+  bundleAlso: 'Also in this deal: {items}',
   composerLabel: 'Message',
   composerPlaceholder: 'Message',
   send: 'Send',
@@ -1191,6 +1248,15 @@ export const chat = {
 } as const;
 
 export const meetup = {
+  // Handoff code (DEC 132)
+  handoffTitle: 'Handoff code',
+  handoffBuyer: 'Show this to the seller when you have the item. They type it to finish the swap.',
+  handoffSellerTitle: 'Swap done?',
+  handoffSellerBody: 'Ask the buyer for their 4-digit code and type it here.',
+  handoffLabel: 'Buyer code',
+  handoffConfirm: 'Finish swap',
+  handoffWrong: 'That code does not match. {n} tries left.',
+  handoffDone: 'Swap done.',
   // Plan the pickup (E05)
   planTitle: 'Plan the pickup',
   spotsTitle: 'Meetup spots',
@@ -1541,6 +1607,26 @@ export const me = {
     removed: 'Removed by OnlySwap',
   },
   relist: 'Relist',
+  /** Away mode (DEC 126). */
+  away: 'Pause my listings',
+  awayBody:
+    'Your items leave Discover and search, and no one can make new offers. Chats stay open. Expiry dates move by the time you are away.',
+  awayOn: 'Your listings are paused',
+  awayOff: 'Your listings are back',
+  movingOut: 'Moving out',
+  movingOutBody: 'Buyers see your date and can make one offer for several of your items.',
+  movingOutChoices: {
+    none: 'Not moving',
+    week: 'In a week',
+    twoWeeks: 'In 2 weeks',
+    month: 'In a month',
+  },
+  movingOutSet: 'Buyers can now bundle your items',
+  movingOutCleared: 'Moving out is off',
+  /** Renew an active listing (DEC 125). */
+  renew: 'Renew',
+  renewAt: 'Renew {date}',
+  renewed: 'Moved to the top of Discover',
   stats: 'Stats',
   // F04 Listing stats
   statsTitle: 'Listing stats',
@@ -2020,6 +2106,12 @@ export const campus = {
   budgetHint: 'Leave it empty if you are flexible.',
   categoryLabel: 'Category (optional)',
   categoryHint: 'People who list something in this category hear about your post.',
+  /** Need it by and alert me (DEC 127). */
+  needByLabel: 'Need it by',
+  needBy: { none: 'No rush', week: 'This week', twoWeeks: 'In 2 weeks', month: 'This month' },
+  needByLine: 'Needs it by {date}',
+  alertMe: 'Alert me',
+  alertMeBody: 'Get a notification when someone lists a match.',
   detailsLabel: 'Details (optional)',
   detailsPlaceholder: 'Edition, size, color, when you need it.',
   wantedNote:

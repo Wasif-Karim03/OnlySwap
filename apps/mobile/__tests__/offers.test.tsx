@@ -184,6 +184,7 @@ function render(routes: Record<string, () => ReactNode>, initialUrl: string) {
 function api(over: Partial<OffersApi> = {}): OffersApi {
   return {
     make: jest.fn(async () => offer()),
+    makeBundle: jest.fn(async () => offer()),
     accept: jest.fn(async () => ({ chat_id: 'c1' })),
     counter: jest.fn(async () => offer()),
     decline: jest.fn(async () => {}),

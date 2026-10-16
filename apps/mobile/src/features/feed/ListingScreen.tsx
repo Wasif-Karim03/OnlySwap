@@ -49,11 +49,14 @@ import {
   type Availability,
   type Spot,
 } from '../sell/logic';
-import { feedApi, type FeedApi } from './api';
+import { feedApi, moreApi, type FeedApi, type MoreApi } from './api';
+import { ListingStrip } from './ListingStrip';
+import { rememberViewed, viewedStorage, type ViewedStorage } from './recent';
 import {
   isVisible,
   metaLine,
   sellerName,
+  trustLine,
   yearLabel,
   type FeedItem,
   type ListingResult,
@@ -84,6 +87,8 @@ export function ListingScreen({
   now = () => new Date(),
   draftStore = getDraftStore(),
   appeal = (listingId, reason, body) => safetyApi.appeal('listing', listingId, reason, body),
+  more = moreApi,
+  viewedStore = viewedStorage,
 }: {
   id: string;
   /** Where it was opened from (route param `from`), for the activity event (DEC 93). */
@@ -99,6 +104,10 @@ export function ListingScreen({
   draftStore?: ReturnType<typeof getDraftStore>;
   /** Appeals an admin removal (create_appeal 'listing', DEC 99). */
   appeal?: (listingId: string, reason: AppealReason, body: string) => Promise<void>;
+  /** More like this (DEC 128). */
+  more?: MoreApi;
+  /** Recently viewed ids on this phone (DEC 128). */
+  viewedStore?: ViewedStorage;
 }) {
   const router = useRouter();
   const [appealOpen, setAppealOpen] = useState(false);
@@ -112,14 +121,22 @@ export function ListingScreen({
   const [reporting, setReporting] = useState(false);
   const viewed = useRef(false);
   const data = query.data;
+  const shoppable = data?.access === 'buyer' && (data.kind === 'sale' || data.kind === 'free');
+  const similar = useQuery({
+    queryKey: ['similar', id],
+    queryFn: () => more.similar(id),
+    enabled: shoppable,
+    staleTime: 60_000,
+  });
 
   useEffect(() => {
     if (data?.access === 'buyer' && !viewed.current) {
       viewed.current = true;
       api.recordView(id).catch(() => {});
+      if (data.kind === 'sale' || data.kind === 'free') rememberViewed(id, viewedStore);
       track('listing_viewed', { source: analyticsSource(from) });
     }
-  }, [data, api, id, from]);
+  }, [data, api, id, from, viewedStore]);
 
   // listing_viewed activity (DEC 93): one event, stamped when the listing
   // opened, with the time on the page, sent when the student leaves it or the
@@ -289,6 +306,8 @@ export function ListingScreen({
           testID="listing-open-link"
         />
       ) : null;
+    } else if (item.seller.away && (item.kind === 'sale' || item.kind === 'free')) {
+      cta = <Button label={copy.sellerAway} disabled onPress={() => {}} testID="listing-away" />;
     } else if (item.kind !== 'food') {
       cta = (
         <Button
@@ -348,6 +367,11 @@ export function ListingScreen({
           <Text variant="meta" tone="ink2">
             {metaLine(item, now())}
           </Text>
+          {!owner && item.seller.away && (item.kind === 'sale' || item.kind === 'free') ? (
+            <Text variant="body" tone="ink2" testID="listing-away-note">
+              {fill(copy.sellerAwayBody, { name: sellerName(item) })}
+            </Text>
+          ) : null}
           {news && item.event_at ? (
             <View style={styles.event} testID="listing-event">
               <Icon name="cal" size={18} tone="sky" />
@@ -452,6 +476,12 @@ export function ListingScreen({
                         {sellerMeta}
                       </Text>
                     ) : null}
+                    <View style={styles.trust} testID="listing-trust">
+                      <Icon name="shield" size={14} tone="green" />
+                      <Text variant="meta" tone="ink2" style={styles.flex}>
+                        {trustLine(item.seller)}
+                      </Text>
+                    </View>
                   </View>
                   <Icon name="chev" size={18} tone="ink3" />
                 </View>
@@ -514,6 +544,16 @@ export function ListingScreen({
             >
               {item.description}
             </Text>
+          ) : null}
+
+          {shoppable ? (
+            <ListingStrip
+              title={copy.moreLikeThis}
+              items={similar.data ?? []}
+              mediaBase={base}
+              onOpen={(next) => router.push({ pathname: '/listing/[id]', params: { id: next } })}
+              testID="listing-more-like-this"
+            />
           ) : null}
         </View>
       </ScrollView>
@@ -677,6 +717,7 @@ const styles = StyleSheet.create((theme, rt) => ({
   photoPane: { flex: 1, borderRadius: theme.radius.card, overflow: 'hidden' },
   infoPane: { flex: 1, paddingHorizontal: 0, paddingTop: 0 },
   flex: { flex: 1 },
+  trust: { flexDirection: 'row', alignItems: 'center', gap: theme.space.xs },
   row: { flexDirection: 'row', gap: theme.space.sm },
   top: (wide: boolean) => ({
     position: 'absolute',

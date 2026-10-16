@@ -25,7 +25,7 @@ import { useToastStore } from '@/components/Toast';
 import { track as trackActivity } from '@/lib/activity';
 import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
-import { campus as copy, comments as commentCopy, feed as feedCopy } from '@/strings';
+import { campus as copy, comments as commentCopy, feed as feedCopy, tabs } from '@/strings';
 import { feedColumn } from '@/theme/layout';
 
 import { commentsApi, type CommentsApi } from '../comments/api';
@@ -34,6 +34,9 @@ import { feedApi, type FeedApi } from '../feed/api';
 import type { FeedCursor } from '../feed/logic';
 import { meApi, type Me } from '../me/api';
 import { meKey } from '../me/MeScreens';
+import { quadApi, type QuadApi } from '../quad/api';
+import { useQuadStatus } from '../quad/cache';
+import { QuadScreen } from '../quad/QuadFeedScreen';
 import { answerWanted, getDraftStore, type DraftState } from '../sell/draft';
 import { listingLink, mediaUrl, priceLabel } from '../sell/logic';
 import { campusApi, campusKeys, type CampusApi } from './api';
@@ -65,6 +68,8 @@ type Deps = {
   now?: () => Date;
   /** The signed-in student, for the campus name and the composer avatar. */
   loadMe?: () => Promise<Me>;
+  /** The Quad, shown as a Feed chip where the campus has it on (DEC 130). */
+  quad?: QuadApi;
 };
 
 /**
@@ -84,17 +89,25 @@ export function CampusFeedScreen({
   openUrl = (url) => Linking.openURL(url),
   now = () => new Date(),
   loadMe = () => meApi.me(),
+  quad = quadApi,
 }: Deps) {
   const router = useRouter();
   const qc = useQueryClient();
   const params = useLocalSearchParams<{ kind?: string }>();
   const [kind, setKind] = useState<CampusFilter>(isCampusFilter(params.kind) ? params.kind : 'all');
   // A post screen's "See the Feed" can ask for a filter while the tab is already open.
+  // DEC 130: the Quad is a Feed chip (/feed?kind=quad), no longer a tab.
+  const [inQuad, setInQuad] = useState(params.kind === 'quad');
   const [seenKind, setSeenKind] = useState(params.kind);
   if (params.kind !== seenKind) {
     setSeenKind(params.kind);
-    if (isCampusFilter(params.kind)) setKind(params.kind);
+    if (isCampusFilter(params.kind)) {
+      setKind(params.kind);
+      setInQuad(false);
+    } else if (params.kind === 'quad') setInQuad(true);
   }
+  const quadOn = useQuadStatus(quad).data?.enabled === true;
+  const showQuad = inQuad && quadOn;
   const me = useQuery({ queryKey: meKey, queryFn: loadMe, staleTime: 5 * 60_000 });
 
   const q = useInfiniteQuery({
@@ -227,10 +240,23 @@ export function CampusFeedScreen({
             label={copy.filters[f]}
             icon={FILTER_ICON[f]}
             surface="card"
-            selected={kind === f}
-            onPress={() => setKind(f)}
+            selected={!showQuad && kind === f}
+            onPress={() => {
+              setInQuad(false);
+              setKind(f);
+            }}
           />
         ))}
+        {quadOn ? (
+          <Chip
+            label={tabs.quad}
+            icon="quad"
+            surface="card"
+            selected={showQuad}
+            onPress={() => setInQuad(true)}
+            testID="campus-filter-quad"
+          />
+        ) : null}
       </ScrollView>
     </>
   );
@@ -262,6 +288,9 @@ export function CampusFeedScreen({
         testID={`campus-item-${item.id}`}
       />
     );
+
+  if (showQuad)
+    return <QuadScreen api={quad} mediaBase={mediaBase} now={now} loadMe={loadMe} top={header} />;
 
   let body;
   if (q.isPending) {

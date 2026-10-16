@@ -30,6 +30,8 @@ import {
   type CampusPage,
   type FoodForm,
   type WantedForm,
+  needByDate,
+  needByLine,
 } from '../src/features/campus/logic';
 import { PostFoodScreen } from '../src/features/campus/PostFoodScreen';
 import { PostWantedScreen } from '../src/features/campus/PostWantedScreen';
@@ -917,5 +919,41 @@ describe('R11-NOTIF-01 Around campus notifications', () => {
     expect(toggle.props.accessibilityState).toMatchObject({ checked: false });
     fireEvent.press(toggle);
     await waitFor(() => expect(api.updatePrefs).toHaveBeenCalledWith({ free_food: true }));
+  });
+});
+
+describe('T-UNIT-WANTED-02 need it by and alert me (DEC 127)', () => {
+  it('turns a chip into a campus date', () => {
+    const now = new Date(2027, 2, 28, 15, 0);
+    expect(needByDate('none', now)).toBeNull();
+    expect(needByDate('week', now)).toBe('2027-04-04');
+    expect(needByDate('month', now)).toBe('2027-04-27');
+    expect(needByLine(null)).toBeNull();
+    expect(needByLine('2027-04-04')).toBe('Needs it by Apr 4');
+  });
+
+  it('posts, then saves the date and the alert switch', async () => {
+    const setWantedPrefs = jest.fn(async () => {});
+    const api = fakeSell({ createListing: jest.fn(async () => posted({ kind: 'wanted' })) });
+    renderAt(
+      {
+        'sell/wanted': () => (
+          <PostWantedScreen
+            api={api}
+            photosOs={granted}
+            mediaBase={() => 'http://m'}
+            prefs={{ setWantedPrefs }}
+            now={() => new Date(2027, 2, 10, 12, 0)}
+          />
+        ),
+      },
+      '/sell/wanted',
+    );
+    fireEvent.changeText(await screen.findByTestId('wanted-title'), 'Mini fridge');
+    fireEvent.press(screen.getByTestId('wanted-need-by-week'));
+    fireEvent.press(screen.getByLabelText(campus.alertMe));
+    fireEvent.press(screen.getByTestId('wanted-post'));
+    expect(await screen.findByTestId('wanted-posted')).toBeTruthy();
+    expect(setWantedPrefs).toHaveBeenCalledWith(expect.any(String), '2027-03-17', false);
   });
 });

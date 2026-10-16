@@ -27,7 +27,7 @@ import { readableColumn } from '@/theme/layout';
 import { dollarsToCents } from '../search/logic';
 import { mediaUrl } from '../sell/logic';
 import { offersApi, type OffersApi } from './api';
-import { MAX_ROUND, money, offerView, type Offer } from './logic';
+import { MAX_ROUND, money, offerTitle, offerView, type Offer } from './logic';
 
 export const offerKey = (id: string) => ['offer', id] as const;
 
@@ -121,8 +121,13 @@ export function OfferScreen({
               </View>
               <View style={styles.flex}>
                 <Text variant="bodyStrong" numberOfLines={2}>
-                  {o.listing.title}
+                  {offerTitle(o)}
                 </Text>
+                {o.bundle?.length ? (
+                  <Text variant="meta" tone="ink2" numberOfLines={3} testID="offer-bundle">
+                    {fill(copy.bundleAlso, { items: o.bundle.map((b) => b.title).join(', ') })}
+                  </Text>
+                ) : null}
                 <Text variant="meta" tone="ink2">
                   {money(o.listing.price_cents)}
                 </Text>

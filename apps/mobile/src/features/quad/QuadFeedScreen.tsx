@@ -1,7 +1,7 @@
 import { FlashList } from '@shopify/flash-list';
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
@@ -41,6 +41,11 @@ type Deps = {
   now?: () => Date;
   /** Reads the signed-in student (campus name for the header). Tests pass a fake. */
   loadMe?: () => Promise<Me>;
+  /**
+   * DEC 130: the Quad lives inside the Feed. The Feed passes its own header
+   * (title and filter chips) and the Quad draws it in place of its title.
+   */
+  top?: ReactNode;
 };
 
 /** The Quad is off for this campus (or was switched off): say so, point back to Discover. */
@@ -67,6 +72,7 @@ export function QuadScreen({
   mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
   now = () => new Date(),
   loadMe = () => meApi.me(),
+  top,
 }: Deps) {
   const qc = useQueryClient();
   const status = useQuadStatus(api);
@@ -77,19 +83,22 @@ export function QuadScreen({
     body = <ErrorState error={status.error} onRetry={() => status.refetch()} />;
   else if (!status.data.enabled) body = <QuadOff />;
   else if (!status.data.rules_accepted) {
-    return (
+    const welcome = (
       <QuadWelcome
+        embedded={top !== undefined}
         onAccept={async () => {
           await api.acceptRules();
           qc.setQueryData(quadKeys.status, { enabled: true, rules_accepted: true });
         }}
       />
     );
-  } else return <QuadFeed api={api} mediaBase={mediaBase} now={now} loadMe={loadMe} />;
+    if (top === undefined) return welcome;
+    body = welcome;
+  } else return <QuadFeed api={api} mediaBase={mediaBase} now={now} loadMe={loadMe} top={top} />;
 
   return (
     <View style={styles.root} testID="screen-quad">
-      <NavBar title={copy.title} variant="large" />
+      {top === undefined ? <NavBar title={copy.title} variant="large" /> : top}
       {body}
     </View>
   );
@@ -101,7 +110,13 @@ export function QuadScreen({
  * white post cards with the votes on the left, and an ink "Post" pill that
  * never covers a post's vote arrows (the list ends with room for it).
  */
-function QuadFeed({ api, mediaBase, now, loadMe }: Required<Deps>) {
+function QuadFeed({
+  api,
+  mediaBase,
+  now,
+  loadMe,
+  top,
+}: Required<Omit<Deps, 'top'>> & { top: ReactNode }) {
   const router = useRouter();
   const qc = useQueryClient();
   const params = useLocalSearchParams<{ sort?: string }>();
@@ -208,7 +223,8 @@ function QuadFeed({ api, mediaBase, now, loadMe }: Required<Deps>) {
   return (
     <View style={styles.root} testID="screen-quad">
       <View style={feedColumn}>
-        <View style={styles.header}>
+        {top}
+        <View style={[styles.header, top !== undefined && styles.headerEmbedded]}>
           <View style={styles.flex}>
             <View style={styles.anon}>
               <Icon name="lock" size={12} tone="ink3" />
@@ -216,9 +232,11 @@ function QuadFeed({ api, mediaBase, now, loadMe }: Required<Deps>) {
                 {campus ? fill(copy.anonAt, { campus }) : copy.subtitle}
               </Text>
             </View>
-            <Text variant="title" accessibilityRole="header">
-              {copy.title}
-            </Text>
+            {top === undefined ? (
+              <Text variant="title" accessibilityRole="header">
+                {copy.title}
+              </Text>
+            ) : null}
           </View>
           <IconButton
             icon="bell"
@@ -299,6 +317,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingTop: rt.insets.top + theme.space.sm,
     paddingHorizontal: theme.space.screen,
   },
+  headerEmbedded: { paddingTop: theme.space.xs },
   anon: { flexDirection: 'row', alignItems: 'center', gap: theme.space.xs },
   anonText: { fontWeight: '600' },
   chips: {

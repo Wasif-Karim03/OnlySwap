@@ -22,6 +22,7 @@ import { OfflineBanner } from '@/components/Banner';
 import { CrashScreen } from '@/components/CrashScreen';
 import { ToastHost } from '@/components/Toast';
 import { watchAccountReset } from '@/features/auth/accountReset';
+import { LaunchIntro } from '@/features/auth/LaunchIntro';
 import { launchStartedAt } from '@/features/auth/launchTiming';
 import { SessionExpiredSheet } from '@/features/auth/SessionExpiredSheet';
 import { authApi } from '@/features/auth/api';
@@ -95,6 +96,7 @@ export default function RootLayout() {
             <SessionExpiredSheet />
             <OfflineBanner />
             <ToastHost />
+            <LaunchIntro />
             <StatusBar style={dark ? 'light' : 'dark'} />
           </ThemeProvider>
         </QueryClientProvider>

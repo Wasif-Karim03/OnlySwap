@@ -11,7 +11,7 @@ import type { Strings } from './en';
 
 const permissions: Strings['permissions'] = {
   camera:
-    'OnlySwap usa la cámara para que tomes fotos de lo que vendes y una foto tuya para tu perfil.',
+    'OnlySwap usa la cámara para que tomes fotos de lo que vendes y una foto tuya para tu perfil, y para escanear el código de barras de un libro.',
   photos: 'OnlySwap abre tus fotos para que elijas imágenes de lo que vendes y una foto de perfil.',
 };
 
@@ -44,6 +44,8 @@ const errors: Strings['errors'] = {
   RATE_LIMITED: 'Lo estás haciendo mucho. Intenta de nuevo en un rato.',
   RATE_LIMITED_UNTIL: 'Lo estás haciendo mucho. Intenta de nuevo después de las {time}.',
   OFFERS_PAUSED: 'Las ofertas están en pausa en tu cuenta por un encuentro al que no llegaste.',
+  SELLER_AWAY: 'Este vendedor pausó sus publicaciones. Guárdala y vuelve más tarde.',
+  HANDOFF_LOCKED: 'Demasiados códigos incorrectos. Usa ¿Se vendió? en el chat.',
   LISTING_UNAVAILABLE: 'Esta publicación no está recibiendo ofertas ahora.',
   OFFER_NOT_PENDING: 'Esta oferta cambió. Desliza hacia abajo para actualizar.',
   ALREADY_REPORTED: 'Ya reportaste esto. Lo estamos revisando.',
@@ -108,7 +110,7 @@ const primer: Strings['primer'] = {
   openSettings: 'Abrir Ajustes',
   camera: {
     title: 'Toma fotos de tus cosas',
-    body: 'OnlySwap usa la cámara solo cuando agregas fotos a una publicación, a tu perfil o a un chat. No se graba nada en segundo plano.',
+    body: 'OnlySwap usa la cámara solo cuando agregas fotos a una publicación, a tu perfil o a un chat, o escaneas el código de barras de un libro. No se graba nada en segundo plano.',
     cta: 'Continuar',
     alternative: 'Elegir de la galería',
     deniedTitle: 'La cámara está desactivada',
@@ -735,6 +737,29 @@ const sell: Strings['sell'] = {
   modeLabel: 'Vender o regalar',
   titleLabel: 'Título',
   titlePlaceholder: '¿Qué es?',
+  scanBook: 'Escanear el código de un libro',
+  scanTitle: 'Escanea el código de barras',
+  scanBody: 'Apunta la cámara al código de barras de la contraportada. Llenamos el título por ti.',
+  scanLooking: 'Buscando el libro',
+  scanNotBook: 'Ese código no es de un libro. Prueba el que empieza con 978 o 979.',
+  scanNotFound: 'No encontramos ese libro. Escribe el título.',
+  scanOffline: 'No tienes conexión. Escribe el título o vuelve a escanear cuando tengas conexión.',
+  scanAgain: 'Escanear otra vez',
+  scanType: 'Escribirlo',
+  scanFound: 'Título llenado con el código de barras',
+  titleExample: 'Ejemplo: {example}',
+  titleExamples: {
+    any: 'Marca, artículo y luego talla o modelo',
+    '1': 'Escritorio IKEA Malm, blanco',
+    '2': 'Calculus: Early Transcendentals, 8.ª edición',
+    '3': 'Monitor Dell de 27 pulgadas, 1440p',
+    '4': 'Chaqueta North Face, talla M',
+    '5': 'Cafetera Keurig K-Mini',
+    '6': 'Bicicleta Trek de ciudad, cuadro de 54 cm',
+    '7': 'Guitarra acústica Yamaha con estuche',
+    '8': 'Tapete de yoga y dos bloques',
+    '9': 'Luces de cadena, 10 m, blanco cálido',
+  },
   categoryLabel: 'Categoría',
   categoryPlaceholder: 'Elige una categoría',
   categoriesTitle: 'Elige una categoría',
@@ -758,6 +783,15 @@ const sell: Strings['sell'] = {
     'Lo gratis normalmente se va en un día. Tú eliges quién se lo lleva entre quienes lo pidan.',
   descriptionLabel: 'Descripción',
   descriptionPlaceholder: 'Marca, tamaño, qué incluye, algún defecto.',
+  startersLabel: 'Detalles rápidos',
+  starters: {
+    barely: 'Casi sin usar.',
+    works: 'Funciona perfecto.',
+    charger: 'Incluye el cargador.',
+    smoke: 'Casa libre de humo.',
+    pets: 'Casa sin mascotas.',
+    pickup: 'Solo para recoger.',
+  },
   fixCount: '{count} cosas por corregir antes de publicar',
   fixOne: '1 cosa por corregir antes de publicar',
   errors: {
@@ -838,6 +872,11 @@ const feed: Strings['feed'] = {
     'Desliza a la derecha para ofertar, a la izquierda para saltar. El menú de acciones tiene más.',
   savedBy: '{n} personas guardaron esto',
   savedByOne: '1 persona guardó esto',
+  verified: 'Estudiante verificado',
+  trustThumbs: '{pct}% de pulgares arriba',
+  trustSwaps: '{n} intercambios',
+  trustSwapsOne: '1 intercambio',
+  movingOut: 'Se muda el {date}',
   photoCount: 'Foto {n} de {total}',
   listTitle: 'Publicaciones',
   metaSeparator: ' · ',
@@ -867,6 +906,7 @@ const feed: Strings['feed'] = {
   more: 'Más opciones',
   shareMessage: '{title}, {price} en OnlySwap',
   descriptionTitle: 'Sobre este artículo',
+  moreLikeThis: 'Más como este',
   meetupTitle: 'Encuentro',
   meetupDecide: 'Tú y quien vende eligen un lugar en el chat.',
   availabilityTitle: 'Normalmente libre',
@@ -880,6 +920,8 @@ const feed: Strings['feed'] = {
   onHold: 'Apartado',
   onHoldBody: 'Alguien va a verse para esto. Puede que vuelva.',
   tellMe: 'Avísame si vuelve',
+  sellerAway: 'El vendedor no está',
+  sellerAwayBody: '{name} pausó sus publicaciones por ahora. Guárdala y vuelve más tarde.',
   watching: 'Te avisaremos',
   sold: 'Vendido',
   inReview: 'En revisión',
@@ -907,6 +949,7 @@ const search: Strings['search'] = {
   placeholder: 'Busca en tu campus',
   inputLabel: 'Buscar',
   cancel: 'Cancelar',
+  recentlyViewed: 'Vistos recientemente',
   recent: 'Recientes',
   clearRecent: 'Borrar',
   removeRecent: 'Quitar {q}',
@@ -980,6 +1023,7 @@ const profileView: Strings['profileView'] = {
   minutes: '{n} min',
   hours: '{n} h',
   newSeller: 'Vendedor nuevo',
+  away: 'Ausente',
   newSellerBody:
     'Todavía no termina un intercambio aquí. Véanse en un Punto de encuentro y revisa el artículo primero.',
   founding: 'Vendedor fundador',
@@ -1013,6 +1057,10 @@ const profileView: Strings['profileView'] = {
 };
 
 const offers: Strings['offers'] = {
+  bundleBody: 'Agrega más de sus artículos a esta oferta. Tu monto es por todo.',
+  bundleAsk: 'Pide {price} por {n} artículos',
+  bundleMore: '{title} + {n} más',
+  bundleAlso: 'También en este trato: {items}',
   sheetTitle: 'Hacer una oferta',
   askTitle: 'Pedirlo',
   asking: 'Pide {price}',
@@ -1117,6 +1165,7 @@ const offers: Strings['offers'] = {
 };
 
 const chat: Strings['chat'] = {
+  bundleAlso: 'También en este trato: {items}',
   composerLabel: 'Mensaje',
   composerPlaceholder: 'Mensaje',
   send: 'Enviar',
@@ -1176,6 +1225,15 @@ const chat: Strings['chat'] = {
 };
 
 const meetup: Strings['meetup'] = {
+  handoffTitle: 'Código de entrega',
+  handoffBuyer:
+    'Muéstralo al vendedor cuando tengas el artículo. Lo escribe para terminar el intercambio.',
+  handoffSellerTitle: '¿Intercambio hecho?',
+  handoffSellerBody: 'Pide al comprador su código de 4 dígitos y escríbelo aquí.',
+  handoffLabel: 'Código del comprador',
+  handoffConfirm: 'Terminar intercambio',
+  handoffWrong: 'Ese código no coincide. Quedan {n} intentos.',
+  handoffDone: 'Intercambio hecho.',
   planTitle: 'Planea la entrega',
   spotsTitle: 'Puntos de encuentro',
   police: 'Designado por la policía',
@@ -1513,6 +1571,25 @@ const me: Strings['me'] = {
     removed: 'Quitada por OnlySwap',
   },
   relist: 'Republicar',
+  away: 'Pausar mis publicaciones',
+  awayBody:
+    'Tus artículos salen de Descubrir y la búsqueda, y nadie puede hacer ofertas nuevas. Los chats siguen abiertos. Las fechas de vencimiento se mueven según el tiempo que estés fuera.',
+  awayOn: 'Tus publicaciones están en pausa',
+  awayOff: 'Tus publicaciones volvieron',
+  movingOut: 'Me mudo',
+  movingOutBody:
+    'Los compradores ven tu fecha y pueden hacer una sola oferta por varios artículos.',
+  movingOutChoices: {
+    none: 'No me mudo',
+    week: 'En una semana',
+    twoWeeks: 'En 2 semanas',
+    month: 'En un mes',
+  },
+  movingOutSet: 'Ahora pueden agrupar tus artículos',
+  movingOutCleared: 'Mudanza desactivada',
+  renew: 'Renovar',
+  renewAt: 'Renovar el {date}',
+  renewed: 'Movida al inicio de Descubrir',
   stats: 'Estadísticas',
   statsTitle: 'Estadísticas',
   views: 'Vistas',
@@ -1958,6 +2035,11 @@ const campus: Strings['campus'] = {
   budgetHint: 'Déjalo vacío si eres flexible.',
   categoryLabel: 'Categoría (opcional)',
   categoryHint: 'Quien publique algo en esta categoría se entera de tu publicación.',
+  needByLabel: 'Lo necesito para',
+  needBy: { none: 'Sin prisa', week: 'Esta semana', twoWeeks: 'En 2 semanas', month: 'Este mes' },
+  needByLine: 'Lo necesita para el {date}',
+  alertMe: 'Avísame',
+  alertMeBody: 'Recibe una notificación cuando alguien publique algo que coincida.',
   detailsLabel: 'Detalles (opcional)',
   detailsPlaceholder: 'Edición, tamaño, color, para cuándo lo necesitas.',
   wantedNote:

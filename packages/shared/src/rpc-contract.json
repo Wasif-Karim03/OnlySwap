@@ -840,6 +840,16 @@
     ]
   },
   {
+    "name": "confirm_handoff",
+    "args": "meetup_id uuid, code text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "confirm_meetup",
     "args": "meetup_id uuid",
     "returns": "void",
@@ -1133,6 +1143,16 @@
     ]
   },
   {
+    "name": "get_listings_by_ids",
+    "args": "ids uuid[]",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "get_me",
     "args": "",
     "returns": "jsonb",
@@ -1405,6 +1425,16 @@
     ]
   },
   {
+    "name": "make_bundle_offer",
+    "args": "listing_id uuid, bundle_ids uuid[], amount_cents integer, note text, quick_notes text[]",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "make_offer",
     "args": "listing_id uuid, amount_cents integer, note text, quick_notes text[]",
     "returns": "jsonb",
@@ -1657,6 +1687,16 @@
     ]
   },
   {
+    "name": "set_away",
+    "args": "away boolean",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "set_chat_mute",
     "args": "chat_id uuid, muted boolean",
     "returns": "void",
@@ -1687,9 +1727,39 @@
     ]
   },
   {
+    "name": "set_moving_out",
+    "args": "by date",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "set_quad_replies",
     "args": "post_id uuid, enabled boolean",
     "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "set_wanted_prefs",
+    "args": "id uuid, need_by date, alerts boolean",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "similar_listings",
+    "args": "id uuid",
+    "returns": "jsonb",
     "security": "definer",
     "grants": [
       "authenticated",

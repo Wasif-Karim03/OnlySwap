@@ -89,6 +89,8 @@ function api(over: Partial<MeApi> = {}): MeApi {
     updateListing: jest.fn(async () => {}),
     deleteListing: jest.fn(async () => {}),
     relist: jest.fn(async () => {}),
+    setAway: jest.fn(async () => {}),
+    setMovingOut: jest.fn(async () => {}),
     ...over,
   };
 }
@@ -447,5 +449,68 @@ describe('P11-ACC-02 F17 Download your data', () => {
     render({ 'settings/data': () => <DataExportScreen api={a} /> }, '/settings/data');
     expect(await screen.findByText(settings.dataOffline)).toBeTruthy();
     expect(screen.getByTestId('data-export-send')).toBeDisabled();
+  });
+});
+
+describe('T-UNIT-RENEW-01 renew from My listings (DEC 125)', () => {
+  it('renews an active listing in one tap, and shows the date when it is too soon', async () => {
+    const relist = jest.fn(async () => {});
+    const listings = jest.fn(async () => [
+      listing('a', 'active', { can_relist: true, renew_at: '2027-03-09T12:00:00Z' }),
+      listing('d', 'active', { renew_at: '2027-03-12T17:00:00Z' }),
+    ]);
+    render(
+      {
+        'profile/listings': () => (
+          <MyListingsScreen api={api({ relist, listings })} mediaBase={() => 'http://m'} />
+        ),
+      },
+      '/profile/listings',
+    );
+    expect(await screen.findByTestId('renew-at-d')).toBeTruthy();
+    expect(screen.queryByTestId('renew-d')).toBeNull();
+    fireEvent.press(screen.getByTestId('renew-a'));
+    await waitFor(() => expect(relist).toHaveBeenCalledWith('a', null));
+    expect(screen.queryByTestId('screen-relist-stub')).toBeNull();
+  });
+});
+
+describe('T-UNIT-AWAY-01 pause my listings (DEC 126)', () => {
+  it('turns away mode on from My listings', async () => {
+    const setAway = jest.fn(async () => {});
+    render(
+      {
+        'profile/listings': () => (
+          <MyListingsScreen api={api({ setAway })} mediaBase={() => 'http://m'} />
+        ),
+      },
+      '/profile/listings',
+    );
+    fireEvent.press(await screen.findByLabelText(meCopy.away));
+    await waitFor(() => expect(setAway).toHaveBeenCalledWith(true));
+  });
+});
+
+describe('T-UNIT-MOVING-02 moving out (DEC 133)', () => {
+  it('sets a date from My listings and shows it', async () => {
+    let by: string | null = null;
+    const setMovingOut = jest.fn(async (d: string | null) => {
+      by = d;
+    });
+    const me = jest.fn(async () => ({ ...ME, moving_out_by: by }));
+    render(
+      {
+        'profile/listings': () => (
+          <MyListingsScreen api={api({ setMovingOut, me })} mediaBase={() => 'http://m'} />
+        ),
+      },
+      '/profile/listings',
+    );
+    fireEvent.press(await screen.findByTestId('moving-out-twoWeeks'));
+    await waitFor(() =>
+      expect(setMovingOut).toHaveBeenCalledWith(expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/)),
+    );
+    // The date shows in place of the explainer.
+    expect(await screen.findByText(/^Moving out by /)).toBeTruthy();
   });
 });

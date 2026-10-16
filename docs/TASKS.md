@@ -380,3 +380,20 @@ Each session ends runnable and with its tests green. **P0 tasks are yours** (man
 | S54 | iPad + Spanish | P17-FEAT-02, P17-FEAT-03 | iPad layouts, es strings |
 | S55 | Widgets + Live Activity + icons | P17-FEAT-01, R2-ICON-01 | meetup widget, alternate icons |
 | S56 | Quad check-ins + full verify | R2-QUAD-CHECKIN | everything green on the Mac and devices |
+
+## UX pack (DEC 124 to 134, owner approved 2026-10-15): before the first store submission
+
+Branch `feat/ux-pack`. Order keeps every step OTA-able until UX-10 (native camera).
+
+- [x] UX-01 Trust on the swipe card (DEC 124): `feed_item` seller stats; card + listing seller row. Done when: pgTAP + Jest pass.
+- [x] UX-02 Renew (DEC 125): 72 h cooldown; Renew in My listings. Done when: pgTAP + Jest pass.
+- [x] UX-03 Away mode (DEC 126): `set_away`, filters, `SELLER_AWAY`, settings switch, Away tag. Done when: pgTAP + Jest pass.
+- [x] UX-04 Wanted need by + alert me (DEC 127). Done when: pgTAP + Jest pass.
+- [x] UX-05 Recently viewed + More like this (DEC 128). Done when: pgTAP + Jest pass.
+- [x] UX-06 Listing help (DEC 129). Done when: Jest passes.
+- [x] UX-07 Quad inside Feed (DEC 130). Done when: Jest passes.
+- [x] UX-08 Handoff code (DEC 132). Done when: pgTAP + Jest pass.
+- [x] UX-09 Moving out mode + bundle offers (DEC 133). Done when: pgTAP + Jest pass.
+- [x] UX-10 Scan ISBN (DEC 131, needs new builds). Done when: Jest passes (T-UNIT-ISBN-01..05); device check after the build is still open.
+- [x] UX-11 Campus launch playbook (DEC 134). Done when: RELEASE.md §9 written.
+- [x] UX-12 Launch animation (DEC 135). Done when: Jest passes (T-UNIT-LAUNCH-01); checked on the Simulator.

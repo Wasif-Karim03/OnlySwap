@@ -13,6 +13,7 @@ import { Input } from '@/components/Input';
 import { NavBar } from '@/components/NavBar';
 import { Text } from '@/components/Text';
 import { TextArea } from '@/components/TextArea';
+import { Toggle } from '@/components/Toggle';
 import { getEnv } from '@/lib/env';
 import { pickPhotos, type PickedPhoto } from '@/lib/media';
 import { osPermissions, type OsApi } from '@/lib/permissions';
@@ -22,8 +23,16 @@ import { useToastStore } from '@/components/Toast';
 
 import { sellApi, type PostedListing, type SellApi } from '../sell/api';
 import { cleanPrice, DESCRIPTION_MAX, TITLE_MAX } from '../sell/logic';
-import { campusKeys } from './api';
-import { formErrorText, validateWanted, wantedArgs, type FormError } from './logic';
+import { campusKeys, wantedPrefsApi, type WantedPrefsApi } from './api';
+import {
+  formErrorText,
+  NEED_BY,
+  needByDate,
+  validateWanted,
+  wantedArgs,
+  type FormError,
+  type NeedBy,
+} from './logic';
 import {
   PhotoField,
   PostedView,
@@ -40,6 +49,8 @@ type Deps = {
   cameraOs?: OsApi;
   openSettings?: () => Promise<unknown>;
   mediaBase?: () => string;
+  prefs?: WantedPrefsApi;
+  now?: () => Date;
 };
 
 /**
@@ -54,6 +65,8 @@ export function PostWantedScreen({
   cameraOs = osPermissions.camera,
   openSettings = () => Linking.openSettings(),
   mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
+  prefs = wantedPrefsApi,
+  now = () => new Date(),
 }: Deps) {
   const router = useRouter();
   const qc = useQueryClient();
@@ -68,6 +81,8 @@ export function PostWantedScreen({
   const [budget, setBudget] = useState('');
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [description, setDescription] = useState('');
+  const [needBy, setNeedBy] = useState<NeedBy>('none');
+  const [alerts, setAlerts] = useState(true);
   const [showErrors, setShowErrors] = useState(false);
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -95,6 +110,9 @@ export function PostWantedScreen({
     try {
       const id = await reserved.get();
       const listing = await api.createListing(wantedArgs(id, form));
+      const date = needByDate(needBy, now());
+      // Defaults (no date, alerts on) need no second call.
+      if (date || !alerts) await prefs.setWantedPrefs(listing.id, date, alerts).catch(() => {});
       void qc.invalidateQueries({ queryKey: campusKeys.all });
       setPosted(listing);
     } catch (e) {
@@ -194,6 +212,33 @@ export function PostWantedScreen({
               </Text>
             </View>
           ) : null}
+          <View style={styles.gap}>
+            <Text variant="label" tone="ink2">
+              {copy.needByLabel}
+            </Text>
+            <View
+              style={styles.chips}
+              accessibilityRole="radiogroup"
+              accessibilityLabel={copy.needByLabel}
+              testID="wanted-need-by"
+            >
+              {NEED_BY.map((n) => (
+                <Chip
+                  key={n}
+                  label={copy.needBy[n]}
+                  selected={needBy === n}
+                  onPress={() => setNeedBy(n)}
+                  testID={`wanted-need-by-${n}`}
+                />
+              ))}
+            </View>
+          </View>
+          <Toggle
+            label={copy.alertMe}
+            description={copy.alertMeBody}
+            value={alerts}
+            onChange={setAlerts}
+          />
           <TextArea
             label={copy.detailsLabel}
             placeholder={copy.detailsPlaceholder}

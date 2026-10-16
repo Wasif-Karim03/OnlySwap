@@ -3,20 +3,18 @@ import type { ComponentProps } from 'react';
 import { useKeyboardState } from 'react-native-keyboard-controller';
 
 import { TabBar, type TabItem } from '@/components/TabBar';
-import { useQuadStatus } from '@/features/quad/cache';
 import { usePushHandling } from '@/lib/push';
 import { tabs } from '@/strings';
 import { useLayout } from '@/theme/layout';
 
 type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>>[0];
 
-// Tabs (DESIGN_SYSTEM D1, DEC 98): Discover, Feed, Sell, Quad (only when the
-// campus has it on), Inbox, Profile. Badges are wired with the inbox (P7).
-// Without the Quad, Sell sits in the middle of five.
+// Tabs (DESIGN_SYSTEM D1, DEC 98, DEC 130): Discover, Feed, Sell, Inbox,
+// Profile, with Sell in the middle of five. The Quad is a chip inside the Feed
+// now; its route stays only so old /quad links land on that chip.
 const ITEMS: Record<string, Omit<TabItem, 'key'>> = {
   discover: { label: tabs.discover, icon: 'cards' },
   feed: { label: tabs.feed, icon: 'users' },
-  quad: { label: tabs.quad, icon: 'quad' },
   // DEC 90: the center Sell tab is an accent rounded rectangle with a plus.
   sell: { label: tabs.sell, icon: 'plus', prominent: true },
   inbox: { label: tabs.inbox, icon: 'chat' },
@@ -24,12 +22,7 @@ const ITEMS: Record<string, Omit<TabItem, 'key'>> = {
 };
 
 /** Adapts React Navigation's tab state to the TabBar component (P2-CMP-09). */
-function AppTabBar({
-  state,
-  navigation,
-  quadOn,
-  rail,
-}: TabBarProps & { quadOn: boolean; rail: boolean }) {
+function AppTabBar({ state, navigation, rail }: TabBarProps & { rail: boolean }) {
   // Hidden while typing (both platforms), so the screen reaches the keyboard
   // and a docked button sits right on top of it instead of floating a tab
   // bar's height higher over the fields (owner testing on Android). The iPad
@@ -37,7 +30,7 @@ function AppTabBar({
   const keyboardOpen = useKeyboardState((s) => s.isVisible);
   if (keyboardOpen && !rail) return null;
   const items = state.routes
-    .filter((route) => quadOn || route.name !== 'quad')
+    .filter((route) => route.name in ITEMS)
     .map((route) => ({ key: route.key, ...ITEMS[route.name]! }));
   const activeKey = state.routes[state.index]!.key;
   return (
@@ -61,20 +54,18 @@ function AppTabBar({
 export default function TabsLayout() {
   // Signed-in area: pushes open the right screen and the token stays registered (P9-PUSH-02).
   usePushHandling(true);
-  // P10-QUAD-02: the Quad tab exists only where the campus switched it on.
-  const quadOn = useQuadStatus().data?.enabled === true;
   // iPad, wide window: a sidebar on the left instead of bottom tabs (board N5/N6).
   const rail = useLayout().wide;
   return (
     <Tabs
       initialRouteName="discover"
-      tabBar={(props) => <AppTabBar {...props} quadOn={quadOn} rail={rail} />}
+      tabBar={(props) => <AppTabBar {...props} rail={rail} />}
       screenOptions={{ headerShown: false, tabBarPosition: rail ? 'left' : 'bottom' }}
     >
       <Tabs.Screen name="discover" options={{ title: tabs.discover }} />
       <Tabs.Screen name="feed" options={{ title: tabs.feed }} />
       <Tabs.Screen name="sell" options={{ title: tabs.sell }} />
-      <Tabs.Screen name="quad" options={{ title: tabs.quad, href: quadOn ? undefined : null }} />
+      <Tabs.Screen name="quad" options={{ title: tabs.quad, href: null }} />
       <Tabs.Screen name="inbox" options={{ title: tabs.inbox }} />
       <Tabs.Screen name="profile" options={{ title: tabs.profile }} />
     </Tabs>

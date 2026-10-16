@@ -378,6 +378,11 @@ export function ChatScreen({
             <Text variant="meta" tone="ink3">
               {fill(copy.inPerson, { amount: money(c.agreed_cents) })}
             </Text>
+            {c.bundle?.length ? (
+              <Text variant="meta" tone="ink2" numberOfLines={2} testID="chat-bundle">
+                {fill(copy.bundleAlso, { items: c.bundle.map((b) => b.title).join(', ') })}
+              </Text>
+            ) : null}
           </View>
           {c.status === 'open' && !readOnly ? (
             <Text variant="label" tone="green" testID="chat-deal-status">
