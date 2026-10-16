@@ -8,6 +8,9 @@ dist/
 !packages/tokens/dist/
 ios/
 android/
+# Local Expo modules keep their native sources in git (AR-04).
+!apps/mobile/modules/*/ios/
+!apps/mobile/modules/*/android/
 *.log
 .DS_Store
 coverage/

@@ -227,7 +227,7 @@ describe('P4-AUTH-09 A07 community rules', () => {
     expect(api.acceptRules).toHaveBeenCalledWith('3');
   });
 
-  it('the checkbox says it confirms 18+; the legal pages open', async () => {
+  it('the checkbox says it confirms 13+; the legal pages open', async () => {
     const openLegal = jest.fn();
     setup('/rules', { rules: () => <RulesScreen api={fakeApi()} openLegal={openLegal} /> });
     expect(await screen.findByText(rules.agreeLabel)).toBeTruthy();

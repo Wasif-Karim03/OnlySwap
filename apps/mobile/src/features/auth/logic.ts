@@ -3,6 +3,8 @@
  * (P4-AUTH-02; T-UNIT-AUTH-01, 02, 03, 06). No React, no network.
  */
 
+import type { AgeBand } from './age';
+
 /** Consumer email providers. These never reach `lookup_school` (T-UNIT-AUTH-02). */
 export const PERSONAL_DOMAINS: ReadonlySet<string> = new Set([
   'gmail.com',
@@ -99,6 +101,8 @@ export type GateProfile = {
   status: 'active' | 'waitlist' | 'reverify' | 'paused' | 'suspended' | 'banned';
   firstName: string | null;
   adultConfirmed: boolean;
+  /** 13_17 or 18_plus once the age check passed (AR-01). The gate still uses adultConfirmed. */
+  ageBand?: AgeBand | null;
   rulesVersion: string | null;
   /** YYYY-MM-DD; the yearly student check is due after this day (X9). */
   verifiedUntil?: string | null;

@@ -7,7 +7,7 @@
 -- listing page writes 'listing.activity_view', lists and search write nothing;
 -- no read ever returns a chat message's text.
 begin;
-select plan(68);
+select plan(69);
 select tests.create_fixtures();
 select tests.set_now('2027-03-10 12:00:00-05');
 
@@ -248,5 +248,8 @@ select is(pg_temp.as_admin('OWN', $$select (x -> 'reports' -> 0 ->> 'reason') ||
   'harassment:0', 'a report id prefix finds the report');
 select is(pg_temp.as_admin('OWN', $$select public.admin_search('x')::text$$), 'ERROR: INVALID:q', 'two characters at least');
 
+-- AR-01: the person card shows the age band (last, so the look-log counts above stay the same).
+select is(pg_temp.as_admin('OWN', format($$select x -> 'person' ->> 'age_band' from public.admin_person(%L) x$$, tests.uid('A'))),
+  '18_plus', 'the age band (AR-01)');
 select * from finish();
 rollback;

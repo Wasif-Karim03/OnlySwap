@@ -205,7 +205,7 @@ The "Data/API" column lists the calls from API.md.
 | A02 | `welcome.tsx` | A2 | 1.0 | static | Continue → A03; "I already have an account" → A03 login mode | — |
 | A03 | `email.tsx` | A3, A4, A5, X1 | 1.0 | typing (school detect), personal email error, unknown school card (A5), reviewer password field (A4), sending, rate limited, offline | Send code → A04; Join waitlist → `waitlist-request`; reviewer Sign in | `lookup_school`, `signInWithOtp`, `signInWithPassword` |
 | A04 | `verify.tsx` | A6, A9, X2 | 1.0 | waiting, autofill, verifying, wrong (attempts left), expired, locked 5 min, resend timer | complete → session → gate | `verifyOtp` |
-| A05 | `age.tsx` | A7, A8 | 1.0 | checking OS signal, date field (native), under 18 (A8), error | `confirm_age`; minor → `delete-account`(underage) + sign out | `expo-age-range`, `confirm_age` |
+| A05 | `age.tsx` | A7, A8 | 1.0 | checking OS signal, date field (native), under 13 (A8, DEC 136), error | `confirm_age_v2`; under 13 → `delete-account`(underage) + sign out | `expo-age-range`, `confirm_age_v2` |
 | A06 | `profile.tsx` | A10 | 1.0 | name required, photo optional + upload progress, permission denied | Continue | `update_profile`, `upload-url` |
 | A07 | `rules.tsx` | A11 (+ D10 "Updated rules") | 1.0 | unchecked (disabled), checked, updated-rules variant with a diff list | Agree | `accept_rules` |
 | A08 | `notifications.tsx` | A12 | 1.0 | undetermined, denied → Settings, granted skip | Turn on → OS prompt → `register_push_token` | expo-notifications |

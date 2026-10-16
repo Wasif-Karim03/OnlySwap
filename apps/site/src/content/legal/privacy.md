@@ -13,7 +13,7 @@ OnlySwap is a campus marketplace for verified students. We collect only what we 
 |---|---|
 | School email address | To verify you're a student and to sign you in with a code. Other students never see it. |
 | Name you choose, class year, optional photo and interests | Your public profile. Others see your first name and last initial. |
-| Age confirmation | To keep OnlySwap 18+. We don't store your date of birth. |
+| Age range (13 to 17, or 18 and older) | To keep out anyone under 13 and to apply protections for teens. If your phone shares an age range, we use that. If we ask for your birthday, we check it and keep only the range. We don't store your date of birth. |
 | Listings, photos, prices, offers | To run the marketplace. Photo location data (EXIF) is removed before upload. |
 | Messages and meetup plans | To let you arrange deals. Staff read a chat only when someone reports it, and every read is logged. |
 | Photos you send in chat | To show an item's condition. Stored privately, see section 4. |
@@ -122,7 +122,13 @@ When you plan a meetup you can create a link to send a friend. Anyone with the l
 
 ## 7. Age
 
-OnlySwap is only for people 18 and older. If we learn an account belongs to someone under 18, we delete it.
+OnlySwap is for people 13 and older. We don't knowingly collect data from children under 13. If someone says they're under 13, we stop the sign-up and delete the account, keeping only a one-way hash of the email for 365 days so the same address can't try again. If we learn an existing account belongs to someone under 13, we delete it too.
+
+If you're 13 to 17:
+
+- We store only your age range, never your birthday.
+- A parent or guardian can ask to see or delete your data through the [Help page](/help).
+- In some states your app store asks a parent to approve the account. If a parent withdraws that approval, we lock the account. Deal records are kept as described in section 5.
 
 ## 8. Security
 

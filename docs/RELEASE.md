@@ -50,6 +50,19 @@ The expected total is about 900 of 2,000 free minutes a month.
 
 ## 5. Store submission
 
+**Apple submission checklist (AR-08, owner, in this order):** each step points at the detail below.
+1. Server first: production has migrations `0242`, `0243`, `0244` and the `app-store-notifications` function deployed (§3), before any build or OTA that calls `confirm_age_v2`, `record_age_assurance` or `link_app_transaction`.
+2. App Store Server Notifications URLs set and a test notification logged (Age assurance block below).
+3. Production build: `eas build --profile production -p ios`, then `eas submit`. It must be a new native build (age range, App Store download id module, privacy manifests). Install it from TestFlight and run the age check, sign-in with the review account and one full swap.
+4. App Information: age rating questionnaire as below (expect 13+, no override); category Shopping; Content Rights: no third-party content.
+5. App Privacy: the label below, plus Other Data → age range (`age_band`, linked, app functionality, not tracking). No birthday is stored.
+6. Export compliance: no non-exempt encryption (`usesNonExemptEncryption: false`, so no per-build question).
+7. URLs: Privacy Policy `https://onlyswap.pages.dev/privacy`, Support `https://onlyswap.pages.dev/help`, Marketing `https://onlyswap.pages.dev`. Open each one first.
+8. App Review Information: the review account and notes from `docs/store/listing.md` (the account skips the age check, AR-07). Sign-in required: yes.
+9. Screenshots: iPhone 6.9-inch 1320×2868 and, because `supportsTablet` is on, iPad 13-inch 2064×2752 (fictional school, no university names or marks).
+10. Legal review before submitting: a lawyer has read the 13+ terms, privacy (teen section) and child safety pages, and the plan for minors meeting adults in person (DEC 136, DEC 137). CSAM scanning is live (OWNER_TODO 19).
+11. Release: manual release, phased 7 days.
+
 **Apple (App Store Connect):**
 - App record: bundle `app.onlyswap`, SKU `onlyswap-ios`.
 - Primary category Shopping.
@@ -67,22 +80,23 @@ The expected total is about 900 of 2,000 free minutes a month.
   - **R1.1 features (ship with R1.0, DEC 76) add no new types:** chat photos are User Content → Photos; Quad posts, replies, polls, votes, hides and mutes are Other User Content; invite credit is User ID; data export requests and announcements read data already listed. Price hints are campus aggregates (n ≥ 5), not collected per person. Still no location (Quad check-in places are typed text), no contacts, no advertising data.
 - **Age rating questionnaire** (answered once for the single launch with R1.1, DEC 76; LEG-03):
   - UGC yes, messaging and chat yes, social media / public posting **yes** (the Quad is a campus-wide board)
-  - age assurance yes
+  - age assurance yes (Declared Age Range where required, else the birthday check; DEC 136)
+  - social media disabled for under-13s yes (no under-13 accounts); parental controls no
   - infrequent mild references (user posts; filtered and moderated)
   - unrestricted web access no, gambling and contests no
-  - **override to 18+**
+  - **no override**: the expected calculated rating is **13+** (DEC 136); keep whatever App Store Connect calculates if higher
   - Wording and the Apple 1.2 UGC checklist: `docs/store/listing.md`.
 - Export compliance: `usesNonExemptEncryption: false`.
-- Privacy manifest: `ios.privacyManifests` (UserDefaults CA92.1, File timestamp C617.1) plus SDK manifests.
+- Privacy manifest (AR-06): `ios.privacyManifests` (UserDefaults CA92.1 + 1C8F.1 App Group, File timestamp C617.1, System boot time 35F9.1), SDK manifests merged at pod install (`apple.privacyManifestAggregationEnabled`), and the widget extension's own manifest (`plugins/withWidgetPrivacyManifest.js`, UserDefaults 1C8F.1). `check-prebuild.mjs` asserts all of it. After the first production upload, check the App Store Connect email for ITMS-91053 warnings.
 - **App Review notes** (full text in `docs/store/listing.md`):
   - demo accounts `appreview@review.onlyswap.test` (+ password)
   - steps to complete a swap on Demo University
   - where to find Around campus (Discover switch), the Quad (tab, rules first) and photos in chat (only if `chat_photos_enabled` is on)
   - safety features: report, block, Quad hide and mute, filters, 24 h human review
-  - 18+ age check
+  - age check at sign-up: 13 or older, under 13 blocked (DEC 136)
   - physical goods, cash in person, 3.1.3(e)
   - **No hidden features (2.3.1):** before submitting, Demo University must have the Quad on (`scripts/seed-review.ts` sets `campuses.quad_enabled`; the owner turns on the global `app_config.quad_enabled` in admin Config, real campuses stay off) and the seeded Quad and Around campus posts.
-- Screenshots: 6.9" 1320×2868 ×5 (fictional school). Optional preview video 886×1920.
+- Screenshots: 6.9" 1320×2868 ×5 and iPad 13" 2064×2752 ×5 (fictional school). Optional preview video 886×1920.
 - Release: manual release, **phased release 7 days**.
 
 **Google Play Console:**
@@ -90,7 +104,7 @@ The expected total is about 900 of 2,000 free minutes a month.
 - **App content:**
   - Privacy policy URL; Ads: No
   - App access (reviewer credentials, no OTP)
-  - Target audience 18+ only
+  - Target audience 13-15, 16-17 and 18+ (no under-13 groups; DEC 136)
   - Content rating (IARC): users interact yes (chat and the Quad), shares location **no**, digital purchases no, unmoderated UGC no
   - User-generated content (UGC policy): terms accepted before posting (sign-up rules, Quad rules), in-app report on every content type, block (and Quad hide), filters before posting, human review within 24 h, minor-safety reports first
   - Data safety (mirror the Apple label, all "collected, not shared", encrypted in transit, deletion yes + URL `/delete`). R1.1 rows: Photos and videos → Photos (listings, profile, chat photos, Quad photos; app functionality); Messages → Other in-app messages (chat); App activity → Other user-generated content (Quad posts, replies, polls, Wanted and food posts; app functionality) and App interactions (votes, hides, mutes); Personal info → User IDs (invite credit). Location: none (approximate and precise). Contacts: none.
@@ -98,6 +112,13 @@ The expected total is about 900 of 2,000 free minutes a month.
   - Child safety standards URL `/child-safety` + contact
 - Store listing: title "OnlySwap: Campus Marketplace" (≤30 characters), short and full description, icon 512, feature graphic 1024×500, 5 phone screenshots ≥1080 px. Countries: United States.
 - Release: staged rollout 20% → 50% → 100%.
+
+**Age assurance (AR-03, DEC 136; Texas, Utah, Louisiana):**
+- The age check asks Apple whether the law applies (`isEligibleForAgeFeaturesAsync`, iOS 26.2+; `getRequiredRegulatoryFeaturesAsync`, iOS 26.4+). If it does, only the Declared Age Range answer counts (no birthday), and `record_age_assurance` stores the declaration and parental consent.
+- Significant updates (Texas): before turning on a change that alters what a teen can do or what data is collected, call `acknowledgeSignificantUpdate` (`auth/age.ts`). Adults see Apple's sheet. For `needs_parental_consent`, expo-age-range has no PermissionKit request yet, so hold the change back for regulated 13 to 17 accounts (`profiles.parental_consent`) until that exists.
+- Test on a device with iOS 26.4+ and Sandbox age assurance testing (Settings, Developer). The Simulator answers 18+ for everyone.
+- Consent withdrawn (AR-04): App Store Connect, App Information, App Store Server Notifications: set both Production and Sandbox URLs to `https://<prod-ref>.supabase.co/functions/v1/app-store-notifications`, Version 2. Then send a test notification (App Store Server API "Request a Test Notification", or the button in App Store Connect) and check the function log shows `appstore_ignored` with type `TEST`. A `RESCIND_CONSENT` locks every account linked to that download (`status_reason = 'parental_consent'`). To turn one back on after the parent allows the app again, an admin unsuspends it.
+- The iOS app links its download id on every signed-in launch (`link_app_transaction`, local module `modules/app-transaction`), so this needs a new native build, not an OTA.
 
 **Rejection playbook:** see REVIEW.md §10 plus:
 - Reply within 24 h.
@@ -109,7 +130,7 @@ The expected total is about 900 of 2,000 free minutes a month.
 Legal pages are drafted by the owner. A lawyer review is optional and not free (Q7). They're published at `/terms`, `/privacy`, `/rules`, `/banned-items`, `/safety`, `/cookies`, `/child-safety` and bundled in the app; a CI diff checks that both copies match.
 
 **Terms must include:**
-- eligibility (18+, current student at a supported school; one account per person)
+- eligibility (13+, under 18 with a parent or guardian's agreement, current student at a supported school; one account per person)
 - marketplace role (we introduce, we don't sell, inspect or handle money)
 - prohibited items (link to banned list)
 - user content license (to display in the app)
@@ -131,7 +152,7 @@ Legal pages are drafted by the owner. A lawyer review is optional and not free (
 - retention periods exactly as in DATA_MODEL §5
 - Quad disclosure (R1.1)
 - meetup share link disclosure
-- age (18+, DOB not stored)
+- age (13+, age range stored, DOB not stored; teen section with parent requests and consent withdrawal; under-13 deletion)
 - user rights (access through Download your data, deletion in the app and on the web)
 - security measures
 - contact
@@ -226,7 +247,7 @@ Legal pages are drafted by the owner. A lawyer review is optional and not free (
 **R1.1 go/no-go** (ships with R1.0, DEC 76; the per-campus Quad switch is a later, separate step):
 - legal version `2026-11` published (Privacy: Quad, chat photos, Around campus, invites, export, price hints, announcements; Terms §8 and Community Rules: Quad and chat photos; Child safety: photos and posts) and the app bundle matches (`node scripts/sync-legal.mjs --check`)
 - `app_config.rules_version` bumped with `rules_changes` lines, so existing accounts accept the updated rules
-- Apple age questionnaire answered with social media yes, 18+ (§5)
+- Apple age questionnaire answered with social media yes, calculated 13+ (§5, DEC 136)
 - Play Data safety and UGC answers as in §5 (no new data types)
 - Demo University: `scripts/seed-review.ts` run on prod, global `quad_enabled` on, every R1.1 feature visible to reviewers
 - chat photos: on only with CSAM scanning or a logged risk acceptance (R11-PHOTO-GATE), else off and left out of the review notes

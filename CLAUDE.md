@@ -2,7 +2,7 @@
 
 ## Project
 
-OnlySwap is a campus-only marketplace for verified 18+ students:
+OnlySwap is a campus-only marketplace for verified students aged 13+ (DEC 136):
 1. swipe
 2. offer
 3. chat after the seller accepts
@@ -91,7 +91,7 @@ design/          design board + sources
     - reduce motion
     - screen-reader actions for the swipe deck
 11. **Compliance (build plan §19, SECURITY):**
-    - 18+ age check.
+    - Age check: 13+, under 13 blocked (DEC 136).
     - No anonymous chat.
     - Promotional push is opt-in (`tips` pref).
     - EXIF is stripped from every photo.

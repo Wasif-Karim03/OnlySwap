@@ -15,13 +15,23 @@ import { errorCopy, toAppError } from '@/lib/errors';
 import { isWebPlatform } from '@/lib/platform';
 import { age as copy } from '@/strings';
 
-import { requestAgeSignal, toIsoDate, type AgeRangeModule, type Device } from './age';
+import {
+  bandForSignal,
+  checkRegulation,
+  NOT_REGULATED,
+  requestAgeAnswer,
+  toIsoDate,
+  type AgeDeclaration,
+  type AgeRangeModule,
+  type Device,
+  type Regulation,
+} from './age';
 import { authApi, type AuthApi } from './api';
 import { AuthStep } from './AuthStep';
 import { hadLoginIntent } from './loginIntent';
 import { useGateHandoff } from './useAppGate';
 
-type Phase = 'checking' | 'form' | 'saving' | 'blocked';
+type Phase = 'checking' | 'form' | 'saving' | 'blocked' | 'osRequired';
 
 const deviceTz = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -38,8 +48,11 @@ export const PICKER_START_YEARS_AGO = 20;
 /**
  * A05 Age check (P4-AUTH-07; boards A7 Birthday, A8 Not eligible; D4 native
  * date picker). The OS signal goes first; the date field is the fallback.
- * A minor's account is deleted right away (delete-account, underage mode)
+ * Under 13, the account is deleted right away (delete-account, underage mode)
  * and the email stays blocked (age_blocks), so there is no retry.
+ * Where Apple says age assurance law applies (AR-03; Texas, Utah,
+ * Louisiana), only the OS answer counts: no date field, and a declined
+ * answer shows a retry instead.
  */
 export function AgeScreen({
   api = authApi,
@@ -62,10 +75,11 @@ export function AgeScreen({
   const [pickerOpen, setPickerOpen] = useState(Platform.OS === 'ios');
   const [error, setError] = useState<string | null>(null);
   const started = useRef(false);
+  const regulation = useRef<Regulation>(NOT_REGULATED);
 
-  const finishAdult = useGateHandoff();
+  const finishEligible = useGateHandoff();
 
-  const finishMinor = async () => {
+  const finishUnderMinimum = async () => {
     // Delete first, then sign out; either failing still ends on the blocked
     // screen because the email is already in age_blocks.
     try {
@@ -81,13 +95,26 @@ export function AgeScreen({
     setPhase('blocked');
   };
 
-  const submit = async (input: Parameters<AuthApi['confirmAge']>[0]) => {
+  const submit = async (
+    input: Parameters<AuthApi['confirmAge']>[0],
+    declaration: AgeDeclaration | null = null,
+  ) => {
     setPhase('saving');
     setError(null);
     try {
-      const { adult } = await api.confirmAge(input);
-      if (adult) finishAdult();
-      else await finishMinor();
+      const { eligible } = await api.confirmAge(input);
+      if (!eligible) {
+        await finishUnderMinimum();
+        return;
+      }
+      if (regulation.current.required) {
+        try {
+          await api.recordAgeAssurance({ regulated: true, declaration });
+        } catch {
+          // The age is confirmed; a missed record doesn't stop sign-up.
+        }
+      }
+      finishEligible();
     } catch (e) {
       const err = toAppError(e);
       setError(
@@ -97,13 +124,23 @@ export function AgeScreen({
     }
   };
 
+  const askOs = async () => {
+    setPhase('checking');
+    const { signal, declaration } = await requestAgeAnswer(ageModule, device);
+    if (signal !== 'unknown') {
+      void submit({ method: 'os_signal', band: bandForSignal(signal) }, declaration);
+    } else {
+      setPhase(regulation.current.required ? 'osRequired' : 'form');
+    }
+  };
+
   useEffect(() => {
     if (started.current || skipSignal) return;
     started.current = true;
-    void requestAgeSignal(ageModule, device).then((signal) => {
-      if (signal === 'unknown') setPhase('form');
-      else void submit({ method: 'os_signal', isAdult: signal === 'adult' });
-    });
+    void (async () => {
+      regulation.current = await checkRegulation(ageModule, device);
+      await askOs();
+    })();
     // Runs once on mount; the signal is asked a single time.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -138,6 +175,37 @@ export function AgeScreen({
           />
         </View>
       </View>
+    );
+  }
+
+  if (phase === 'osRequired') {
+    return (
+      <AuthStep
+        testID="screen-age-os-required"
+        title={copy.osRequiredTitle}
+        body={copy.osRequiredBody}
+        leading="none"
+        step={3}
+        dock={
+          <View style={styles.osDock}>
+            <Button
+              label={copy.osRequiredRetry}
+              onPress={() => void askOs()}
+              testID="age-os-retry"
+            />
+            <Button
+              label={copy.close}
+              variant="secondary"
+              onPress={() => router.replace('/welcome')}
+              testID="age-os-close"
+            />
+          </View>
+        }
+      >
+        <Text variant="meta" tone="ink2">
+          {copy.osRequiredHint}
+        </Text>
+      </AuthStep>
     );
   }
 
@@ -287,4 +355,5 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.card,
   },
   blockedDock: { paddingBottom: theme.space['2xl'] },
+  osDock: { gap: theme.space.md },
 }));

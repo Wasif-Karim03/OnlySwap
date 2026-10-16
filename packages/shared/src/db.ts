@@ -162,6 +162,43 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"app_transactions": {
+                  Row: {
+                    "app_transaction_id": string,"created_at": string,"last_seen_at": string,"user_id": string
+                  }
+                  Insert: {
+                    "app_transaction_id": string,"created_at"?: string,"last_seen_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "app_transaction_id"?: string,"created_at"?: string,"last_seen_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "app_transactions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "app_transactions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "app_transactions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "app_transactions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"appeals": {
                   Row: {
                     "body": string | null,"created_at": string | null,"decided_at": string | null,"decided_by": string | null,"decision_note": string | null,"id": string,"reason_choice": string | null,"status": string,"subject_id": string,"subject_type": string,"user_id": string
@@ -1103,13 +1140,13 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "adult_confirmed_at": string | null,"age_method": Database["public"]['Enums']["age_method"] | null,"analytics_opt_in": boolean,"areas": (string)[],"avatar_path": string | null,"away_since": string | null,"bio": string | null,"campus_id": string,"crash_reports_opt_in": boolean,"created_at": string,"display_name": string | null,"email_hash": string,"first_name": string | null,"founding_seller_until": string | null,"id": string,"invite_code": string,"invited_by": string | null,"last_active_at": string | null,"last_app_version": string | null,"last_initial": string | null,"last_platform": string | null,"moving_out_by": string | null,"noshow_count": number,"paused_until": string | null,"quad_rules_accepted_at": string | null,"rules_accepted_at": string | null,"rules_version": string | null,"seen_unlock_at": string | null,"status": Database["public"]['Enums']["user_status"],"status_reason": string | null,"strike_count": number,"theme_mode": string,"verified_until": string,"year": Database["public"]['Enums']["class_year"] | null
+                    "adult_confirmed_at": string | null,"age_band": string | null,"age_declaration": string | null,"age_method": Database["public"]['Enums']["age_method"] | null,"age_regulated": boolean | null,"analytics_opt_in": boolean,"areas": (string)[],"avatar_path": string | null,"away_since": string | null,"bio": string | null,"campus_id": string,"crash_reports_opt_in": boolean,"created_at": string,"display_name": string | null,"email_hash": string,"first_name": string | null,"founding_seller_until": string | null,"id": string,"invite_code": string,"invited_by": string | null,"last_active_at": string | null,"last_app_version": string | null,"last_initial": string | null,"last_platform": string | null,"moving_out_by": string | null,"noshow_count": number,"parental_consent": string | null,"paused_until": string | null,"quad_rules_accepted_at": string | null,"rules_accepted_at": string | null,"rules_version": string | null,"seen_unlock_at": string | null,"status": Database["public"]['Enums']["user_status"],"status_reason": string | null,"strike_count": number,"theme_mode": string,"verified_until": string,"year": Database["public"]['Enums']["class_year"] | null
                   }
                   Insert: {
-                    "adult_confirmed_at"?: string | null,"age_method"?: Database["public"]['Enums']["age_method"] | null,"analytics_opt_in"?: boolean,"areas"?: (string)[],"avatar_path"?: string | null,"away_since"?: string | null,"bio"?: string | null,"campus_id": string,"crash_reports_opt_in"?: boolean,"created_at"?: string,"display_name"?: never,"email_hash": string,"first_name"?: string | null,"founding_seller_until"?: string | null,"id": string,"invite_code"?: string,"invited_by"?: string | null,"last_active_at"?: string | null,"last_app_version"?: string | null,"last_initial"?: string | null,"last_platform"?: string | null,"moving_out_by"?: string | null,"noshow_count"?: number,"paused_until"?: string | null,"quad_rules_accepted_at"?: string | null,"rules_accepted_at"?: string | null,"rules_version"?: string | null,"seen_unlock_at"?: string | null,"status"?: Database["public"]['Enums']["user_status"],"status_reason"?: string | null,"strike_count"?: number,"theme_mode"?: string,"verified_until": string,"year"?: Database["public"]['Enums']["class_year"] | null
+                    "adult_confirmed_at"?: string | null,"age_band"?: string | null,"age_declaration"?: string | null,"age_method"?: Database["public"]['Enums']["age_method"] | null,"age_regulated"?: boolean | null,"analytics_opt_in"?: boolean,"areas"?: (string)[],"avatar_path"?: string | null,"away_since"?: string | null,"bio"?: string | null,"campus_id": string,"crash_reports_opt_in"?: boolean,"created_at"?: string,"display_name"?: never,"email_hash": string,"first_name"?: string | null,"founding_seller_until"?: string | null,"id": string,"invite_code"?: string,"invited_by"?: string | null,"last_active_at"?: string | null,"last_app_version"?: string | null,"last_initial"?: string | null,"last_platform"?: string | null,"moving_out_by"?: string | null,"noshow_count"?: number,"parental_consent"?: string | null,"paused_until"?: string | null,"quad_rules_accepted_at"?: string | null,"rules_accepted_at"?: string | null,"rules_version"?: string | null,"seen_unlock_at"?: string | null,"status"?: Database["public"]['Enums']["user_status"],"status_reason"?: string | null,"strike_count"?: number,"theme_mode"?: string,"verified_until": string,"year"?: Database["public"]['Enums']["class_year"] | null
                   }
                   Update: {
-                    "adult_confirmed_at"?: string | null,"age_method"?: Database["public"]['Enums']["age_method"] | null,"analytics_opt_in"?: boolean,"areas"?: (string)[],"avatar_path"?: string | null,"away_since"?: string | null,"bio"?: string | null,"campus_id"?: string,"crash_reports_opt_in"?: boolean,"created_at"?: string,"display_name"?: never,"email_hash"?: string,"first_name"?: string | null,"founding_seller_until"?: string | null,"id"?: string,"invite_code"?: string,"invited_by"?: string | null,"last_active_at"?: string | null,"last_app_version"?: string | null,"last_initial"?: string | null,"last_platform"?: string | null,"moving_out_by"?: string | null,"noshow_count"?: number,"paused_until"?: string | null,"quad_rules_accepted_at"?: string | null,"rules_accepted_at"?: string | null,"rules_version"?: string | null,"seen_unlock_at"?: string | null,"status"?: Database["public"]['Enums']["user_status"],"status_reason"?: string | null,"strike_count"?: number,"theme_mode"?: string,"verified_until"?: string,"year"?: Database["public"]['Enums']["class_year"] | null
+                    "adult_confirmed_at"?: string | null,"age_band"?: string | null,"age_declaration"?: string | null,"age_method"?: Database["public"]['Enums']["age_method"] | null,"age_regulated"?: boolean | null,"analytics_opt_in"?: boolean,"areas"?: (string)[],"avatar_path"?: string | null,"away_since"?: string | null,"bio"?: string | null,"campus_id"?: string,"crash_reports_opt_in"?: boolean,"created_at"?: string,"display_name"?: never,"email_hash"?: string,"first_name"?: string | null,"founding_seller_until"?: string | null,"id"?: string,"invite_code"?: string,"invited_by"?: string | null,"last_active_at"?: string | null,"last_app_version"?: string | null,"last_initial"?: string | null,"last_platform"?: string | null,"moving_out_by"?: string | null,"noshow_count"?: number,"parental_consent"?: string | null,"paused_until"?: string | null,"quad_rules_accepted_at"?: string | null,"rules_accepted_at"?: string | null,"rules_version"?: string | null,"seen_unlock_at"?: string | null,"status"?: Database["public"]['Enums']["user_status"],"status_reason"?: string | null,"strike_count"?: number,"theme_mode"?: string,"verified_until"?: string,"year"?: Database["public"]['Enums']["class_year"] | null
                   }
                   Relationships: [
                     {
@@ -2373,6 +2410,9 @@ isOneToOne: false
 "confirm_age":
 { Args: { "birth_date"?: string,"is_adult"?: boolean,"method": string }; Returns: Json
                            },
+"confirm_age_v2":
+{ Args: { "band"?: string,"birth_date"?: string,"method": string }; Returns: Json
+                           },
 "confirm_deal":
 { Args: { "chat_id": string,"outcome": string }; Returns: undefined
                            },
@@ -2535,6 +2575,9 @@ isOneToOne: false
 "like_listing_comment":
 { Args: { "comment_id": string,"liked": boolean }; Returns: Json
                            },
+"link_app_transaction":
+{ Args: { "app_transaction_id": string }; Returns: undefined
+                           },
 "list_blocked":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
@@ -2590,6 +2633,9 @@ isOneToOne: false
                            },
 "public_safe_spots":
 { Args: { "slug": string }; Returns: Json
+                           },
+"record_age_assurance":
+{ Args: { "declaration"?: string,"regulated": boolean }; Returns: Json
                            },
 "record_swipes":
 { Args: { "items": Json }; Returns: undefined

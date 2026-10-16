@@ -830,6 +830,16 @@
     ]
   },
   {
+    "name": "confirm_age_v2",
+    "args": "method text, band text, birth_date date",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "confirm_deal",
     "args": "chat_id uuid, outcome text",
     "returns": "void",
@@ -1374,6 +1384,16 @@
     ]
   },
   {
+    "name": "link_app_transaction",
+    "args": "app_transaction_id text",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "list_blocked",
     "args": "",
     "returns": "jsonb",
@@ -1562,6 +1582,16 @@
     "security": "definer",
     "grants": [
       "anon",
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "record_age_assurance",
+    "args": "regulated boolean, declaration text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
       "authenticated",
       "service_role"
     ]

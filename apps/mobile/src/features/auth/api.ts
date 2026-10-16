@@ -4,6 +4,7 @@ import { toAppError } from '@/lib/errors';
 import { createRpc, type RpcClient } from '@/lib/rpc';
 import { getSupabase } from '@/lib/supabase';
 
+import type { AgeBand, AgeDeclaration } from './age';
 import {
   emailDomain,
   isPersonalDomain,
@@ -37,6 +38,7 @@ type ProfileRow = {
   status: GateProfile['status'];
   first_name: string | null;
   adult_confirmed_at: string | null;
+  age_band?: AgeBand | null;
   rules_version: string | null;
   verified_until?: string | null;
   created_at?: string | null;
@@ -167,20 +169,47 @@ export function createAuthApi(deps: Deps) {
       if (error) throw toAppError(error);
     },
 
-    /** 18+ check (A05). A birth date is sent once and never stored (T-INT-AUTH-04). */
+    /**
+     * Minimum age check, 13+ (A05, DEC 136). A birth date is sent once and
+     * never stored (T-INT-AUTH-04); the server decides the band.
+     */
     async confirmAge(
       input:
-        { method: 'os_signal'; isAdult: boolean } | { method: 'self_declared'; birthDate: string },
-    ): Promise<{ adult: boolean }> {
-      return rpc<{ adult: boolean }>(
-        'confirm_age',
+        | { method: 'os_signal'; band: AgeBand | 'under_13' }
+        | { method: 'self_declared'; birthDate: string },
+    ): Promise<{ eligible: boolean; ageBand: AgeBand | null }> {
+      const res = await rpc<{ eligible: boolean; age_band: AgeBand | null }>(
+        'confirm_age_v2',
         input.method === 'os_signal'
-          ? { method: 'os_signal', is_adult: input.isAdult }
+          ? { method: 'os_signal', band: input.band }
           : { method: 'self_declared', birth_date: input.birthDate },
       );
+      return { eligible: res.eligible, ageBand: res.age_band ?? null };
     },
 
-    /** After confirm_age said minor: remove the account right away (F02, P4-DEL-01). */
+    /**
+     * Apple age assurance (AR-03): whether the law applied and how the OS
+     * range was declared. Called after confirmAge said eligible.
+     */
+    async recordAgeAssurance(input: {
+      regulated: boolean;
+      declaration: AgeDeclaration | null;
+    }): Promise<void> {
+      await rpc<unknown>('record_age_assurance', {
+        regulated: input.regulated,
+        ...(input.declaration ? { declaration: input.declaration } : {}),
+      });
+    },
+
+    /**
+     * AR-04: links this iPhone's App Store download id to the account, so a
+     * RESCIND_CONSENT notification can find it.
+     */
+    async linkAppTransaction(appTransactionId: string): Promise<void> {
+      await rpc<unknown>('link_app_transaction', { app_transaction_id: appTransactionId });
+    },
+
+    /** After confirm_age_v2 said under 13: remove the account right away (F02, P4-DEL-01). */
     async deleteUnderageAccount(): Promise<void> {
       if (!deps.functions) throw toAppError({ message: 'functions unavailable' });
       const { error } = await deps.functions().invoke('delete-account', {
@@ -265,6 +294,7 @@ export function createAuthApi(deps: Deps) {
         status: data.status,
         firstName: data.first_name,
         adultConfirmed: data.adult_confirmed_at !== null,
+        ageBand: data.age_band ?? null,
         rulesVersion: data.rules_version,
         verifiedUntil: data.verified_until ?? null,
         showUnlocked: shouldShowUnlocked({
@@ -287,7 +317,7 @@ export const authApi: AuthApi = createAuthApi({
     getSupabase()
       .from('profiles')
       .select(
-        'status, first_name, adult_confirmed_at, rules_version, verified_until, created_at, seen_unlock_at, campuses(status, unlocked_at)',
+        'status, first_name, adult_confirmed_at, age_band, rules_version, verified_until, created_at, seen_unlock_at, campuses(status, unlocked_at)',
       )
       .eq('id', userId)
       .maybeSingle<ProfileRow>(),

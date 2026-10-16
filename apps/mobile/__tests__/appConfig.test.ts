@@ -89,9 +89,17 @@ describe('T-STORE (TESTING §7) app.config.ts matches the locked native config (
       ]),
     );
     expect(reasons).toEqual({
-      NSPrivacyAccessedAPICategoryUserDefaults: ['CA92.1'],
+      NSPrivacyAccessedAPICategoryUserDefaults: ['CA92.1', '1C8F.1'],
       NSPrivacyAccessedAPICategoryFileTimestamp: ['C617.1'],
+      NSPrivacyAccessedAPICategorySystemBootTime: ['35F9.1'],
     });
+  });
+
+  it('AR-06: the widget privacy manifest plugin runs after expo-widgets (listed before it)', () => {
+    const names = (cfg.plugins ?? []).map((p) => (Array.isArray(p) ? p[0] : p));
+    const mine = names.indexOf('./plugins/withWidgetPrivacyManifest');
+    expect(mine).toBeGreaterThanOrEqual(0);
+    expect(mine).toBeLessThan(names.indexOf('expo-widgets'));
   });
 
   it('blocks location, media, audio, contacts, exact alarms and the ad id on Android', () => {
@@ -214,5 +222,15 @@ describe('Android WorkManager pin (first R2 build: duplicate classes)', () => {
         );
       },
     );
+  });
+});
+
+describe('AR-06 widget privacy manifest', () => {
+  it('declares App Group UserDefaults (1C8F.1) and no tracking', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { MANIFEST } = require('../plugins/withWidgetPrivacyManifest');
+    expect(MANIFEST).toContain('NSPrivacyAccessedAPICategoryUserDefaults');
+    expect(MANIFEST).toContain('<string>1C8F.1</string>');
+    expect(MANIFEST).toMatch(/<key>NSPrivacyTracking<\/key>\s*<false\/>/);
   });
 });

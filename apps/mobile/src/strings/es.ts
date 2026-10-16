@@ -35,7 +35,7 @@ const shell: Strings['shell'] = {
 const errors: Strings['errors'] = {
   NOT_AUTHENTICATED: 'Inicia sesión para seguir.',
   NOT_ACTIVE: 'Tu cuenta no puede hacer eso ahora. Revisa tu perfil para ver detalles.',
-  AGE_REQUIRED: 'Confirma que tienes 18 años o más para seguir.',
+  AGE_REQUIRED: 'Confirma que tienes 13 años o más para seguir.',
   RULES_REQUIRED: 'Lee y acepta las reglas de la comunidad para seguir.',
   FORBIDDEN: 'No tienes acceso a eso.',
   NOT_FOUND: 'No lo encontramos. Puede que lo hayan quitado.',
@@ -56,7 +56,7 @@ const errors: Strings['errors'] = {
   NOT_ADMIN: 'Solo para admins.',
   SCHOOL_UNKNOWN: 'Todavía no aceptamos ese correo universitario.',
   DOMAIN_BLOCKED: 'Ese dominio de correo no se puede usar. Usa tu correo universitario.',
-  AGE_BLOCKED: 'OnlySwap es para personas de 18 años o más.',
+  AGE_BLOCKED: 'OnlySwap es para personas de 13 años o más.',
   BANNED: 'Esta cuenta fue eliminada de OnlySwap.',
   EMAIL_ALIAS:
     'Ese correo universitario ya tiene una cuenta. Inicia sesión con la dirección que usaste primero.',
@@ -157,7 +157,7 @@ const report: Strings['report'] = {
       hate: 'Odio o insultos',
       sexual: 'Contenido sexual',
       no_show: 'No llegó',
-      minor_safety: 'Involucra a alguien menor de 18',
+      minor_safety: 'Pone en riesgo a un menor',
       calls_out_student: 'Expone a un estudiante',
       spam: 'Spam',
       self_harm: 'Alguien podría hacerse daño',
@@ -174,7 +174,7 @@ const report: Strings['report'] = {
       hate: 'Odio o insultos',
       sexual: 'Contenido sexual',
       no_show: 'No llegó',
-      minor_safety: 'Involucra a alguien menor de 18',
+      minor_safety: 'Pone en riesgo a un menor',
       calls_out_student: 'Expone a un estudiante',
       spam: 'Spam o estafa',
       self_harm: 'Alguien podría hacerse daño',
@@ -191,7 +191,7 @@ const report: Strings['report'] = {
       hate: 'Discurso de odio',
       sexual: 'Contenido sexual',
       no_show: 'No llegó',
-      minor_safety: 'Involucra a alguien menor de 18',
+      minor_safety: 'Pone en riesgo a un menor',
       calls_out_student: 'Expone a un estudiante',
       spam: 'Spam o estafa',
       self_harm: 'Alguien podría hacerse daño',
@@ -529,7 +529,7 @@ const signIn: Strings['signIn'] = {
   waitlistJoined: 'Ya estás en la lista. Te escribimos cuando abra tu universidad.',
   wrongPassword: 'Ese correo y esa contraseña no coinciden.',
   legal:
-    'Al continuar aceptas los Términos y la Política de privacidad. Solo para estudiantes de 18 años o más.',
+    'Al continuar aceptas los Términos y la Política de privacidad. Solo para estudiantes de 13 años o más.',
   verifyTitle: 'Revisa tu correo',
   sentTo: 'Enviamos un código a {email}',
   codeLabel: 'Código de 6 dígitos',
@@ -561,11 +561,17 @@ const age: Strings['age'] = {
   step: '3 de 5',
   blockedTitle: 'OnlySwap todavía no está disponible para ti',
   blockedBody:
-    'Necesitas tener 18 años o más para usar OnlySwap. No guardamos tu correo ni ningún dato.',
+    'Necesitas tener 13 años o más para usar OnlySwap. No guardamos tu correo ni ningún dato.',
   blockedCardTitle: '¿Quieres vender algo antes?',
   blockedCardBody:
-    'Pídele a alguien de 18 años o más que lo publique por ti y vayan juntos al encuentro.',
+    'Pídele a tu mamá, tu papá o a alguien mayor que lo publique por ti y vayan juntos al encuentro.',
   close: 'Cerrar',
+  osRequiredTitle: 'Comparte tu rango de edad para seguir',
+  osRequiredBody:
+    'Donde vives, la ley pide que las apps obtengan tu rango de edad de Apple. Solo sabemos si tienes de 13 a 17 o 18 años o más, nunca tu fecha de nacimiento.',
+  osRequiredHint:
+    'Si un padre o tutor administra tu cuenta de Apple, quizá tenga que aprobarlo primero.',
+  osRequiredRetry: 'Compartir rango de edad',
 };
 
 const profileSetup: Strings['profileSetup'] = {
@@ -630,7 +636,7 @@ const rules: Strings['rules'] = {
     },
   ],
   agreeLabel:
-    'Tengo 18 años o más y acepto las Reglas de la comunidad, los Términos y el Aviso de privacidad',
+    'Tengo 13 años o más y acepto las Reglas de la comunidad, los Términos y el Aviso de privacidad',
   communityRules: 'Reglas de la comunidad',
   terms: 'Términos',
   privacy: 'Aviso de privacidad',
@@ -1407,6 +1413,8 @@ const safety: Strings['safety'] = {
     suspended:
       'Un moderador suspendió tu cuenta después de un reporte. Puedes apelar una vez y una persona lo revisa.',
     banned: 'Esta cuenta rompió las reglas de una forma que termina el acceso a OnlySwap.',
+    consent:
+      'Tu madre, padre o tutor apagó OnlySwap para ti en el App Store. Cuando lo vuelva a permitir, contáctanos para reactivar tu cuenta.',
   },
   reasons: {
     noshow: 'Encuentros a los que no llegaste',

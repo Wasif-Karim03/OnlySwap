@@ -33,7 +33,7 @@ export const shell = {
 export const errors = {
   NOT_AUTHENTICATED: 'Sign in to keep going.',
   NOT_ACTIVE: "Your account can't do that right now. Check your profile for details.",
-  AGE_REQUIRED: 'Confirm you are 18 or older to keep going.',
+  AGE_REQUIRED: 'Confirm you are 13 or older to keep going.',
   RULES_REQUIRED: 'Read and accept the community rules to keep going.',
   FORBIDDEN: "You don't have access to that.",
   NOT_FOUND: "We couldn't find that. It may have been removed.",
@@ -54,7 +54,7 @@ export const errors = {
   NOT_ADMIN: 'Admins only.',
   SCHOOL_UNKNOWN: "We don't support that school email yet.",
   DOMAIN_BLOCKED: "That email domain can't be used. Use your school email.",
-  AGE_BLOCKED: 'OnlySwap is for people 18 and older.',
+  AGE_BLOCKED: 'OnlySwap is for people 13 and older.',
   BANNED: 'This account has been removed from OnlySwap.',
   EMAIL_ALIAS: 'That school email already has an account. Sign in with the address you used first.',
   FEATURE_OFF: "That isn't available yet.",
@@ -158,7 +158,7 @@ export const report = {
       hate: 'Hate or slurs',
       sexual: 'Sexual content',
       no_show: "Didn't show up",
-      minor_safety: 'Involves someone under 18',
+      minor_safety: 'Puts a minor at risk',
       calls_out_student: 'Calls out a student',
       spam: 'Spam',
       self_harm: 'Someone might hurt themselves',
@@ -175,7 +175,7 @@ export const report = {
       hate: 'Hate or slurs',
       sexual: 'Sexual content',
       no_show: "Didn't show up",
-      minor_safety: 'Involves someone under 18',
+      minor_safety: 'Puts a minor at risk',
       calls_out_student: 'Calls out a student',
       spam: 'Spam or scam',
       self_harm: 'Someone might hurt themselves',
@@ -193,7 +193,7 @@ export const report = {
       hate: 'Hate speech',
       sexual: 'Sexual content',
       no_show: "Didn't show up",
-      minor_safety: 'Involves someone under 18',
+      minor_safety: 'Puts a minor at risk',
       calls_out_student: 'Calls out a student',
       spam: 'Spam or scam',
       self_harm: 'Someone might hurt themselves',
@@ -530,7 +530,7 @@ export const signIn = {
   joinWaitlist: 'Join the waitlist',
   waitlistJoined: "You're on the list. We'll email you when your school opens.",
   wrongPassword: "That email and password don't match.",
-  legal: 'By continuing you agree to the Terms and Privacy Policy. Students 18 and older only.',
+  legal: 'By continuing you agree to the Terms and Privacy Policy. Students 13 and older only.',
   // Verify code
   verifyTitle: 'Check your email',
   sentTo: 'We sent a code to {email}',
@@ -562,10 +562,15 @@ export const age = {
   step: '3 of 5',
   blockedTitle: "OnlySwap isn't available to you yet",
   blockedBody:
-    "You need to be 18 or older to use OnlySwap. We haven't kept your email or any details.",
+    "You need to be 13 or older to use OnlySwap. We haven't kept your email or any details.",
   blockedCardTitle: 'Selling something before then?',
-  blockedCardBody: "Ask a friend who's 18 or older to post it for you and meet together.",
+  blockedCardBody: 'Ask a parent or an older friend to post it for you and go along together.',
   close: 'Close',
+  osRequiredTitle: 'Share your age range to continue',
+  osRequiredBody:
+    "Where you live, the law asks apps to get your age range from Apple. We only learn whether you're 13 to 17 or 18 and older, never your birthday.",
+  osRequiredHint: 'If a parent manages your Apple Account, they may need to approve it first.',
+  osRequiredRetry: 'Share age range',
 } as const;
 
 /** A06 Profile setup (board A10). */
@@ -631,7 +636,7 @@ export const rules = {
       body: 'Anything creepy gets reported and looked at by a real person.',
     },
   ],
-  agreeLabel: "I'm 18 or older and agree to the Community Rules, Terms and Privacy Policy",
+  agreeLabel: "I'm 13 or older and agree to the Community Rules, Terms and Privacy Policy",
   communityRules: 'Community Rules',
   terms: 'Terms',
   privacy: 'Privacy Policy',
@@ -1436,6 +1441,8 @@ export const safety = {
     suspended:
       'A moderator suspended your account after a report. You can appeal once and a person reviews it.',
     banned: 'This account broke the rules in a way that ends access to OnlySwap.',
+    consent:
+      'A parent or guardian turned off OnlySwap for you in the App Store. Once they allow it again, contact us to turn your account back on.',
   },
   reasons: {
     noshow: 'Missed meetups',

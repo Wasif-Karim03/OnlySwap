@@ -52,7 +52,7 @@ Helpers `tests.authenticate_as(uid, aal)` and `tests.clear_authentication()` com
 | T-UNIT-AUTH-01 | `auth/logic.validateName` | unicode letters, hyphen, apostrophe; digits rejected; length bounds |
 | T-UNIT-AUTH-02 | `auth/api.lookupSchool` | personal domains short-circuit; lowercase; trims spaces |
 | T-UNIT-AUTH-03 | `auth/useAppGate` | every gate combination (maintenance, version, session, statuses, age, rules) → expected route |
-| T-UNIT-AUTH-04 | `auth/age.requestAgeSignal` | adult, minor, unknown, timeout → unknown; never calls track |
+| T-UNIT-AUTH-04 | `auth/age.requestAgeSignal` | adult, teen, under_minimum, unknown (thresholds 13 and 18), timeout → unknown; never calls track |
 | T-UNIT-AUTH-05 | Verify code attempt counter | 5 wrong → 5-min lockout; resend resets the timer only |
 | T-UNIT-MEDIA-01 | `processPhoto` size | output long edge 1080/400; full under 2 MB (re-encode path) |
 | T-UNIT-MEDIA-02 | `processPhoto` formats | HEIC/PNG/JPEG inputs → WebP |
@@ -182,7 +182,7 @@ Each is a YAML flow in `.maestro/`, run against staging with seeded data. Steps 
    - School row shows "The Ohio State University" → Send code.
    - Read the code from the staging test inbox. Test-only: a Mailpit instance locally, or on staging an allowlisted catch-all domain `e2e.onlyswap.test` in `campus_domains` for the OSU test campus, with the code fetched through the `test-inbox` function that exists only on staging.
    - Enter the code → age signal unknown → Birthday 2000-01-01 → Profile: name "Test", year Junior → Rules check → Agree → Notifications "Not now" → Discover visible.
-2. **E2E-02 Underage**: sign up → Birthday under 18 → Not eligible → Close → sign up again with the same email → blocked message.
+2. **E2E-02 Underage**: sign up → Birthday under 13 → Not eligible → Close → sign up again with the same email → blocked message.
 3. **E2E-03 Unknown school**: type `x@unknown.edu` → School not found card → Join the waitlist → toast.
 4. **E2E-04 Reviewer login**: `appreview@review.onlyswap.test` → password field → Sign in → Discover shows Demo University listings.
 5. **E2E-05 Swipe and offer**
@@ -309,7 +309,7 @@ Each is a YAML flow in `.maestro/`, run against staging with seeded data. Steps 
 - [ ] No anonymous chat anywhere; Quad disclosure shown.
 - [ ] Push is not required (the app works with notifications denied); promotional push is opt-in.
 - [ ] Permission strings are specific (camera, photos, notifications only); no location permission in R1.0.
-- [ ] Age rating 18+ override; age check works; underage is blocked.
+- [ ] Age rating answered with no override (calculated 13+, DEC 136); age check works; under 13 is blocked.
 - [ ] Privacy label matches the SDKs (Sentry, PostHog, Expo Notifications).
 - [ ] The privacy manifest is present and the required-reason APIs are declared.
 - [ ] `ITSAppUsesNonExemptEncryption=NO`.
@@ -324,7 +324,7 @@ Each is a YAML flow in `.maestro/`, run against staging with seeded data. Steps 
 - [ ] Target API 36; `compileSdk` 36.
 - [ ] The merged manifest has none of the blocked permissions (`aapt dump permissions` on the AAB via `bundletool`).
 - [ ] Data safety matches plan §19 exactly; "data deleted on request" = yes, with the URL.
-- [ ] Target audience 18+ only; Restrict minor access on; not "appeals to children".
+- [ ] Target audience 13-15, 16-17 and 18+ (no under-13 groups); not "appeals to children" (DEC 136).
 - [ ] Content rating questionnaire done.
 - [ ] Declarations: Ads no; App access credentials; Financial none; Health none; Government no; News no; Advertising ID not used.
 - [ ] Child safety standards URL + contact filled in.
@@ -349,6 +349,13 @@ Each is a YAML flow in `.maestro/`, run against staging with seeded data. Steps 
 | T-INT-SAFE-03 | pgTAP | BE-09 | 3 reports from accounts younger than 7 days → no auto-hide; 3 from aged distinct accounts → held + still open |
 | T-INT-OFF-RACE-02 | pgTAP (2 sessions) | BE-10 | `make_offer` concurrent with `mark_sold` → offer rejected `LISTING_UNAVAILABLE` or auto-declined, never pending on a sold listing |
 | T-INT-OFF-RACE-03 | parallel sessions + `scripts/verify/offer-race.mjs` | E-05, DEC 102 | many first offers on one listing at once all land, none fails with a deadlock; `offer_count` equals the offers (`offer_lock.test.sql` pins the lock) |
+| T-INT-AGE-V2 | pgTAP | AR-01, DEC 136 | `confirm_age_v2`: exactly 13 → `13_17`, 12 years 364 days → blocked, 17 years 364 days → `13_17`, exactly 18 → `18_plus` (campus time); OS bands; no v1 or v2 retry passes after an under-13 answer; a confirmed band is never overwritten; v1 still blocks under 18 and its adults get `18_plus`; a reset clears the band; no birth-date column; underage deletion still works (`age_gate_v2.test.sql`) |
+| T-UNIT-AUTH-09 | Jest | AR-01, DEC 136 | `auth/api.confirmAge` calls `confirm_age_v2` with `{method, band}` or `{method, birth_date}` (no `is_adult`) and maps `{eligible, age_band}`; `getGateProfile` reads `age_band` (`authApi.test.ts`) |
+| T-INT-AGE-ASSURE | pgTAP | AR-03, DEC 136 | `record_age_assurance`: grants (no anon), no direct column writes, not in `public_profiles`; `AGE_REQUIRED` before confirm; invalid inputs; regulated teen → `granted` with declaration; regulated adult → no consent; not regulated → nothing; `revoked` never overwritten; a null declaration keeps the stored one |
+| T-UNIT-AGE-ASSURE | Jest | AR-03, DEC 136 | `auth/age` `checkRegulation` (eligible, `declaredAgeRangeRequired`, errors, timeout, iOS 26+ only), `toDeclaration`, `requestAgeAnswer`, `acknowledgeSignificantUpdate` (adult sheet, parental consent held, not needed); `auth/api.recordAgeAssurance`; AgeScreen: a regulated decline shows the share screen with no birthday field and a retry, records consent with the declaration, and a failed record still lets the person through |
+| T-INT-CONSENT | pgTAP | AR-04, DEC 136 | `link_app_transaction` grants (no anon), RLS on, no direct table access, idempotent link, two accounts on one download, invalid and over-long ids; `private.rescind_consent` service only, locks every linked account (`suspended`, `parental_consent`, `revoked`), feed refused after, repeat and unknown ids, listings and offers kept |
+| T-FN-APPSTORE | node --test | AR-04 | `_shared/appStore.ts` on a throwaway test chain: valid chain decodes; rejects an edited payload, unknown root, leaf without the App Store OID, wrong signer, short chain, expired certs, non-JWS; the real Apple root refuses the test chain; `RESCIND_CONSENT` locks the linked id; TEST and other types → 200, nothing locked; bad outer or inner signature → 400; wrong bundle outside or inside → 400; missing appData → 400; 405 and 400 on bad requests; a DB error throws (500, Apple retries) |
+| T-UNIT-CONSENT | Jest | AR-04 | `auth/appTransaction` links once per user per launch, skips Android, a missing module and a null id, a failure is quiet and retried; `startAppTransactionLink` fires on `SIGNED_IN` and `INITIAL_SESSION` outside the auth callback, unsubscribes; `auth/api.linkAppTransaction`; X10 shows the consent copy with no appeal for `parental_consent` |
 | T-INT-AGE-RETRY | pgTAP | A-03, DEC 102 | after `confirm_age` answers minor, a retry (os_signal true or an adult birth date) answers adult:false and the account stays unconfirmed (`age_gate_retry.test.sql`) |
 | T-INT-QUAD-ANON-02 | pgTAP | A-01, A-02, DEC 104 | a Quad report row keeps no author on any path; report queue, report detail, person reports and a direct `reports` read never name the author; a strike still lands on the author with no `report_id`; the reveal audit row has no `author_id`; moderators can't read older audit rows that do, and both audit reads strip it (`quad_author_privacy.test.sql`) |
 | T-INT-AUTH-ALIAS | pgTAP | G-02, DEC 105 | `email_hash` drops a `+tag` (dots kept, untagged hash unchanged); a ban or age block can't be dodged on a +alias; a second account on an alias gets `EMAIL_ALIAS`; an owner ban by any spelling is one hash (`email_alias.test.sql`) |

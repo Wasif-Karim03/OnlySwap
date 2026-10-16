@@ -9,7 +9,8 @@ These terms are an agreement between you and OnlySwap ("we", "us"). By creating 
 
 ## 1. Who can use OnlySwap
 
-- You must be 18 or older.
+- You must be 13 or older. If you're under 13, you can't use OnlySwap.
+- If you're 13 to 17, a parent or guardian must agree to these terms with you, and they're responsible for how you use OnlySwap.
 - You must be a current student at a supported school and verify with your school email.
 - One account per person. Don't share, sell or transfer your account.
 - You must not have been banned from OnlySwap before.

@@ -25,7 +25,7 @@
 | T1 | Spoofing | Non-student signs up | domain allowlist in the `before_user_created` hook; OTP to the school inbox; blocked alumni/forwarding domains; yearly re-verify | T-INT-AUTH-01 |
 | T2 | Spoofing | Password sign-up bypassing OTP | password path allowed only for exact `review_accounts` emails; "Confirm email" on | T-SEC-06 |
 | T3 | Spoofing | OTP brute force | Supabase OTP limits (30 per 5 min per IP), 6 digits, 10-min expiry, client lockout after 5 | T-SEC-07 |
-| T4 | Spoofing | Minor evades the age gate | OS age signal first; date fallback; `age_blocks` hash stops retries with the same email; Terms 18+ | T-INT-AUTH-04, T-INT-AGE-RETRY, E2E-02 |
+| T4 | Spoofing | Under-13 child evades the age gate (DEC 136) | OS age signal first; date fallback; `age_blocks` hash stops retries with the same email; Terms 13+ with parent agreement under 18 | T-INT-AUTH-04, T-INT-AGE-RETRY, T-INT-AGE-V2, E2E-02 |
 | T5 | Tampering | Direct table writes via PostgREST | no table write grants; RPC-only writes; RLS on every table; `pg_graphql` off | T-SEC-01, T-SEC-19 |
 | T6 | Tampering | JWT claim edits | signature verification by Supabase; writes read live state | T-SEC-02 |
 | T7 | Tampering | Upload of oversized, HTML or SVG files, or path traversal | server-built keys; signed content-length and content-type; Worker serves type by extension + `nosniff` | T-SEC-08, T-SEC-18 |
