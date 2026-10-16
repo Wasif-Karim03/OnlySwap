@@ -1,10 +1,12 @@
 // test-inbox (P14-E2E-00, TESTING §3): E2E flows read a fresh sign-in code for
-// `e2e+<anything>@e2e.onlyswap.test` addresses. Never on production: the handler
+// `e2e-<tag>@e2e.onlyswap.test` addresses (`e2e+<tag>` still passes here, but
+// sign-up folds `+tags` into one account since 0221, so new runs use `e2e-`).
+// Never on production: the handler
 // refuses unless the environment is local or staging, and needs E2E_SECRET.
 // The code comes from Auth's admin generateLink (a new email OTP for that user),
 // so nothing is stored and no real inbox is involved.
 
-export const E2E_EMAIL = /^e2e\+[a-z0-9._-]{1,40}@e2e\.onlyswap\.test$/;
+export const E2E_EMAIL = /^e2e[+-][a-z0-9._-]{1,40}@e2e\.onlyswap\.test$/;
 
 export type InboxDeps = {
   appEnv: string | undefined;

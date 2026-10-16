@@ -46,6 +46,10 @@ test('needs the secret and an e2e address', async () => {
     401,
   );
   assert.equal((await handleTestInbox(req('kim@osu.edu'), deps())).status, 400);
+  assert.equal((await handleTestInbox(req('e2e@e2e.onlyswap.test'), deps())).status, 400);
+  assert.equal((await handleTestInbox(req('e2e_01@e2e.onlyswap.test'), deps())).status, 400);
+  // 0221 folds +tags into one account, so runs use e2e-<tag>.
+  assert.equal((await handleTestInbox(req('e2e-web01@e2e.onlyswap.test'), deps())).status, 200);
   assert.equal(
     (
       await handleTestInbox(
