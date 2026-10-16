@@ -25,7 +25,7 @@ type LegalPage = 'rules' | 'terms' | 'privacy';
 /**
  * A07 Community rules (P4-AUTH-09, board A11) and the D10 Updated rules
  * variant (P4-AUTH-17, PM-04) at `/rules?updated=1`. Agreeing records the
- * version from get_app_config; the box also confirms the person is 18+.
+ * version from get_app_config; the box also confirms the person is 13 or older (DEC 136).
  */
 export function RulesScreen({
   api = authApi,

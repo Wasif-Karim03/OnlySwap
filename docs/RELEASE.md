@@ -67,10 +67,11 @@ The expected total is about 900 of 2,000 free minutes a month.
   - **R1.1 features (ship with R1.0, DEC 76) add no new types:** chat photos are User Content → Photos; Quad posts, replies, polls, votes, hides and mutes are Other User Content; invite credit is User ID; data export requests and announcements read data already listed. Price hints are campus aggregates (n ≥ 5), not collected per person. Still no location (Quad check-in places are typed text), no contacts, no advertising data.
 - **Age rating questionnaire** (answered once for the single launch with R1.1, DEC 76; LEG-03):
   - UGC yes, messaging and chat yes, social media / public posting **yes** (the Quad is a campus-wide board)
-  - age assurance yes
+  - age assurance yes (Declared Age Range where required, else the birthday check; DEC 136)
+  - social media disabled for under-13s yes (no under-13 accounts); parental controls no
   - infrequent mild references (user posts; filtered and moderated)
   - unrestricted web access no, gambling and contests no
-  - **override to 18+**
+  - **no override**: the expected calculated rating is **13+** (DEC 136); keep whatever App Store Connect calculates if higher
   - Wording and the Apple 1.2 UGC checklist: `docs/store/listing.md`.
 - Export compliance: `usesNonExemptEncryption: false`.
 - Privacy manifest: `ios.privacyManifests` (UserDefaults CA92.1, File timestamp C617.1) plus SDK manifests.
@@ -79,7 +80,7 @@ The expected total is about 900 of 2,000 free minutes a month.
   - steps to complete a swap on Demo University
   - where to find Around campus (Discover switch), the Quad (tab, rules first) and photos in chat (only if `chat_photos_enabled` is on)
   - safety features: report, block, Quad hide and mute, filters, 24 h human review
-  - 18+ age check
+  - age check at sign-up: 13 or older, under 13 blocked (DEC 136)
   - physical goods, cash in person, 3.1.3(e)
   - **No hidden features (2.3.1):** before submitting, Demo University must have the Quad on (`scripts/seed-review.ts` sets `campuses.quad_enabled`; the owner turns on the global `app_config.quad_enabled` in admin Config, real campuses stay off) and the seeded Quad and Around campus posts.
 - Screenshots: 6.9" 1320×2868 ×5 (fictional school). Optional preview video 886×1920.
@@ -90,7 +91,7 @@ The expected total is about 900 of 2,000 free minutes a month.
 - **App content:**
   - Privacy policy URL; Ads: No
   - App access (reviewer credentials, no OTP)
-  - Target audience 18+ only
+  - Target audience 13-15, 16-17 and 18+ (no under-13 groups; DEC 136)
   - Content rating (IARC): users interact yes (chat and the Quad), shares location **no**, digital purchases no, unmoderated UGC no
   - User-generated content (UGC policy): terms accepted before posting (sign-up rules, Quad rules), in-app report on every content type, block (and Quad hide), filters before posting, human review within 24 h, minor-safety reports first
   - Data safety (mirror the Apple label, all "collected, not shared", encrypted in transit, deletion yes + URL `/delete`). R1.1 rows: Photos and videos → Photos (listings, profile, chat photos, Quad photos; app functionality); Messages → Other in-app messages (chat); App activity → Other user-generated content (Quad posts, replies, polls, Wanted and food posts; app functionality) and App interactions (votes, hides, mutes); Personal info → User IDs (invite credit). Location: none (approximate and precise). Contacts: none.
@@ -109,7 +110,7 @@ The expected total is about 900 of 2,000 free minutes a month.
 Legal pages are drafted by the owner. A lawyer review is optional and not free (Q7). They're published at `/terms`, `/privacy`, `/rules`, `/banned-items`, `/safety`, `/cookies`, `/child-safety` and bundled in the app; a CI diff checks that both copies match.
 
 **Terms must include:**
-- eligibility (18+, current student at a supported school; one account per person)
+- eligibility (13+, under 18 with a parent or guardian's agreement, current student at a supported school; one account per person)
 - marketplace role (we introduce, we don't sell, inspect or handle money)
 - prohibited items (link to banned list)
 - user content license (to display in the app)
@@ -131,7 +132,7 @@ Legal pages are drafted by the owner. A lawyer review is optional and not free (
 - retention periods exactly as in DATA_MODEL §5
 - Quad disclosure (R1.1)
 - meetup share link disclosure
-- age (18+, DOB not stored)
+- age (13+, age range stored, DOB not stored; teen section with parent requests and consent withdrawal; under-13 deletion)
 - user rights (access through Download your data, deletion in the app and on the web)
 - security measures
 - contact
@@ -226,7 +227,7 @@ Legal pages are drafted by the owner. A lawyer review is optional and not free (
 **R1.1 go/no-go** (ships with R1.0, DEC 76; the per-campus Quad switch is a later, separate step):
 - legal version `2026-11` published (Privacy: Quad, chat photos, Around campus, invites, export, price hints, announcements; Terms §8 and Community Rules: Quad and chat photos; Child safety: photos and posts) and the app bundle matches (`node scripts/sync-legal.mjs --check`)
 - `app_config.rules_version` bumped with `rules_changes` lines, so existing accounts accept the updated rules
-- Apple age questionnaire answered with social media yes, 18+ (§5)
+- Apple age questionnaire answered with social media yes, calculated 13+ (§5, DEC 136)
 - Play Data safety and UGC answers as in §5 (no new data types)
 - Demo University: `scripts/seed-review.ts` run on prod, global `quad_enabled` on, every R1.1 feature visible to reviewers
 - chat photos: on only with CSAM scanning or a logged risk acceptance (R11-PHOTO-GATE), else off and left out of the review notes

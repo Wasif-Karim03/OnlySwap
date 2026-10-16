@@ -58,7 +58,7 @@ from auth.users u
 where u.id::text like 'b0000000-%'
   and not exists (select 1 from auth.identities i where i.user_id = u.id and i.provider = 'email');
 
--- Onboarding finished (name, 18+ check, current rules), older accounts so the
+-- Onboarding finished (name, age check, current rules), older accounts so the
 -- new-account limits never apply. Also undoes a previous remove that kept them.
 update public.profiles p set
   first_name = s.first_name, last_initial = s.last_initial, year = s.year::public.class_year, bio = s.bio,

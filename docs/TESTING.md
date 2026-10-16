@@ -309,7 +309,7 @@ Each is a YAML flow in `.maestro/`, run against staging with seeded data. Steps 
 - [ ] No anonymous chat anywhere; Quad disclosure shown.
 - [ ] Push is not required (the app works with notifications denied); promotional push is opt-in.
 - [ ] Permission strings are specific (camera, photos, notifications only); no location permission in R1.0.
-- [ ] Age rating 18+ override; age check works; underage is blocked.
+- [ ] Age rating answered with no override (calculated 13+, DEC 136); age check works; under 13 is blocked.
 - [ ] Privacy label matches the SDKs (Sentry, PostHog, Expo Notifications).
 - [ ] The privacy manifest is present and the required-reason APIs are declared.
 - [ ] `ITSAppUsesNonExemptEncryption=NO`.
@@ -324,7 +324,7 @@ Each is a YAML flow in `.maestro/`, run against staging with seeded data. Steps 
 - [ ] Target API 36; `compileSdk` 36.
 - [ ] The merged manifest has none of the blocked permissions (`aapt dump permissions` on the AAB via `bundletool`).
 - [ ] Data safety matches plan §19 exactly; "data deleted on request" = yes, with the URL.
-- [ ] Target audience 18+ only; Restrict minor access on; not "appeals to children".
+- [ ] Target audience 13-15, 16-17 and 18+ (no under-13 groups); not "appeals to children" (DEC 136).
 - [ ] Content rating questionnaire done.
 - [ ] Declarations: Ads no; App access credentials; Financial none; Health none; Government no; News no; Advertising ID not used.
 - [ ] Child safety standards URL + contact filled in.

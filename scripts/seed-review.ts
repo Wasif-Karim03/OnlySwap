@@ -4,7 +4,7 @@
 //     review.onlyswap.test, so reviewers never touch a real school;
 //   * review_accounts rows (the only addresses the demo campus admits, and the
 //     only ones allowed to sign in with a password: SECURITY T2);
-//   * the Auth users with the password, already onboarded (name, 18+, rules),
+//   * the Auth users with the password, already onboarded (name, age check, rules),
 //     so the reviewer opens straight to the feed;
 //   * the demo seller bot (no password: nobody signs in as it; demo_autoplay
 //     answers for it because its review_accounts note has no "reviewer");

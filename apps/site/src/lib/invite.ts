@@ -100,7 +100,7 @@ const HOW = `
     <li><strong>Offer.</strong> <span class="muted">Chat opens once the seller accepts.</span></li>
     <li><strong>Meet and pay.</strong> <span class="muted">Pick a Meetup spot on campus, check the item, pay in person.</span></li>
   </ol>
-  <p class="muted">Only verified students 18 and older can join.</p>
+  <p class="muted">Only verified students 13 and older can join.</p>
 </section>`;
 
 function waitlistForm(env: InviteEnv, inv: Invite, code: string): string {
