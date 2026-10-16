@@ -201,7 +201,7 @@ The "Data/API" column lists the calls from API.md.
 
 | ID | Route | Frames | Rel | States | Actions → effect | Data/API |
 |---|---|---|---|---|---|---|
-| A01 | `index.tsx` Launch | A1 | 1.0 | splash ≤700 ms; restore session | gate routing | `get_app_config`, session |
+| A01 | `index.tsx` Launch | A1 | 1.0 | splash ≤700 ms; restore session; launch animation over it (DEC 135): mark halves swap and click back, accent ring, fade out after routing | gate routing | `get_app_config`, session |
 | A02 | `welcome.tsx` | A2 | 1.0 | static | Continue → A03; "I already have an account" → A03 login mode | — |
 | A03 | `email.tsx` | A3, A4, A5, X1 | 1.0 | typing (school detect), personal email error, unknown school card (A5), reviewer password field (A4), sending, rate limited, offline | Send code → A04; Join waitlist → `waitlist-request`; reviewer Sign in | `lookup_school`, `signInWithOtp`, `signInWithPassword` |
 | A04 | `verify.tsx` | A6, A9, X2 | 1.0 | waiting, autofill, verifying, wrong (attempts left), expired, locked 5 min, resend timer | complete → session → gate | `verifyOtp` |

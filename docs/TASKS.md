@@ -396,3 +396,4 @@ Branch `feat/ux-pack`. Order keeps every step OTA-able until UX-10 (native camer
 - [x] UX-09 Moving out mode + bundle offers (DEC 133). Done when: pgTAP + Jest pass.
 - [x] UX-10 Scan ISBN (DEC 131, needs new builds). Done when: Jest passes (T-UNIT-ISBN-01..05); device check after the build is still open.
 - [x] UX-11 Campus launch playbook (DEC 134). Done when: RELEASE.md §9 written.
+- [x] UX-12 Launch animation (DEC 135). Done when: Jest passes (T-UNIT-LAUNCH-01); checked on the Simulator.
