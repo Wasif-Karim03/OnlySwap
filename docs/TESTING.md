@@ -225,6 +225,20 @@ Each is a YAML flow in `.maestro/`, run against staging with seeded data. Steps 
 - **E2E-A05** The announcement limit is enforced.
 - **E2E-A06 [R1.1]** Setting the `quad_enabled` flag hides the tab (verify via the API).
 
+**Student web app (Playwright, `e2e/web/tests/webapp.spec.ts`, DEC 138).** Two new students on the staging E2E campus, serial, against a web build. Needs `WEBAPP_URL`, `FUNCTIONS_URL` and `E2E_SECRET`; `WEBAPP_PHONE=1` runs it at 390 x 844 with touch. Each test also fails on page errors; failures attach both URLs and aria snapshots. A local build must be served on port 8081 (the only localhost origin in the staging R2 CORS). Each run sends 3 sign-in emails, so back-to-back runs can hit the project's hourly email limit (the app shows "You're doing that a lot").
+
+- **WEB-E2E-01** Two students sign up (email code, birthday, profile, rules).
+- **WEB-E2E-02** The seller posts a listing with two photos, a category, a price and a meetup spot.
+- **WEB-E2E-03** The buyer finds it on Discover and sends an offer.
+- **WEB-E2E-04** The seller accepts; chat works both ways in real time (Enter sends).
+- **WEB-E2E-05** The seller plans a meetup; the buyer accepts it.
+- **WEB-E2E-06** Did it sell, then both rate; the ratings reveal.
+- **WEB-E2E-07** Search, save the search, find it under Saved > Searches.
+- **WEB-E2E-08** A notification switch saves (`update_notification_prefs` 200) and survives a reload.
+- **WEB-E2E-09** Report with "Also block" from the chat details.
+- **WEB-E2E-10** Sign out, then sign back in with the same school email.
+- **WEB-E2E-11** Delete the account (typed DELETE) and land on Welcome.
+
 ## 4. Manual QA checklist (per screen group, both OSes)
 
 **Device matrix** (free: iOS Simulators on your Mac plus testers' phones, DEC 41 and 42):
@@ -358,6 +372,8 @@ Each is a YAML flow in `.maestro/`, run against staging with seeded data. Steps 
 | T-UNIT-CONSENT | Jest | AR-04 | `auth/appTransaction` links once per user per launch, skips Android, a missing module and a null id, a failure is quiet and retried; `startAppTransactionLink` fires on `SIGNED_IN` and `INITIAL_SESSION` outside the auth callback, unsubscribes; `auth/api.linkAppTransaction`; X10 shows the consent copy with no appeal for `parental_consent` |
 | T-INT-AGE-RETRY | pgTAP | A-03, DEC 102 | after `confirm_age` answers minor, a retry (os_signal true or an adult birth date) answers adult:false and the account stays unconfirmed (`age_gate_retry.test.sql`) |
 | T-INT-QUAD-ANON-02 | pgTAP | A-01, A-02, DEC 104 | a Quad report row keeps no author on any path; report queue, report detail, person reports and a direct `reports` read never name the author; a strike still lands on the author with no `report_id`; the reveal audit row has no `author_id`; moderators can't read older audit rows that do, and both audit reads strip it (`quad_author_privacy.test.sql`) |
+| T-INT-VOLATILE | pgTAP | DEC 138 | no STABLE or IMMUTABLE public function calls `private.require_member`/`require_active` (they write `activity_days`; PostgREST runs STABLE read-only, 405); `unread_count` and every `price_hint` are volatile (`volatile_member_reads.test.sql`) |
+| T-UNIT-A11Y-WEB | Jest | DEC 138 | `a11yState()` passes `accessibilityState` through on phones and adds the same `aria-*` props on web (`a11yState.test.ts`) |
 | T-INT-AUTH-ALIAS | pgTAP | G-02, DEC 105 | `email_hash` drops a `+tag` (dots kept, untagged hash unchanged); a ban or age block can't be dodged on a +alias; a second account on an alias gets `EMAIL_ALIAS`; an owner ban by any spelling is one hash (`email_alias.test.sql`) |
 | T-INT-FEED-RIGHT | pgTAP | DEC 106 | a right swipe is stored as `right` with its time on card, stays off the deck, isn't counted as a pass on the person or listing pages, and is purged after 30 days like a left swipe (`right_swipes.test.sql`) |
 | T-UNIT-AUTH-07 | Jest | C-03, DEC 107 | sign-out or a different account clears the query cache and the chat and swipe stores; same-account events keep them; one failing reset doesn't stop the rest (`accountReset.test.ts`) |

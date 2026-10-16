@@ -41,6 +41,7 @@ import {
 } from './logic';
 import { draftCarry, usePostedStore } from './posted';
 import { SellStep } from './SellStep';
+import { a11yState } from '@/lib/a11y';
 
 const deviceTz = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -196,7 +197,7 @@ export function SellMeetupScreen({
               <View key={spot.id} style={styles.spot(selected)}>
                 <Pressable
                   accessibilityRole="checkbox"
-                  accessibilityState={{ checked: selected }}
+                  {...a11yState({ checked: selected })}
                   accessibilityLabel={[
                     spot.name,
                     spot.police ? copy.police : null,
@@ -236,7 +237,7 @@ export function SellMeetupScreen({
           })}
           <Pressable
             accessibilityRole="checkbox"
-            accessibilityState={{ checked: chosen.length === 0 }}
+            {...a11yState({ checked: chosen.length === 0 })}
             accessibilityLabel={`${copy.decideInChat}, ${copy.decideInChatBody}`}
             onPress={() => {
               setMaxHint(false);
@@ -309,6 +310,7 @@ export function SellMeetupScreen({
       <Checkbox
         label={copy.notBanned}
         selected={allowed}
+        testID="sell-allowed"
         onPress={() => {
           setAllowed((v) => !v);
           setConfirmHint(false);
