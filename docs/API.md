@@ -205,7 +205,7 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 |---|---|---|---|---|
 | `get_notifications` | `cursor` | list | — | — |
 | `mark_notifications_read` | `ids bigint[]?` | void | null = all | — |
-| `unread_count` | — | int (the caller's unread notifications; the bell badge, DEC 120) | — | — |
+| `unread_count` | — | int (the caller's unread notifications; the bell badge, DEC 120). VOLATILE: it calls `require_active()`, which writes, so it can't be STABLE (0245, DEC 138) | — | — |
 | `update_notification_prefs` | `prefs jsonb` | prefs | known keys only | — |
 | `register_push_token` | `token, platform, app_version` | void | `ExponentPushToken[…]` format; upsert `last_seen_at` | 20/day |
 | `disable_push_token` | `token` | void | — | — |
