@@ -1,7 +1,7 @@
 -- S29: listing notification triggers, the remaining crons, the email outbox and the demo bot
 -- (P9-PUSH-04, P9-CRON-01, P9-MAIL-02, P4-AUTH-16, T-INT-NOTIF-DEDUPE).
 begin;
-select plan(32);
+select plan(33);
 select tests.create_fixtures();
 select tests.set_now('2027-03-10 12:00:00-05');
 update public.profiles set created_at = '2020-01-01';
@@ -100,11 +100,17 @@ update public.profiles set campus_id = '10000000-0000-4000-8000-0000000000de' wh
 insert into public.review_accounts (email, note) values ('b@osu.edu', 'App Store reviewer (password login)') on conflict do nothing;
 insert into public.listings (id, campus_id, seller_id, title, status, price_cents) values
   ('00000000-0000-4000-8000-00000000f0de', '10000000-0000-4000-8000-0000000000de', tests.uid('A'), 'Demo lamp', 'active', 1000);
+-- The seeder's demo meetup spot (LR-04, scripts/seed-review.ts DEMO_SPOT).
+insert into public.safe_spots (id, campus_id, name, lat, lng, designation, is_default, active, sort)
+values ('34000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-0000000000de', 'Demo Library lobby', 40.0, -75.0, 'public', true, true, 0);
 select tests.try_text_as(tests.uid('B'), $$select public.make_offer('00000000-0000-4000-8000-00000000f0de', 900)$$);
 select tests.set_now('2027-03-10 13:05:00-05');
 select ok(private.demo_autoplay() >= 1, 'the bot acts');
 select is((select status::text from public.offers where listing_id = '00000000-0000-4000-8000-00000000f0de'), 'accepted',
   'it accepts the reviewer''s offer so the swap can go on');
+select is((select m.status::text || ':' || s.name from public.meetups m join public.safe_spots s on s.id = m.spot_id
+           join public.chats c on c.id = m.chat_id where c.listing_id = '00000000-0000-4000-8000-00000000f0de'),
+  'proposed:Demo Library lobby', 'LR-04 with the demo spot seeded, the bot proposes a meetup there');
 
 select * from finish();
 rollback;

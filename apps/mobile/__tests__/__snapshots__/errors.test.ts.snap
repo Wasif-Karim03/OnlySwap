@@ -31,5 +31,6 @@ exports[`T-UNIT-LIB-02 lib/errors.errorCopy has copy for every ErrorCode 1`] = `
   "SELLER_AWAY": "This seller paused their listings. Save it and check back later.",
   "SESSION_EXPIRED": "Your session ended. Sign in again.",
   "UNKNOWN": "Something went wrong. Try again.",
+  "UPLOAD_EXPIRED": "That photo expired. Add it again.",
 }
 `;

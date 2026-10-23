@@ -211,7 +211,9 @@ function CampusDetail({ c, owner, reload }: { c: Campus; owner: boolean; reload:
                   confirm={
                     s === 'paused'
                       ? `Pause ${c.name}? Students can't post or make offers while it's paused.`
-                      : undefined
+                      : s === 'live'
+                        ? `Set ${c.name} live? Students can sign up right away.`
+                        : undefined
                   }
                   run={(why) =>
                     rpc('admin_update_campus', { id: c.id, patch: { status: s }, reason: why })

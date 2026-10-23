@@ -107,6 +107,27 @@ describe('auth/api codes and sessions', () => {
     expect(auth.signInWithOtp).not.toHaveBeenCalled();
   });
 
+  it('signInCode never creates an account and reports a sent code', async () => {
+    const { api, auth } = setup();
+    await expect(api.signInCode(' Aisha@OSU.edu ')).resolves.toBe('sent');
+    expect(auth.signInWithOtp).toHaveBeenCalledWith({
+      email: 'aisha@osu.edu',
+      options: { shouldCreateUser: false },
+    });
+  });
+
+  it('signInCode reports no_account when Auth refuses to create one (DEC 140)', async () => {
+    const { api } = setup({
+      authError: { status: 422, code: 'otp_disabled', message: 'Signups not allowed for otp' },
+    });
+    await expect(api.signInCode('new@osu.edu')).resolves.toBe('no_account');
+  });
+
+  it('signInCode still surfaces other Auth errors', async () => {
+    const { api } = setup({ authError: { status: 429, message: 'too many' } });
+    await expect(api.signInCode('a@osu.edu')).rejects.toMatchObject({ code: 'RATE_LIMITED' });
+  });
+
   it('verifyCode strips non-digits and returns the session', async () => {
     const { api, auth } = setup();
     await expect(api.verifyCode('a@osu.edu', '123 456')).resolves.toMatchObject({

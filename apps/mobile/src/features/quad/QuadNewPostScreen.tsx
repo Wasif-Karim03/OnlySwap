@@ -8,6 +8,7 @@ import { StyleSheet } from 'react-native-unistyles';
 import { Banner } from '@/components/Banner';
 import { Button } from '@/components/Button';
 import { ChipGroup } from '@/components/Chip';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { IconButton } from '@/components/IconButton';
 import { Icon } from '@/components/icons/Icon';
 import { Input } from '@/components/Input';
@@ -91,8 +92,17 @@ export function QuadNewPostScreen({
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
 
   const leave = () => (router.canGoBack() ? router.back() : router.replace(QUAD_HOME));
+  // Closing with anything typed or picked asks first (local form state only).
+  const dirty =
+    body.trim() !== '' ||
+    place.trim() !== '' ||
+    vibes.length > 0 ||
+    options.some((o) => o.trim() !== '') ||
+    photoUri !== null;
+  const close = () => (dirty ? setConfirmDiscard(true) : leave());
   const valid = canPost({ mode, body, photoPath, photoBusy, options, place });
 
   const addPhoto = async (source: PhotoSource) => {
@@ -189,24 +199,16 @@ export function QuadNewPostScreen({
 
   return (
     <View style={styles.root} testID="screen-quad-new">
-      <NavBar
-        title={copy.newTitle}
-        leading="close"
-        onLeading={leave}
-        trailing={
-          <Button
-            label={copy.post}
-            size="S"
-            variant="dark"
-            disabled={!valid}
-            loading={posting}
-            onPress={() => void submit()}
-            testID="quad-post-submit"
-          />
-        }
-      />
+      <NavBar title={copy.newTitle} leading="close" onLeading={close} />
       <KeyboardAvoidingView behavior="padding" style={styles.flex}>
         <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
+          {/* The anonymity promise comes first, above the keyboard. */}
+          <View style={styles.anon}>
+            <Icon name="lock" size={16} tone="ink2" />
+            <Text variant="label" tone="ink2" style={styles.flex}>
+              {copy.anonNote}
+            </Text>
+          </View>
           <SegmentedControl
             label={copy.modeLabel}
             segments={MODES.map((m) => ({ value: m, label: copy.modes[m] }))}
@@ -229,6 +231,9 @@ export function QuadNewPostScreen({
                 value={vibes}
                 onChange={setVibes}
               />
+              <Text variant="meta" tone="ink2">
+                {copy.checkinHint}
+              </Text>
             </>
           ) : null}
           <TextArea
@@ -332,24 +337,38 @@ export function QuadNewPostScreen({
               </Text>
             </View>
           ) : null}
-          {mode === 'checkin' ? (
-            <Text variant="meta" tone="ink2">
-              {copy.checkinHint}
-            </Text>
-          ) : null}
-          <View style={styles.anon}>
-            <Icon name="lock" size={16} tone="ink2" />
-            <Text variant="meta" tone="ink2">
-              {copy.anonNote}
-            </Text>
-          </View>
           {error ? (
             <View accessibilityLiveRegion="polite" testID="quad-post-error">
               <Banner kind="error" message={error} />
             </View>
           ) : null}
         </ScrollView>
+        {/* The one primary action, docked where the thumb is; it rides the keyboard. */}
+        <View style={styles.dock}>
+          <Button
+            label={copy.post}
+            variant="dark"
+            disabled={!valid}
+            loading={posting}
+            onPress={() => void submit()}
+            testID="quad-post-submit"
+          />
+        </View>
       </KeyboardAvoidingView>
+      <ConfirmDialog
+        visible={confirmDiscard}
+        title={copy.discardTitle}
+        message={copy.discardBody}
+        confirmLabel={copy.discardConfirm}
+        cancelLabel={copy.discardKeep}
+        destructive
+        onConfirm={() => {
+          setConfirmDiscard(false);
+          leave();
+        }}
+        onCancel={() => setConfirmDiscard(false)}
+        testID="quad-discard"
+      />
       <PhotoSourceSheet
         visible={photoSheet}
         onClose={() => setPhotoSheet(false)}
@@ -374,7 +393,7 @@ export function QuadNewPostScreen({
   );
 }
 
-const styles = StyleSheet.create((theme) => ({
+const styles = StyleSheet.create((theme, rt) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   flex: { flex: 1 },
   body: { ...readableColumn, gap: theme.space.lg, padding: theme.space.screen },
@@ -382,4 +401,12 @@ const styles = StyleSheet.create((theme) => ({
   row: { flexDirection: 'row', gap: theme.space.sm, flexWrap: 'wrap' },
   optionRow: { flexDirection: 'row', alignItems: 'flex-end', gap: theme.space.xs },
   anon: { flexDirection: 'row', alignItems: 'center', gap: theme.space.xs },
+  dock: {
+    ...readableColumn,
+    paddingHorizontal: theme.space.screen,
+    paddingTop: theme.space.sm,
+    paddingBottom: Math.max(rt.insets.bottom, theme.space.sm),
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.line,
+  },
 }));

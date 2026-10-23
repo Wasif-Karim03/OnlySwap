@@ -1,7 +1,7 @@
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { FlatList, ScrollView, View } from 'react-native';
+import { FlatList, RefreshControl, ScrollView, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { Banner } from '@/components/Banner';
@@ -14,7 +14,6 @@ import { NavBar } from '@/components/NavBar';
 import { SegmentedControl } from '@/components/SegmentedControl';
 import { Sheet } from '@/components/Sheet';
 import { SkeletonList } from '@/components/Skeleton';
-import { Tag } from '@/components/Tag';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { TextArea } from '@/components/TextArea';
@@ -29,7 +28,7 @@ import type { AppNotification } from '../notifications/api';
 import { quadApi, type MyQuadReply, type QuadApi, type QuadPost } from './api';
 import { quadKeys } from './cache';
 import { pointsLabel } from './components/VoteControl';
-import { canAppeal, keywordValid, statusTone } from './logic';
+import { canAppeal, keywordValid } from './logic';
 
 function useLeave() {
   const router = useRouter();
@@ -38,6 +37,15 @@ function useLeave() {
 
 // ---------------------------------------------------------------------------
 // Q12 Your Quad
+
+/** Status as a plain word in ink2; only Removed is red (color only for problems). */
+function StatusWord({ status }: { status: QuadPost['status'] }) {
+  return (
+    <Text variant="label" tone={status === 'removed' ? 'red' : 'ink2'}>
+      {copy.status[status]}
+    </Text>
+  );
+}
 
 type AppealReason = keyof typeof safetyCopy.appealReasons;
 
@@ -87,7 +95,7 @@ export function QuadMineScreen({
       >
         <View style={styles.itemBody}>
           <View style={styles.meta}>
-            <Tag label={copy.status[p.status]} tone={statusTone(p.status)} />
+            <StatusWord status={p.status} />
             <Text variant="meta" tone="ink2">
               {`${agoLabel(new Date(p.created_at), t)}, ${pointsLabel(p.score)}`}
             </Text>
@@ -105,7 +113,7 @@ export function QuadMineScreen({
         ) : (
           <Button
             label={copy.appeal}
-            variant="secondary"
+            variant="text"
             size="S"
             onPress={() => {
               setReason('mistake');
@@ -130,7 +138,7 @@ export function QuadMineScreen({
     >
       <View style={[styles.item, styles.itemBody]}>
         <View style={styles.meta}>
-          <Tag label={copy.status[r.status]} tone={statusTone(r.status)} />
+          <StatusWord status={r.status} />
           <Text variant="meta" tone="ink2">
             {`${agoLabel(new Date(r.created_at), t)}, ${pointsLabel(r.score)}`}
           </Text>
@@ -149,7 +157,12 @@ export function QuadMineScreen({
   else {
     const list = tab === 'posts' ? q.data.posts : q.data.replies;
     body = (
-      <ScrollView contentContainerStyle={styles.list}>
+      <ScrollView
+        contentContainerStyle={styles.list}
+        refreshControl={
+          <RefreshControl refreshing={q.isRefetching} onRefresh={() => void q.refetch()} />
+        }
+      >
         {list.length === 0 ? (
           <EmptyState
             icon="quad"
@@ -332,6 +345,7 @@ export function QuadMutedScreen({ api = quadApi }: { api?: QuadApi }) {
       await api.unhide(sourcePostId);
       await qc.invalidateQueries({ queryKey: quadKeys.hides });
       void refreshFeeds();
+      useToastStore.getState().show('success', copy.unhidden);
     } catch (e) {
       fail(e);
     }
@@ -349,6 +363,7 @@ export function QuadMutedScreen({ api = quadApi }: { api?: QuadApi }) {
       setWord('');
       await qc.invalidateQueries({ queryKey: quadKeys.mutes });
       void refreshFeeds();
+      useToastStore.getState().show('success', copy.muted);
     } catch (e) {
       setWordError(errorText(e));
     } finally {

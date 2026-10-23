@@ -35,22 +35,19 @@ export function CrashScreen({ error, retry }: Props) {
 
   return (
     <View testID="crash-screen" style={styles.wrap} accessibilityLiveRegion="polite">
-      <GlyphTile icon="alert" />
-      <View style={styles.copy}>
-        <Text variant="heading" accessibilityRole="header" style={styles.center}>
-          {copy.title}
-        </Text>
-        <Text variant="body" tone="ink2" style={styles.center}>
-          {copy.body}
-        </Text>
+      {/* Same left-aligned block as ErrorState; Try again is the one docked `dark` action. */}
+      <View style={styles.top}>
+        <GlyphTile icon="alert" />
+        <View style={styles.copy}>
+          <Text variant="heading" accessibilityRole="header">
+            {copy.title}
+          </Text>
+          <Text variant="body" tone="ink2">
+            {copy.body}
+          </Text>
+        </View>
       </View>
-      <Button
-        label={copy.retry}
-        variant="secondary"
-        size="L"
-        loading={retrying}
-        onPress={onRetry}
-      />
+      <Button label={copy.retry} variant="dark" size="L" loading={retrying} onPress={onRetry} />
     </View>
   );
 }
@@ -58,14 +55,13 @@ export function CrashScreen({ error, retry }: Props) {
 const styles = StyleSheet.create((theme, rt) => ({
   wrap: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     backgroundColor: theme.colors.bg,
     paddingHorizontal: theme.space.screen,
     paddingTop: rt.insets.top + theme.space['2xl'],
-    paddingBottom: rt.insets.bottom + theme.space['2xl'],
+    paddingBottom: rt.insets.bottom + theme.space.lg,
     gap: theme.space.lg,
   },
-  copy: { gap: theme.space.xs, alignItems: 'center', maxWidth: theme.size.copyMax },
-  center: { textAlign: 'center' },
+  top: { gap: theme.space.lg, alignItems: 'flex-start' },
+  copy: { gap: theme.space.xs, maxWidth: theme.size.copyMax },
 }));

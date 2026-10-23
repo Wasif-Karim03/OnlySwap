@@ -7,7 +7,11 @@ export default {
   fetch(request: Request, env: Env, ctx: Ctx): Promise<Response> {
     const cache = (globalThis as unknown as { caches: { default: Cache } }).caches.default;
     return handle(request, env, Date.now(), {
-      cache: { match: (r) => cache.match(r), put: (r, res) => cache.put(r, res) },
+      cache: {
+        match: (r) => cache.match(r),
+        put: (r, res) => cache.put(r, res),
+        delete: (r) => cache.delete(r),
+      },
       waitUntil: (p) => ctx.waitUntil(p),
     });
   },

@@ -33,6 +33,7 @@ type Props = {
 /**
  * Load failure with retry (P2-CMP-08; DESIGN_SYSTEM §10 global states).
  * Copy comes from `errors.*` so every error code reads the same everywhere.
+ * Same left-aligned block as EmptyState; on a full screen Try again docks at the bottom.
  */
 export function ErrorState({
   error,
@@ -57,24 +58,28 @@ export function ErrorState({
     }
   };
 
+  const screen = layout === 'screen';
   return (
     <View testID={testID} style={styles.wrap(layout)} accessibilityLiveRegion="polite">
-      {layout === 'screen' ? <GlyphTile icon={offline ? 'wifi' : 'alert'} /> : null}
-      <View style={styles.copy}>
-        <Text variant="heading" accessibilityRole="header" style={styles.center}>
-          {errorTitle(appError)}
-        </Text>
-        <Text variant="body" tone="ink2" style={styles.center}>
-          {offline ? statesCopy.offlineBody : errorCopy(appError, { campusTimeZone })}
-        </Text>
+      <View style={styles.top}>
+        {screen ? <GlyphTile icon={offline ? 'wifi' : 'alert'} /> : null}
+        <View style={styles.copy}>
+          <Text variant="heading" accessibilityRole="header">
+            {errorTitle(appError)}
+          </Text>
+          <Text variant="body" tone="ink2">
+            {offline ? statesCopy.offlineBody : errorCopy(appError, { campusTimeZone })}
+          </Text>
+        </View>
       </View>
       {onRetry ? (
+        // Full screen: the one docked `dark` action (P7). Inline: a medium grey button.
         <Button
           label={statesCopy.retry}
-          variant="secondary"
+          variant={screen ? 'dark' : 'secondary'}
           loading={retrying}
           onPress={retry}
-          size={layout === 'screen' ? 'L' : 'M'}
+          size={screen ? 'L' : 'M'}
         />
       ) : null}
     </View>
@@ -84,12 +89,11 @@ export function ErrorState({
 const styles = StyleSheet.create((theme) => ({
   wrap: (layout: 'screen' | 'inline') => ({
     flexGrow: layout === 'screen' ? 1 : 0,
-    alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: layout === 'screen' ? 'space-between' : 'flex-start',
     paddingHorizontal: theme.space.screen,
     paddingVertical: layout === 'screen' ? theme.space['2xl'] : theme.space.xl,
     gap: theme.space.lg,
   }),
-  copy: { gap: theme.space.xs, alignItems: 'center', maxWidth: theme.size.copyMax },
-  center: { textAlign: 'center' },
+  top: { gap: theme.space.lg, alignItems: 'flex-start' },
+  copy: { gap: theme.space.xs, maxWidth: theme.size.copyMax },
 }));

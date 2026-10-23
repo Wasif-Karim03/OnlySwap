@@ -711,7 +711,7 @@ Suspensions and bans revoke sessions (ADR-013).
 | Bucket | Access | Contents |
 |---|---|---|
 | `onlyswap-media` | public read through the media Worker, prefix allowlist | `c/{campus}/l/{listing}/{uuid}_{full\|thumb}.webp`, `c/{campus}/u/{user}/avatar_{uuid}.webp`, `share/{listing}.jpg`; R1.1: `c/{campus}/chat/{chat}/…` (signed reads), `c/{campus}/quad/{post}/…` |
-| `onlyswap-private` | presigned GET only | `exports/{uid}/{id}.json` (lifecycle 8 d), `evidence/{report}/…` (lifecycle 200 d), `archive/chats/{chat}.json` |
+| `onlyswap-private` | presigned GET only | `exports/{uid}/{id}.json` (lifecycle 8 d), `evidence/{report}/…` (lifecycle 200 d), `archive/chats/{chat}/{token}.json` (0248, one key per archive job; legacy `archive/chats/{chat}.json` objects from before 0246 are still deleted with the account) |
 | `onlyswap-backups` | GitHub Actions only | `db/{date}.sql.age` (lifecycle 30 d) |
 
 **Limits** (enforced by signed `content-length` + `content-type`, SEC-02):
@@ -729,7 +729,7 @@ Suspensions and bans revoke sessions (ADR-013).
 - EXIF stripped by re-encode (tested)
 - blurhash
 
-**Cleanup:** draft objects without a listing row older than 24 h are deleted daily; sold listings older than 180 d keep the thumbnail only.
+**Cleanup:** every issued key is a row in `media_uploads` (0246: `pending` → `attached` when a writer claims it, `detached` when dropped, `collecting` under a 10-minute GC lease, `collected` tombstone kept 30 days so it can never be attached again). Keys not attached for 24 h (drafts never posted included) are deleted one by one every 6 h by `gc_uploads` → `cleanup-drafts`; a user may hold at most 160 objects not attached. A deleted account's R2 prefixes are kept as a versioned manifest on `account_deletions` and swept again 15 minutes after confirmation. Report evidence moved to the private bucket only grows (two deletions sharing a report merge; keys lost before a copy are listed in `evidence.photo_keys_missing`), and a chat archive is marked done only if nobody in it is deleting (`finish_chat_archive_checked`); each chat is claimed by one archive run (`private.chat_archive_jobs`, token and 30-minute lease), and a refused archive stays on that table as `cleanup` until `cleanup-drafts` confirms its object deleted. Since 0248 a job row is keyed by `(chat_id, token)` with at most one `writing` or `done` row per chat: a takeover of an expired lease moves the old row to `cleanup` under its own key, so a stale cleaner can never delete a replacement archive. Sweeps resume at `account_deletions.media_sweep_pos` (saved every 25 prefixes and at every stop, reset by a new generation), and `cleanup-drafts` runs its phases on a fixed schedule (work and tail deadlines per phase) so no phase can starve the next. Media locks come before rate counters and row locks in every function that takes them (RV-03). Sold listings older than 180 d keep the thumbnail only.
 
 ---
 

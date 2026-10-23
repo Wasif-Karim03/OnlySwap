@@ -9,7 +9,7 @@ import { quad as copy } from '@/strings';
 
 import { agoLabel } from '../../feed/logic';
 import type { QuadReply } from '../api';
-import { aliasSwatch, aliasTag, type AliasSwatch } from '../logic';
+import { aliasSwatch, aliasTag } from '../logic';
 import { pointsLabel, VoteControl } from './VoteControl';
 
 /** "OP" or "Anon A": the per-thread name (UX-11, D7: letters and colours, no emoji). */
@@ -17,29 +17,24 @@ export function aliasName(aliasNo: number): string {
   return aliasNo <= 0 ? copy.op : fill(copy.anon, { letter: aliasTag(aliasNo) });
 }
 
-/** Letter badge on a token colour; OP sits on the accent fill. */
+/**
+ * Letter badge: OP sits on the accent fill, everyone else on a neutral grey
+ * (green, amber and red mean status elsewhere, so they no longer mark people).
+ */
 export function AliasBadge({ aliasNo }: { aliasNo: number }) {
-  const swatch = aliasSwatch(aliasNo);
+  const op = aliasSwatch(aliasNo) === 'accent';
   return (
     <View
-      style={styles.badge(swatch)}
+      style={styles.badge(op)}
       accessible
       accessibilityLabel={aliasNo <= 0 ? copy.opLabel : aliasName(aliasNo)}
     >
-      <Text variant="meta" tone={TONES[swatch]} overlay style={styles.badgeText}>
+      <Text variant="meta" tone={op ? 'onAccent' : 'ink'} overlay style={styles.badgeText}>
         {aliasTag(aliasNo)}
       </Text>
     </View>
   );
 }
-
-const TONES = {
-  accent: 'onAccent',
-  green: 'green',
-  amber: 'amber',
-  red: 'red',
-  neutral: 'ink',
-} as const;
 
 type Props = {
   reply: QuadReply;
@@ -98,23 +93,14 @@ const styles = StyleSheet.create((theme) => ({
   },
   flex: { flex: 1 },
   meta: { flexDirection: 'row', alignItems: 'center', gap: theme.space.sm },
-  badge: (swatch: AliasSwatch) => ({
+  badge: (op: boolean) => ({
     width: theme.size.avatarS,
     height: theme.size.avatarS,
     marginTop: theme.space.sm,
     borderRadius: theme.radius.avatar,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor:
-      swatch === 'accent'
-        ? theme.colors.accent
-        : swatch === 'green'
-          ? theme.colors.greenBg
-          : swatch === 'amber'
-            ? theme.colors.amberBg
-            : swatch === 'red'
-              ? theme.colors.redBg
-              : theme.colors.bg3,
+    backgroundColor: op ? theme.colors.accent : theme.colors.bg3,
   }),
   badgeText: { fontWeight: '700' },
 }));

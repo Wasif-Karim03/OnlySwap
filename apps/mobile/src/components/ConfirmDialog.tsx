@@ -81,7 +81,8 @@ export function ConfirmDialog({
           loading={busy}
           onPress={confirm}
         />
-        <Button label={cancelLabel} variant="secondary" disabled={busy} onPress={onCancel} />
+        {/* One filled button (P7): confirm stays dark or destructive, cancel is text. */}
+        <Button label={cancelLabel} variant="text" disabled={busy} onPress={onCancel} />
       </View>
     </Sheet>
   );

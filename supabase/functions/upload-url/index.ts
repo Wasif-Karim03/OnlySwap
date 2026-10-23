@@ -1,8 +1,10 @@
 // upload-url Edge Function (P5-MEDIA-02, API §5). POST with the user's JWT:
 //   { kind: 'listing' | 'avatar' | 'share' | 'quad' | 'chat', target_id, files: [{ idx, variant, type, size }] }
 // → { uploads: [{ idx, variant, key, url, headers }], expires_in }
-// Logic: ../_shared/uploadUrl.ts. Ownership and the 60/h limit are checked in
-// SQL (private.can_upload, private.hit_key) over the direct DB connection.
+// Logic: ../_shared/uploadUrl.ts. The deletion gate, the 60/h and 120/day
+// limits and ownership (private.authorize_upload), then the 160-object quota
+// and the inventory rows (private.record_uploads, 0246), are checked in SQL
+// over the direct DB connection before any URL is signed.
 import { createClient } from 'npm:@supabase/supabase-js@2.117.2';
 import postgres from 'npm:postgres@3.4.7';
 
@@ -39,11 +41,14 @@ Deno.serve(
             const { data, error } = await admin.auth.getUser(token);
             return error ? null : (data.user?.id ?? null);
           },
-          authorize: async (userId, kind, targetId) => {
+          authorize: async (userId, kind, targetId, count) => {
             const rows = await sql`
-          select private.hit_key(${userId}::uuid, 'upload', 60, interval '1 hour'),
-                 private.can_upload(${userId}::uuid, ${kind}, ${targetId}::uuid) as campus`;
+          select private.authorize_upload(${userId}::uuid, ${kind}, ${targetId}::uuid, ${count}::int) as campus`;
             return String(rows[0].campus);
+          },
+          recordUploads: async (userId, kind, targetId, items) => {
+            await sql`
+          select private.record_uploads(${userId}::uuid, ${kind}, ${targetId}::uuid, ${sql.json(items as never)})`;
           },
           presignPut: (key, type, size) => r2.presignPut(key, type, size),
           uuid: () => crypto.randomUUID(),

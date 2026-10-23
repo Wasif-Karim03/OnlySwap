@@ -1,6 +1,10 @@
+import { motion } from '@onlyswap/tokens';
 import { Image } from 'expo-image';
+import { useState } from 'react';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
+
+import { useReducedMotion } from '@/theme/reducedMotion';
 
 import { imageStyles } from './Photo';
 import { Text } from './Text';
@@ -32,25 +36,38 @@ type Props = {
   letters?: 1 | 2;
 };
 
-/** Photo avatar, or initials on a token surface. Decorative: the name is read by the row. */
+/**
+ * Photo avatar, or initials on a token surface. A photo that fails to load
+ * falls back to the initials. Decorative: the name is read by the row.
+ */
 export function Avatar({ name, uri, size = 'M', fill = 'shade', letters = 2 }: Props) {
   const shade = fill === 'accent' ? 2 : avatarShade(name);
+  const reduced = useReducedMotion();
+  const [failedUri, setFailedUri] = useState<string | null>(null);
+  // Keyed on the uri, so a new photo (recycled row, new upload) gets a fresh try.
+  const showPhoto = !!uri && failedUri !== uri;
   return (
     <View
       style={styles.circle(size, shade)}
       accessible={false}
       importantForAccessibility="no-hide-descendants"
     >
-      {uri ? (
+      {showPhoto ? (
         <Image
           source={{ uri }}
           style={imageStyles.image}
           contentFit="cover"
-          transition={150}
+          transition={reduced ? 0 : motion.fade.duration}
+          onError={() => setFailedUri(uri)}
           accessibilityIgnoresInvertColors
         />
       ) : (
-        <Text variant={size === 'L' ? 'heading' : 'label'} tone={shade === 2 ? 'onAccent' : 'ink'}>
+        // Capped at 1.4x: the circle is a fixed size (fixed-size chrome, DEC 142).
+        <Text
+          variant={size === 'L' ? 'heading' : 'label'}
+          tone={shade === 2 ? 'onAccent' : 'ink'}
+          overlay
+        >
           {initials(name).slice(0, letters)}
         </Text>
       )}

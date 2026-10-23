@@ -3,6 +3,7 @@ import { TextInput, View, type TextInputProps } from 'react-native';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 import { Text, type TextTone } from './Text';
+import { a11yState } from '@/lib/a11y';
 
 /** Counter color: ink2, amber at 90% of the limit, red at 100% (DESIGN_SYSTEM §6). */
 export function counterTone(length: number, max: number): TextTone {
@@ -52,6 +53,7 @@ export function TextArea({
         <TextInput
           multiline
           accessibilityLabel={label}
+          {...a11yState({ disabled })}
           accessibilityHint={error}
           editable={!disabled}
           maxLength={maxLength}

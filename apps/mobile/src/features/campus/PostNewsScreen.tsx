@@ -2,13 +2,10 @@ import DateTimePicker, { type DateTimePickerEvent } from '@react-native-communit
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Linking, Platform, ScrollView, View } from 'react-native';
-import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { Linking, Platform, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
-import { Banner } from '@/components/Banner';
 import { Button } from '@/components/Button';
-import { Icon } from '@/components/icons/Icon';
 import { Input } from '@/components/Input';
 import { NavBar } from '@/components/NavBar';
 import { Tappable } from '@/components/Tappable';
@@ -21,7 +18,6 @@ import { pickPhotos, type PickedPhoto } from '@/lib/media';
 import { osPermissions, type OsApi } from '@/lib/permissions';
 import { isWebPlatform } from '@/lib/platform';
 import { campus as copy, intlLocale } from '@/strings';
-import { readableColumn } from '@/theme/layout';
 import { useToastStore } from '@/components/Toast';
 
 import { sellApi, type PostedListing, type SellApi } from '../sell/api';
@@ -40,6 +36,7 @@ import {
 import {
   PhotosField,
   PostedView,
+  PostForm,
   postFailure,
   usePostPhotos,
   useReservedId,
@@ -119,7 +116,8 @@ export function PostNewsScreen({
     setError(null);
     if (errors.length > 0) {
       setShowErrors(true);
-      // The fields and the note can sit under the keyboard; say it on top too.
+      // The dock line says it too; the Toast stays here by owner request
+      // (2026-10-15, pinned by campusNews.test).
       useToastStore.getState().show('error', copy.fixFirst);
       return;
     }
@@ -133,7 +131,6 @@ export function PostNewsScreen({
       const f = postFailure(e);
       if (f.forbidden) reserved.drop();
       setError(f.text);
-      useToastStore.getState().show('error', f.text);
     } finally {
       setPosting(false);
     }
@@ -168,196 +165,173 @@ export function PostNewsScreen({
   const lastDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 90);
 
   return (
-    <View style={styles.root} testID="screen-post-news">
-      <NavBar
-        title={copy.newsTitle}
-        leading="close"
-        onLeading={leave}
-        trailing={
-          <Button
-            label={copy.post}
-            size="S"
-            variant="dark"
-            fullWidth={false}
-            loading={posting}
-            disabled={photos.busy}
-            onPress={() => void submit()}
-            testID="news-post"
-          />
-        }
+    <PostForm
+      title={copy.newsTitle}
+      onClose={leave}
+      fixing={showErrors && errors.length > 0}
+      error={error}
+      posting={posting}
+      disabled={photos.busy}
+      onPost={() => void submit()}
+      testID="news"
+      screenTestID="screen-post-news"
+    >
+      <View style={styles.gap}>
+        <Input
+          label={copy.newsWhat}
+          placeholder={copy.newsWhatPlaceholder}
+          value={title}
+          onChangeText={setTitle}
+          maxLength={TITLE_MAX}
+          error={errorFor('title')}
+          testID="news-title"
+        />
+        {/* The trust fact, up front as one line instead of a note box (3.03). */}
+        <Text variant="meta" tone="ink2">
+          {copy.newsNote}
+        </Text>
+      </View>
+      <TextArea
+        label={copy.newsDetails}
+        placeholder={copy.newsDetailsPlaceholder}
+        value={description}
+        onChangeText={setDescription}
+        maxLength={DESCRIPTION_MAX}
+        error={errorFor('description')}
+        testID="news-details"
       />
-      <KeyboardAvoidingView behavior="padding" style={styles.flex}>
-        <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-          <Input
-            label={copy.newsWhat}
-            placeholder={copy.newsWhatPlaceholder}
-            value={title}
-            onChangeText={setTitle}
-            maxLength={TITLE_MAX}
-            error={errorFor('title')}
-            testID="news-title"
-          />
-          <TextArea
-            label={copy.newsDetails}
-            placeholder={copy.newsDetailsPlaceholder}
-            value={description}
-            onChangeText={setDescription}
-            maxLength={DESCRIPTION_MAX}
-            error={errorFor('description')}
-            testID="news-details"
-          />
 
-          <PhotosField
-            state={photos}
-            label={copy.newsPhotos}
-            mediaBase={mediaBase()}
-            onOpenSettings={() => void openSettings()}
-            testID="news"
-          />
+      <View style={styles.gap}>
+        <Input
+          label={copy.newsLink}
+          placeholder={copy.newsLinkPlaceholder}
+          value={link}
+          onChangeText={setLink}
+          maxLength={LINK_MAX + 8}
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="url"
+          textContentType="URL"
+          error={errorFor('link')}
+          testID="news-link"
+        />
+        <Text variant="meta" tone="ink2">
+          {copy.newsLinkHint}
+        </Text>
+      </View>
 
-          <View style={styles.gap}>
-            <Input
-              label={copy.newsLink}
-              placeholder={copy.newsLinkPlaceholder}
-              value={link}
-              onChangeText={setLink}
-              maxLength={LINK_MAX + 8}
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType="url"
-              textContentType="URL"
-              error={errorFor('link')}
-              testID="news-link"
-            />
-            <Text variant="meta" tone="ink2">
-              {copy.newsLinkHint}
-            </Text>
-          </View>
+      <PhotosField
+        state={photos}
+        label={copy.newsPhotos}
+        mediaBase={mediaBase()}
+        onOpenSettings={() => void openSettings()}
+        testID="news"
+      />
 
-          <View style={styles.gap}>
-            <Toggle label={copy.newsEvent} value={isEvent} onChange={setIsEvent} />
-            {isEvent ? (
-              <View style={styles.gap} testID="news-event">
-                {isWebPlatform() ? (
-                  <>
-                    <WebDateInput
-                      value={day}
-                      min={today}
-                      max={lastDay}
-                      label={copy.newsDate}
-                      onChange={setDay}
-                      testID="news-date-web"
-                    />
-                    {day ? (
-                      <View style={styles.chips} testID="news-times-web">
-                        {timeOptions(day, today).map((t) => (
-                          <Button
-                            key={t.getTime()}
-                            label={timeLabel(t)}
-                            variant={
-                              time && t.getTime() === combineDayTime(day, time).getTime()
-                                ? 'dark'
-                                : 'secondary'
-                            }
-                            size="S"
-                            fullWidth={false}
-                            onPress={() => setTime(t)}
-                          />
-                        ))}
-                      </View>
-                    ) : null}
-                  </>
-                ) : (
-                  <View style={styles.pickRow}>
-                    <PickField
-                      label={copy.newsDate}
-                      value={
-                        day
-                          ? day.toLocaleDateString(intlLocale, {
-                              weekday: 'short',
-                              month: 'short',
-                              day: 'numeric',
-                            })
-                          : copy.newsPickDate
-                      }
-                      filled={day !== null}
-                      onPress={() => setPicker('date')}
-                      testID="news-date"
-                    />
-                    <PickField
-                      label={copy.newsTime}
-                      value={time ? timeLabel(time) : copy.newsPickTime}
-                      filled={time !== null}
-                      onPress={() => setPicker('time')}
-                      testID="news-time"
-                    />
+      <View style={styles.gap}>
+        <Toggle label={copy.newsEvent} value={isEvent} onChange={setIsEvent} />
+        {isEvent ? (
+          <View style={styles.gap} testID="news-event">
+            {isWebPlatform() ? (
+              <>
+                <WebDateInput
+                  value={day}
+                  min={today}
+                  max={lastDay}
+                  label={copy.newsDate}
+                  onChange={setDay}
+                  testID="news-date-web"
+                />
+                {day ? (
+                  <View style={styles.chips} testID="news-times-web">
+                    {timeOptions(day, today).map((t) => (
+                      <Button
+                        key={t.getTime()}
+                        label={timeLabel(t)}
+                        variant={
+                          time && t.getTime() === combineDayTime(day, time).getTime()
+                            ? 'dark'
+                            : 'secondary'
+                        }
+                        size="S"
+                        fullWidth={false}
+                        onPress={() => setTime(t)}
+                      />
+                    ))}
                   </View>
-                )}
-                {picker && !isWebPlatform() ? (
-                  <DateTimePicker
-                    value={(picker === 'date' ? day : time) ?? today}
-                    mode={picker}
-                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                    minimumDate={picker === 'date' ? today : undefined}
-                    maximumDate={picker === 'date' ? lastDay : undefined}
-                    minuteInterval={5}
-                    onChange={onPick}
-                    testID="news-picker"
-                  />
                 ) : null}
-                {picker && Platform.OS === 'ios' ? (
-                  <Button
-                    label={copy.done}
-                    variant="secondary"
-                    size="S"
-                    fullWidth={false}
-                    onPress={() => setPicker(null)}
-                    testID="news-picker-done"
-                  />
-                ) : null}
-                {eventError ? (
-                  <Text
-                    variant="meta"
-                    tone="red"
-                    accessibilityLiveRegion="polite"
-                    testID="news-event-error"
-                  >
-                    {eventError}
-                  </Text>
-                ) : null}
-                <Input
-                  label={copy.newsPlace}
-                  placeholder={copy.newsPlacePlaceholder}
-                  value={place}
-                  onChangeText={setPlace}
-                  maxLength={MEET_NOTE_MAX}
-                  error={errorFor('place')}
-                  testID="news-place"
+              </>
+            ) : (
+              <View style={styles.pickRow}>
+                <PickField
+                  label={copy.newsDate}
+                  value={
+                    day
+                      ? day.toLocaleDateString(intlLocale, {
+                          weekday: 'short',
+                          month: 'short',
+                          day: 'numeric',
+                        })
+                      : copy.newsPickDate
+                  }
+                  filled={day !== null}
+                  onPress={() => setPicker('date')}
+                  testID="news-date"
+                />
+                <PickField
+                  label={copy.newsTime}
+                  value={time ? timeLabel(time) : copy.newsPickTime}
+                  filled={time !== null}
+                  onPress={() => setPicker('time')}
+                  testID="news-time"
                 />
               </View>
+            )}
+            {picker && !isWebPlatform() ? (
+              <DateTimePicker
+                value={(picker === 'date' ? day : time) ?? today}
+                mode={picker}
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                minimumDate={picker === 'date' ? today : undefined}
+                maximumDate={picker === 'date' ? lastDay : undefined}
+                minuteInterval={5}
+                onChange={onPick}
+                testID="news-picker"
+              />
             ) : null}
+            {picker && Platform.OS === 'ios' ? (
+              <Button
+                label={copy.done}
+                variant="secondary"
+                size="S"
+                fullWidth={false}
+                onPress={() => setPicker(null)}
+                testID="news-picker-done"
+              />
+            ) : null}
+            {eventError ? (
+              <Text
+                variant="meta"
+                tone="red"
+                accessibilityLiveRegion="polite"
+                testID="news-event-error"
+              >
+                {eventError}
+              </Text>
+            ) : null}
+            <Input
+              label={copy.newsPlace}
+              placeholder={copy.newsPlacePlaceholder}
+              value={place}
+              onChangeText={setPlace}
+              maxLength={MEET_NOTE_MAX}
+              error={errorFor('place')}
+              testID="news-place"
+            />
           </View>
-
-          <View style={styles.note}>
-            <Icon name="users" size={18} tone="ink2" />
-            <Text variant="meta" tone="ink2" style={styles.flex}>
-              {copy.newsNote}
-            </Text>
-          </View>
-
-          {showErrors && errors.length > 0 ? (
-            <View testID="news-fix">
-              <Banner kind="error" message={copy.fixFirst} />
-            </View>
-          ) : null}
-          {error ? (
-            <View testID="news-error">
-              <Banner kind="error" message={error} />
-            </View>
-          ) : null}
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </View>
+        ) : null}
+      </View>
+    </PostForm>
   );
 }
 
@@ -399,12 +373,6 @@ function PickField({
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   flex: { flex: 1 },
-  body: {
-    ...readableColumn,
-    gap: theme.space.lg,
-    padding: theme.space.screen,
-    paddingBottom: theme.space['2xl'],
-  },
   gap: { gap: theme.space.sm },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
   pickRow: { flexDirection: 'row', gap: theme.space.sm },
@@ -413,13 +381,6 @@ const styles = StyleSheet.create((theme) => ({
     gap: 2,
     paddingHorizontal: theme.space.md,
     paddingVertical: theme.space.sm,
-    borderRadius: theme.radius.control,
-    backgroundColor: theme.colors.bg2,
-  },
-  note: {
-    flexDirection: 'row',
-    gap: theme.space.sm,
-    padding: theme.space.md,
     borderRadius: theme.radius.control,
     backgroundColor: theme.colors.bg2,
   },

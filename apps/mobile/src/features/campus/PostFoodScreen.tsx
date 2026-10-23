@@ -1,15 +1,11 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Linking, ScrollView, View } from 'react-native';
-import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { Linking, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
-import { Banner } from '@/components/Banner';
-import { Button } from '@/components/Button';
 import { Chip } from '@/components/Chip';
 import { ErrorState } from '@/components/ErrorState';
-import { Icon } from '@/components/icons/Icon';
 import { Input } from '@/components/Input';
 import { NavBar } from '@/components/NavBar';
 import { SkeletonList } from '@/components/Skeleton';
@@ -18,8 +14,6 @@ import { getEnv } from '@/lib/env';
 import { pickPhotos, type PickedPhoto } from '@/lib/media';
 import { osPermissions, type OsApi } from '@/lib/permissions';
 import { campus as copy } from '@/strings';
-import { readableColumn } from '@/theme/layout';
-import { useToastStore } from '@/components/Toast';
 
 import { sellApi, type PostedListing, type SellApi } from '../sell/api';
 import { MEET_NOTE_MAX, sortSpots, TITLE_MAX } from '../sell/logic';
@@ -36,6 +30,7 @@ import {
 import {
   PhotoField,
   PostedView,
+  PostForm,
   postFailure,
   usePostPhoto,
   useReservedId,
@@ -99,9 +94,8 @@ export function PostFoodScreen({
     if (posting || photo.busy) return;
     setError(null);
     if (errors.length > 0) {
+      // One line in the dock, which rides above the keyboard (3.03): no Toast.
       setShowErrors(true);
-      // The fields and the note can sit under the keyboard; say it on top too.
-      useToastStore.getState().show('error', copy.fixFirst);
       return;
     }
     setPosting(true);
@@ -114,7 +108,6 @@ export function PostFoodScreen({
       const f = postFailure(e);
       if (f.forbidden) reserved.drop();
       setError(f.text);
-      useToastStore.getState().show('error', f.text);
     } finally {
       setPosting(false);
     }
@@ -140,162 +133,125 @@ export function PostFoodScreen({
   const placeError = errorFor('place');
 
   return (
-    <View style={styles.root} testID="screen-post-food">
-      <NavBar
-        title={copy.foodTitle}
-        leading="close"
-        onLeading={leave}
-        trailing={
-          <Button
-            label={copy.post}
-            size="S"
-            variant="dark"
-            fullWidth={false}
-            loading={posting}
-            disabled={photo.busy}
-            onPress={() => void submit()}
-            testID="food-post"
+    <PostForm
+      title={copy.foodTitle}
+      onClose={leave}
+      fixing={showErrors && errors.length > 0}
+      error={error}
+      posting={posting}
+      disabled={photo.busy}
+      onPost={() => void submit()}
+      testID="food"
+      screenTestID="screen-post-food"
+    >
+      <View style={styles.gap}>
+        <Input
+          label={copy.foodWhat}
+          placeholder={copy.foodWhatPlaceholder}
+          value={title}
+          onChangeText={setTitle}
+          maxLength={TITLE_MAX}
+          error={errorFor('title')}
+          testID="food-title"
+        />
+        {/* The trust fact, up front as one line instead of a note box (3.03). */}
+        <Text variant="meta" tone="ink2">
+          {copy.foodNote}
+        </Text>
+      </View>
+
+      <View style={styles.gap}>
+        <Text variant="label" tone="ink2">
+          {copy.foodWhere}
+        </Text>
+        <Text variant="meta" tone="ink2">
+          {copy.foodWhereBody}
+        </Text>
+        {spotsQuery.isPending ? (
+          <SkeletonList rows={2} />
+        ) : spotsQuery.isError ? (
+          <ErrorState
+            layout="inline"
+            error={spotsQuery.error}
+            onRetry={() => spotsQuery.refetch()}
           />
-        }
-      />
-      <KeyboardAvoidingView behavior="padding" style={styles.flex}>
-        <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
+        ) : (
+          <View
+            style={styles.chips}
+            accessibilityRole="radiogroup"
+            accessibilityLabel={copy.foodWhere}
+            testID="food-spots"
+          >
+            {spots.map((s) => (
+              <Chip
+                key={s.id}
+                label={s.name}
+                selected={where === s.id}
+                onPress={() => setWhere(where === s.id ? null : s.id)}
+              />
+            ))}
+            <Chip
+              label={copy.foodOther}
+              selected={where === OTHER}
+              onPress={() => setWhere(where === OTHER ? null : OTHER)}
+            />
+          </View>
+        )}
+        {where === OTHER ? (
           <Input
-            label={copy.foodWhat}
-            placeholder={copy.foodWhatPlaceholder}
-            value={title}
-            onChangeText={setTitle}
-            maxLength={TITLE_MAX}
-            error={errorFor('title')}
-            testID="food-title"
+            label={copy.foodOther}
+            placeholder={copy.foodOtherPlaceholder}
+            value={place}
+            onChangeText={setPlace}
+            maxLength={MEET_NOTE_MAX}
+            error={placeError}
+            testID="food-place"
           />
+        ) : placeError ? (
+          <Text
+            variant="meta"
+            tone="red"
+            accessibilityLiveRegion="polite"
+            testID="food-place-error"
+          >
+            {placeError}
+          </Text>
+        ) : null}
+      </View>
 
-          <View style={styles.gap}>
-            <Text variant="label" tone="ink2">
-              {copy.foodWhere}
-            </Text>
-            <Text variant="meta" tone="ink2">
-              {copy.foodWhereBody}
-            </Text>
-            {spotsQuery.isPending ? (
-              <SkeletonList rows={2} />
-            ) : spotsQuery.isError ? (
-              <ErrorState
-                layout="inline"
-                error={spotsQuery.error}
-                onRetry={() => spotsQuery.refetch()}
-              />
-            ) : (
-              <View
-                style={styles.chips}
-                accessibilityRole="radiogroup"
-                accessibilityLabel={copy.foodWhere}
-                testID="food-spots"
-              >
-                {spots.map((s) => (
-                  <Chip
-                    key={s.id}
-                    label={s.name}
-                    selected={where === s.id}
-                    onPress={() => setWhere(where === s.id ? null : s.id)}
-                  />
-                ))}
-                <Chip
-                  label={copy.foodOther}
-                  selected={where === OTHER}
-                  onPress={() => setWhere(where === OTHER ? null : OTHER)}
-                />
-              </View>
-            )}
-            {where === OTHER ? (
-              <Input
-                label={copy.foodOther}
-                placeholder={copy.foodOtherPlaceholder}
-                value={place}
-                onChangeText={setPlace}
-                maxLength={MEET_NOTE_MAX}
-                error={placeError}
-                testID="food-place"
-              />
-            ) : placeError ? (
-              <Text
-                variant="meta"
-                tone="red"
-                accessibilityLiveRegion="polite"
-                testID="food-place-error"
-              >
-                {placeError}
-              </Text>
-            ) : null}
-          </View>
+      <View style={styles.gap}>
+        <Text variant="label" tone="ink2">
+          {copy.foodFor}
+        </Text>
+        <View
+          style={styles.chips}
+          accessibilityRole="radiogroup"
+          accessibilityLabel={copy.foodFor}
+          testID="food-minutes"
+        >
+          {FOOD_MINUTES.map((m) => (
+            <Chip
+              key={m}
+              label={foodMinutesLabel(m)}
+              selected={minutes === m}
+              onPress={() => setMinutes(m)}
+            />
+          ))}
+        </View>
+      </View>
 
-          <View style={styles.gap}>
-            <Text variant="label" tone="ink2">
-              {copy.foodFor}
-            </Text>
-            <View
-              style={styles.chips}
-              accessibilityRole="radiogroup"
-              accessibilityLabel={copy.foodFor}
-              testID="food-minutes"
-            >
-              {FOOD_MINUTES.map((m) => (
-                <Chip
-                  key={m}
-                  label={foodMinutesLabel(m)}
-                  selected={minutes === m}
-                  onPress={() => setMinutes(m)}
-                />
-              ))}
-            </View>
-          </View>
-
-          <PhotoField
-            state={photo}
-            mediaBase={mediaBase()}
-            onOpenSettings={() => void openSettings()}
-            testID="food"
-          />
-
-          <View style={styles.note}>
-            <Icon name="clock" size={18} tone="ink2" />
-            <Text variant="meta" tone="ink2" style={styles.flex}>
-              {copy.foodNote}
-            </Text>
-          </View>
-
-          {showErrors && errors.length > 0 ? (
-            <View testID="food-fix">
-              <Banner kind="error" message={copy.fixFirst} />
-            </View>
-          ) : null}
-          {error ? (
-            <View testID="food-error">
-              <Banner kind="error" message={error} />
-            </View>
-          ) : null}
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </View>
+      <PhotoField
+        state={photo}
+        mediaBase={mediaBase()}
+        onOpenSettings={() => void openSettings()}
+        testID="food"
+      />
+    </PostForm>
   );
 }
 
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
-  flex: { flex: 1 },
-  body: {
-    ...readableColumn,
-    gap: theme.space.lg,
-    padding: theme.space.screen,
-    paddingBottom: theme.space['2xl'],
-  },
   gap: { gap: theme.space.sm },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
-  note: {
-    flexDirection: 'row',
-    gap: theme.space.sm,
-    padding: theme.space.md,
-    borderRadius: theme.radius.control,
-    backgroundColor: theme.colors.bg2,
-  },
 }));

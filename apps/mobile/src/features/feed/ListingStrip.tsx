@@ -28,7 +28,8 @@ export function ListingStrip({
   if (items.length === 0) return null;
   return (
     <View style={styles.root} testID={testID}>
-      <Text variant="bodyStrong" accessibilityRole="header">
+      {/* Section label in the one style every list header uses (DESIGN_REVIEW 3.02 Search). */}
+      <Text variant="label" tone="ink3" accessibilityRole="header">
         {title}
       </Text>
       <ScrollView

@@ -15,6 +15,9 @@ type Props = {
   testID?: string;
 };
 
+/** Pressed rows dim; nothing moves (DESIGN_REVIEW 3.08). */
+const PRESSED_OPACITY = 0.6;
+
 /** Radio or checkbox row; the whole row is pressable (DESIGN_SYSTEM §6). */
 export function OptionRow({
   label,
@@ -33,7 +36,7 @@ export function OptionRow({
       {...a11yState({ checked: selected, disabled })}
       disabled={disabled}
       onPress={onPress}
-      style={styles.row(disabled)}
+      style={({ pressed }) => [styles.row(disabled), pressed && styles.pressed]}
       testID={testID}
     >
       <View style={styles.mark(kind, selected)}>
@@ -86,5 +89,6 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: theme.radius.chip,
     backgroundColor: theme.colors.ink,
   },
+  pressed: { opacity: PRESSED_OPACITY },
   text: { flex: 1 },
 }));

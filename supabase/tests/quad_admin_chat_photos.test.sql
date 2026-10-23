@@ -89,6 +89,8 @@ select case when exists (select 1 from vault.decrypted_secrets where name = 'med
 select is(tests.try_text_as(tests.uid('B'), format('select public.send_message(%L, %L, %L, %L, %L)::text',
     '00000000-0000-4000-8000-0000000000d1', '', '00000000-0000-4000-8000-00000000c102', 'photo', 'c/x/chat/y/z_full.webp')),
   'ERROR: INVALID:photo_path', 'the photo must be in this chat''s folder');
+select tests.register_upload(tests.uid('B'), 'chat', '00000000-0000-4000-8000-0000000000d1',
+  'c/' || tests.uid('OSU') || '/chat/00000000-0000-4000-8000-0000000000d1/33333333-3333-4333-8333-333333333333_full.webp');
 select is(
   tests.try_text_as(tests.uid('B'), format($f$select (r ->> 'kind') || '|' || (r ->> 'photo_url' ~ '^c/.+_full\.webp\?exp=\d+&sig=[0-9a-f]{64}$')::text
     from (select public.send_message(%L, %L, %L, %L, %L) as r) x$f$,

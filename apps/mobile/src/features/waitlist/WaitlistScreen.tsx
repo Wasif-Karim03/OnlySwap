@@ -20,7 +20,6 @@ import { registerForPush } from '@/lib/push';
 import { getStorage } from '@/lib/storage';
 import { waitlist as copy } from '@/strings';
 import { readableColumn } from '@/theme/layout';
-import { liftShadow } from '@/theme/shadow';
 
 import { authApi, type AuthApi } from '../auth/api';
 import { useGateHandoff } from '../auth/useAppGate';
@@ -97,8 +96,16 @@ export function WaitlistScreen({
   }, [next, router, handoff]);
 
   const toast = useToastStore.getState();
+  const signOut = async () => {
+    await auth.signOut('local').catch(() => {});
+    router.replace('/welcome');
+  };
+  const signOutButton = (
+    <Button label={copy.signOut} variant="text" onPress={signOut} testID="waitlist-sign-out" />
+  );
 
   let body;
+  let dock = null;
   if (q.isPending) {
     body = (
       <View accessibilityLabel={copy.loading} style={styles.pad}>
@@ -106,7 +113,13 @@ export function WaitlistScreen({
       </View>
     );
   } else if (q.isError && !q.data) {
-    body = <ErrorState error={q.error} onRetry={() => q.refetch()} testID="waitlist-error" />;
+    // Try again plus a way out (3.01): Sign out under the error.
+    body = (
+      <View style={styles.flexFill}>
+        <ErrorState error={q.error} onRetry={() => q.refetch()} testID="waitlist-error" />
+        <View style={styles.errorOut}>{signOutButton}</View>
+      </View>
+    );
   } else {
     const info = q.data;
     const link = info.invite_code ? inviteLink(site(), info.invite_code) : null;
@@ -146,14 +159,11 @@ export function WaitlistScreen({
                 {fill(copy.positionShort, { position: info.position })}
               </Text>
             ) : null}
-            <Text variant="label" tone="ink2" style={styles.regular}>
-              {copy.countsToward}
-            </Text>
           </View>
         </View>
 
         {link ? (
-          <View style={styles.card} testID="waitlist-invite">
+          <View style={styles.invite} testID="waitlist-invite">
             <Text variant="heading" accessibilityRole="header">
               {copy.inviteTitle}
             </Text>
@@ -188,25 +198,18 @@ export function WaitlistScreen({
                 </View>
               </Tappable>
             </View>
-            <Button
-              label={copy.share}
-              variant="dark"
-              onPress={() =>
-                void share({ message: shareMessage(info, link), url: link }).catch(() => {})
-              }
-              testID="waitlist-share"
-            />
             <Text variant="label" tone="ink3" testID="waitlist-invited">
               {invitedText(info.invited)}
             </Text>
           </View>
         ) : null}
 
-        <Text variant="label" tone="ink2" style={[styles.regular, styles.note]}>
-          {copy.notifyLine}
-        </Text>
-
-        {notificationsAsked() ? null : (
+        {/* The line or the button, never both: they say the same thing. */}
+        {notificationsAsked() ? (
+          <Text variant="label" tone="ink2" style={[styles.regular, styles.note]}>
+            {copy.notifyLine}
+          </Text>
+        ) : (
           <Button
             label={copy.notify}
             variant="secondary"
@@ -214,22 +217,29 @@ export function WaitlistScreen({
             testID="waitlist-notify"
           />
         )}
-        <Button
-          label={copy.signOut}
-          variant="text"
-          onPress={async () => {
-            await auth.signOut('local').catch(() => {});
-            router.replace('/welcome');
-          }}
-          testID="waitlist-sign-out"
-        />
+        {signOutButton}
       </ScrollView>
     );
+    // Share is the one primary action, docked in the thumb zone (P7). Ink, not
+    // accent: the ring and the Copy pill already carry the accent.
+    dock = link ? (
+      <View style={[styles.dock, { paddingBottom: insets.bottom + styles.dockGap.height }]}>
+        <Button
+          label={copy.share}
+          variant="dark"
+          onPress={() =>
+            void share({ message: shareMessage(info, link), url: link }).catch(() => {})
+          }
+          testID="waitlist-share"
+        />
+      </View>
+    ) : null;
   }
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]} testID="screen-waitlist">
       {body}
+      {dock}
     </View>
   );
 }
@@ -323,13 +333,23 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: theme.radius.card,
     backgroundColor: theme.colors.card,
   },
+  // Flat card on the grey page, no lift shadow (2.6).
   ringCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.space.lg,
     padding: theme.space.xl,
-    ...liftShadow(),
   },
+  invite: { gap: theme.space.md, paddingTop: theme.space.sm },
+  flexFill: { flex: 1 },
+  errorOut: { paddingHorizontal: theme.space.screen, paddingBottom: theme.space.lg },
+  dock: {
+    ...readableColumn,
+    paddingHorizontal: theme.space.screen,
+    paddingTop: theme.space.lg,
+    backgroundColor: theme.colors.bg2,
+  },
+  dockGap: { height: theme.space.md },
   ringText: {
     position: 'absolute',
     top: 0,
@@ -345,7 +365,7 @@ const styles = StyleSheet.create((theme) => ({
     gap: theme.space.sm,
     paddingLeft: theme.space.md,
     borderRadius: theme.radius.control,
-    backgroundColor: theme.colors.bg2,
+    backgroundColor: theme.colors.bg,
   },
   copyHit: { minHeight: theme.size.hit, minWidth: theme.size.hit, justifyContent: 'center' },
   copyPill: {

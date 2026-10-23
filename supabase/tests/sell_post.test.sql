@@ -35,20 +35,24 @@ select is((select campus_ids::text from private.stale_draft_reservations() where
 select is((select cardinality(campus_ids) from private.stale_draft_reservations() where id = '00000000-0000-4000-8000-0000000002b3'),
   2, 'without a profile every campus is tried');
 
--- prune: no Vault config in a fresh database → only the used reservation is forgotten, no call
+-- prune: no Vault config in a fresh database → only reservations are retired, no call. Since 0246
+-- orphan drafts go after 24 h too: their photos are inventory rows the upload GC collects key by key.
 select is(private.prune(), null::bigint, 'without functions_url prune does not call anything');
 select is((select count(*)::int from public.listing_reservations where id = '00000000-0000-4000-8000-0000000001a1'), 0,
   'a used reservation older than 24 h is forgotten');
-select is((select count(*)::int from public.listing_reservations), 3, 'orphans stay until their photos are gone');
+select is((select string_agg(id::text, ',' order by id) from public.listing_reservations), '00000000-0000-4000-8000-0000000002b2',
+  'orphans older than 24 h are retired; the recent one stays (0246)');
 
 select vault.create_secret('http://functions.test/functions/v1', 'functions_url');
 select vault.create_secret('test-service-key', 'service_role_key');
-select isnt(private.prune(), null::bigint, 'with work to do, prune calls cleanup-drafts');
+insert into public.listing_reservations (id, user_id, created_at, used_at) values
+  ('00000000-0000-4000-8000-0000000002b4', tests.uid('A'), '2027-03-08 10:00:00-05', null);
+select is(private.prune(), null::bigint, 'prune never calls cleanup-drafts now; gc_uploads does (0246)');
 
-select is(private.forget_reservations(array['00000000-0000-4000-8000-0000000002b1', '00000000-0000-4000-8000-0000000002b2']::uuid[]), 2,
-  'forget_reservations drops the given orphans');
-select is((select string_agg(id::text, ',' order by id) from public.listing_reservations), '00000000-0000-4000-8000-0000000002b3',
-  'others are kept');
+select is(private.forget_reservations(array['00000000-0000-4000-8000-0000000002b2']::uuid[]), 1,
+  'forget_reservations (unused since 0246) still drops a given orphan');
+select is((select count(*)::int from public.listing_reservations), 0,
+  'nothing else is left');
 select ok(not has_function_privilege('authenticated', 'private.forget_reservations(uuid[])', 'execute'),
   'only the service role may forget reservations');
 select is((select schedule from cron.job where jobname = 'prune'), '30 9 * * *', 'the prune job runs daily at 09:30 UTC');

@@ -95,8 +95,9 @@ export function PlanMeetupScreen({
     <View style={styles.root} testID="screen-plan-meetup">
       <NavBar leading="close" onLeading={close} title={copy.planTitle} />
       <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
+        {/* Two sections: Where, then When (day chips above time chips). */}
         <Text variant="heading" accessibilityRole="header">
-          {copy.spotsTitle}
+          {copy.whereTitle}
         </Text>
         {spotsQ.isPending ? <SkeletonList rows={3} /> : null}
         {list.length > 0 ? <SpotsMap spots={list} selectedId={place} onSelect={setPlace} /> : null}
@@ -145,7 +146,7 @@ export function PlanMeetupScreen({
           />
         ) : null}
 
-        <Text variant="heading" accessibilityRole="header">
+        <Text variant="heading" accessibilityRole="header" style={styles.section}>
           {copy.dayTitle}
         </Text>
         <View style={styles.chips}>
@@ -161,9 +162,6 @@ export function PlanMeetupScreen({
             />
           ))}
         </View>
-        <Text variant="heading" accessibilityRole="header">
-          {copy.timeTitle}
-        </Text>
         <View style={styles.chips}>
           {times.map((t) => (
             <Chip
@@ -196,6 +194,8 @@ const styles = StyleSheet.create((theme, rt) => ({
   spot: { flexDirection: 'row', alignItems: 'center', gap: theme.space.sm },
   tag: { flexDirection: 'row', paddingLeft: theme.space['2xl'] },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
+  // Between the two sections (2.4: groups are 24 apart).
+  section: { marginTop: theme.space.xl - theme.space.md },
   dock: {
     ...readableColumn,
     paddingHorizontal: theme.space.screen,

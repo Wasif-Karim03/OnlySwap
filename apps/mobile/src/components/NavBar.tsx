@@ -16,6 +16,8 @@ export type NavBarProps = {
   variant?: 'large' | 'inline';
   leading?: 'back' | 'close' | 'none';
   onLeading?: () => void;
+  /** Screen-reader label for the leading button when "Back" or "Close" is too vague. */
+  leadingLabel?: string;
   /** Right side: IconButtons, a step count ("1 of 3") or a text Button. */
   trailing?: ReactNode;
   /** Adds the status bar inset. Off when the screen already pads for it. */
@@ -35,6 +37,7 @@ export function NavBar({
   variant = 'inline',
   leading = variant === 'inline' ? 'back' : 'none',
   onLeading,
+  leadingLabel,
   trailing,
   safeTop = true,
   tone = 'default',
@@ -60,7 +63,7 @@ export function NavBar({
         {leading !== 'none' ? (
           <IconButton
             icon={leading === 'back' ? 'back' : 'x'}
-            accessibilityLabel={leading === 'back' ? navCopy.back : navCopy.close}
+            accessibilityLabel={leadingLabel ?? (leading === 'back' ? navCopy.back : navCopy.close)}
             onPress={onLeading}
             tone={textTone}
           />

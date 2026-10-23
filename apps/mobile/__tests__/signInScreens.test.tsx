@@ -15,7 +15,7 @@ import {
 import { VerifyScreen } from '../src/features/auth/VerifyScreen';
 import { hadLoginIntent, setLoginIntent } from '../src/features/auth/loginIntent';
 import { CODE_TTL_MS, verifyStore } from '../src/features/auth/verifyLogic';
-import { age as ageCopy, errors, signIn } from '../src/strings/en';
+import { age as ageCopy, errors, nav, signIn } from '../src/strings/en';
 
 // A plain stand-in for the native date picker: tests fire its onChange directly.
 jest.mock('@react-native-community/datetimepicker', () => {
@@ -55,6 +55,7 @@ function fakeApi(over: Partial<Record<keyof AuthApi, jest.Mock>> = {}) {
           : { kind: 'unknown' },
     ),
     sendCode: jest.fn(async () => {}),
+    signInCode: jest.fn(async () => 'sent'),
     verifyCode: jest.fn(async () => ({})),
     signInReviewer: jest.fn(async () => ({})),
     signOut: jest.fn(async () => {}),
@@ -482,7 +483,7 @@ describe('AR-03 Apple age assurance (Texas, Utah, Louisiana)', () => {
   });
 });
 
-describe('A03 login mode with an address that has no account yet', () => {
+describe('A03 login mode checks the account first (DEC 140)', () => {
   const noSignal = {
     requestAgeRangeAsync: jest.fn(async () => null),
     requestAgeSignalsAccessAsync: jest.fn(async () => 'SHARED'),
@@ -491,27 +492,61 @@ describe('A03 login mode with an address that has no account yet', () => {
 
   afterEach(() => setLoginIntent(false));
 
-  it('sends the same code as sign-up (no account enumeration) and remembers the intent', async () => {
+  it('an existing account gets a sign-in code and never a new account', async () => {
     const api = fakeApi();
+    const router = setup('/email?mode=login', api);
+    await typeEmail('me@osu.edu');
+    expect(await screen.findByText(osu.school.name)).toBeTruthy();
+    fireEvent.press(screen.getByTestId('email-send'));
+    await waitFor(() => expect(router.getPathname()).toBe('/verify'));
+    expect(api.signInCode).toHaveBeenCalledWith('me@osu.edu');
+    expect(api.sendCode).not.toHaveBeenCalled();
+    expect(hadLoginIntent()).toBe(true);
+  });
+
+  it('an address with no account says so and sends nothing', async () => {
+    const api = fakeApi({ signInCode: jest.fn(async () => 'no_account') });
     const router = setup('/email?mode=login', api);
     await typeEmail('new@osu.edu');
     expect(await screen.findByText(osu.school.name)).toBeTruthy();
     fireEvent.press(screen.getByTestId('email-send'));
+    expect(
+      await screen.findByText(signIn.noAccountTitle.replace('{email}', 'new@osu.edu')),
+    ).toBeTruthy();
+    expect(router.getPathname()).toBe('/email');
+    expect(api.sendCode).not.toHaveBeenCalled();
+  });
+
+  it('"Create an account" from there starts sign-up with the same email', async () => {
+    const api = fakeApi({ signInCode: jest.fn(async () => 'no_account') });
+    const router = setup('/email?mode=login', api);
+    await typeEmail('new@osu.edu');
+    expect(await screen.findByText(osu.school.name)).toBeTruthy();
+    fireEvent.press(screen.getByTestId('email-send'));
+    fireEvent.press(await screen.findByTestId('email-create-account'));
     await waitFor(() => expect(router.getPathname()).toBe('/verify'));
     expect(api.sendCode).toHaveBeenCalledWith('new@osu.edu');
-    expect(hadLoginIntent()).toBe(true);
+    expect(hadLoginIntent()).toBe(false);
   });
 
-  it('after the code, the birthday step explains that a new account is being set up', async () => {
+  it('the birthday step keeps the plain copy', async () => {
     setLoginIntent(true);
     setup('/age', fakeApi(), { age: { ageModule: noSignal, device: ios26 } });
-    expect(await screen.findByText(`${ageCopy.newFromSignIn} ${ageCopy.body}`)).toBeTruthy();
+    expect(await screen.findByText(ageCopy.body)).toBeTruthy();
+  });
+});
+
+describe('A03 back button', () => {
+  it('sign-in mode back goes to welcome even with no history', async () => {
+    const router = setup('/email?mode=login', fakeApi());
+    fireEvent.press(await screen.findByLabelText(nav.back));
+    await waitFor(() => expect(router.getPathname()).toBe('/welcome'));
   });
 
-  it('the sign-up path keeps the plain birthday copy', async () => {
-    setLoginIntent(false);
-    setup('/age', fakeApi(), { age: { ageModule: noSignal, device: ios26 } });
-    expect(await screen.findByText(ageCopy.body)).toBeTruthy();
+  it('sign-up step back goes to welcome even with no history', async () => {
+    const router = setup('/email', fakeApi());
+    fireEvent.press(await screen.findByTestId('auth-back'));
+    await waitFor(() => expect(router.getPathname()).toBe('/welcome'));
   });
 });
 

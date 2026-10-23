@@ -498,32 +498,22 @@ describe('C01 Around campus', () => {
     });
   });
 
-  it('day one hero and founding sellers', async () => {
+  it('day one hero, and no founding sellers banner in the Feed', async () => {
     open(
       fakeCampus({
         feed: jest.fn(async () =>
           page([FREE], {
             day_one: true,
             active_listings: 3,
-            founding: { limit: 50, left: 34, mine: false },
+            founding: { limit: 50, left: 34, mine: true },
           }),
         ),
       }),
     );
     expect(await screen.findByTestId('campus-day-one')).toBeTruthy();
     expect(screen.getByText(/3 listings so far/)).toBeTruthy();
-    expect(screen.getByTestId('campus-founding-open')).toBeTruthy();
-    expect(screen.getByText(/34 of 50 spots left/)).toBeTruthy();
-  });
-
-  it('founding seller: your badge instead of the open spots', async () => {
-    open(
-      fakeCampus({
-        feed: jest.fn(async () => page([FREE], { founding: { limit: 50, left: 0, mine: true } })),
-      }),
-    );
-    expect(await screen.findByTestId('campus-founding-mine')).toBeTruthy();
-    expect(screen.queryByTestId('campus-day-one')).toBeNull();
+    expect(screen.queryByTestId('campus-founding-open')).toBeNull();
+    expect(screen.queryByTestId('campus-founding-mine')).toBeNull();
   });
 
   it('error with retry, offline copy', async () => {
@@ -552,9 +542,13 @@ describe('C01 Around campus', () => {
     expect(await screen.findByTestId('campus-item-free1')).toBeTruthy();
   });
 
-  it('the post buttons open the forms', async () => {
+  it('the + menu offers the three kinds of post and opens the form', async () => {
     open(fakeCampus());
-    fireEvent.press(await screen.findByTestId('campus-post-food'));
+    expect(screen.queryByTestId('campus-post-food')).toBeNull();
+    fireEvent.press(await screen.findByTestId('feed-new-post'));
+    expect(screen.getByRole('button', { name: campus.postNews })).toBeTruthy();
+    expect(screen.getByRole('button', { name: campus.askFor })).toBeTruthy();
+    fireEvent.press(screen.getByRole('button', { name: campus.postFood }));
     expect(await screen.findByTestId('screen-food')).toBeTruthy();
   });
 });

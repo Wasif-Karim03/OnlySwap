@@ -100,8 +100,9 @@ type Props = {
   /** Thread view: the full photo instead of the thumbnail. */
   full?: boolean;
   /**
-   * `card`: the feed's white card on the grey page (DEC 90): votes on the
-   * left, and the kind, replies and time as one quiet line under the text.
+   * `card`: the feed's flat row (the feed draws the hairlines): votes in one
+   * column on the left, and the kind, replies and time as one quiet line.
+   * No card fill or radius, so the Quad matches the Feed's plain page.
    * `row` (default): the thread's plain row with votes on the right.
    */
   variant?: 'row' | 'card';
@@ -265,11 +266,7 @@ const styles = StyleSheet.create((theme) => ({
   whiteCard: {
     flexDirection: 'row',
     gap: theme.space.xs,
-    paddingTop: theme.space.sm,
-    paddingLeft: theme.space.xs,
-    paddingRight: theme.space.sm,
-    borderRadius: theme.radius.card,
-    backgroundColor: theme.colors.card,
+    paddingVertical: theme.space.sm,
   },
   flex: { flex: 1 },
   content: { gap: theme.space.sm },

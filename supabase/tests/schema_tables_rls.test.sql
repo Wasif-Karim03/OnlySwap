@@ -28,7 +28,9 @@ select tables_are(
     -- 0233 Feed likes and comments (DEC 121)
     'listing_likes','listing_comments','listing_comment_likes',
     -- 0244 App Store consent (AR-04)
-    'app_transactions'
+    'app_transactions',
+    -- 0246 upload inventory (DEC 139)
+    'media_uploads'
   ],
   'public has exactly the tables from DATA_MODEL §2.1 to §2.6'
 );

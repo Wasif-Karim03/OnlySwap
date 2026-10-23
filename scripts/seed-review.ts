@@ -35,6 +35,21 @@ export const DEMO_CAMPUS = {
   quad_enabled: true,
 };
 export const DEMO_DOMAIN = 'review.onlyswap.test';
+// The bot proposes the demo campus's first active spot (0034) and names it in
+// chat, so the spot must exist on a fresh project.
+export const DEMO_SPOT = {
+  id: '34000000-0000-4000-8000-000000000001',
+  campus_id: DEMO_CAMPUS.id,
+  name: 'Demo Library lobby',
+  description: 'Main lobby, by the front desk.',
+  hours: 'Daily 8:00 to 22:00',
+  lat: 40.0,
+  lng: -75.0,
+  designation: 'public',
+  is_default: true,
+  active: true,
+  sort: 0,
+};
 export const REVIEWERS = [
   {
     email: 'appreview@review.onlyswap.test',
@@ -178,6 +193,8 @@ export async function seedReview(
     [{ domain: DEMO_DOMAIN, campus_id: DEMO_CAMPUS.id, kind: 'student' }],
     'domain',
   );
+  await upsert('safe_spots', [DEMO_SPOT], 'id');
+  log(`meetup spot ${DEMO_SPOT.name} ready`);
   await upsert(
     'review_accounts',
     [...REVIEWERS, DEMO_BOT].map((r) => ({ email: r.email, note: r.note })),

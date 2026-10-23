@@ -4,7 +4,10 @@ import { StyleSheet } from 'react-native-unistyles';
 
 import { Tappable } from './Tappable';
 
-/** Card: no shadow, hairline border (DESIGN_SYSTEM §4). Pressable when onPress is set. */
+/**
+ * Card: no shadow, hairline border (DESIGN_SYSTEM §4). Pressable when onPress is set.
+ * The one bordered container: never nested in another Card, never with a shadow.
+ */
 export function Card({
   children,
   onPress,

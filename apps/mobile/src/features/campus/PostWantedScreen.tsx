@@ -1,14 +1,10 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Linking, ScrollView, View } from 'react-native';
-import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { Linking, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
-import { Banner } from '@/components/Banner';
-import { Button } from '@/components/Button';
 import { Chip } from '@/components/Chip';
-import { Icon } from '@/components/icons/Icon';
 import { Input } from '@/components/Input';
 import { NavBar } from '@/components/NavBar';
 import { Text } from '@/components/Text';
@@ -18,8 +14,6 @@ import { getEnv } from '@/lib/env';
 import { pickPhotos, type PickedPhoto } from '@/lib/media';
 import { osPermissions, type OsApi } from '@/lib/permissions';
 import { campus as copy } from '@/strings';
-import { readableColumn } from '@/theme/layout';
-import { useToastStore } from '@/components/Toast';
 
 import { sellApi, type PostedListing, type SellApi } from '../sell/api';
 import { cleanPrice, DESCRIPTION_MAX, TITLE_MAX } from '../sell/logic';
@@ -36,6 +30,7 @@ import {
 import {
   PhotoField,
   PostedView,
+  PostForm,
   postFailure,
   usePostPhoto,
   useReservedId,
@@ -101,9 +96,8 @@ export function PostWantedScreen({
     if (posting || photo.busy) return;
     setError(null);
     if (errors.length > 0) {
+      // One line in the dock, which rides above the keyboard (3.03): no Toast.
       setShowErrors(true);
-      // The fields and the note can sit under the keyboard; say it on top too.
-      useToastStore.getState().show('error', copy.fixFirst);
       return;
     }
     setPosting(true);
@@ -119,7 +113,6 @@ export function PostWantedScreen({
       const f = postFailure(e);
       if (f.forbidden) reserved.drop();
       setError(f.text);
-      useToastStore.getState().show('error', f.text);
     } finally {
       setPosting(false);
     }
@@ -144,153 +137,118 @@ export function PostWantedScreen({
   const parents = (categories.data ?? []).filter((c) => c.parentId === null);
 
   return (
-    <View style={styles.root} testID="screen-post-wanted">
-      <NavBar
-        title={copy.wantedTitle}
-        leading="close"
-        onLeading={leave}
-        trailing={
-          <Button
-            label={copy.post}
-            size="S"
-            variant="dark"
-            fullWidth={false}
-            loading={posting}
-            disabled={photo.busy}
-            onPress={() => void submit()}
-            testID="wanted-post"
-          />
-        }
-      />
-      <KeyboardAvoidingView behavior="padding" style={styles.flex}>
-        <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-          <Input
-            label={copy.wantedWhat}
-            placeholder={copy.wantedWhatPlaceholder}
-            value={title}
-            onChangeText={setTitle}
-            maxLength={TITLE_MAX}
-            error={errorFor('title')}
-            testID="wanted-title"
-          />
-          <View style={styles.gap}>
-            <Input
-              label={copy.budgetLabel}
-              kind="price"
-              placeholder={copy.budgetPlaceholder}
-              value={budget}
-              onChangeText={(v) => setBudget(cleanPrice(v))}
-              error={errorFor('budget')}
-              testID="wanted-budget"
+    <PostForm
+      title={copy.wantedTitle}
+      onClose={leave}
+      fixing={showErrors && errors.length > 0}
+      error={error}
+      posting={posting}
+      disabled={photo.busy}
+      onPost={() => void submit()}
+      testID="wanted"
+      screenTestID="screen-post-wanted"
+    >
+      <View style={styles.gap}>
+        <Input
+          label={copy.wantedWhat}
+          placeholder={copy.wantedWhatPlaceholder}
+          value={title}
+          onChangeText={setTitle}
+          maxLength={TITLE_MAX}
+          error={errorFor('title')}
+          testID="wanted-title"
+        />
+        {/* The trust fact, up front as one line instead of a note box (3.03). */}
+        <Text variant="meta" tone="ink2">
+          {copy.wantedNote}
+        </Text>
+      </View>
+      <View style={styles.gap}>
+        <Input
+          label={copy.budgetLabel}
+          kind="price"
+          placeholder={copy.budgetPlaceholder}
+          value={budget}
+          onChangeText={(v) => setBudget(cleanPrice(v))}
+          error={errorFor('budget')}
+          testID="wanted-budget"
+        />
+        <Text variant="meta" tone="ink2">
+          {copy.budgetHint}
+        </Text>
+      </View>
+      {parents.length > 0 ? (
+        <View style={styles.gap}>
+          <Text variant="label" tone="ink2">
+            {copy.categoryLabel}
+          </Text>
+          <View
+            style={styles.chips}
+            accessibilityRole="radiogroup"
+            accessibilityLabel={copy.categoryLabel}
+            testID="wanted-categories"
+          >
+            {parents.map((c) => (
+              <Chip
+                key={c.id}
+                label={c.name}
+                selected={categoryId === c.id}
+                onPress={() => setCategoryId(categoryId === c.id ? null : c.id)}
+              />
+            ))}
+          </View>
+          <Text variant="meta" tone="ink2">
+            {copy.categoryHint}
+          </Text>
+        </View>
+      ) : null}
+      <View style={styles.gap}>
+        <Text variant="label" tone="ink2">
+          {copy.needByLabel}
+        </Text>
+        <View
+          style={styles.chips}
+          accessibilityRole="radiogroup"
+          accessibilityLabel={copy.needByLabel}
+          testID="wanted-need-by"
+        >
+          {NEED_BY.map((n) => (
+            <Chip
+              key={n}
+              label={copy.needBy[n]}
+              selected={needBy === n}
+              onPress={() => setNeedBy(n)}
+              testID={`wanted-need-by-${n}`}
             />
-            <Text variant="meta" tone="ink2">
-              {copy.budgetHint}
-            </Text>
-          </View>
-          {parents.length > 0 ? (
-            <View style={styles.gap}>
-              <Text variant="label" tone="ink2">
-                {copy.categoryLabel}
-              </Text>
-              <View
-                style={styles.chips}
-                accessibilityRole="radiogroup"
-                accessibilityLabel={copy.categoryLabel}
-                testID="wanted-categories"
-              >
-                {parents.map((c) => (
-                  <Chip
-                    key={c.id}
-                    label={c.name}
-                    selected={categoryId === c.id}
-                    onPress={() => setCategoryId(categoryId === c.id ? null : c.id)}
-                  />
-                ))}
-              </View>
-              <Text variant="meta" tone="ink2">
-                {copy.categoryHint}
-              </Text>
-            </View>
-          ) : null}
-          <View style={styles.gap}>
-            <Text variant="label" tone="ink2">
-              {copy.needByLabel}
-            </Text>
-            <View
-              style={styles.chips}
-              accessibilityRole="radiogroup"
-              accessibilityLabel={copy.needByLabel}
-              testID="wanted-need-by"
-            >
-              {NEED_BY.map((n) => (
-                <Chip
-                  key={n}
-                  label={copy.needBy[n]}
-                  selected={needBy === n}
-                  onPress={() => setNeedBy(n)}
-                  testID={`wanted-need-by-${n}`}
-                />
-              ))}
-            </View>
-          </View>
-          <Toggle
-            label={copy.alertMe}
-            description={copy.alertMeBody}
-            value={alerts}
-            onChange={setAlerts}
-          />
-          <TextArea
-            label={copy.detailsLabel}
-            placeholder={copy.detailsPlaceholder}
-            value={description}
-            onChangeText={setDescription}
-            maxLength={DESCRIPTION_MAX}
-            testID="wanted-details"
-          />
-          <PhotoField
-            state={photo}
-            mediaBase={mediaBase()}
-            onOpenSettings={() => void openSettings()}
-            testID="wanted"
-          />
-          <View style={styles.note}>
-            <Icon name="info" size={18} tone="ink2" />
-            <Text variant="meta" tone="ink2" style={styles.flex}>
-              {copy.wantedNote}
-            </Text>
-          </View>
-          {showErrors && errors.length > 0 ? (
-            <View testID="wanted-fix">
-              <Banner kind="error" message={copy.fixFirst} />
-            </View>
-          ) : null}
-          {error ? (
-            <View testID="wanted-error">
-              <Banner kind="error" message={error} />
-            </View>
-          ) : null}
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </View>
+          ))}
+        </View>
+      </View>
+      <Toggle
+        label={copy.alertMe}
+        description={copy.alertMeBody}
+        value={alerts}
+        onChange={setAlerts}
+      />
+      <TextArea
+        label={copy.detailsLabel}
+        placeholder={copy.detailsPlaceholder}
+        value={description}
+        onChangeText={setDescription}
+        maxLength={DESCRIPTION_MAX}
+        testID="wanted-details"
+      />
+      <PhotoField
+        state={photo}
+        mediaBase={mediaBase()}
+        onOpenSettings={() => void openSettings()}
+        testID="wanted"
+      />
+    </PostForm>
   );
 }
 
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
-  flex: { flex: 1 },
-  body: {
-    ...readableColumn,
-    gap: theme.space.lg,
-    padding: theme.space.screen,
-    paddingBottom: theme.space['2xl'],
-  },
   gap: { gap: theme.space.sm },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
-  note: {
-    flexDirection: 'row',
-    gap: theme.space.sm,
-    padding: theme.space.md,
-    borderRadius: theme.radius.control,
-    backgroundColor: theme.colors.bg2,
-  },
 }));

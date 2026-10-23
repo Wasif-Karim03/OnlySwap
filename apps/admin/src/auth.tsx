@@ -2,8 +2,14 @@ import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from
 
 import { errorMessage, gate, sessionExpired, type Whoami } from './logic';
 import { rpc, supabase } from './supabase';
+import { Button, Field } from './ui';
 
 const SIGNED_IN_AT = 'onlyswap-admin-signed-in-at';
+/** The loading line waits like the skeleton (tokens.json motion.skeleton.delay). */
+const CHECKING_DELAY_MS = 300;
+/** After this long the loading screen offers a reload. */
+const SLOW_AFTER_MS = 10_000;
+const CODE_LENGTH = 6;
 
 /**
  * G-LOGIN (P12-ADM-02): email code, then TOTP (enroll the first time), then
@@ -46,42 +52,71 @@ export function AdminGate({
     void supabase.auth.signOut().then(refresh);
   };
 
-  if (state === 'loading')
-    return (
-      <div className="gate" aria-busy="true">
-        <span className="mark lg" aria-hidden="true" />
-      </div>
-    );
+  if (state === 'loading') return <GateLoading />;
   if (state === 'login') return <EmailLogin onDone={refresh} />;
   if (state === 'denied')
     return (
-      <GateCard title="Not an admin">
-        <p className="lede">This account doesn't have access to the console.</p>
-        <button className="btn primary" onClick={signOut}>
+      <GateCard title="No access">
+        <p className="lede">
+          This account is not on the admin list. Ask an owner to add you, or sign in with another
+          account.
+        </p>
+        <Button variant="primary" onClick={signOut}>
           Sign out
-        </button>
+        </Button>
       </GateCard>
     );
   if (state === 'mfa') return <Mfa onDone={refresh} onSignOut={signOut} />;
   return <>{children(who!, signOut)}</>;
 }
 
-/** Centered sign-in card with the logo mark and the one line about who it's for. */
+/** The logo mark, then "Checking your session" after 300 ms and a reload offer after 10 s. */
+function GateLoading() {
+  const [phase, setPhase] = useState<'quiet' | 'checking' | 'slow'>('quiet');
+  useEffect(() => {
+    const checking = setTimeout(() => setPhase('checking'), CHECKING_DELAY_MS);
+    const slow = setTimeout(() => setPhase('slow'), SLOW_AFTER_MS);
+    return () => {
+      clearTimeout(checking);
+      clearTimeout(slow);
+    };
+  }, []);
+  return (
+    <div className="gate" aria-busy="true">
+      <div className="gate-wait" role="status">
+        <span className="mark lg" aria-hidden="true" />
+        {phase !== 'quiet' ? <p className="ink2 fade-in">Checking your session</p> : null}
+        {phase === 'slow' ? (
+          <>
+            <p className="muted fade-in">This is taking longer than usual.</p>
+            <Button variant="ghost" onClick={() => window.location.reload()}>
+              Reload
+            </Button>
+          </>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+/** Centered sign-in card: logo mark, one title, at most one line of help. */
 function GateCard({
   title,
+  lede,
   children,
   onSubmit,
 }: {
   title: string;
+  lede?: string;
   children: ReactNode;
   onSubmit?: (e: FormEvent) => void;
 }) {
   const body = (
     <>
       <span className="mark lg" aria-hidden="true" />
-      <div>
+      <div className="stack tight">
         <h1>{title}</h1>
-        <p className="lede">For the OnlySwap team. Two-step sign-in required.</p>
+        {lede ? <p className="lede">{lede}</p> : null}
       </div>
       {children}
     </>
@@ -103,56 +138,83 @@ function EmailLogin({ onDone }: { onDone: () => void }) {
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  return (
-    <GateCard
-      title="Sign in to OnlySwap admin"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        setError(null);
-        if (!sent) {
-          const { error: err } = await supabase.auth.signInWithOtp({
-            email,
-            options: { shouldCreateUser: false },
-          });
-          if (err) setError(errorMessage(err));
-          else setSent(true);
-          return;
-        }
-        const { error: err } = await supabase.auth.verifyOtp({ email, token: code, type: 'email' });
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (busy) return;
+    setError(null);
+    setBusy(true);
+    try {
+      if (!sent) {
+        const { error: err } = await supabase.auth.signInWithOtp({
+          email,
+          options: { shouldCreateUser: false },
+        });
         if (err) setError(errorMessage(err));
-        else {
-          localStorage.setItem('onlyswap-admin-signed-in-at', String(Date.now()));
-          onDone();
-        }
-      }}
-    >
-      <label className="field">
-        <span>Email</span>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          autoComplete="email"
-        />
-      </label>
+        else setSent(true);
+        return;
+      }
+      const { error: err } = await supabase.auth.verifyOtp({ email, token: code, type: 'email' });
+      if (err) setError(errorMessage(err));
+      else {
+        localStorage.setItem(SIGNED_IN_AT, String(Date.now()));
+        onDone();
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const changeEmail = () => {
+    setSent(false);
+    setCode('');
+    setError(null);
+  };
+
+  return (
+    <GateCard title="Sign in" lede={sent ? undefined : 'For the OnlySwap team.'} onSubmit={submit}>
       {sent ? (
-        <label className="field">
-          <span>Code from your email</span>
+        <div className="row">
+          <p className="ink2 grow-text">We sent a code to {email}.</p>
+          <Button variant="ghost" size="sm" onClick={changeEmail}>
+            Change
+          </Button>
+        </div>
+      ) : (
+        <Field label="Email" error={error}>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+            aria-invalid={error ? true : undefined}
+          />
+        </Field>
+      )}
+      {sent ? (
+        <Field label="Code" error={error}>
           <input
             value={code}
             onChange={(e) => setCode(e.target.value)}
             inputMode="numeric"
             autoComplete="one-time-code"
+            autoFocus
             required
+            aria-invalid={error ? true : undefined}
           />
-        </label>
+        </Field>
       ) : null}
-      {error ? <p className="error">{error}</p> : null}
-      <button type="submit" className="btn primary">
+      <Button
+        type="submit"
+        variant="primary"
+        pending={busy}
+        pendingLabel={sent ? 'Signing in…' : 'Sending…'}
+      >
         {sent ? 'Sign in' : 'Send code'}
-      </button>
+      </Button>
     </GateCard>
   );
 }
@@ -162,6 +224,8 @@ function Mfa({ onDone, onSignOut }: { onDone: () => void; onSignOut: () => void 
   const [qr, setQr] = useState<string | null>(null);
   const [secret, setSecret] = useState<string | null>(null);
   const [code, setCode] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -192,54 +256,93 @@ function Mfa({ onDone, onSignOut }: { onDone: () => void; onSignOut: () => void 
     })();
   }, []);
 
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!factorId || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const ch = await supabase.auth.mfa.challenge({ factorId });
+      if (ch.error) {
+        setError(errorMessage(ch.error));
+        setCode('');
+        return;
+      }
+      const v = await supabase.auth.mfa.verify({ factorId, challengeId: ch.data.id, code });
+      if (v.error) {
+        setError(errorMessage(v.error));
+        setCode('');
+      } else onDone();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const copyKey = () => {
+    if (!secret) return;
+    navigator.clipboard
+      .writeText(secret)
+      .then(() => setCopied(true))
+      .catch(() => setCopied(false));
+  };
+
+  const preparing = !factorId && !error;
+
   return (
-    <GateCard
-      title={qr ? 'Set up two-step sign-in' : 'Two-step check'}
-      onSubmit={async (e) => {
-        e.preventDefault();
-        if (!factorId) return;
-        const ch = await supabase.auth.mfa.challenge({ factorId });
-        if (ch.error) return setError(errorMessage(ch.error));
-        const v = await supabase.auth.mfa.verify({ factorId, challengeId: ch.data.id, code });
-        if (v.error) setError(errorMessage(v.error));
-        else onDone();
-      }}
-    >
+    <GateCard title="Two-step sign-in" onSubmit={submit}>
+      {preparing ? (
+        <p className="ink2" role="status">
+          Preparing your setup code…
+        </p>
+      ) : null}
       {qr ? (
         <>
           <p className="ink2">
-            Scan this with an authenticator app, then enter the 6-digit code it shows.
+            Scan this code with an authenticator app, then enter the 6-digit code.
           </p>
           <img className="qr" src={qr} alt="QR code for your authenticator app" />
           {secret ? (
             <div className="stack tight">
-              <span className="muted small">Can't scan? Type this key into the app instead:</span>
-              <code className="secret" aria-label="Setup key">
-                {secret}
-              </code>
+              <span className="muted small">Can't scan? Enter this key instead.</span>
+              <div className="row secret-row">
+                <code className="secret" aria-label="Setup key">
+                  {secret}
+                </code>
+                <Button variant="ghost" size="sm" onClick={copyKey}>
+                  {copied ? 'Copied' : 'Copy'}
+                </Button>
+              </div>
             </div>
           ) : null}
         </>
-      ) : (
+      ) : factorId ? (
         <p className="ink2">Enter the 6-digit code from your authenticator app.</p>
-      )}
-      <label className="field">
-        <span>Code</span>
+      ) : null}
+      <Field label="Code" error={error}>
         <input
           value={code}
-          onChange={(e) => setCode(e.target.value)}
+          onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, CODE_LENGTH))}
           inputMode="numeric"
+          pattern="[0-9]{6}"
+          maxLength={CODE_LENGTH}
           autoComplete="one-time-code"
+          autoFocus
           required
+          aria-invalid={error ? true : undefined}
         />
-      </label>
-      {error ? <p className="error">{error}</p> : null}
-      <button type="submit" className="btn primary">
+      </Field>
+      <Button
+        type="submit"
+        variant="primary"
+        disabled={!factorId}
+        pending={busy}
+        pendingLabel="Checking…"
+      >
         Verify
-      </button>
-      <button type="button" className="btn ghost" onClick={onSignOut}>
+      </Button>
+      <Button variant="ghost" onClick={onSignOut}>
         Sign out
-      </button>
+      </Button>
     </GateCard>
   );
 }

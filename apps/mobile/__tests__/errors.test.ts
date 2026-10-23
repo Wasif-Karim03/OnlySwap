@@ -4,6 +4,7 @@ import {
   isAppError,
   parseServerMessage,
   toAppError,
+  toFunctionError,
 } from '../src/lib/errors';
 import { errors as errorStrings } from '../src/strings/en';
 
@@ -81,5 +82,62 @@ describe('T-UNIT-LIB-02 lib/errors.errorCopy', () => {
         { campusTimeZone: 'America/Los_Angeles' },
       ),
     ).toContain('3:00 PM');
+  });
+});
+
+describe('T-UNIT-LIB-01 lib/errors.toFunctionError (LR-04, 0246)', () => {
+  const httpError = (status: number, json: () => Promise<unknown>) => ({
+    name: 'FunctionsHttpError',
+    message: 'Edge Function returned a non-2xx status code',
+    context: { status, json },
+  });
+
+  it('reads the { error } body of a FunctionsHttpError', async () => {
+    const e = await toFunctionError(
+      httpError(400, async () => ({ error: 'INVALID:turnstile_token' })),
+    );
+    expect(e).toMatchObject({ code: 'INVALID', detail: 'turnstile_token' });
+  });
+
+  it('a body without error, or a json() that throws, falls back to the error', async () => {
+    expect(await toFunctionError(httpError(500, async () => ({ ok: false })))).toMatchObject({
+      code: 'UNKNOWN',
+    });
+    expect(
+      await toFunctionError(
+        httpError(502, async () => {
+          throw new SyntaxError('Unexpected token');
+        }),
+      ),
+    ).toMatchObject({ code: 'UNKNOWN' });
+    expect(await toFunctionError({ code: 'P0001', message: 'CHAT_CLOSED' })).toMatchObject({
+      code: 'CHAT_CLOSED',
+    });
+  });
+
+  it('upload quota: RATE_LIMITED:upload_pending:<iso> keeps its retry time', async () => {
+    const e = await toFunctionError(
+      httpError(429, async () => ({ error: 'RATE_LIMITED:upload_pending:2026-10-19T08:00:00Z' })),
+    );
+    expect(e).toMatchObject({ code: 'RATE_LIMITED', action: 'upload_pending' });
+    expect(e.retryAt?.toISOString()).toBe('2026-10-19T08:00:00.000Z');
+  });
+
+  it('FORBIDDEN:deleting is FORBIDDEN; UPLOAD_EXPIRED has its own copy', async () => {
+    expect(
+      await toFunctionError(httpError(403, async () => ({ error: 'FORBIDDEN:deleting' }))),
+    ).toMatchObject({ code: 'FORBIDDEN', detail: 'deleting' });
+    const expired = toAppError({ code: 'P0001', message: 'UPLOAD_EXPIRED' });
+    expect(expired.code).toBe('UPLOAD_EXPIRED');
+    expect(errorCopy(expired, { campusTimeZone: 'America/New_York' })).toBe(
+      'That photo expired. Add it again.',
+    );
+    expect(errorStrings.UPLOAD_EXPIRED).toBe('That photo expired. Add it again.');
+  });
+
+  it('a request that never left the phone is offline', async () => {
+    expect(
+      await toFunctionError({ name: 'FunctionsFetchError', message: 'Failed to send a request' }),
+    ).toMatchObject({ code: 'ERR_OFFLINE' });
   });
 });

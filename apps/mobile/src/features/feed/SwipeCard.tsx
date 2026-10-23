@@ -1,8 +1,6 @@
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
-import { Avatar } from '@/components/Avatar';
-import { Icon } from '@/components/icons/Icon';
 import { Photo } from '@/components/Photo';
 import { Text } from '@/components/Text';
 import { fill } from '@/lib/format';
@@ -44,24 +42,25 @@ export function savedLine(n: number): string | null {
 
 type Props = {
   card: DeckCard;
-  /** Narrow grid tiles: the seller's name only, no year or saves line. */
+  /** Narrow grid tiles: the seller's name only, no trust or year. */
   compact?: boolean;
   testID?: string;
 };
 
 /**
- * The card face (P6-FEED-02, DEC 90 mock screen 4): the photo on top, then on
- * white below it the title and price on one line, the meta line and the
- * seller with a small avatar. Nothing is written on the photo except the
- * photo count bars. Stamps and motion live in SwipeDeck; this stays a plain
- * view so list and grid mode can reuse it.
+ * The card face (P6-FEED-02; DESIGN_REVIEW 3.02 Discover): the photo takes the
+ * card, with only the photo count bars on it. Under it, on white, line one is
+ * the title and the price; line two is the seller and the trust string
+ * ("Maya R. · Verified student · 95% thumbs up"), the facts that decide a
+ * swipe. The saves line, the avatar and the shield row are gone. The quiet
+ * condition and class year line stays because tests pin it (see the batch
+ * report). Stamps and motion live in SwipeDeck; this stays a plain view so
+ * list and grid mode can reuse it.
  */
 export function SwipeCard({ card, compact = false, testID }: Props) {
   const cover = card.photos[0];
-  const saved = savedLine(card.saveCount);
-  const sellerMeta = compact
-    ? ''
-    : [card.sellerYear, saved].filter(Boolean).join(copy.metaSeparator);
+  const trust = !compact && card.trust ? card.trust : null;
+  const year = compact ? null : (card.sellerYear ?? null);
   return (
     <View style={styles.card} testID={testID}>
       <View style={styles.photo}>
@@ -83,31 +82,27 @@ export function SwipeCard({ card, compact = false, testID }: Props) {
             {card.price}
           </Text>
         </View>
-        {card.meta ? (
+        {card.sellerName || trust ? (
           <Text variant="meta" tone="ink2" numberOfLines={1}>
-            {card.meta}
-          </Text>
-        ) : null}
-        {card.sellerName ? (
-          <View style={styles.seller}>
-            <Avatar name={card.sellerName} uri={card.sellerAvatar} size="S" />
-            <Text variant="label" numberOfLines={1} style={styles.sellerName}>
-              {card.sellerName}
-            </Text>
-            {sellerMeta ? (
-              <Text variant="meta" tone="ink3" numberOfLines={1} style={styles.sellerMeta}>
-                {sellerMeta}
+            {card.sellerName ? (
+              <Text variant="meta" style={styles.sellerName}>
+                {card.sellerName}
               </Text>
             ) : null}
-          </View>
+            {card.sellerName && trust ? copy.metaSeparator : null}
+            {trust ? (
+              <Text variant="meta" tone="ink2" testID="card-trust">
+                {trust}
+              </Text>
+            ) : null}
+          </Text>
         ) : null}
-        {card.trust && !compact ? (
-          <View style={styles.trust} testID="card-trust">
-            <Icon name="shield" size={14} tone="green" />
-            <Text variant="meta" tone="ink2" numberOfLines={1} style={styles.sellerMeta}>
-              {card.trust}
-            </Text>
-          </View>
+        {card.meta || year ? (
+          <Text variant="meta" tone="ink3" numberOfLines={1}>
+            {card.meta ? <Text variant="meta" tone="ink3">{card.meta}</Text> : null}
+            {card.meta && year ? copy.metaSeparator : null}
+            {year ? <Text variant="meta" tone="ink3">{year}</Text> : null}
+          </Text>
         ) : null}
       </View>
     </View>
@@ -149,14 +144,6 @@ const styles = StyleSheet.create((theme) => ({
   title: { flex: 1 },
   // Heading size with the price weight (DESIGN_SYSTEM §3 `price`), so it sits on the title's line.
   price: { fontWeight: theme.type.price.fontWeight },
-  seller: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.space.sm,
-    marginTop: theme.space.sm,
-  },
-  // First name and initial stay whole; the year and saves line gives way.
-  sellerName: { flexShrink: 0, maxWidth: '60%' },
-  sellerMeta: { flex: 1, minWidth: 0 },
-  trust: { flexDirection: 'row', alignItems: 'center', gap: theme.space.xs },
+  // The seller's name leads line two in the label weight.
+  sellerName: { fontWeight: theme.type.label.fontWeight },
 }));

@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef } from 'react';
-import { View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import Animated, {
   Easing,
   ReduceMotion,
@@ -71,24 +71,27 @@ export function UnlockedScreen({ api = waitlistApi }: { api?: WaitlistApi }) {
       testID="screen-unlocked"
     >
       {reduced ? null : <Confetti />}
-      <Animated.View style={[styles.content, fadeStyle]}>
-        <SuccessCheck visible accessibilityLabel={copy.label} />
-        <Text variant="display" accessibilityRole="header">
-          {copy.title}
-        </Text>
-        <Text variant="body" tone="ink2">
-          {campus && threshold > 0 ? fill(copy.body, { campus, threshold }) : copy.bodyNoCampus}
-        </Text>
-        <View style={styles.founding}>
-          <Mark size={40} />
-          <View style={styles.flex}>
-            <Text variant="bodyStrong">{copy.foundingTitle}</Text>
-            <Text variant="meta" tone="ink2">
-              {copy.foundingBody}
-            </Text>
+      {/* Scrolls so the largest text sizes never clip above the dock (3.01). */}
+      <ScrollView style={styles.flexFill} contentContainerStyle={styles.scroll}>
+        <Animated.View style={[styles.content, fadeStyle]}>
+          <SuccessCheck visible accessibilityLabel={copy.label} />
+          <Text variant="display" accessibilityRole="header">
+            {copy.title}
+          </Text>
+          <Text variant="body" tone="ink2">
+            {campus && threshold > 0 ? fill(copy.body, { campus, threshold }) : copy.bodyNoCampus}
+          </Text>
+          <View style={styles.founding}>
+            <Mark size={40} />
+            <View style={styles.flex}>
+              <Text variant="bodyStrong">{copy.foundingTitle}</Text>
+              <Text variant="meta" tone="ink2">
+                {copy.foundingBody}
+              </Text>
+            </View>
           </View>
-        </View>
-      </Animated.View>
+        </Animated.View>
+      </ScrollView>
       <View style={styles.dock}>
         <Button label={copy.list} onPress={() => router.replace('/sell')} testID="unlocked-list" />
         <Button
@@ -121,7 +124,8 @@ function Confetti() {
 
 function Piece({ i }: { i: number }) {
   const { theme } = useUnistyles();
-  const colors = [theme.colors.accent, theme.colors.ink, theme.colors.green, theme.colors.amber];
+  // Accent and ink only: one accent per screen (P2, 2.7).
+  const colors = [theme.colors.accent, theme.colors.ink];
   const p = useSharedValue(0);
   // Spread the pieces over a downward fan, each a little different.
   const angle = Math.PI * (0.1 + (0.8 * i) / (PIECES - 1));
@@ -156,8 +160,9 @@ function Piece({ i }: { i: number }) {
 
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
+  flexFill: { flex: 1 },
+  scroll: { flexGrow: 1 },
   content: {
-    flex: 1,
     gap: theme.space.lg,
     paddingHorizontal: theme.space.screen,
     paddingTop: theme.space['2xl'] * 2,

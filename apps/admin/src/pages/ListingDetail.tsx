@@ -31,6 +31,7 @@ import {
   Bar,
   Card,
   EmptyState,
+  ErrorState,
   EventIcon,
   ListingCell,
   Loadable,
@@ -40,6 +41,7 @@ import {
   PersonCell,
   ReasonActions,
   Segmented,
+  Stat,
   StatusPill,
   Table,
   useRpc,
@@ -152,18 +154,9 @@ export function ListingDetailPage() {
                     ) : null}
                   </div>
                   <div className="nums">
-                    <div>
-                      <div className="v">{l.views}</div>
-                      <div className="l">Views</div>
-                    </div>
-                    <div>
-                      <div className="v">{l.saves}</div>
-                      <div className="l">Saves</div>
-                    </div>
-                    <div>
-                      <div className="v">{l.offers}</div>
-                      <div className="l">Offers</div>
-                    </div>
+                    <Stat label="Views" value={l.views} />
+                    <Stat label="Saves" value={l.saves} />
+                    <Stat label="Offers" value={l.offers} />
                   </div>
                 </div>
                 {l.description ? (
@@ -177,7 +170,7 @@ export function ListingDetailPage() {
                   <div className="cf">
                     <div style={{ flex: 1 }}>
                       <ReasonActions
-                        placeholder="Reason (required, saved to the audit log). If you remove a listing, the seller sees this."
+                        hint="Saved to the audit log. If you remove a listing, the seller sees this."
                         actions={actions}
                         onDone={() => {
                           state.reload();
@@ -212,7 +205,11 @@ export function ListingDetailPage() {
                   {tab === 'reports' ? <ReportsTab d={d} /> : null}
                 </Card>
                 <div className="side-col">
-                  <Card title="Funnel">
+                  <details className="card section">
+                    <summary>How it performed</summary>
+                    <div className="ch flush top-line">
+                      <h3>Funnel</h3>
+                    </div>
                     <div className="funnel">
                       {funnelRows(d.funnel).map((r) => (
                         <div key={r.label} className="frow">
@@ -227,8 +224,8 @@ export function ListingDetailPage() {
                         People, not taps. Shown counts each person who swiped the card.
                       </p>
                     </div>
-                  </Card>
-                  <RightVsLeft d={d} />
+                    <RightVsLeft d={d} />
+                  </details>
                   <LoggedNote />
                 </div>
               </div>
@@ -245,7 +242,10 @@ function RightVsLeft({ d }: { d: ListingActivity }) {
   const cmp = comparisonText(d.comparison, d.listing.category?.name, d.listing.campus?.short_name);
   const total = d.swipes.right + d.swipes.left;
   return (
-    <Card title="Right vs left">
+    <>
+      <div className="ch flush top-line">
+        <h3>Right vs left</h3>
+      </div>
       <div className="cb">
         {total ? (
           <>
@@ -275,7 +275,7 @@ function RightVsLeft({ d }: { d: ListingActivity }) {
           </p>
         ) : null}
       </div>
-    </Card>
+    </>
   );
 }
 
@@ -297,7 +297,7 @@ function SwipesTab({ d }: { d: ListingActivity }) {
         </span>
       </div>
       {rows.length === 0 ? (
-        <EmptyState title="Nobody here yet." />
+        <EmptyState title="No swipes in this view." />
       ) : (
         <Table label="Who swiped" columns={['Student', 'Swipe', 'When', 'Time on card', 'Then']}>
           {rows.map((r, i) => {
@@ -434,11 +434,23 @@ function ReportsTab({ d }: { d: ListingActivity }) {
   });
   if (!d.listing.reports) return <EmptyState title="No reports about this listing." />;
   if (open.loading || done.loading || dismissed.loading) return <Loading rows={3} />;
+  if (open.error || done.error || dismissed.error)
+    return (
+      <ErrorState
+        message="Could not load reports. Try again."
+        onRetry={() => {
+          open.reload();
+          done.reload();
+          dismissed.reload();
+        }}
+      />
+    );
   const rows = [...(open.data ?? []), ...(done.data ?? []), ...(dismissed.data ?? [])].filter(
     (r) => r.target_type === 'listing' && r.target_id === d.listing.id,
   );
   return (
     <>
+      <p className="note cb">Showing the latest reports about this listing.</p>
       {rows.map((r) => (
         <Link key={r.id} className="ev" to="/reports/$id" params={{ id: r.id }}>
           <StatusPill {...reportReason(r.reason)} />

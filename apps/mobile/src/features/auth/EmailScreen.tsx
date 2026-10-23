@@ -10,8 +10,10 @@ import { Icon } from '@/components/icons/Icon';
 import { Input } from '@/components/Input';
 import { Text } from '@/components/Text';
 import { useToastStore } from '@/components/Toast';
+import { useTurnstile, type TurnstileSeam } from '@/components/TurnstileField';
 import { errorCopy, toAppError } from '@/lib/errors';
-import { signIn as copy } from '@/strings';
+import { isTurnstileError } from '@/lib/turnstile';
+import { banner, signIn as copy } from '@/strings';
 
 import { authApi, type AuthApi } from './api';
 import { AuthStep } from './AuthStep';
@@ -29,8 +31,16 @@ const deviceTz = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
  * addresses in one line, and shows a password only for listed reviewer
  * accounts (DEC 6).
  */
-export function EmailScreen({ api = authApi }: { api?: AuthApi }) {
+export function EmailScreen({
+  api = authApi,
+  turnstileField,
+}: {
+  api?: AuthApi;
+  /** Test seam for the web bot check on the waitlist card (LR-04). */
+  turnstileField?: TurnstileSeam;
+}) {
   const router = useRouter();
+  const bot = useTurnstile(turnstileField);
   const params = useLocalSearchParams<{ mode?: string }>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -40,39 +50,81 @@ export function EmailScreen({ api = authApi }: { api?: AuthApi }) {
   const school = lookup.kind === 'school' ? lookup.school : null;
   const reviewer = school?.isReview === true;
 
+  const login = params.mode === 'login';
+  const [noAccountFor, setNoAccountFor] = useState<string | null>(null);
+
+  const goToVerify = (normalized: string) => {
+    verifyStore.set(normalized, {
+      ...(verifyStore.get(normalized) ?? initialVerifyState(Date.now())),
+      sentAt: Date.now(),
+    });
+    router.push({ pathname: '/verify', params: { email: normalized } });
+  };
+
   const send = useMutation({
     mutationFn: async () => {
       const normalized = normalizeEmail(email) as string;
       if (reviewer) {
         await api.signInReviewer(normalized, password);
-        return { normalized, reviewer: true };
+        return { normalized, outcome: 'reviewer' as const };
+      }
+      // DEC 140: "I already have an account" never creates one.
+      if (login) {
+        const result = await api.signInCode(normalized);
+        if (result === 'no_account') return { normalized, outcome: 'no_account' as const };
+        setLoginIntent(true);
+        return { normalized, outcome: 'sent' as const };
       }
       // R11-INVITE-01: a code from an /i/ link credits the inviter on sign-up.
       await sendCodeWithInvite(api, normalized);
-      setLoginIntent(params.mode === 'login');
+      setLoginIntent(false);
       track('signup_started');
-      return { normalized, reviewer: false };
+      return { normalized, outcome: 'sent' as const };
     },
-    onSuccess: ({ normalized, reviewer: isReviewer }) => {
-      if (isReviewer) {
+    onSuccess: ({ normalized, outcome }) => {
+      if (outcome === 'reviewer') {
         router.replace('/');
         return;
       }
-      verifyStore.set(normalized, {
-        ...(verifyStore.get(normalized) ?? initialVerifyState(Date.now())),
-        sentAt: Date.now(),
-      });
-      router.push({ pathname: '/verify', params: { email: normalized } });
+      if (outcome === 'no_account') {
+        setNoAccountFor(normalized);
+        return;
+      }
+      goToVerify(normalized);
+    },
+  });
+
+  /** "Create an account" after login mode found none: the sign-up code, same email. */
+  const createAccount = useMutation({
+    mutationFn: async () => {
+      const normalized = normalizeEmail(email) as string;
+      await sendCodeWithInvite(api, normalized);
+      setLoginIntent(false);
+      track('signup_started');
+      return normalized;
+    },
+    onSuccess: (normalized) => {
+      setNoAccountFor(null);
+      goToVerify(normalized);
     },
   });
 
   const waitlist = useMutation({
-    mutationFn: () => api.joinWaitlist(email),
+    mutationFn: () => (bot.token ? api.joinWaitlist(email, bot.token) : api.joinWaitlist(email)),
     onSuccess: () => showToast('success', copy.waitlistJoined),
-    onError: (e) => showToast('error', errorCopy(toAppError(e), { campusTimeZone: deviceTz() })),
+    onError: (e) =>
+      showToast(
+        'error',
+        isTurnstileError(e)
+          ? banner.botCheckFailed
+          : errorCopy(toAppError(e), { campusTimeZone: deviceTz() }),
+      ),
+    // Tokens are single use: a fresh check for the next try.
+    onSettled: () => bot.reset(),
   });
 
-  const sendError = send.error ? toAppError(send.error) : null;
+  const failed = send.error ?? createAccount.error;
+  const sendError = failed ? toAppError(failed) : null;
   const sendErrorText = sendError
     ? reviewer && sendError.code === 'UNKNOWN'
       ? copy.wrongPassword
@@ -86,9 +138,12 @@ export function EmailScreen({ api = authApi }: { api?: AuthApi }) {
         ? copy.invalid
         : undefined;
 
-  const canSend = school !== null && (!reviewer || password.length > 0) && !send.isPending;
+  const canSend =
+    school !== null &&
+    (!reviewer || password.length > 0) &&
+    !send.isPending &&
+    !createAccount.isPending;
   const domain = emailDomain(email);
-  const login = params.mode === 'login';
 
   return (
     <AuthStep
@@ -97,13 +152,27 @@ export function EmailScreen({ api = authApi }: { api?: AuthApi }) {
       body={copy.body}
       step={login ? undefined : 1}
       dock={
-        <Button
-          label={reviewer ? copy.signInReviewer : copy.sendCode}
-          onPress={() => send.mutate()}
-          disabled={!canSend}
-          loading={send.isPending}
-          testID="email-send"
-        />
+        // One docked action that follows the state (3.01): login with no
+        // account offers "Create an account" in place of "Send code".
+        noAccountFor ? (
+          // Own key: a fresh button, so the double-tap guard of Send doesn't carry over.
+          <Button
+            key="create-account"
+            label={copy.createAccount}
+            loading={createAccount.isPending}
+            onPress={() => createAccount.mutate()}
+            testID="email-create-account"
+          />
+        ) : (
+          <Button
+            key="send"
+            label={reviewer ? copy.signInReviewer : copy.sendCode}
+            onPress={() => send.mutate()}
+            disabled={!canSend}
+            loading={send.isPending}
+            testID="email-send"
+          />
+        )
       }
     >
       <Input
@@ -115,6 +184,8 @@ export function EmailScreen({ api = authApi }: { api?: AuthApi }) {
         onChangeText={(v) => {
           setEmail(v);
           if (send.error) send.reset();
+          if (createAccount.error) createAccount.reset();
+          setNoAccountFor(null);
         }}
         error={fieldError}
         loading={lookup.kind === 'checking'}
@@ -156,20 +227,27 @@ export function EmailScreen({ api = authApi }: { api?: AuthApi }) {
           <Text variant="meta" tone="ink2">
             {copy.unknownBody}
           </Text>
+          {/* The alumni line folds into this card instead of a second card. */}
+          <Text variant="meta" tone="ink2">
+            {copy.alumniBody}
+          </Text>
+          {bot.element}
           <Button
             label={copy.joinWaitlist}
             variant="secondary"
             size="M"
             loading={waitlist.isPending}
+            disabled={bot.required && !bot.token}
             onPress={() => waitlist.mutate()}
             testID="email-waitlist"
           />
         </View>
       ) : null}
 
-      {lookup.kind === 'personal' || lookup.kind === 'unknown' ? (
-        <View style={styles.card} testID="email-alumni">
-          <Text variant="bodyStrong">{copy.alumniTitle}</Text>
+      {lookup.kind === 'personal' ? (
+        // Plain lines under the field error, no second card (3.01).
+        <View style={styles.plain} testID="email-alumni">
+          <Text variant="label">{copy.alumniTitle}</Text>
           <Text variant="meta" tone="ink2">
             {copy.alumniBody}
           </Text>
@@ -185,6 +263,16 @@ export function EmailScreen({ api = authApi }: { api?: AuthApi }) {
         >
           {errorCopy(toAppError(lookup.error), { campusTimeZone: deviceTz() })}
         </Text>
+      ) : null}
+
+      {noAccountFor ? (
+        // Plain text; "Create an account" is the docked action now.
+        <View style={styles.plain} testID="email-no-account" accessibilityLiveRegion="polite">
+          <Text variant="label">{copy.noAccountTitle.replace('{email}', noAccountFor)}</Text>
+          <Text variant="meta" tone="ink2">
+            {copy.noAccountBody}
+          </Text>
+        </View>
       ) : null}
 
       {sendErrorText ? (
@@ -209,6 +297,7 @@ const styles = StyleSheet.create((theme) => ({
     marginTop: -theme.space.xs,
     paddingHorizontal: theme.space.xs,
   },
+  plain: { gap: theme.space.xs, paddingHorizontal: theme.space.xs },
   card: {
     gap: theme.space.xs,
     padding: theme.space.lg,

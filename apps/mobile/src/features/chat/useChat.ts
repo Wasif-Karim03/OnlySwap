@@ -108,6 +108,8 @@ export function createChatStore(chatId: string, deps: Deps): StoreApi<ChatState>
           patchLocal(clientId, { state: 'pending', progress: undefined });
           return false;
         }
+        // The upload was collected before the send (0246): the retry uploads again.
+        if (toAppError(e).code === 'UPLOAD_EXPIRED') patchLocal(clientId, { photo_path: null });
         setLocal(clientId, 'failed');
         return true;
       }

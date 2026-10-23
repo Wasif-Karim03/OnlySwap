@@ -10,7 +10,7 @@ export function HealthSection() {
     <>
       <div className="row">
         <span className="muted">
-          {state.data ? `Checked ${timeAgo(state.data.generated_at).toLowerCase()}` : 'Checking'}
+          {state.data ? `Checked ${timeAgo(state.data.generated_at).toLowerCase()}` : 'Checking…'}
         </span>
         <span className="spacer" />
         <Button icon="refresh" disabled={state.loading} onClick={state.reload}>
@@ -77,8 +77,8 @@ export function HealthSection() {
                 title="Database size"
                 right={
                   <span className="muted">
-                    {bytesLabel(h.storage.db_bytes)} of {bytesLabel(h.storage.db_limit_bytes)} free
-                    tier · {dbPct}%
+                    {bytesLabel(h.storage.db_bytes)} of {bytesLabel(h.storage.db_limit_bytes)} plan
+                    limit · {dbPct}%
                   </span>
                 }
               >
@@ -88,7 +88,7 @@ export function HealthSection() {
                   </div>
                   {dbPct >= 80 ? (
                     <p className="error small" style={{ marginTop: 8 }}>
-                      Over 80% of the free database. Check the largest tables below.
+                      Over 80% of the plan limit. Check the largest tables below.
                     </p>
                   ) : null}
                 </div>
@@ -152,7 +152,7 @@ export function HealthSection() {
                     ))}
                   </Table>
                 ) : (
-                  <EmptyState title="No scheduled jobs found (pg_cron is off here)." />
+                  <EmptyState title="No scheduled jobs found." />
                 )}
               </Card>
 

@@ -16,6 +16,9 @@
 --   tests.try_text_as(uid, sql)      same, run as that user; role restored after
 --   tests.try_ok_as(uid, sql)        true if it runs without an error as that user
 --   tests.set_pepper()               a test email_hash pepper in Vault
+--   tests.register_upload(uid, kind, target, key)
+--                                    a pending upload-url row for the key and,
+--                                    for a _full.webp key, its _thumb.webp (0246)
 begin;
 select plan(1);
 
@@ -240,6 +243,21 @@ end;
 $$;
 
 grant execute on all functions in schema tests to anon, authenticated, service_role;
+
+-- Photos must be the uploader's recorded upload before an RPC attaches them (0246).
+create or replace function tests.register_upload(who uuid, kind text, target uuid, key text)
+returns void
+language sql
+security definer
+set search_path = ''
+as $$
+  insert into public.media_uploads (key, user_id, kind, target_id, state, state_at, created_at)
+  select k, who, kind, target, 'pending', private.now(), private.now()
+  from unnest(case when key ~ '_full\.webp$'
+                   then array[key, regexp_replace(key, '_full\.webp$', '_thumb.webp')]
+                   else array[key] end) k
+  on conflict do nothing
+$$;
 
 select ok(true, 'test helpers installed in schema tests');
 select * from finish();

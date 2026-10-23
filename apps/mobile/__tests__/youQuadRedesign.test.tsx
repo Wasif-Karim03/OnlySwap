@@ -419,7 +419,7 @@ describe('DEC 90 The Quad', () => {
     expect(await screen.findByTestId('quad-post-p1')).toBeTruthy();
     expect(await screen.findByText('Anonymous · Demo U')).toBeTruthy();
     const pinned = screen.getByTestId('quad-pinned');
-    expect(StyleSheet.flatten(pinned.props.style).backgroundColor).toBe(lightTheme.colors.lilacBg);
+    expect(StyleSheet.flatten(pinned.props.style).backgroundColor).toBe(lightTheme.colors.bg2);
     expect(pinned.props.accessibilityLabel).toBe('Pinned: Finals week.. Library open 24 h.');
     // Votes come first (left) in the feed card.
     const card = screen.getByTestId('quad-post-p1');

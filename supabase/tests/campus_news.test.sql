@@ -20,6 +20,12 @@ begin
   return r;
 end $$;
 create function pg_temp.photos(lid uuid, n int) returns jsonb language sql as $$
+  -- Recorded uploads of the listing's owner (0246).
+  select tests.register_upload(
+           coalesce((select r.user_id from public.listing_reservations r where r.id = lid),
+                    (select l.seller_id from public.listings l where l.id = lid), tests.uid('A')),
+           'listing', lid, 'c/' || tests.uid('OSU') || '/l/' || lid || '/p' || g || '_full.webp')
+  from generate_series(1, n) g;
   select coalesce(jsonb_agg(jsonb_build_object(
     'path', 'c/' || tests.uid('OSU') || '/l/' || lid || '/p' || g || '_full.webp',
     'thumb_path', 'c/' || tests.uid('OSU') || '/l/' || lid || '/p' || g || '_thumb.webp')), '[]')

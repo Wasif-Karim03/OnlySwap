@@ -31,6 +31,7 @@ export const SERVER_ERROR_CODES = [
   'BANNED',
   'EMAIL_ALIAS',
   'FEATURE_OFF',
+  'UPLOAD_EXPIRED',
 ] as const;
 
 export const CLIENT_ERROR_CODES = ['ERR_OFFLINE', 'SESSION_EXPIRED', 'UNKNOWN'] as const;
@@ -125,6 +126,38 @@ export function toAppError(error: unknown): AppError {
     if (parsed) return parsed;
   }
   return make('UNKNOWN', { raw: message || undefined });
+}
+
+/**
+ * Like toAppError for `functions.invoke` errors. supabase-js wraps a non-2xx
+ * answer in FunctionsHttpError whose `context` is the Response; its
+ * `{ error }` body carries the API §0 code (e.g. `INVALID:turnstile_token`).
+ * A request that never left the phone is FunctionsFetchError. Never throws.
+ */
+export async function toFunctionError(error: unknown): Promise<AppError> {
+  const e = (typeof error === 'object' && error !== null ? error : {}) as {
+    name?: unknown;
+    context?: { status?: unknown; json?: unknown };
+  };
+  if (e.name === 'FunctionsFetchError') {
+    return toAppError({ name: 'TypeError', message: 'Network request failed' });
+  }
+  const context = e.context;
+  if (context && typeof context.json === 'function') {
+    try {
+      const body = (await (context.json as () => Promise<unknown>).call(context)) as {
+        error?: unknown;
+      } | null;
+      if (typeof body?.error === 'string') {
+        const parsed = parseServerMessage(body.error);
+        if (parsed) return parsed;
+      }
+    } catch {
+      // Not JSON, or already read: fall back to the status and the error itself.
+    }
+    if (context.status === 401) return make('SESSION_EXPIRED', { raw: 'NOT_AUTHENTICATED' });
+  }
+  return toAppError(error);
 }
 
 export type CopyOptions = {

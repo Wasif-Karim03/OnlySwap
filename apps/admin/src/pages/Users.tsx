@@ -118,7 +118,7 @@ export function UsersPage() {
             )
           }
         >
-          CSV
+          Download rows on this page (CSV)
         </Button>
       }
     >

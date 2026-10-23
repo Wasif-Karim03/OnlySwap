@@ -392,4 +392,54 @@ describe('P4-AUTH-18 / P4-AUTH-19 auth api', () => {
       body: { email: 'me@gmail.com', topic: 'cant_access_email', body: 'hi' },
     });
   });
+
+  it('LR-04: the Turnstile token goes in the body only when passed', async () => {
+    const { api, invoke } = build();
+    await api.sendSupportRequest({
+      email: 'me@gmail.com',
+      topic: 'general',
+      body: 'hi',
+      turnstileToken: 'tok1',
+    });
+    expect(invoke).toHaveBeenLastCalledWith('support-request', {
+      body: { email: 'me@gmail.com', topic: 'general', body: 'hi', turnstile_token: 'tok1' },
+    });
+    await api.sendSupportRequest({
+      email: 'me@gmail.com',
+      topic: 'general',
+      body: 'hi',
+      turnstileToken: '',
+    });
+    expect(invoke).toHaveBeenLastCalledWith('support-request', {
+      body: { email: 'me@gmail.com', topic: 'general', body: 'hi' },
+    });
+    await api.joinWaitlist('sam@nowhere.edu', 'tok2');
+    expect(invoke).toHaveBeenLastCalledWith('waitlist-request', {
+      body: { email: 'sam@nowhere.edu', turnstile_token: 'tok2' },
+    });
+    await api.joinWaitlist('sam@nowhere.edu');
+    expect(invoke).toHaveBeenLastCalledWith('waitlist-request', {
+      body: { email: 'sam@nowhere.edu' },
+    });
+  });
+
+  it('LR-04: a rejected token surfaces as INVALID:turnstile_token', async () => {
+    const { api, invoke } = build();
+    const rejected = {
+      data: null,
+      error: {
+        name: 'FunctionsHttpError',
+        message: 'Edge Function returned a non-2xx status code',
+        context: { status: 400, json: async () => ({ error: 'INVALID:turnstile_token' }) },
+      },
+    };
+    invoke.mockResolvedValueOnce(rejected as never).mockResolvedValueOnce(rejected as never);
+    await expect(api.joinWaitlist('sam@nowhere.edu', 'bad')).rejects.toMatchObject({
+      code: 'INVALID',
+      detail: 'turnstile_token',
+    });
+    await expect(
+      api.sendSupportRequest({ email: 'a@b.co', topic: 'bug', body: 'x', turnstileToken: 'bad' }),
+    ).rejects.toMatchObject({ code: 'INVALID', detail: 'turnstile_token' });
+  });
 });

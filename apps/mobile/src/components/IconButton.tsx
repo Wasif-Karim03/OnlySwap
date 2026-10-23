@@ -3,12 +3,10 @@ import { StyleSheet } from 'react-native-unistyles';
 
 import { fill } from '@/lib/format';
 import { nav as navCopy } from '@/strings';
-import { liftShadow } from '@/theme/shadow';
 
-import { Badge } from './Badge';
+import { Badge, badgeText } from './Badge';
 
 import { Icon, type IconName } from './icons/Icon';
-import { badgeText } from './TabBar';
 import type { TextTone } from './Text';
 import { Tappable } from './Tappable';
 import { a11yState } from '@/lib/a11y';
@@ -23,8 +21,9 @@ type Props = {
   filled?: boolean;
   /**
    * Fill color when `filled`: `bg2` (default) on white screens, `card` with a
-   * soft shadow over photos and on grey screens, `accent` for an "on" state
-   * such as Saved (DEC 90). The icon follows the fill.
+   * 1 px `line` hairline over photos and on grey screens (no shadow,
+   * DESIGN_SYSTEM §4), `accent` for a flat "on" state such as Saved (DEC 90).
+   * The icon follows the fill.
    */
   surface?: 'bg2' | 'card' | 'accent';
   /** `onPhoto` for controls over photos or the dark photo viewer. */
@@ -88,6 +87,8 @@ const styles = StyleSheet.create((theme) => ({
     justifyContent: 'center',
     backgroundColor: filled ? theme.colors[surface] : 'transparent',
     opacity: disabled ? 0.35 : 1,
-    ...(filled && surface !== 'bg2' ? liftShadow() : null),
+    // A hairline instead of a lift: shadows are for sheets and toasts only.
+    borderWidth: filled && surface === 'card' ? 1 : 0,
+    borderColor: theme.colors.line,
   }),
 }));

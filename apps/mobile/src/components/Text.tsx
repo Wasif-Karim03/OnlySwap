@@ -10,6 +10,11 @@ import { StyleSheet } from 'react-native-unistyles';
 /** Text colors allowed for type. `accent` is deliberately absent (UX-03). */
 /** `inverse` is the screen background color, for text on ink or red fills. */
 /** `onPhoto` is white in both modes, for text on a photo scrim or the dark photo viewer. */
+/**
+ * `sky`, `peach` and `lilac` text only inside their own tinted chip or Tag
+ * (4.5:1 is guaranteed on `*Bg` only), never on a plain screen. `lilac` is
+ * retired (DEC 142): no new uses.
+ */
 export type TextTone =
   | 'ink'
   | 'ink2'
@@ -27,7 +32,10 @@ export type TextTone =
 export type TextProps = RNTextProps & {
   variant?: TypeVariant;
   tone?: TextTone;
-  /** Text drawn over photos or in the tab bar: Dynamic Type capped at 1.4x (DESIGN_SYSTEM §3). */
+  /**
+   * Text drawn over photos, in the tab bar or in fixed-size chrome (OTP cells,
+   * avatar initials, badges): Dynamic Type capped at 1.4x (DESIGN_SYSTEM §3, DEC 142).
+   */
   overlay?: boolean;
 };
 

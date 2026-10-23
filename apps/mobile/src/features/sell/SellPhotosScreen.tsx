@@ -7,6 +7,7 @@ import { StyleSheet } from 'react-native-unistyles';
 import { track } from '@/lib/analytics';
 import { devTrace } from '@/lib/devTrace';
 import { Button } from '@/components/Button';
+import { ListRow } from '@/components/ListRow';
 import { PermissionPrimerView } from '@/components/PermissionPrimer';
 import { Sheet } from '@/components/Sheet';
 import { Text } from '@/components/Text';
@@ -54,14 +55,28 @@ export function agoText(a: Ago): string {
   return 'n' in a ? fill(copy.ago[a.key], { n: a.n }) : copy.ago[a.key];
 }
 
-/** Re-renders every `ms` so "Draft saved · 12 seconds ago" stays true. */
-function useTick(ms: number) {
+/** Re-renders every `ms` while `active`, so the restore sheet's "yesterday" stays true. */
+function useTick(ms: number, active: boolean) {
   const [, setTick] = useState(0);
   useEffect(() => {
+    if (!active) return undefined;
     const t = setInterval(() => setTick((n) => n + 1), ms);
     return () => clearInterval(t);
-  }, [ms]);
+  }, [ms, active]);
 }
+
+/** From this many photos the help line says how to reorder (3.03). */
+const REORDER_HINT_FROM = 2;
+
+type CampusPost = { label: string; route: '/sell/food' | '/sell/wanted' | '/sell/news' };
+const CAMPUS_POSTS: CampusPost[] = [
+  { label: campusCopy.postFood, route: '/sell/food' },
+  { label: campusCopy.askFor, route: '/sell/wanted' },
+  { label: campusCopy.postNews, route: '/sell/news' },
+];
+
+/** Photos resized and uploaded at once. */
+export const UPLOAD_CONCURRENCY = 2;
 
 /**
  * D01 Sell · photos (P5-SELL-02; board D1, X15, X18, X21). Photos upload one
@@ -86,12 +101,13 @@ export function SellPhotosScreen({
   const [progress, setProgress] = useState<Record<string, number>>({});
   const [error, setError] = useState<string | null>(null);
   const [primer, setPrimer] = useState<'camera' | 'photos' | null>(null);
+  const [postMore, setPostMore] = useState(false);
   useEffect(() => track('listing_create_started'), []);
   useEffect(() => devTrace(`photos: ${draft.photos.length} in draft`), [draft.photos.length]);
   const camera = usePermissionPrimer('camera', cameraOs);
   const photos = usePermissionPrimer('photos', photosOs);
   const reserving = useRef<Promise<string> | null>(null);
-  useTick(10_000);
+  useTick(10_000, restored);
 
   const setPhoto = (id: string, patch: Partial<DraftPhoto>) =>
     update((d) => ({ photos: d.photos.map((p) => (p.id === id ? { ...p, ...patch } : p)) }));
@@ -157,7 +173,13 @@ export function SellPhotosScreen({
       status: 'uploading',
     }));
     update((d) => ({ photos: [...d.photos, ...added] }));
-    for (const photo of added) void upload(photo);
+    // A few at a time: resizing several large originals at once made the
+    // screen lag. The rest show as waiting until a slot frees up.
+    const queue = [...added];
+    const worker = async () => {
+      for (let next = queue.shift(); next; next = queue.shift()) await upload(next);
+    };
+    for (let i = 0; i < Math.min(UPLOAD_CONCURRENCY, queue.length); i += 1) void worker();
   };
 
   const withPermission = async (kind: 'camera' | 'photos') => {
@@ -189,10 +211,14 @@ export function SellPhotosScreen({
   const status =
     error ??
     (state === 'uploading' ? copy.waitUploads : state === 'failed' ? copy.fixUploads : null);
-  const saved =
-    hasContent(draft) && savedAt !== null
-      ? fill(copy.savedAgo, { time: agoText(ago(new Date(savedAt), now())) })
-      : copy.photosBody;
+  // One help line only (3.03): how to reorder once there are two photos,
+  // else "Draft saved" once there is content, else what the step wants.
+  const help =
+    draft.photos.length >= REORDER_HINT_FROM
+      ? copy.reorderHint
+      : hasContent(draft) && savedAt !== null
+        ? copy.savedJustNow
+        : copy.photosBody;
   const startedWhen = agoText(ago(new Date(draft.startedAt), now()));
 
   const primerKind = primer;
@@ -205,7 +231,7 @@ export function SellPhotosScreen({
       leading="close"
       onLeading={() => router.navigate('/discover')}
       title={copy.photosTitle}
-      body={saved}
+      body={help}
       dock={
         <Button
           label={copy.next}
@@ -240,6 +266,23 @@ export function SellPhotosScreen({
                 <Button label={copy.continue} onPress={keep} testID="sell-restore-continue" />
               </View>
             </View>
+          </Sheet>
+          <Sheet
+            visible={postMore}
+            onClose={() => setPostMore(false)}
+            title={copy.postMore}
+            testID="sheet-sell-post-more"
+          >
+            {CAMPUS_POSTS.map((p) => (
+              <ListRow
+                key={p.route}
+                label={p.label}
+                onPress={() => {
+                  setPostMore(false);
+                  router.push(p.route);
+                }}
+              />
+            ))}
           </Sheet>
           {primerKind && primerStep && primerStep !== 'granted' ? (
             <View style={styles.primer}>
@@ -301,36 +344,10 @@ export function SellPhotosScreen({
           {status}
         </Text>
       ) : null}
-      {/* One plain line of advice instead of a tip box (DEC 90). */}
-      <Text variant="meta" tone="ink2" testID="sell-photos-tip">
-        {draft.photos.length > 1 ? `${copy.tip} ${copy.reorderHint}` : copy.tip}
-      </Text>
+      {/* DEC 98 "also from Sell": one quiet row at the end, the three kinds in a sheet (3.03). */}
       {draft.wantedRef ? null : (
         <View style={styles.more} testID="sell-campus-entries">
-          <Button
-            label={campusCopy.postFood}
-            variant="text"
-            size="S"
-            fullWidth={false}
-            onPress={() => router.push('/sell/food')}
-            testID="sell-post-food"
-          />
-          <Button
-            label={campusCopy.askFor}
-            variant="text"
-            size="S"
-            fullWidth={false}
-            onPress={() => router.push('/sell/wanted')}
-            testID="sell-ask-wanted"
-          />
-          <Button
-            label={campusCopy.postNews}
-            variant="text"
-            size="S"
-            fullWidth={false}
-            onPress={() => router.push('/sell/news')}
-            testID="sell-post-news"
-          />
+          <ListRow label={copy.postMore} onPress={() => setPostMore(true)} />
         </View>
       )}
     </SellStep>
@@ -351,10 +368,8 @@ const styles = StyleSheet.create((theme) => ({
   },
   start: { flexDirection: 'row' },
   more: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    columnGap: theme.space.lg,
-    paddingTop: theme.space.sm,
+    marginTop: theme.space.sm,
+    marginHorizontal: -theme.space.lg,
     borderTopWidth: 1,
     borderTopColor: theme.colors.line,
   },

@@ -34,16 +34,21 @@ export function UpdateScreen({
   );
 }
 
+/** "9:00 AM" today; with the weekday ("Tue 9:00 AM") when the end is another day (3.01). */
+function backAround(end: Date, today: Date = new Date()): string {
+  const sameDay = end.toDateString() === today.toDateString();
+  return end.toLocaleString(intlLocale, {
+    ...(sameDay ? {} : { weekday: 'short' }),
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
 /** X12 Maintenance (P11-STATE-01): app_config maintenance.enabled; Try again re-runs the launch gate. */
 export function MaintenanceScreen({ api = authApi }: { api?: Pick<AuthApi, 'getAppConfig'> }) {
   const router = useRouter();
   const q = useQuery({ queryKey: ['app-config'], queryFn: () => api.getAppConfig() });
-  const until = q.data?.maintenance.until
-    ? new Date(q.data.maintenance.until).toLocaleTimeString(intlLocale, {
-        hour: 'numeric',
-        minute: '2-digit',
-      })
-    : null;
+  const until = q.data?.maintenance.until ? backAround(new Date(q.data.maintenance.until)) : null;
   return (
     <View style={styles.root} testID="screen-maintenance">
       <EmptyState

@@ -1,4 +1,4 @@
-import { parseServerMessage, toAppError, type AppError } from '@/lib/errors';
+import { toAppError, toFunctionError } from '@/lib/errors';
 import { getSupabase } from '@/lib/supabase';
 
 /**
@@ -13,44 +13,18 @@ type Invoke = (
 
 export type ExportQueued = { status: 'queued'; expiresAt: string | null };
 
-type FunctionsErrorLike = {
-  name?: unknown;
-  message?: unknown;
-  context?: { status?: unknown; json?: () => Promise<unknown>; clone?: () => unknown };
-};
-
 /**
  * supabase-js wraps a non-2xx answer in FunctionsHttpError with the Response
  * in `context`; the function's body is `{ error: 'RATE_LIMITED:export_data:<iso>' }`.
- * A request that never left the phone is FunctionsFetchError.
+ * Shared with every Edge Function caller (lib/errors.ts).
  */
-export async function functionsError(error: unknown): Promise<AppError> {
-  const e = (typeof error === 'object' && error !== null ? error : {}) as FunctionsErrorLike;
-  if (e.name === 'FunctionsFetchError') {
-    return toAppError({ name: 'TypeError', message: 'Network request failed' });
-  }
-  if (e.name === 'FunctionsHttpError' && e.context) {
-    const status = typeof e.context.status === 'number' ? e.context.status : undefined;
-    let code: string | undefined;
-    try {
-      const body = (await e.context.json?.()) as { error?: unknown } | undefined;
-      if (typeof body?.error === 'string') code = body.error;
-    } catch {
-      code = undefined;
-    }
-    const parsed = code ? parseServerMessage(code) : undefined;
-    if (parsed) return parsed;
-    if (status === 401) return toAppError({ status: 401, message: 'NOT_AUTHENTICATED' });
-    return toAppError({ message: code ?? '' });
-  }
-  return toAppError(error);
-}
+export const functionsError = toFunctionError;
 
 export function createExportApi(invoke: Invoke) {
   return {
     async requestExport(): Promise<ExportQueued> {
       const { data, error } = await invoke('export-data', { body: {} });
-      if (error) throw await functionsError(error);
+      if (error) throw await toFunctionError(error);
       const res = (data ?? {}) as { status?: unknown; expires_at?: unknown };
       if (res.status !== 'queued') throw toAppError({ message: 'export-data: unexpected answer' });
       return {

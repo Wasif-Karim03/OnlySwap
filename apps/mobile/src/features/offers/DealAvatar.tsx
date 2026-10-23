@@ -6,12 +6,13 @@ import { avatarShade, initials } from '@/components/Avatar';
 import { imageStyles } from '@/components/Photo';
 import { Text } from '@/components/Text';
 
-const TINTS = ['lilac', 'peach', 'sky'] as const;
-type Tint = (typeof TINTS)[number];
+// Neutral surfaces only (lilac retired; no hue per person). Same name, same shade.
+const SURFACES = ['bg2', 'bg3', 'bg2'] as const;
+type Surface = (typeof SURFACES)[number];
 
 /**
  * The other person in a deal (DEC 90): their photo, or their first initial on
- * a soft tint that stays the same for the same name. `badge` is the small one
+ * a neutral shade that stays the same for the same name. `badge` is the small one
  * that sits on the corner of an item photo in the Inbox; `row` sits in a list
  * row. Decorative: the row reads the name.
  */
@@ -24,10 +25,10 @@ export function DealAvatar({
   uri?: string | null;
   size?: 'badge' | 'row';
 }) {
-  const tint: Tint = TINTS[avatarShade(name)];
+  const surface: Surface = SURFACES[avatarShade(name)];
   return (
     <View
-      style={styles.circle(size, tint)}
+      style={styles.circle(size, surface)}
       accessible={false}
       importantForAccessibility="no-hide-descendants"
     >
@@ -39,7 +40,8 @@ export function DealAvatar({
           accessibilityIgnoresInvertColors
         />
       ) : (
-        <Text variant={size === 'badge' ? 'meta' : 'label'} tone={tint} overlay>
+        // Capped at 1.4x: the circle is a fixed size (fixed-size chrome).
+        <Text variant={size === 'badge' ? 'meta' : 'label'} tone="ink" overlay>
           {initials(name).slice(0, 1)}
         </Text>
       )}
@@ -48,7 +50,7 @@ export function DealAvatar({
 }
 
 const styles = StyleSheet.create((theme) => ({
-  circle: (size: 'badge' | 'row', tint: Tint) => {
+  circle: (size: 'badge' | 'row', surface: Surface) => {
     const side = size === 'badge' ? theme.size.avatarS * 0.75 : theme.size.avatarS;
     return {
       width: side,
@@ -57,7 +59,7 @@ const styles = StyleSheet.create((theme) => ({
       overflow: 'hidden',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: theme.colors[`${tint}Bg`],
+      backgroundColor: theme.colors[surface],
     };
   },
 }));

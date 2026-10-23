@@ -138,13 +138,27 @@ export function SkeletonCard({ testID }: { testID?: string }) {
   );
 }
 
-/** List placeholder: thumb and two lines per row (inbox, notifications, listings). */
-export function SkeletonList({ rows = 5, testID }: { rows?: number; testID?: string }) {
+/** Leading shape of a list skeleton row: a 44 pt avatar-sized square, or a listing photo. */
+export type SkeletonThumb = 'avatar' | 'listing';
+
+/**
+ * List placeholder: thumb and two lines per row (inbox, notifications, listings).
+ * `thumb="listing"` matches the photo size of listing rows (Saved, My listings).
+ */
+export function SkeletonList({
+  rows = 5,
+  testID,
+  thumb = 'avatar',
+}: {
+  rows?: number;
+  testID?: string;
+  thumb?: SkeletonThumb;
+}) {
   return (
     <SkeletonGroup testID={testID}>
       {Array.from({ length: rows }, (_, i) => (
         <View key={i} style={styles.row}>
-          <View style={styles.thumb}>
+          <View style={styles.thumb(thumb)}>
             <SkeletonBlock radius="thumb" />
           </View>
           <View style={styles.lines}>
@@ -194,7 +208,9 @@ const styles = StyleSheet.create((theme) => ({
     gap: theme.space.md,
     minHeight: theme.space.rowMin,
   },
-  thumb: { width: theme.size.avatarM },
+  thumb: (thumb: SkeletonThumb) => ({
+    width: thumb === 'listing' ? theme.size.avatarL - theme.space.xs : theme.size.avatarM,
+  }),
   lines: { flex: 1, gap: theme.space.sm },
   grid: {
     flexDirection: 'row',

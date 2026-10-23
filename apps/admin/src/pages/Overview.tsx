@@ -42,6 +42,18 @@ export function OverviewPage() {
 
   return (
     <Page title="Overview" crumb={crumb}>
+      <Card
+        title="Needs attention"
+        right={
+          state.data ? (
+            <span className="muted">{state.data.kpis.open_reports.value} open</span>
+          ) : null
+        }
+      >
+        <Loadable state={state} rows={3}>
+          {(o) => <NeedsAttention o={o} />}
+        </Loadable>
+      </Card>
       {state.error ? (
         <div className="card">
           <ErrorState message={state.error} onRetry={state.reload} />
@@ -54,20 +66,7 @@ export function OverviewPage() {
         </div>
       )}
       <div className="grid2">
-        <LiveActivity campusId={campusId} />
         <div className="stack">
-          <Card
-            title="Needs attention"
-            right={
-              state.data ? (
-                <span className="muted">{state.data.kpis.open_reports.value} open</span>
-              ) : null
-            }
-          >
-            <Loadable state={state} rows={3}>
-              {(o) => <NeedsAttention o={o} />}
-            </Loadable>
-          </Card>
           <Card title="Campuses">
             <Loadable state={state} rows={3} empty={(o) => o.campuses.length === 0}>
               {(o) => (
@@ -97,6 +96,7 @@ export function OverviewPage() {
             </Loadable>
           </Card>
         </div>
+        <LiveActivity campusId={campusId} />
       </div>
     </Page>
   );
@@ -115,14 +115,17 @@ function Kpis({ o }: { o: OverviewV2 }) {
   );
   const offers = deltaLabel(k.offers_today.value, k.offers_today.same_day_last_week, 'last week');
   const deals = deltaLabel(k.deals_7d.value, k.deals_7d.prev_7d, 'the week before');
+  // Color only when the number is worse than last week; the words carry the rest.
+  const worse = (dir: 'up' | 'down' | 'flat') => (dir === 'down' ? 'down' : 'flat');
+  const newThisWeek = (n: number) =>
+    n > 0 ? `+${n.toLocaleString('en-US')} this week` : 'No change this week';
   const open = k.open_reports;
   return (
     <div className="kpis">
       <Kpi
         label="Students"
         value={k.students.value.toLocaleString('en-US')}
-        delta={`+${k.students.new_7d.toLocaleString('en-US')} this week`}
-        dir={k.students.new_7d > 0 ? 'up' : 'flat'}
+        delta={newThisWeek(k.students.new_7d)}
         series={k.students.series}
         to="/people"
       />
@@ -130,14 +133,13 @@ function Kpis({ o }: { o: OverviewV2 }) {
         label="Active today"
         value={k.active_today.value.toLocaleString('en-US')}
         delta={active.text}
-        dir={active.dir}
+        dir={worse(active.dir)}
         series={k.active_today.series}
       />
       <Kpi
         label="Listings live"
         value={k.listings_live.value.toLocaleString('en-US')}
-        delta={`+${k.listings_live.new_7d.toLocaleString('en-US')} this week`}
-        dir={k.listings_live.new_7d > 0 ? 'up' : 'flat'}
+        delta={newThisWeek(k.listings_live.new_7d)}
         series={k.listings_live.series}
         to="/listings"
       />
@@ -145,14 +147,14 @@ function Kpis({ o }: { o: OverviewV2 }) {
         label="Offers today"
         value={k.offers_today.value.toLocaleString('en-US')}
         delta={offers.text}
-        dir={offers.dir}
+        dir={worse(offers.dir)}
         series={k.offers_today.series}
       />
       <Kpi
         label="Deals done (7 d)"
         value={k.deals_7d.value.toLocaleString('en-US')}
         delta={`${moneyLabel(k.deals_7d.agreed_cents)} in person`}
-        dir={deals.dir}
+        dir={worse(deals.dir)}
         series={k.deals_7d.series}
       />
       <Kpi
@@ -163,7 +165,6 @@ function Kpis({ o }: { o: OverviewV2 }) {
             ? `oldest ${ageLabel(open.oldest_at, now).replace(/(\d+)([mhd])/, '$1 $2')}${open.priority ? `, ${open.priority} urgent` : ''}`
             : 'none waiting'
         }
-        dir={open.value > 0 ? 'down' : 'flat'}
         to="/reports"
       />
     </div>
@@ -179,8 +180,7 @@ function NeedsAttention({ o }: { o: OverviewV2 }) {
     { to: '/appeals', label: 'Appeals waiting', count: n.appeals_open },
   ];
   const anyQueue = queues.some((q) => q.count > 0) || n.support_open > 0;
-  if (n.reports.length === 0 && !anyQueue)
-    return <EmptyState title="All clear. Nothing is waiting." />;
+  if (n.reports.length === 0 && !anyQueue) return <EmptyState title="Nothing is waiting." />;
   return (
     <>
       {n.reports.map((r) => (
@@ -191,6 +191,7 @@ function NeedsAttention({ o }: { o: OverviewV2 }) {
             {r.campus ? ` · ${r.campus.short_name}` : ''}
           </span>
           <span className="t">{timeAgo(r.created_at, now).replace(' ago', '')}</span>
+          <span className="btn sm">Open</span>
         </Link>
       ))}
       {queues
@@ -199,6 +200,8 @@ function NeedsAttention({ o }: { o: OverviewV2 }) {
           <Link key={q.to} className="ev" to={q.to}>
             <Pill tone="amber" label={plural(q.count, 'item')} />
             <span className="ink2">{q.label}</span>
+            <span className="spacer" />
+            <span className="btn sm">Open</span>
           </Link>
         ))}
       {n.support_open > 0 ? (
@@ -233,7 +236,7 @@ function LiveActivity({ campusId }: { campusId: string | null }) {
       title={
         <div className="row">
           <h2>Live activity</h2>
-          <Pill tone="green" label="Live" />
+          <span className="muted small">Updates every 20 s</span>
         </div>
       }
       right={

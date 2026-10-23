@@ -134,7 +134,7 @@ export function ActivityPage() {
             )
           }
         >
-          CSV
+          Download rows on this page (CSV)
         </Button>
       }
     >

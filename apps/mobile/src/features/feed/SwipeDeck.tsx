@@ -4,6 +4,7 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  type ReactNode,
   type Ref,
 } from 'react';
 import {
@@ -33,7 +34,6 @@ import { haptic } from '@/lib/haptics';
 import { feed as copy } from '@/strings';
 import { LAYOUT, gridCellWidth, gridColumns } from '@/theme/layout';
 import { useReducedMotion } from '@/theme/reducedMotion';
-import { liftShadow } from '@/theme/shadow';
 
 import {
   FLY_MS,
@@ -65,6 +65,11 @@ type Props = {
    * many points of width. Each tile keeps the list mode's Skip, Save and Offer.
    */
   gridWidth?: number;
+  /**
+   * One quiet line in the thumb zone (DESIGN_REVIEW 3.02): above the action
+   * row in the deck, at the top of the list or grid.
+   */
+  hint?: ReactNode;
   ref?: Ref<SwipeDeckHandle>;
   testID?: string;
 };
@@ -85,6 +90,7 @@ export function SwipeDeck({
   onOpen,
   listMode,
   gridWidth,
+  hint,
   ref,
   testID = 'deck',
 }: Props) {
@@ -116,6 +122,7 @@ export function SwipeDeck({
         onSwipe={onSwipe}
         onOpen={onOpen}
         gridWidth={gridWidth}
+        hint={hint}
         testID={testID}
       />
     );
@@ -152,6 +159,7 @@ export function SwipeDeck({
           )
           .reverse()}
       </View>
+      {hint ? <View style={styles.hint}>{hint}</View> : null}
       <DeckActions
         size="L"
         disabled={!top}
@@ -177,9 +185,10 @@ type ActionsProps = {
 };
 
 /**
- * Pass, Make an offer, Save (DEC 90 mock screen 4): a white circle, the ink
- * pill and an accent circle. The offer pill is ink because the accent is
- * already the Save button.
+ * Skip, Make an offer, Save (DESIGN_REVIEW 3.02, replacing the DEC 90 mock
+ * screen 4 choice of an ink pill and an accent heart): quiet hairline circles
+ * either side, no shadow, and the wide offer pill as the screen's one accent
+ * fill (P2, P7), with ink words on it.
  */
 function DeckActions({ size, short, disabled, onSkip, onOffer, onSave, testID }: ActionsProps) {
   const icon = size === 'L' ? 26 : 22;
@@ -193,7 +202,7 @@ function DeckActions({ size, short, disabled, onSkip, onOffer, onSave, testID }:
         onPress={onSkip}
         testID={`${testID}-skip`}
       >
-        <View style={[styles.circle(size, !!disabled), styles.passCircle]}>
+        <View style={styles.circle(size, !!disabled)}>
           <Icon name="x" size={icon} />
         </View>
       </Tappable>
@@ -203,11 +212,11 @@ function DeckActions({ size, short, disabled, onSkip, onOffer, onSave, testID }:
         {...a11yState({ disabled: !!disabled })}
         disabled={disabled}
         onPress={onOffer}
-        style={size === 'M' ? styles.offerFlex : undefined}
+        style={styles.offerFlex}
         testID={`${testID}-offer`}
       >
         <View style={styles.offerPill(size, !!disabled)}>
-          <Text variant={size === 'L' ? 'bodyStrong' : 'label'} tone="inverse" numberOfLines={1}>
+          <Text variant={size === 'L' ? 'bodyStrong' : 'label'} tone="onAccent" numberOfLines={1}>
             {short ? copy.offerShort : copy.offer}
           </Text>
         </View>
@@ -220,8 +229,8 @@ function DeckActions({ size, short, disabled, onSkip, onOffer, onSave, testID }:
         onPress={onSave}
         testID={`${testID}-save`}
       >
-        <View style={[styles.circle(size, !!disabled), styles.saveCircle]}>
-          <Icon name="heart" size={icon} tone="onAccent" />
+        <View style={styles.circle(size, !!disabled)}>
+          <Icon name="heart" size={icon} />
         </View>
       </Tappable>
     </View>
@@ -382,6 +391,7 @@ type ListProps = {
   onSwipe: (card: DeckCard, dir: SwipeDir) => void;
   onOpen: (card: DeckCard) => void;
   gridWidth?: number;
+  hint?: ReactNode;
   testID: string;
 };
 
@@ -389,7 +399,7 @@ type ListProps = {
  * Screen reader / reduce motion mode (X33): a list, each card with four
  * actions. With `gridWidth` (iPad N5) the same tiles wrap into columns.
  */
-function DeckList({ cards, onSwipe, onOpen, gridWidth, testID }: ListProps) {
+function DeckList({ cards, onSwipe, onOpen, gridWidth, hint, testID }: ListProps) {
   const columns = gridWidth !== undefined ? gridColumns(gridWidth) : 1;
   const cellWidth = gridWidth !== undefined ? gridCellWidth(gridWidth, columns) : undefined;
   const actions = LIST_ACTIONS.map((name) => ({
@@ -410,6 +420,7 @@ function DeckList({ cards, onSwipe, onOpen, gridWidth, testID }: ListProps) {
       testID={`${testID}-list`}
       accessibilityLabel={copy.listTitle}
     >
+      {hint ? <View style={styles.listHint}>{hint}</View> : null}
       {cards.map((card) => {
         const run = (e: AccessibilityActionEvent) => {
           const name = e.nativeEvent.actionName;
@@ -455,6 +466,8 @@ function DeckList({ cards, onSwipe, onOpen, gridWidth, testID }: ListProps) {
 
 const styles = StyleSheet.create((theme) => ({
   wrap: { flex: 1 },
+  hint: { paddingHorizontal: theme.space.screen, paddingTop: theme.space.md },
+  listHint: { width: '100%' },
   stage: { flex: 1, marginHorizontal: theme.space.screen, marginTop: theme.space.sm },
   cardSlot: { ...StyleSheet.absoluteFillObject },
   stamp: {
@@ -475,6 +488,8 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: 'center',
     gap: size === 'L' ? theme.space.lg : theme.space.sm,
     paddingVertical: size === 'L' ? theme.space.lg : 0,
+    // The deck row spans the screen so the offer pill can be the wide primary.
+    paddingHorizontal: size === 'L' ? theme.space.screen : 0,
   }),
   circle: (size: 'L' | 'M', disabled: boolean) => ({
     width: size === 'L' ? theme.size.buttonL : theme.size.hit,
@@ -482,24 +497,20 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: theme.radius.chip,
     alignItems: 'center',
     justifyContent: 'center',
-    opacity: disabled ? 0.35 : 1,
-  }),
-  passCircle: {
+    // Quiet: a card fill and the hairline, no shadow (DESIGN_SYSTEM §4).
     backgroundColor: theme.colors.card,
     borderWidth: 1,
     borderColor: theme.colors.line,
-    ...liftShadow(),
-  },
-  saveCircle: { backgroundColor: theme.colors.accent },
+    opacity: disabled ? 0.35 : 1,
+  }),
   offerFlex: { flex: 1 },
   offerPill: (size: 'L' | 'M', disabled: boolean) => ({
     height: size === 'L' ? theme.size.buttonL : theme.size.hit,
-    minWidth: size === 'L' ? theme.size.buttonL * 3 : undefined,
     paddingHorizontal: size === 'L' ? theme.space.xl : theme.space.md,
     borderRadius: theme.radius.chip,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: theme.colors.ink,
+    backgroundColor: theme.colors.accent,
     opacity: disabled ? 0.35 : 1,
   }),
   list: {

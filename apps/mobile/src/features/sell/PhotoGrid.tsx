@@ -134,7 +134,8 @@ function AddTile({
       style={[styles.add, frame]}
     >
       <Icon name={icon} size={24} tone="ink2" />
-      <Text variant="meta" tone="ink2">
+      {/* Fixed-size tile: the label wraps and stays under the 1.4x cap (owner decision 4). */}
+      <Text variant="meta" tone="ink2" overlay numberOfLines={2} style={styles.addLabel}>
         {label}
       </Text>
     </Pressable>
@@ -240,7 +241,7 @@ function PhotoTile({
           onPress={photo.status === 'failed' ? onRetry : undefined}
           style={styles.tile}
         >
-          <View style={styles.photo(photo.status === 'failed')}>
+          <View style={styles.photo}>
             <Photo
               source={source}
               blurhash={photo.blurhash}
@@ -260,9 +261,11 @@ function PhotoTile({
             </View>
           ) : null}
           {photo.status === 'failed' ? (
+            // The photo stays at full strength under the photo scrim; white
+            // icon and word, so the state never rests on red alone (3.03).
             <View style={styles.failed} testID={`sell-photo-retry-${index}`}>
-              <Icon name="refresh" size={20} tone="red" />
-              <Text variant="meta" tone="red">
+              <Icon name="refresh" size={20} tone="onPhoto" />
+              <Text variant="label" tone="onPhoto" overlay>
                 {copy.retry}
               </Text>
             </View>
@@ -287,7 +290,7 @@ const styles = StyleSheet.create((theme) => ({
   grid: { position: 'relative' },
   slot: { position: 'absolute' },
   tile: { flex: 1 },
-  photo: (faded: boolean) => ({ flex: 1, opacity: faded ? 0.45 : 1 }),
+  photo: { flex: 1 },
   blank: {
     position: 'absolute',
     borderRadius: theme.radius.thumb,
@@ -302,7 +305,9 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: 'center',
     justifyContent: 'center',
     gap: theme.space.xs,
+    paddingHorizontal: theme.space.xs,
   },
+  addLabel: { textAlign: 'center' },
   // A white pill on the cover photo (white in both modes, like text on photos).
   cover: {
     position: 'absolute',
@@ -325,6 +330,8 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: 'center',
     justifyContent: 'center',
     gap: theme.space.xs,
+    borderRadius: theme.radius.thumb,
+    backgroundColor: theme.colors.overlay,
   },
   remove: {
     position: 'absolute',

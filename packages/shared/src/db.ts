@@ -7,13 +7,13 @@ export type Database = {
           Tables: {
             "account_deletions": {
                   Row: {
-                    "campus_id": string | null,"finished_at": string | null,"id": string,"started_at": string,"status": string,"underage": boolean,"user_id": string | null
+                    "campus_id": string | null,"finished_at": string | null,"id": string,"media_confirmed_at": string | null,"media_confirmed_gen": number | null,"media_gen": number,"media_prefixes": (string)[] | null,"media_sweep_pos": number,"media_swept_gen": number | null,"started_at": string,"status": string,"underage": boolean,"user_id": string | null
                   }
                   Insert: {
-                    "campus_id"?: string | null,"finished_at"?: string | null,"id"?: string,"started_at"?: string,"status"?: string,"underage"?: boolean,"user_id"?: string | null
+                    "campus_id"?: string | null,"finished_at"?: string | null,"id"?: string,"media_confirmed_at"?: string | null,"media_confirmed_gen"?: number | null,"media_gen"?: number,"media_prefixes"?: (string)[] | null,"media_sweep_pos"?: number,"media_swept_gen"?: number | null,"started_at"?: string,"status"?: string,"underage"?: boolean,"user_id"?: string | null
                   }
                   Update: {
-                    "campus_id"?: string | null,"finished_at"?: string | null,"id"?: string,"started_at"?: string,"status"?: string,"underage"?: boolean,"user_id"?: string | null
+                    "campus_id"?: string | null,"finished_at"?: string | null,"id"?: string,"media_confirmed_at"?: string | null,"media_confirmed_gen"?: number | null,"media_gen"?: number,"media_prefixes"?: (string)[] | null,"media_sweep_pos"?: number,"media_swept_gen"?: number | null,"started_at"?: string,"status"?: string,"underage"?: boolean,"user_id"?: string | null
                   }
                   Relationships: [
                     
@@ -837,6 +837,19 @@ isOneToOne: false
       referencedRelation: "listings"
       referencedColumns: ["id"]
     }
+                  ]
+                },"media_uploads": {
+                  Row: {
+                    "attempts": number,"created_at": string,"key": string,"kind": string,"lease_token": string | null,"lease_until": string | null,"size_bytes": number,"state": string,"state_at": string,"target_id": string,"user_id": string
+                  }
+                  Insert: {
+                    "attempts"?: number,"created_at"?: string,"key": string,"kind": string,"lease_token"?: string | null,"lease_until"?: string | null,"size_bytes"?: number,"state"?: string,"state_at"?: string,"target_id": string,"user_id": string
+                  }
+                  Update: {
+                    "attempts"?: number,"created_at"?: string,"key"?: string,"kind"?: string,"lease_token"?: string | null,"lease_until"?: string | null,"size_bytes"?: number,"state"?: string,"state_at"?: string,"target_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
                   ]
                 },"meetups": {
                   Row: {

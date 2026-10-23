@@ -38,16 +38,12 @@ export function isOffline(state: {
 export const OFFLINE_SHOW_DELAY_MS = 1500;
 
 /**
- * Slides in from the top while the device is offline (fades with reduce
- * motion). It has an entering animation only: Reanimated exiting animations
- * keep a ghost view in the tree, and a banner that came back while its old
- * copy was still leaving crashed Android ("child already has a parent",
- * owner testing). It also waits OFFLINE_SHOW_DELAY_MS so short drops during
- * uploads don't flash it.
+ * True once the device has been offline for OFFLINE_SHOW_DELAY_MS, false the
+ * moment it is back. The one rule for the global banner and any screen line
+ * that must appear and clear with it (Discover's queued-swipes line).
  */
-export function OfflineBanner() {
+export function useOfflineShown(): boolean {
   const net = useNetInfo();
-  const reduced = useReducedMotion();
   const offlineNow = isOffline(net);
   const [waited, setWaited] = useState(false);
 
@@ -60,7 +56,20 @@ export function OfflineBanner() {
     };
   }, [offlineNow]);
 
-  const shown = offlineNow && waited;
+  return offlineNow && waited;
+}
+
+/**
+ * Slides in from the top while the device is offline (fades with reduce
+ * motion). It has an entering animation only: Reanimated exiting animations
+ * keep a ghost view in the tree, and a banner that came back while its old
+ * copy was still leaving crashed Android ("child already has a parent",
+ * owner testing). It also waits OFFLINE_SHOW_DELAY_MS so short drops during
+ * uploads don't flash it.
+ */
+export function OfflineBanner() {
+  const reduced = useReducedMotion();
+  const shown = useOfflineShown();
   if (!shown) return null;
   return (
     <Animated.View
@@ -76,11 +85,13 @@ export function OfflineBanner() {
 const styles = StyleSheet.create((theme, rt) => ({
   top: { position: 'absolute', top: rt.insets.top, left: theme.space.sm, right: theme.space.sm },
   banner: (kind: BannerKind) => ({
-    minHeight: theme.size.hit,
+    // The offline bar is a compact 36 pt line; inline banners keep 44 pt.
+    minHeight: kind === 'offline' ? theme.size.buttonS : theme.size.hit,
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.space.sm,
     paddingHorizontal: theme.space.md,
+    paddingVertical: kind === 'offline' ? theme.space.xs : 0,
     borderRadius: theme.radius.control,
     backgroundColor:
       kind === 'warning'

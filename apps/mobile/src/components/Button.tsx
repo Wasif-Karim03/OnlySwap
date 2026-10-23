@@ -1,8 +1,10 @@
-import { ActivityIndicator, View } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, Platform, View } from 'react-native';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 import { haptic, type HapticKind } from '@/lib/haptics';
 
+import { appFocusRing } from './Input';
 import { SMALL_SLOP, Tappable } from './Tappable';
 import { Text, type TextTone } from './Text';
 import { a11yState } from '@/lib/a11y';
@@ -40,8 +42,38 @@ const TONE: Record<ButtonVariant, TextTone> = {
 };
 
 /**
+ * Web only: true when focus came from the keyboard (`:focus-visible`), so a
+ * mouse click does not leave a ring behind. Native never shows the ring.
+ */
+export function isKeyboardFocus(target: unknown): boolean {
+  const el = target as { matches?: (selector: string) => boolean } | null | undefined;
+  try {
+    return el?.matches?.(':focus-visible') ?? false;
+  } catch {
+    // Older browsers without :focus-visible: show the ring on every focus.
+    return true;
+  }
+}
+
+/** Web keyboard focus handlers plus the opt-out from the page outline (one ring, not two). */
+function useWebFocusRing() {
+  const [focusVisible, setFocusVisible] = useState(false);
+  if (Platform.OS !== 'web') return { focusVisible: false, focusProps: {} };
+  return {
+    focusVisible,
+    focusProps: {
+      ...appFocusRing(),
+      onFocus: (e: { nativeEvent?: { target?: unknown }; target?: unknown }) =>
+        setFocusVisible(isKeyboardFocus(e.nativeEvent?.target ?? e.target)),
+      onBlur: () => setFocusVisible(false),
+    },
+  };
+}
+
+/**
  * Button (DESIGN_SYSTEM §6). Loading keeps the width and shows a spinner;
- * disabled is 35% opacity and not pressable; 500 ms double-tap guard.
+ * disabled is 35% opacity and not pressable; 500 ms double-tap guard. On web,
+ * keyboard focus draws a 2 px ink ring, the same ring Input uses.
  */
 export function Button({
   label,
@@ -57,6 +89,7 @@ export function Button({
 }: ButtonProps) {
   const { theme } = useUnistyles();
   const inactive = disabled || loading;
+  const { focusVisible, focusProps } = useWebFocusRing();
   const spinnerColor =
     variant === 'primary'
       ? theme.colors.onAccent
@@ -82,6 +115,7 @@ export function Button({
         onPress?.();
       }}
       style={fullWidth ? styles.full : styles.hug}
+      {...focusProps}
     >
       <View style={styles.body(variant, size, disabled)}>
         {/* The same views whether loading or not, only their opacity changes.
@@ -104,6 +138,7 @@ export function Button({
           importantForAccessibility="no-hide-descendants"
           accessibilityElementsHidden
         />
+        {focusVisible ? <View pointerEvents="none" style={styles.focusRing} /> : null}
       </View>
     </Tappable>
   );
@@ -138,4 +173,15 @@ const styles = StyleSheet.create((theme) => ({
   // Labels wrap at large Dynamic Type sizes instead of truncating (rule 10).
   label: { textAlign: 'center' },
   spinner: { position: 'absolute' },
+  // Outside the button edge (like outline-offset 2 px) so the fill keeps its size.
+  focusRing: {
+    position: 'absolute',
+    top: -theme.space.xs,
+    right: -theme.space.xs,
+    bottom: -theme.space.xs,
+    left: -theme.space.xs,
+    borderWidth: 2,
+    borderColor: theme.colors.ink,
+    borderRadius: theme.radius.control + theme.space.xs,
+  },
 }));

@@ -43,3 +43,6 @@ apps/site/wrangler.toml
 
 # iPhone crash reports pulled by scripts/verify/ios-crash.command
 crash-logs/
+
+# Generated audit output (exports, coverage, load logs)
+audit/raw/

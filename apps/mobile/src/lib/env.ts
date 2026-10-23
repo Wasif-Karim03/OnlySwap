@@ -20,6 +20,9 @@ export type Env = {
   EXPO_PUBLIC_SENTRY_DSN?: string;
   EXPO_PUBLIC_POSTHOG_KEY?: string;
   EXPO_PUBLIC_POSTHOG_HOST?: string;
+  // Optional on native; required on web, where every form sends the
+  // Cloudflare Turnstile token (LR-04, IR4-04).
+  EXPO_PUBLIC_TURNSTILE_SITE_KEY?: string;
 };
 
 /** A problem with one value, or null when it's fine. */
@@ -54,6 +57,9 @@ const appEnv: Check = (v) =>
 const posthogKey: Check = (v) =>
   /^phc_[A-Za-z0-9]+$/.test(v) ? null : 'must be a PostHog project key (phc_...)';
 
+const turnstileKey: Check = (v) =>
+  /^[0-9A-Za-z_-]{10,}$/.test(v) ? null : 'must be a Turnstile site key';
+
 const REQUIRED: Record<string, Check> = {
   EXPO_PUBLIC_APP_ENV: appEnv,
   EXPO_PUBLIC_SUPABASE_URL: httpsOrLocalUrl,
@@ -66,17 +72,28 @@ const OPTIONAL: Record<string, Check> = {
   EXPO_PUBLIC_SENTRY_DSN: url,
   EXPO_PUBLIC_POSTHOG_KEY: posthogKey,
   EXPO_PUBLIC_POSTHOG_HOST: url,
+  EXPO_PUBLIC_TURNSTILE_SITE_KEY: turnstileKey,
+};
+
+const { EXPO_PUBLIC_TURNSTILE_SITE_KEY: _turnstile, ...OPTIONAL_ON_WEB } = OPTIONAL;
+const REQUIRED_ON_WEB: Record<string, Check> = {
+  ...REQUIRED,
+  EXPO_PUBLIC_TURNSTILE_SITE_KEY: turnstileKey,
 };
 
 export class EnvError extends Error {
   override name = 'EnvError';
 }
 
-/** Validates raw values; throws one EnvError listing every problem. */
-export function parseEnv(raw: Record<string, string | undefined>): Env {
+/**
+ * Validates raw values; throws one EnvError listing every problem. `os` is
+ * 'web' for the web build (the Turnstile site key is then required).
+ */
+export function parseEnv(raw: Record<string, string | undefined>, os: string = 'native'): Env {
+  const web = os === 'web';
   const out: Record<string, string> = {};
   const lines: string[] = [];
-  for (const [key, check] of Object.entries(REQUIRED)) {
+  for (const [key, check] of Object.entries(web ? REQUIRED_ON_WEB : REQUIRED)) {
     const value = raw[key];
     if (value === undefined || value === '') {
       lines.push(`- ${key} is missing`);
@@ -86,7 +103,7 @@ export function parseEnv(raw: Record<string, string | undefined>): Env {
     if (problem) lines.push(`- ${key} ${problem}`);
     else out[key] = value;
   }
-  for (const [key, check] of Object.entries(OPTIONAL)) {
+  for (const [key, check] of Object.entries(web ? OPTIONAL_ON_WEB : OPTIONAL)) {
     const value = raw[key];
     if (value === undefined || value === '') continue;
     const problem = check(value);
@@ -99,6 +116,11 @@ export function parseEnv(raw: Record<string, string | undefined>): Env {
       'OnlySwap config is invalid:',
       ...lines,
       'Copy apps/mobile/.env.example to apps/mobile/.env.local and fill it in, or set the EAS environment variables for this profile.',
+      ...(web
+        ? [
+            "The web build needs EXPO_PUBLIC_TURNSTILE_SITE_KEY (Cloudflare's test key 1x00000000000000000000AA for local and staging).",
+          ]
+        : []),
     ].join('\n'),
   );
 }
@@ -113,6 +135,7 @@ function readRaw(): Record<string, string | undefined> {
     EXPO_PUBLIC_SENTRY_DSN: process.env.EXPO_PUBLIC_SENTRY_DSN,
     EXPO_PUBLIC_POSTHOG_KEY: process.env.EXPO_PUBLIC_POSTHOG_KEY,
     EXPO_PUBLIC_POSTHOG_HOST: process.env.EXPO_PUBLIC_POSTHOG_HOST,
+    EXPO_PUBLIC_TURNSTILE_SITE_KEY: process.env.EXPO_PUBLIC_TURNSTILE_SITE_KEY,
   };
 }
 
@@ -120,6 +143,9 @@ let cached: Env | undefined;
 
 /** The validated env. Throws on first use if anything is missing or invalid. */
 export function getEnv(): Env {
-  cached ??= parseEnv(readRaw());
+  // babel-preset-expo inlines process.env.EXPO_OS like the reads above; it is
+  // undefined in Node and Jest, which means native. No react-native import, so
+  // scripts/verify/check-web-env.ts can load this file.
+  cached ??= parseEnv(readRaw(), process.env.EXPO_OS === 'web' ? 'web' : 'native');
   return cached;
 }

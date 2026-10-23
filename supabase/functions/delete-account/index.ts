@@ -7,6 +7,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.117.2';
 import postgres from 'npm:postgres@3.4.7';
 
+import { purgeConfigFromEnv, purgeKeys } from '../_shared/cachePurge.ts';
 import { handleDeleteAccount, type Prepared } from '../_shared/deleteAccount.ts';
 import { createR2, r2FromEnv } from '../_shared/r2.ts';
 import { CORS_HEADERS } from '../_shared/waitlist.ts';
@@ -20,8 +21,8 @@ const admin = createClient(
   },
 );
 const sql = postgres(Deno.env.get('SUPABASE_DB_URL')!, { max: 1, prepare: false });
-// R2 is required in staging and production; without it the account is still
-// deleted but media stays behind, so the log says so loudly.
+// R2 is required: without it every request fails with a 500 before anything
+// is prepared (IR-03), and the log says why.
 let r2cfg: ReturnType<typeof r2FromEnv> | null = null;
 try {
   r2cfg = r2FromEnv(Deno.env);
@@ -29,6 +30,9 @@ try {
   console.error(JSON.stringify({ event: 'delete_account.r2_not_configured', detail: String(e) }));
 }
 const r2 = r2cfg ? createR2(r2cfg) : null;
+// Edge cache purge (LR-02) needs the zone; on workers.dev nothing is cached.
+const purgeCfg = purgeConfigFromEnv(Deno.env);
+if (!purgeCfg) console.log(JSON.stringify({ event: 'delete_account.purge_not_configured' }));
 
 Deno.serve(
   withMonitoring(
@@ -61,15 +65,18 @@ Deno.serve(
             ? {
                 copyToPrivate: (fromKey: string, toKey: string) =>
                   r2.copy(r2cfg.mediaBucket, fromKey, r2cfg.privateBucket, toKey),
+                privateExists: (toKey: string) => r2.exists(r2cfg.privateBucket, toKey),
                 recordMoves: async (moves: unknown) => {
                   await sql`select private.record_evidence_moves(${sql.json(moves as never)})`;
                 },
-                deleteR2Prefix: async (prefix: string) => {
-                  await r2.deletePrefix(r2cfg.mediaBucket, prefix);
-                },
+                deleteR2Prefix: (prefix: string) => r2.deleteUnder(r2cfg.mediaBucket, prefix),
                 deleteArchive: (key: string) => r2.delete(r2cfg.privateBucket, key),
               }
             : {}),
+          ...(purgeCfg ? { purge: (keys: string[]) => purgeKeys(purgeCfg, keys) } : {}),
+          confirmMedia: async (userId) => {
+            await sql`select private.confirm_media_deletion(${userId}::uuid)`;
+          },
           deleteUser: async (userId) => {
             const { error } = await admin.auth.admin.deleteUser(userId);
             if (error) throw error;

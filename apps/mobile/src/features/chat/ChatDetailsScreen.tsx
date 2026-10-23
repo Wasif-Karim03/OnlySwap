@@ -10,6 +10,7 @@ import { GroupedList, ListRow } from '@/components/ListRow';
 import { NavBar } from '@/components/NavBar';
 import { ReportSheet } from '@/components/ReportSheet';
 import { SkeletonList } from '@/components/Skeleton';
+import { Text } from '@/components/Text';
 import { Toggle } from '@/components/Toggle';
 import { useToastStore } from '@/components/Toast';
 import { fill } from '@/lib/format';
@@ -67,6 +68,15 @@ export function ChatDetailsScreen({
     <View style={styles.root} testID="screen-chat-details">
       <NavBar onLeading={leave} title={copy.detailsTitle} />
       <ScrollView contentContainerStyle={styles.body}>
+        {/* Who this chat is with, above everything you can do about it. */}
+        <Text
+          variant="heading"
+          accessibilityRole="header"
+          numberOfLines={2}
+          testID="chat-details-name"
+        >
+          {name}
+        </Text>
         <Toggle label={copy.mute} value={c.muted} onChange={(v) => void setMuted(v)} />
         <GroupedList>
           {c.listing_id ? (
@@ -86,24 +96,26 @@ export function ChatDetailsScreen({
             />
           ) : null}
         </GroupedList>
-        <GroupedList>
-          {c.other ? (
-            <>
+        {c.other ? (
+          <GroupedList>
+            <ListRow
+              label={fill(copy.report, { name })}
+              icon="flag"
+              onPress={() => setReporting(true)}
+            />
+            {/* Destructive Block stays last in its group. */}
+            {!c.i_blocked ? (
               <ListRow
-                label={fill(copy.report, { name })}
-                icon="flag"
-                onPress={() => setReporting(true)}
+                label={fill(copy.block, { name })}
+                icon="ban"
+                destructive
+                onPress={() => setBlocking(true)}
               />
-              {!c.i_blocked ? (
-                <ListRow
-                  label={fill(copy.block, { name })}
-                  icon="ban"
-                  destructive
-                  onPress={() => setBlocking(true)}
-                />
-              ) : null}
-            </>
-          ) : null}
+            ) : null}
+          </GroupedList>
+        ) : null}
+        {/* Hide is not a safety action: its own group, away from Report and Block. */}
+        <GroupedList>
           <ListRow
             label={copy.hide}
             icon="eye"

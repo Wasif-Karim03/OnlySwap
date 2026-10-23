@@ -366,6 +366,44 @@ test('WEB-E2E-11 delete the account on the web', async () => {
   await expect(page.getByTestId('screen-welcome')).toBeVisible({ timeout: 30_000 });
 });
 
+test('WEB-E2E-12 signed-out forms pass the bot check and send twice without a reload', async ({
+  browser,
+}) => {
+  // Staging builds use the Turnstile test key, so the check passes on its own
+  // (LR-04). Each send uses a fresh single-use token.
+  test.setTimeout(90_000);
+  const { page } = await newStudent(browser, 'forms');
+  await page.goto(APP + '/help');
+  await page.getByTestId('help-email').fill(`e2e-forms${RUN}@example.com`);
+  await page.getByTestId('help-body').fill('WEB-E2E-12 first message');
+  await expect(page.getByTestId('help-send')).toBeEnabled({ timeout: 20_000 });
+  await page.getByTestId('help-send').click();
+  await expect(page.getByTestId('help-sent')).toBeVisible({ timeout: 20_000 });
+
+  // Second form on the same page load (client-side navigation, no reload).
+  await page.evaluate(() => {
+    window.history.pushState({}, '', '/help/email-access');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  });
+  await page.getByTestId('email-access-contact').fill(`e2e-forms${RUN}@example.com`);
+  await page.getByTestId('email-access-message').fill('WEB-E2E-12 second message');
+  await expect(page.getByTestId('email-access-send')).toBeEnabled({ timeout: 20_000 });
+  await page.getByTestId('email-access-send').click();
+  await expect(page.getByTestId('screen-email-access-sent')).toBeVisible({ timeout: 20_000 });
+
+  // Waitlist from the email screen with a school we don't support.
+  await page.goto(APP!);
+  await page.getByTestId('welcome-continue').click();
+  await page.getByTestId('email-input').fill(`e2e-forms${RUN}@nowhere-e2e.edu`);
+  await expect(page.getByTestId('email-unknown')).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByTestId('email-waitlist')).toBeEnabled({ timeout: 20_000 });
+  await page.getByTestId('email-waitlist').click();
+  await expect(page.getByText("You're on the list.", { exact: false })).toBeVisible({
+    timeout: 20_000,
+  });
+  await page.context().close();
+});
+
 test.afterEach(async ({}, info) => {
   if (info.status === info.expectedStatus) return;
   for (const [name, who] of [

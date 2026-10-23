@@ -10,12 +10,12 @@ import { Button } from '@/components/Button';
 import { Chip } from '@/components/Chip';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
+import { Input } from '@/components/Input';
 import { NavBar } from '@/components/NavBar';
 import { Photo } from '@/components/Photo';
 import { SkeletonList } from '@/components/Skeleton';
 import { SuccessCheck } from '@/components/SuccessCheck';
 import { Text } from '@/components/Text';
-import { TextArea } from '@/components/TextArea';
 import { getEnv } from '@/lib/env';
 import { errorText, toAppError } from '@/lib/errors';
 import { fill } from '@/lib/format';
@@ -25,7 +25,7 @@ import { readableColumn } from '@/theme/layout';
 
 import { feedApi, type FeedApi } from '../feed/api';
 import { listingKey } from '../feed/ListingScreen';
-import { isVisible, movingOutLine, sellerName } from '../feed/logic';
+import { isVisible, movingOutLine, sellerName, trustLine } from '../feed/logic';
 import { profileApi, type ProfileApi } from '../profiles/api';
 import { dollarsToCents } from '../search/logic';
 import { centsToPrice, cleanPrice, mediaUrl } from '../sell/logic';
@@ -196,6 +196,10 @@ export function OfferSheetScreen({
             <Text variant="meta" tone="ink3" numberOfLines={1}>
               {free ? name : `${fill(copy.asking, { price: money(ask) })} · ${name}`}
             </Text>
+            {/* P5: who you are dealing with, at the moment you decide. */}
+            <Text variant="meta" tone="ink2" numberOfLines={2} testID="offer-trust">
+              {trustLine(item.seller)}
+            </Text>
           </View>
         </View>
         {pool.length > 0 ? (
@@ -290,32 +294,43 @@ export function OfferSheetScreen({
             )}
           </View>
         )}
-        <TextArea
-          label={copy.notesLabel}
-          placeholder={copy.notePlaceholder}
-          value={note}
-          onChangeText={setNote}
-          maxLength={140}
-          testID="offer-note"
-        />
-        <View style={styles.chips}>
-          {QUICK_NOTES.map((n) => (
-            <Chip
-              key={n}
-              label={copy.quickNotes[n]}
-              selected={notes.includes(n)}
-              onPress={() =>
-                setNotes((prev) => (prev.includes(n) ? prev.filter((x) => x !== n) : [...prev, n]))
-              }
-            />
-          ))}
+        {/* The note is one line; the quick notes scroll sideways under it. */}
+        <View style={styles.noteBlock}>
+          <Input
+            label={copy.notesLabel}
+            placeholder={copy.notePlaceholder}
+            value={note}
+            onChangeText={setNote}
+            maxLength={140}
+            testID="offer-note"
+          />
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.noteChips}
+          >
+            {QUICK_NOTES.map((n) => (
+              <Chip
+                key={n}
+                label={copy.quickNotes[n]}
+                selected={notes.includes(n)}
+                onPress={() =>
+                  setNotes((prev) =>
+                    prev.includes(n) ? prev.filter((x) => x !== n) : [...prev, n],
+                  )
+                }
+              />
+            ))}
+          </ScrollView>
         </View>
         {error ? <Banner kind="error" message={error} /> : null}
+      </ScrollView>
+      <View style={styles.dock}>
+        {/* The main trust message sits right above Send, never below the fold. */}
         <Text variant="meta" tone="ink2" style={styles.center} testID="offer-pay-in-person">
           {copy.payInPerson}
         </Text>
-      </ScrollView>
-      <View style={styles.dock}>
         <Button
           label={free ? copy.sendAsk : copy.send}
           variant="dark"
@@ -360,6 +375,8 @@ const styles = StyleSheet.create((theme, rt) => ({
   },
   quick: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: theme.space.sm },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
+  noteBlock: { gap: theme.space.sm },
+  noteChips: { gap: theme.space.sm },
   center: { textAlign: 'center' },
   success: {
     flex: 1,

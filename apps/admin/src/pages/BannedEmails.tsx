@@ -82,14 +82,14 @@ export function BannedEmailsSection() {
           <Field label="Reason (saved to the audit log)">
             <input value={reason} onChange={(e) => setReason(e.target.value)} autoComplete="off" />
           </Field>
-          <Button type="submit" variant="primary" disabled={busy}>
-            Block email
+          <Button type="submit" variant="primary" pending={busy} pendingLabel="Saving…">
+            Ban email
           </Button>
           {msg ? <p className={msg.ok ? 'ok' : 'error'}>{msg.text}</p> : null}
         </form>
       </Card>
       <Card
-        title="Blocked emails"
+        title="Banned emails"
         right={state.data ? <span className="muted">{state.data.total} in total</span> : null}
       >
         <Loadable
@@ -101,7 +101,7 @@ export function BannedEmailsSection() {
           {(d) => (
             <>
               <Table
-                label="Blocked emails"
+                label="Banned emails"
                 columns={['Hash', 'Account', 'Added', { label: '', className: 'actions' }]}
               >
                 {d.items.map((h) => (

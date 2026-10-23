@@ -11,7 +11,6 @@ import { Icon } from '@/components/icons/Icon';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { errorCopy, toAppError } from '@/lib/errors';
-import { haptic } from '@/lib/haptics';
 import { rules as copy, states } from '@/strings';
 
 import { authApi, type AuthApi } from './api';
@@ -71,7 +70,11 @@ export function RulesScreen({
       </View>
     );
   }
-  if (!config.data) {
+  // The rules are static text: they show at once and only Agree waits for
+  // the config (3.01). The update variant lists what changed, which comes
+  // from the config, so it keeps the spinner.
+  const loading = !config.data;
+  if (loading && isUpdate) {
     return (
       <View
         style={styles.full}
@@ -100,11 +103,11 @@ export function RulesScreen({
     </Tappable>
   );
 
-  const changes = config.data.rulesChanges;
+  const changes = config.data?.rulesChanges ?? [];
 
   return (
     <AuthStep
-      testID={isUpdate ? 'screen-rules-updated' : 'screen-rules'}
+      testID={loading ? 'screen-rules-loading' : isUpdate ? 'screen-rules-updated' : 'screen-rules'}
       title={isUpdate ? copy.updatedTitle : copy.title}
       body={isUpdate ? copy.updatedBody : copy.body}
       leading="none"
@@ -113,8 +116,8 @@ export function RulesScreen({
         <Button
           label={copy.agree}
           onPress={() => void agree()}
-          disabled={!checked || saving}
-          loading={saving}
+          disabled={!checked || saving || loading}
+          loading={saving || loading}
           testID="rules-agree"
         />
       }
@@ -159,10 +162,8 @@ export function RulesScreen({
           accessibilityRole="checkbox"
           {...a11yState({ checked })}
           accessibilityLabel={copy.agreeLabel}
-          onPress={() => {
-            haptic('selection');
-            setChecked((c) => !c);
-          }}
+          // No haptic: a checkbox toggle is outside the haptic budget (2.8).
+          onPress={() => setChecked((c) => !c)}
           guard={false}
           testID="rules-checkbox"
         >

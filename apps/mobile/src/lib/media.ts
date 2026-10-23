@@ -73,7 +73,13 @@ export async function processPhoto(
     return { full: await encode(photo, SIZES.avatar, MAX_BYTES.avatar, deps) };
   }
   const full = await encode(photo, SIZES.full, MAX_BYTES.full, deps);
-  const thumb = await encode(photo, SIZES.thumb, MAX_BYTES.thumb, deps);
+  // From the 1080 copy: decoding a 12-48 MP original twice made adding photos lag.
+  const thumb = await encode(
+    { uri: full.uri, width: full.width, height: full.height },
+    SIZES.thumb,
+    MAX_BYTES.thumb,
+    deps,
+  );
   let blurhash: string | null = null;
   try {
     blurhash = await deps.blurhash(thumb.uri, BLURHASH_COMPONENTS);
@@ -220,6 +226,10 @@ const defaultPicker: PickerDeps = {
         selectionLimit: limit,
         exif: false,
         quality: 1,
+        // iOS: hand over the stored file (often HEIC) instead of transcoding it
+        // to JPEG first, which made adding photos lag; encode() makes WebP anyway.
+        preferredAssetRepresentationMode:
+          ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Current,
       }),
     ),
   camera: async () =>

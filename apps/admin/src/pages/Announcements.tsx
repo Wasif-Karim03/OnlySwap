@@ -22,6 +22,7 @@ import type { OverviewV2 } from '../types';
 import {
   Button,
   Card,
+  Dialog,
   Field,
   Loadable,
   Page,
@@ -194,6 +195,7 @@ function CreateForm({
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
   const [blockedUntil, setBlockedUntil] = useState<string | null>(null);
+  const [askPush, setAskPush] = useState(false);
 
   const campus = campuses.find((c) => c.id === campusId);
   const students = reach.data?.campuses.find((c) => c.id === campusId)?.students ?? null;
@@ -210,6 +212,46 @@ function CreateForm({
         ? `Send to ${plural(students, 'student')}`
         : `Send to students with tips on (up to ${students.toLocaleString('en-US')})`;
 
+  const post = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const r = await rpc<{ recipients: number; next_allowed_at: string }>(
+        'admin_create_announcement',
+        {
+          campus_id: campusId,
+          type,
+          title: title.trim(),
+          body: body.trim(),
+          send_push: sendPush,
+          pinned_hours: pinnedHours,
+          reason: reason.trim(),
+        },
+      );
+      setDone(
+        sendPush ? `Posted and sent to ${plural(r.recipients, 'person', 'people')}.` : 'Posted.',
+      );
+      setBlockedUntil(r.next_allowed_at);
+      setTitle('');
+      setBody('');
+      setReason('');
+      onDone();
+    } catch (err) {
+      const at = rateLimitRetryAt((err as { message?: string })?.message ?? '');
+      if (at) setBlockedUntil(at);
+      setError(
+        knownError(err, {
+          'INVALID:title': `Use 1 to ${ANNOUNCEMENT_TITLE_MAX} characters for the title.`,
+          'INVALID:body': `Use 1 to ${ANNOUNCEMENT_BODY_MAX} characters for the message.`,
+          'INVALID:pinned_hours': 'Pin for 0 to 168 hours.',
+          'INVALID:campus_id': 'Pick a campus.',
+        }),
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <form
       className="card clip"
@@ -219,54 +261,8 @@ function CreateForm({
         setDone(null);
         const invalid = announcementFormError({ campusId, title, body, pinnedHours, reason });
         if (invalid) return setError(invalid);
-        if (
-          sendPush &&
-          !window.confirm(
-            type === 'safety'
-              ? `Send a push to every active member at ${campus?.name ?? 'this campus'}?`
-              : `Send a push to members at ${campus?.name ?? 'this campus'} who turned on tips?`,
-          )
-        )
-          return;
-        setBusy(true);
-        setError(null);
-        try {
-          const r = await rpc<{ recipients: number; next_allowed_at: string }>(
-            'admin_create_announcement',
-            {
-              campus_id: campusId,
-              type,
-              title: title.trim(),
-              body: body.trim(),
-              send_push: sendPush,
-              pinned_hours: pinnedHours,
-              reason: reason.trim(),
-            },
-          );
-          setDone(
-            sendPush
-              ? `Posted and sent to ${plural(r.recipients, 'person', 'people')}.`
-              : 'Posted.',
-          );
-          setBlockedUntil(r.next_allowed_at);
-          setTitle('');
-          setBody('');
-          setReason('');
-          onDone();
-        } catch (err) {
-          const at = rateLimitRetryAt((err as { message?: string })?.message ?? '');
-          if (at) setBlockedUntil(at);
-          setError(
-            knownError(err, {
-              'INVALID:title': `Use 1 to ${ANNOUNCEMENT_TITLE_MAX} characters for the title.`,
-              'INVALID:body': `Use 1 to ${ANNOUNCEMENT_BODY_MAX} characters for the message.`,
-              'INVALID:pinned_hours': 'Pin for 0 to 168 hours.',
-              'INVALID:campus_id': 'Pick a campus.',
-            }),
-          );
-        } finally {
-          setBusy(false);
-        }
+        if (sendPush) return setAskPush(true);
+        void post();
       }}
     >
       <div className="ch">
@@ -380,6 +376,32 @@ function CreateForm({
                 : 'Post announcement'}
         </Button>
       </div>
+      {askPush ? (
+        <Dialog title="Send a push" onClose={() => setAskPush(false)}>
+          <div className="cb">
+            <p className="ink2">
+              {type === 'safety'
+                ? `Send a push to every active member at ${campus?.name ?? 'this campus'}?`
+                : `Send a push to members at ${campus?.name ?? 'this campus'} who turned on tips?`}
+            </p>
+          </div>
+          <div className="cf end">
+            <Button variant="ghost" onClick={() => setAskPush(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              autoFocus
+              onClick={() => {
+                setAskPush(false);
+                void post();
+              }}
+            >
+              Post and send
+            </Button>
+          </div>
+        </Dialog>
+      ) : null}
     </form>
   );
 }

@@ -1,15 +1,14 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { FlatList, View } from 'react-native';
-import { StyleSheet } from 'react-native-unistyles';
+import { ActivityIndicator, FlatList, View } from 'react-native';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 import { track as trackActivity } from '@/lib/activity';
 import { countBucket, track } from '@/lib/analytics';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
-import { IconButton } from '@/components/IconButton';
 import { ListingTile } from '@/components/ListingTile';
 import { NavBar } from '@/components/NavBar';
 import { SkeletonGrid } from '@/components/Skeleton';
@@ -42,6 +41,7 @@ export function ResultsScreen({
   mediaBase?: () => string;
 }) {
   const router = useRouter();
+  const { theme } = useUnistyles();
   // More columns on iPad; every cell the same width, even in a short last row.
   const { width } = useLayout();
   const columns = gridColumns(width);
@@ -107,10 +107,13 @@ export function ResultsScreen({
         icon="search"
         title={copy.noResultsTitle}
         body={copy.noResultsBody}
-        action={{ label: copy.saveSearch, onPress: () => void save() }}
-        secondaryAction={
-          n ? { label: copy.noResultsClear, onPress: () => setFilters({}) } : undefined
+        // Filters are the likely cause of no results, so clearing them leads.
+        action={
+          n
+            ? { label: copy.noResultsClear, onPress: () => setFilters({}) }
+            : { label: copy.saveSearch, onPress: () => void save() }
         }
+        secondaryAction={n ? { label: copy.saveSearch, onPress: () => void save() } : undefined}
         testID="results-empty"
       />
     );
@@ -127,6 +130,16 @@ export function ResultsScreen({
         onEndReached={() => {
           if (results.hasNextPage && !results.isFetchingNextPage) void results.fetchNextPage();
         }}
+        ListFooterComponent={
+          results.isFetchingNextPage ? (
+            <ActivityIndicator
+              style={styles.more}
+              color={theme.colors.ink2}
+              accessibilityLabel={feedCopy.loading}
+              testID="results-loading-more"
+            />
+          ) : null
+        }
         renderItem={({ item }) => (
           <View style={cell}>
             <ListingTile
@@ -152,23 +165,23 @@ export function ResultsScreen({
       <NavBar
         title={q ? fill(copy.resultsTitle, { q }) : copy.allTitle}
         onLeading={() => router.back()}
-        trailing={
-          <IconButton
-            icon="bookmark"
-            accessibilityLabel={copy.saveSearch}
-            disabled={saving}
-            onPress={save}
-            testID="results-save"
-          />
-        }
       />
       <View style={styles.tools}>
         <Button
           label={n ? fill(copy.filtersActive, { n }) : copy.filters}
           variant="secondary"
-          size="S"
+          size="M"
           onPress={() => setSheet(true)}
           testID="results-filters"
+        />
+        <Button
+          label={copy.saveSearch}
+          variant="text"
+          size="M"
+          loading={saving}
+          disabled={saving}
+          onPress={() => void save()}
+          testID="results-save"
         />
       </View>
       {body}
@@ -191,9 +204,13 @@ const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   tools: {
     flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: theme.space.md,
     paddingHorizontal: theme.space.screen,
     paddingBottom: theme.space.sm,
   },
   grid: { padding: theme.space.screen, gap: theme.space.lg },
   columns: { gap: theme.space.md },
+  more: { paddingVertical: theme.space.lg },
 }));

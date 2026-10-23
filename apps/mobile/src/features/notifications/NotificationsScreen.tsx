@@ -131,6 +131,11 @@ export function NotificationsScreen({
           icon="bell"
           title={copy.emptyTitle}
           body={copy.emptyBody}
+          // Not a dead end (3.07): the existing notification settings (F11).
+          secondaryAction={{
+            label: copy.emptyAction,
+            onPress: () => router.push('/settings/notifications'),
+          }}
           testID="notifications-empty"
         />
       );
@@ -151,7 +156,7 @@ export function NotificationsScreen({
           stickySectionHeadersEnabled={false}
           onEndReached={() => q.hasNextPage && !q.isFetchingNextPage && q.fetchNextPage()}
           renderSectionHeader={({ section }) => (
-            <Text variant="label" tone="ink3" accessibilityRole="header" style={styles.section}>
+            <Text variant="label" tone="ink2" accessibilityRole="header" style={styles.section}>
               {section.title}
             </Text>
           )}
@@ -166,13 +171,23 @@ export function NotificationsScreen({
               >
                 <View style={styles.row}>
                   <NotificationVisual n={n} listings={listings} mediaBase={mediaBase} />
+                  {/* Two lines (3.07): the title with the time on its right, then
+                      the body in ink2. Unread is a bold title plus the dot. */}
                   <View style={styles.flex}>
-                    <Text variant="label">{n.title}</Text>
-                    <Text variant="label" tone="ink2" style={styles.regular}>
+                    <View style={styles.titleLine}>
+                      <Text
+                        variant={n.read ? 'body' : 'bodyStrong'}
+                        numberOfLines={2}
+                        style={styles.flex}
+                      >
+                        {n.title}
+                      </Text>
+                      <Text variant="meta" tone="ink3">
+                        {when}
+                      </Text>
+                    </View>
+                    <Text variant="label" tone="ink2" numberOfLines={2} style={styles.regular}>
                       {n.body}
-                    </Text>
-                    <Text variant="meta" tone="ink3" style={styles.when}>
-                      {when}
                     </Text>
                   </View>
                   <View
@@ -191,23 +206,23 @@ export function NotificationsScreen({
 
   return (
     <View style={styles.root} testID="screen-notifications">
-      <NavBar
-        onLeading={leave}
-        trailing={
-          unread > 0 ? (
-            <Button
-              label={copy.markAll}
-              variant="text"
-              size="S"
-              onPress={markAll}
-              testID="notifications-mark-all"
-            />
-          ) : undefined
-        }
-      />
-      <Text variant="display" accessibilityRole="header" style={styles.title}>
-        {copy.title}
-      </Text>
+      <NavBar onLeading={leave} />
+      {/* Mark all read sits in the title row at size M, a full 44 pt target (3.07). */}
+      <View style={styles.titleRow}>
+        <Text variant="display" accessibilityRole="header" style={styles.flex}>
+          {copy.title}
+        </Text>
+        {unread > 0 ? (
+          <Button
+            label={copy.markAll}
+            variant="text"
+            size="M"
+            fullWidth={false}
+            onPress={markAll}
+            testID="notifications-mark-all"
+          />
+        ) : null}
+      </View>
       {body}
     </View>
   );
@@ -216,7 +231,14 @@ export function NotificationsScreen({
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   list: { paddingHorizontal: theme.space.screen, paddingBottom: theme.space['2xl'] },
-  title: { paddingHorizontal: theme.space.screen, paddingBottom: theme.space.xs },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.space.sm,
+    paddingHorizontal: theme.space.screen,
+    paddingBottom: theme.space.xs,
+  },
+  titleLine: { flexDirection: 'row', alignItems: 'baseline', gap: theme.space.sm },
   section: {
     paddingTop: theme.space.lg,
     paddingBottom: theme.space.xs,
@@ -256,5 +278,4 @@ const styles = StyleSheet.create((theme) => ({
   }),
   flex: { flex: 1, gap: theme.space.xs / 2 },
   regular: { fontWeight: '400' },
-  when: { marginTop: theme.space.xs / 2 },
 }));

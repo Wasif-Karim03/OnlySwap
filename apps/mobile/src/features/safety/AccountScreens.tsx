@@ -16,6 +16,7 @@ import { Sheet } from '@/components/Sheet';
 import { SkeletonList } from '@/components/Skeleton';
 import { Text } from '@/components/Text';
 import { TextArea } from '@/components/TextArea';
+import { useToastStore } from '@/components/Toast';
 import { getEnv } from '@/lib/env';
 import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
@@ -25,6 +26,7 @@ import { readableColumn } from '@/theme/layout';
 import { authApi, type AuthApi } from '../auth/api';
 import { useSession } from '../auth/useSession';
 import { mediaUrl } from '../sell/logic';
+import { DockedScroll } from '../sell/SellStep';
 import { appealTarget, safetyApi, type SafetyApi } from './api';
 
 const statusKey = ['account-status'] as const;
@@ -243,6 +245,7 @@ export function BlockedScreen({
                     await api.unblock(p.id);
                   } catch {
                     void q.refetch();
+                    useToastStore.getState().show('error', copy.unblockFailed);
                   }
                 }}
               />
@@ -288,26 +291,34 @@ export function DeleteAccountScreen({
   return (
     <View style={styles.root} testID="screen-delete-account">
       <NavBar title={copy.deleteTitle} onLeading={leave} />
-      <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-        <Text variant="body">{copy.deleteBody}</Text>
-        <Input
-          label={copy.deleteType}
-          value={typed}
-          onChangeText={setTyped}
-          autoCapitalize="characters"
-          autoCorrect={false}
-          testID="delete-confirm"
-        />
-        {error ? <Banner kind="error" message={error} /> : null}
-        <Button
-          label={copy.deleteButton}
-          variant="destructive"
-          disabled={typed.trim() !== 'DELETE'}
-          loading={busy}
-          onPress={remove}
-          testID="delete-button"
-        />
-      </ScrollView>
+      <DockedScroll
+        standalone
+        dock={
+          <>
+            {error ? <Banner kind="error" message={error} /> : null}
+            <Button
+              label={copy.deleteButton}
+              variant="destructive"
+              disabled={typed.trim() !== 'DELETE'}
+              loading={busy}
+              onPress={remove}
+              testID="delete-button"
+            />
+          </>
+        }
+      >
+        <View style={styles.deleteBody}>
+          <Text variant="body">{copy.deleteBody}</Text>
+          <Input
+            label={copy.deleteType}
+            value={typed}
+            onChangeText={setTyped}
+            autoCapitalize="characters"
+            autoCorrect={false}
+            testID="delete-confirm"
+          />
+        </View>
+      </DockedScroll>
     </View>
   );
 }
@@ -326,4 +337,5 @@ const styles = StyleSheet.create((theme, rt) => ({
     minHeight: theme.space.rowMin,
   },
   flex: { flex: 1 },
+  deleteBody: { gap: theme.space.md },
 }));

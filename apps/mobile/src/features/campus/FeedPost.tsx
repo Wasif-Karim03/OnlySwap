@@ -2,6 +2,7 @@ import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { Avatar } from '@/components/Avatar';
+import { Button } from '@/components/Button';
 import { IconButton } from '@/components/IconButton';
 import { Icon, type IconName } from '@/components/icons/Icon';
 import { Photo } from '@/components/Photo';
@@ -36,8 +37,9 @@ const SMALL_MAX = 3;
 
 /**
  * One Feed post (DEC 98), laid out like a social feed: who posted it and
- * when (Save at the top right), the words, the photos, the like and comment
- * counts, then Like, Comment, Make offer or Open link, and Share (DEC 121).
+ * when (Save at the top right), the words, the photos, a plain link line on
+ * news, then one quiet line: like and comment with their counts, Share, and
+ * Make offer or Ask for it on the right (DEC 121).
  * News puts the headline above the photos; a listing keeps price and title on
  * white below them (DEC 90).
  */
@@ -108,8 +110,8 @@ export function FeedPost({
               <Text variant="heading">{item.title}</Text>
               {event ? (
                 <View style={styles.event} testID={testID ? `${testID}-event` : undefined}>
-                  <Icon name="cal" size={18} tone="sky" />
-                  <Text variant="label" tone="sky" style={styles.flex}>
+                  <Icon name="cal" size={18} tone="ink2" />
+                  <Text variant="label" style={styles.flex}>
                     {event}
                   </Text>
                 </View>
@@ -169,10 +171,10 @@ export function FeedPost({
           accessibilityRole="link"
           accessibilityLabel={`${copy.openLink}: ${linkHost(link)}`}
           onPress={() => onOpenLink(link)}
-          testID={testID ? `${testID}-link` : undefined}
+          testID={testID ? `${testID}-open-link` : undefined}
         >
           <View style={styles.linkRow}>
-            <Text variant="label" tone="ink2" numberOfLines={1} style={styles.flex}>
+            <Text variant="label" tone="ink2" numberOfLines={1} style={styles.linkText}>
               {linkHost(link)}
             </Text>
             <Icon name="arrow" size={18} tone="ink2" />
@@ -180,31 +182,12 @@ export function FeedPost({
         </Tappable>
       ) : null}
 
-      {likes > 0 || commentCount > 0 ? (
-        <View style={styles.counts} testID={testID ? `${testID}-counts` : undefined}>
-          <Text variant="meta" tone="ink2" style={styles.flex}>
-            {likesText(likes)}
-          </Text>
-          {commentCount > 0 ? (
-            <Tappable
-              accessibilityRole="button"
-              accessibilityLabel={`${commentsText(commentCount)}. ${commentCopy.openComments}`}
-              onPress={onComments}
-              testID={testID ? `${testID}-comment-count` : undefined}
-            >
-              <Text variant="meta" tone="ink2">
-                {commentsText(commentCount)}
-              </Text>
-            </Tappable>
-          ) : null}
-        </View>
-      ) : null}
-
+      {/* One quiet line: the counts sit next to their icons, so no counts line above. */}
       <View style={styles.actions}>
         <Action
           icon="heart"
-          label={commentCopy.like}
-          a11yLabel={commentCopy.likePost}
+          count={likesText(likes)}
+          a11yLabel={[commentCopy.likePost, likesText(likes)].filter(Boolean).join('. ')}
           selected={liked}
           filled={liked}
           onPress={onLike}
@@ -212,33 +195,30 @@ export function FeedPost({
         />
         <Action
           icon="chat"
-          label={commentCopy.comment}
-          a11yLabel={commentCopy.openComments}
+          count={commentsText(commentCount)}
+          a11yLabel={[commentCopy.openComments, commentsText(commentCount)]
+            .filter(Boolean)
+            .join('. ')}
           onPress={onComments}
           testID={testID ? `${testID}-comment` : undefined}
         />
+        <Action
+          icon="share"
+          a11yLabel={copy.share}
+          onPress={onShare}
+          testID={testID ? `${testID}-share` : undefined}
+        />
+        <View style={styles.flex} />
         {!news && !item.is_own && item.status === 'active' ? (
-          <Action
-            icon="tag"
+          <Button
             label={item.kind === 'free' ? copy.askForIt : copy.makeOffer}
+            variant="text"
+            size="S"
+            fullWidth={false}
             onPress={onOffer}
             testID={testID ? `${testID}-offer` : undefined}
           />
         ) : null}
-        {link ? (
-          <Action
-            icon="arrow"
-            label={copy.openLink}
-            onPress={() => onOpenLink(link)}
-            testID={testID ? `${testID}-open-link` : undefined}
-          />
-        ) : null}
-        <Action
-          icon="share"
-          label={copy.share}
-          onPress={onShare}
-          testID={testID ? `${testID}-share` : undefined}
-        />
       </View>
 
       {/* Save sits over the header's right edge, outside the open-post button. */}
@@ -265,7 +245,7 @@ export function FeedPost({
 
 function Action({
   icon,
-  label,
+  count = '',
   a11yLabel,
   selected = false,
   filled = false,
@@ -273,8 +253,9 @@ function Action({
   testID,
 }: {
   icon: IconName;
-  label: string;
-  a11yLabel?: string;
+  /** "3 likes", "2 comments": next to the icon, empty at zero. */
+  count?: string;
+  a11yLabel: string;
   selected?: boolean;
   filled?: boolean;
   onPress: () => void;
@@ -283,10 +264,9 @@ function Action({
   return (
     <Tappable
       accessibilityRole="button"
-      accessibilityLabel={a11yLabel ?? label}
+      accessibilityLabel={a11yLabel}
       {...a11yState({ selected })}
       onPress={onPress}
-      style={styles.grow}
       testID={testID}
     >
       <View style={styles.action}>
@@ -297,27 +277,20 @@ function Action({
           strokeWidth={selected ? 2.4 : 1.8}
           filled={filled}
         />
-        <Text
-          variant={selected ? 'bodyStrong' : 'label'}
-          tone={selected ? 'ink' : 'ink2'}
-          numberOfLines={1}
-        >
-          {label}
-        </Text>
+        {count ? (
+          <Text variant="label" tone={selected ? 'ink' : 'ink2'} numberOfLines={1}>
+            {count}
+          </Text>
+        ) : null}
       </View>
     </Tappable>
   );
 }
 
 const styles = StyleSheet.create((theme) => ({
-  card: {
-    borderRadius: theme.radius.card,
-    overflow: 'hidden',
-    backgroundColor: theme.colors.card,
-  },
+  // Flat rows on the page; the Feed draws the lines between them.
+  card: { overflow: 'hidden' },
   flex: { flex: 1 },
-  // Actions share the row by their own width, so "Make offer" is not cut.
-  grow: { flexGrow: 1, flexShrink: 1, flexBasis: 'auto' },
   // Room on the right of the header for Save.
   headRoom: { paddingRight: theme.size.hit + theme.space.sm },
   corner: {
@@ -326,13 +299,6 @@ const styles = StyleSheet.create((theme) => ({
     right: theme.space.xs,
     minHeight: theme.size.hit,
     justifyContent: 'center',
-  },
-  counts: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.space.md,
-    paddingHorizontal: theme.space.lg,
-    paddingTop: theme.space.sm,
   },
   head: {
     flexDirection: 'row',
@@ -356,31 +322,32 @@ const styles = StyleSheet.create((theme) => ({
     justifyContent: 'center',
     backgroundColor: theme.colors.overlay,
   },
+  // The news link is one plain line: host and an arrow, no fill.
   linkRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.space.sm,
-    marginHorizontal: theme.space.lg,
-    marginTop: theme.space.xs,
+    gap: theme.space.xs,
     minHeight: theme.size.hit,
-    paddingHorizontal: theme.space.md,
-    borderRadius: theme.radius.control,
-    backgroundColor: theme.colors.bg2,
+    paddingHorizontal: theme.space.lg,
   },
+  linkText: { flexShrink: 1 },
+  // Wraps at large text sizes so "Make offer" is never cut.
   actions: {
     flexDirection: 'row',
-    marginTop: theme.space.sm,
-    marginHorizontal: theme.space.sm,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.line,
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: theme.space.xs,
+    paddingHorizontal: theme.space.sm,
+    paddingBottom: theme.space.xs,
   },
   action: {
+    minWidth: theme.size.hit,
     minHeight: theme.size.hit,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: theme.space.xs,
-    paddingHorizontal: theme.space.xs,
+    paddingHorizontal: theme.space.sm,
   },
   own: { minHeight: theme.size.hit, justifyContent: 'center', paddingHorizontal: theme.space.md },
 }));

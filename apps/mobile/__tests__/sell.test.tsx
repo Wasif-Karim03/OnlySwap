@@ -354,6 +354,36 @@ describe('P5-SELL-02 D01 Sell · photos', () => {
     await waitFor(() => expect(router.getPathname()).toBe('/sell/details'));
   });
 
+  it('processes at most two photos at a time, then the rest', async () => {
+    const pending: (() => void)[] = [];
+    const api = fakeApi({
+      uploadPhoto: jest.fn(
+        () =>
+          new Promise((resolve) =>
+            pending.push(() =>
+              resolve({ path: 'p', thumbPath: 't', width: 1, height: 1, blurhash: null }),
+            ),
+          ),
+      ),
+    });
+    const store = createDraftStore(memoryStorage(), { now: () => NOW });
+    const four = ['a', 'b', 'c', 'd'].map((n) => ({ uri: `file:///${n}.jpg`, width: 1, height: 1 }));
+    setup('/sell', photosRoute(api, store, { pick: async () => four }));
+    expect(await screen.findByText(sell.photosBody)).toBeTruthy();
+    tap('sell-add-library');
+    await waitFor(() => expect(api.uploadPhoto).toHaveBeenCalledTimes(2));
+    await act(async () => pending.shift()?.());
+    await waitFor(() => expect(api.uploadPhoto).toHaveBeenCalledTimes(3));
+    await act(async () => {
+      while (pending.length) pending.shift()?.();
+    });
+    await waitFor(() => expect(api.uploadPhoto).toHaveBeenCalledTimes(4));
+    await act(async () => pending.shift()?.());
+    await waitFor(() =>
+      expect(store.getState().draft.photos.every((p) => p.status === 'done')).toBe(true),
+    );
+  });
+
   it('a failed upload shows Retry; retrying uploads it again', async () => {
     const api = fakeApi({ uploadPhoto: jest.fn().mockRejectedValueOnce(new Error('offline')) });
     api.uploadPhoto.mockImplementation(async () => ({

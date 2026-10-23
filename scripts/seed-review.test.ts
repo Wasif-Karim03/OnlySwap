@@ -7,6 +7,7 @@ import {
   AROUND_CAMPUS,
   DEMO_BOT,
   DEMO_CAMPUS,
+  DEMO_SPOT,
   QUAD_POLL_OPTIONS,
   QUAD_POSTS,
   QUAD_REPLIES,
@@ -176,4 +177,27 @@ test('env: url, key and a long enough password are required', () => {
     }).url,
     'https://x.supabase.co',
   );
+});
+
+test('upserts the demo meetup spot the bot names, on its fixed id (idempotent)', async () => {
+  const { f, calls } = fakeProject();
+  const lines: string[] = [];
+  await seedReview(env, f, (l) => lines.push(l));
+  await seedReview(env, f, () => {});
+  const spots = calls.filter(
+    (c) => c.method === 'POST' && c.path.startsWith('/rest/v1/safe_spots'),
+  );
+  assert.equal(spots.length, 2);
+  assert.ok(spots.every((c) => c.path === '/rest/v1/safe_spots?on_conflict=id'));
+  const row = (spots[0]?.body as Json[])[0] as typeof DEMO_SPOT;
+  assert.equal(row.id, '34000000-0000-4000-8000-000000000001');
+  assert.equal(row.name, 'Demo Library lobby');
+  assert.equal(row.campus_id, DEMO_CAMPUS.id);
+  assert.equal(row.active, true);
+  assert.equal(row.designation, 'public');
+  assert.deepEqual((spots[1]?.body as Json[])[0], row);
+  // After campus_domains, so the campus exists first.
+  const order = calls.map((c) => c.path.split('?')[0]);
+  assert.ok(order.indexOf('/rest/v1/campus_domains') < order.indexOf('/rest/v1/safe_spots'));
+  assert.ok(lines.some((l) => l.includes('Demo Library lobby')));
 });

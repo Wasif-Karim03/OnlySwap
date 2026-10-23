@@ -209,7 +209,7 @@ export function ChatScreen({
     !readOnly && !meetupQ.data ? (
       <Button
         label={copy.planMeetup}
-        size="S"
+        size="M"
         variant="dark"
         fullWidth={false}
         onPress={() => router.push({ pathname: '/chat/[id]/meetup', params: { id } })}
@@ -223,7 +223,7 @@ export function ChatScreen({
     !(c.role === 'seller' ? c.seller_outcome : c.buyer_outcome) ? (
       <Button
         label={copy.didItSell}
-        size="S"
+        size="M"
         variant="dark"
         fullWidth={false}
         onPress={() => router.push({ pathname: '/chat/[id]/deal', params: { id } })}
@@ -241,8 +241,8 @@ export function ChatScreen({
     (c.listing_status === 'active' || c.listing_status === 'hold') ? (
       <Button
         label={copy.markSold}
-        size="S"
-        variant="secondary"
+        size="M"
+        variant="text"
         fullWidth={false}
         onPress={() =>
           router.push({
@@ -390,11 +390,6 @@ export function ChatScreen({
             </Text>
           ) : null}
         </View>
-        {actions ? (
-          <View style={styles.dealActions} testID="chat-deal-actions">
-            {actions}
-          </View>
-        ) : null}
       </View>
       {meetupQ.data ? (
         <MeetupCard
@@ -429,6 +424,12 @@ export function ChatScreen({
           }
           testID="chat-list"
         />
+        {/* One contextual action in thumb reach, right above the composer (P7). */}
+        {actions && !readOnly ? (
+          <View style={styles.dealActions} testID="chat-deal-actions">
+            {actions}
+          </View>
+        ) : null}
         {readOnly ? (
           <View style={styles.readOnly} testID="chat-read-only">
             <Banner
@@ -436,9 +437,11 @@ export function ChatScreen({
               message={
                 c.status === 'closed'
                   ? copy.closed
-                  : c.i_blocked
-                    ? fill(copy.youBlocked, { name })
-                    : copy.blocked
+                  : c.other_deleted
+                    ? copy.deletedBanner
+                    : c.i_blocked
+                      ? fill(copy.youBlocked, { name })
+                      : copy.blocked
               }
             />
           </View>
@@ -591,9 +594,13 @@ const styles = StyleSheet.create((theme, rt) => ({
   dealActions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    alignItems: 'center',
     gap: theme.space.sm,
     paddingHorizontal: theme.space.screen,
-    paddingBottom: theme.space.md,
+    paddingVertical: theme.space.sm,
+    borderTopWidth: 1,
+    borderColor: theme.colors.line,
+    backgroundColor: theme.colors.bg,
   },
   thumb: { width: theme.size.hit, height: theme.size.hit },
   list: { paddingVertical: theme.space.md },

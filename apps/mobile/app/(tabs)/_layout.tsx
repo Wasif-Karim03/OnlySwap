@@ -3,6 +3,7 @@ import type { ComponentProps } from 'react';
 import { useKeyboardState } from 'react-native-keyboard-controller';
 
 import { TabBar, type TabItem } from '@/components/TabBar';
+import { useTabPrefetch } from '@/features/me/useTabPrefetch';
 import { usePushHandling } from '@/lib/push';
 import { tabs } from '@/strings';
 import { useLayout } from '@/theme/layout';
@@ -54,6 +55,8 @@ function AppTabBar({ state, navigation, rail }: TabBarProps & { rail: boolean })
 export default function TabsLayout() {
   // Signed-in area: pushes open the right screen and the token stays registered (P9-PUSH-02).
   usePushHandling(true);
+  // First visits to Profile and Inbox open on data, not a skeleton.
+  useTabPrefetch();
   // iPad, wide window: a sidebar on the left instead of bottom tabs (board N5/N6).
   const rail = useLayout().wide;
   return (

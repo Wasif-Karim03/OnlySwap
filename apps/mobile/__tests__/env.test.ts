@@ -65,6 +65,32 @@ describe('P1-ENV-01 env validation', () => {
     ).toThrow(/is a secret key/);
   });
 
+  it('validates the optional Turnstile site key (LR-04)', () => {
+    expect(parseEnv({ ...valid, EXPO_PUBLIC_TURNSTILE_SITE_KEY: '' })).toEqual(valid);
+    expect(
+      parseEnv({ ...valid, EXPO_PUBLIC_TURNSTILE_SITE_KEY: '1x00000000000000000000AA' }),
+    ).toEqual({
+      ...valid,
+      EXPO_PUBLIC_TURNSTILE_SITE_KEY: '1x00000000000000000000AA',
+    });
+    expect(() => parseEnv({ ...valid, EXPO_PUBLIC_TURNSTILE_SITE_KEY: 'short' })).toThrow(
+      /EXPO_PUBLIC_TURNSTILE_SITE_KEY must be a Turnstile site key/,
+    );
+    expect(() =>
+      parseEnv({ ...valid, EXPO_PUBLIC_TURNSTILE_SITE_KEY: 'has spaces in it' }),
+    ).toThrow(/EXPO_PUBLIC_TURNSTILE_SITE_KEY/);
+  });
+
+  it('the web build requires the Turnstile site key (IR4-04)', () => {
+    expect(() => parseEnv(valid, 'web')).toThrow(EnvError);
+    expect(() => parseEnv(valid, 'web')).toThrow(/EXPO_PUBLIC_TURNSTILE_SITE_KEY is missing/);
+    expect(
+      parseEnv({ ...valid, EXPO_PUBLIC_TURNSTILE_SITE_KEY: '1x00000000000000000000AA' }, 'web'),
+    ).toEqual({ ...valid, EXPO_PUBLIC_TURNSTILE_SITE_KEY: '1x00000000000000000000AA' });
+    expect(parseEnv(valid, 'ios')).toEqual(valid);
+    expect(parseEnv(valid)).toEqual(valid);
+  });
+
   it('treats empty telemetry values as not set and checks set ones', () => {
     const env = parseEnv({
       ...valid,

@@ -397,20 +397,23 @@ export function CommentsScreen({
                       </Text>
                     </View>
                   </Tappable>
-                  <View style={styles.sorts} accessibilityLabel={copy.sortLabel}>
-                    <Chip
-                      label={copy.sortTop}
-                      selected={sort === 'top'}
-                      onPress={() => setSort('top')}
-                      testID="comments-sort-top"
-                    />
-                    <Chip
-                      label={copy.sortNew}
-                      selected={sort === 'new'}
-                      onPress={() => setSort('new')}
-                      testID="comments-sort-new"
-                    />
-                  </View>
+                  {/* Sorting means nothing until there is something to sort (DESIGN_REVIEW 3.02). */}
+                  {items.length > 0 ? (
+                    <View style={styles.sorts} accessibilityLabel={copy.sortLabel}>
+                      <Chip
+                        label={copy.sortTop}
+                        selected={sort === 'top'}
+                        onPress={() => setSort('top')}
+                        testID="comments-sort-top"
+                      />
+                      <Chip
+                        label={copy.sortNew}
+                        selected={sort === 'new'}
+                        onPress={() => setSort('new')}
+                        testID="comments-sort-new"
+                      />
+                    </View>
+                  ) : null}
                 </View>
               </View>
             ) : null

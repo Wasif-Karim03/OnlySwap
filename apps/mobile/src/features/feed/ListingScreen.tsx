@@ -118,6 +118,7 @@ export function ListingScreen({
   const query = useQuery({ queryKey: listingKey(id), queryFn: () => api.getListing(id) });
   const spotsQuery = useQuery({ queryKey: ['spots'], queryFn: spots, staleTime: 3600_000 });
   const [options, setOptions] = useState(false);
+  const [ownerOptions, setOwnerOptions] = useState(false);
   const [reporting, setReporting] = useState(false);
   const viewed = useRef(false);
   const data = query.data;
@@ -263,7 +264,6 @@ export function ListingScreen({
             ? copy.removed
             : null;
 
-  const statusTone = item.status === 'sold' ? 'ink3' : 'amber';
   const sellerAvatar = item.seller.avatar_path ? mediaUrl(base, item.seller.avatar_path) : null;
   const sellerMeta = yearLabel(item.seller.year) ?? (news ? '' : copy.sellerTitle);
   // A news post's place is in meet_note; it has no meetup to plan.
@@ -282,7 +282,8 @@ export function ListingScreen({
         />
       );
     } else if (item.status === 'sold') {
-      cta = <Button label={copy.sold} disabled onPress={() => {}} />;
+      // Sold: no dock; the word beside the price says it (DESIGN_REVIEW 3.02 B02).
+      cta = null;
     } else if (item.kind === 'wanted') {
       cta = canAnswer(item) ? (
         <Button
@@ -307,7 +308,8 @@ export function ListingScreen({
         />
       ) : null;
     } else if (item.seller.away && (item.kind === 'sale' || item.kind === 'free')) {
-      cta = <Button label={copy.sellerAway} disabled onPress={() => {}} testID="listing-away" />;
+      // Away: the dock keeps only the heart; the note under the meta explains why.
+      cta = null;
     } else if (item.kind !== 'food') {
       cta = (
         <Button
@@ -319,7 +321,16 @@ export function ListingScreen({
       );
     }
   }
-  const docked = owner || cta !== null;
+  // Buyers keep Save in the thumb zone whenever the listing isn't sold.
+  const buyerDock = !owner && item.status !== 'sold';
+  const ownerDock = owner && !campusKind;
+  const docked = buyerDock || ownerDock;
+  const firm = !item.open_to_offers && item.kind === 'sale';
+  const meta = [metaLine(item, now()), firm ? copy.notOpenToOffers : null]
+    .filter(Boolean)
+    .join(copy.metaSeparator);
+  const commentsRow = !owner && item.comments_enabled === true;
+  const openStats = () => router.push({ pathname: '/listing/[id]/stats', params: { id } });
 
   return (
     <View style={styles.root} testID="screen-listing">
@@ -353,7 +364,7 @@ export function ListingScreen({
               {price}
             </Text>
             {statusTag ? (
-              <Text variant="label" tone={statusTone} testID="listing-status">
+              <Text variant="label" tone="ink2" testID="listing-status">
                 {statusTag}
               </Text>
             ) : null}
@@ -365,8 +376,13 @@ export function ListingScreen({
             {item.title}
           </Text>
           <Text variant="meta" tone="ink2">
-            {metaLine(item, now())}
+            {meta}
           </Text>
+          {item.status === 'hold' && !owner ? (
+            <Text variant="body" tone="ink2" testID="listing-hold">
+              {copy.onHoldBody}
+            </Text>
+          ) : null}
           {!owner && item.seller.away && (item.kind === 'sale' || item.kind === 'free') ? (
             <Text variant="body" tone="ink2" testID="listing-away-note">
               {fill(copy.sellerAwayBody, { name: sellerName(item) })}
@@ -392,11 +408,6 @@ export function ListingScreen({
                 : owner
                   ? campusCopy.wantedOwnBody
                   : campusCopy.listingWantedBody}
-            </Text>
-          ) : null}
-          {!item.open_to_offers && item.kind === 'sale' ? (
-            <Text variant="meta" tone="ink2">
-              {copy.notOpenToOffers}
             </Text>
           ) : null}
 
@@ -428,27 +439,17 @@ export function ListingScreen({
             )
           ) : null}
           {owner ? (
-            <View style={styles.stats} testID="listing-owner-stats">
-              <Text variant="label" tone="ink2">
-                {fill(copy.statViews, { n: item.view_count })}
-              </Text>
-              <Text variant="label" tone="ink2">
-                {fill(copy.statSaves, { n: item.save_count })}
-              </Text>
-              <Text variant="label" tone="ink2">
-                {fill(copy.statOffers, { n: item.offer_count })}
-              </Text>
-            </View>
-          ) : null}
-
-          {item.status === 'hold' && !owner ? (
-            <View style={styles.hold} testID="listing-hold">
-              <Text variant="bodyStrong" tone="amber">
-                {copy.onHold}
-              </Text>
-              <Text variant="body" tone="ink2">
-                {copy.onHoldBody}
-              </Text>
+            <View style={styles.list} testID="listing-owner-stats">
+              <LinkRow
+                label={copy.statsRow}
+                values={[
+                  fill(copy.statViews, { n: item.view_count }),
+                  fill(copy.statSaves, { n: item.save_count }),
+                  fill(copy.statOffers, { n: item.offer_count }),
+                ]}
+                onPress={openStats}
+                testID="listing-stats"
+              />
             </View>
           ) : null}
 
@@ -527,6 +528,18 @@ export function ListingScreen({
                 </Text>
               </View>
             ) : null}
+            {commentsRow ? (
+              <View style={styles.divider}>
+                <LinkRow
+                  label={copy.comments}
+                  values={[String(item.comment_count ?? 0)]}
+                  onPress={() =>
+                    router.push({ pathname: '/listing/[id]/comments', params: { id } })
+                  }
+                  testID="listing-comments"
+                />
+              </View>
+            ) : null}
           </View>
           {item.availability.length > 0 ? (
             <Text variant="meta" tone="ink2">
@@ -558,7 +571,7 @@ export function ListingScreen({
         </View>
       </ScrollView>
 
-      {/* White circles over the photo (DEC 90 mock screen 7): back, share, save, more. */}
+      {/* Quiet chrome over the photo: back, share and more. Save lives in the dock (thumb zone). */}
       <View style={styles.top(wide)} pointerEvents="box-none">
         <IconButton
           icon="back"
@@ -575,7 +588,8 @@ export function ListingScreen({
             accessibilityLabel={copy.share}
             onPress={onShare}
           />
-          {!owner ? (
+          {/* A sold listing has no dock, so a buyer un-saves it up here. */}
+          {!owner && !buyerDock ? (
             <IconButton
               icon="heart"
               filled
@@ -585,16 +599,14 @@ export function ListingScreen({
               testID="listing-save"
             />
           ) : null}
-          {!owner ? (
-            <IconButton
-              icon="more"
-              filled
-              surface="card"
-              accessibilityLabel={copy.more}
-              onPress={() => setOptions(true)}
-              testID="listing-more"
-            />
-          ) : null}
+          <IconButton
+            icon="more"
+            filled
+            surface="card"
+            accessibilityLabel={copy.more}
+            onPress={() => (owner ? setOwnerOptions(true) : setOptions(true))}
+            testID="listing-more"
+          />
         </View>
       </View>
 
@@ -602,14 +614,7 @@ export function ListingScreen({
         <View style={styles.dock}>
           {owner ? (
             <>
-              <View style={styles.flex}>
-                <Button
-                  label={copy.edit}
-                  variant="secondary"
-                  onPress={() => router.push({ pathname: '/listing/[id]/edit', params: { id } })}
-                />
-              </View>
-              {!campusKind && (item.status === 'active' || item.status === 'hold') ? (
+              {item.status === 'active' || item.status === 'hold' ? (
                 <View style={styles.flex}>
                   <Button
                     label={dealCopy.markSold}
@@ -619,20 +624,26 @@ export function ListingScreen({
                   />
                 </View>
               ) : null}
-              {campusKind ? null : (
-                <View style={styles.flex}>
-                  <Button
-                    label={copy.seeOffers}
-                    variant="dark"
-                    onPress={() =>
-                      router.push({ pathname: '/listing/[id]/offers', params: { id } })
-                    }
-                  />
-                </View>
-              )}
+              <View style={styles.flex}>
+                <Button
+                  label={copy.seeOffers}
+                  variant="dark"
+                  onPress={() => router.push({ pathname: '/listing/[id]/offers', params: { id } })}
+                />
+              </View>
             </>
           ) : (
-            <View style={styles.flex}>{cta}</View>
+            <>
+              <IconButton
+                icon="heart"
+                filled
+                surface={item.saved ? 'accent' : 'card'}
+                accessibilityLabel={item.saved ? copy.saved : copy.save}
+                onPress={toggleSave}
+                testID="listing-save"
+              />
+              {cta ? <View style={styles.flex}>{cta}</View> : null}
+            </>
           )}
         </View>
       ) : null}
@@ -652,6 +663,31 @@ export function ListingScreen({
             onPress={() => {
               setOptions(false);
               setReporting(true);
+            }}
+          />
+        </GroupedList>
+      </Sheet>
+      <Sheet
+        visible={ownerOptions}
+        onClose={() => setOwnerOptions(false)}
+        title={copy.optionsTitle}
+        testID="listing-owner-options"
+      >
+        <GroupedList>
+          <ListRow
+            label={copy.edit}
+            icon="edit"
+            onPress={() => {
+              setOwnerOptions(false);
+              router.push({ pathname: '/listing/[id]/edit', params: { id } });
+            }}
+          />
+          <ListRow
+            label={copy.statsRow}
+            icon="chart"
+            onPress={() => {
+              setOwnerOptions(false);
+              openStats();
             }}
           />
         </GroupedList>
@@ -681,6 +717,53 @@ export function ListingScreen({
   );
 }
 
+/**
+ * A row in the listing's hairline list that opens another screen: label on
+ * the left, its values in ink2 on the right, then a chevron (Comments, Stats).
+ */
+function LinkRow({
+  label,
+  values,
+  onPress,
+  testID,
+}: {
+  label: string;
+  values: string[];
+  onPress: () => void;
+  testID?: string;
+}) {
+  return (
+    <Tappable
+      accessibilityRole="button"
+      accessibilityLabel={[label, ...values].join(', ')}
+      onPress={onPress}
+      testID={testID}
+    >
+      <View style={styles.listRow}>
+        <Text variant="body" style={styles.flex}>
+          {label}
+        </Text>
+        {/* One Text per value so each wraps whole at large text sizes. */}
+        <View style={styles.values}>
+          {values.map((v, i) => (
+            <View key={`${i}-${v}`} style={styles.valueItem}>
+              {i > 0 ? (
+                <Text variant="body" tone="ink3">
+                  {copy.metaSeparator}
+                </Text>
+              ) : null}
+              <Text variant="body" tone="ink2">
+                {v}
+              </Text>
+            </View>
+          ))}
+        </View>
+        <Icon name="chev" size={18} tone="ink3" />
+      </View>
+    </Tappable>
+  );
+}
+
 function Unavailable({ result, onBack }: { result: { access: string }; onBack: () => void }) {
   const router = useRouter();
   const [title, body] =
@@ -693,7 +776,13 @@ function Unavailable({ result, onBack }: { result: { access: string }; onBack: (
     <View style={styles.root} testID={`screen-listing-${result.access}`}>
       <NavBar onLeading={onBack} />
       <EmptyState
-        icon={result.access === 'blocked' ? 'ban' : 'tag'}
+        icon={
+          result.access === 'blocked'
+            ? 'ban'
+            : result.access === 'other_campus'
+              ? 'building'
+              : 'tag'
+        }
         title={title}
         body={body}
         action={{ label: copy.backToDiscover, onPress: () => router.replace('/discover') }}
@@ -737,8 +826,6 @@ const styles = StyleSheet.create((theme, rt) => ({
   },
   priceRow: { flexDirection: 'row', alignItems: 'center', gap: theme.space.sm },
   event: { flexDirection: 'row', alignItems: 'center', gap: theme.space.xs },
-  stats: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.lg, marginTop: theme.space.sm },
-  hold: { gap: theme.space.xs, marginTop: theme.space.md },
   list: {
     marginTop: theme.space.lg,
     marginBottom: theme.space.sm,
@@ -756,6 +843,13 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingVertical: theme.space.sm,
   },
   divider: { borderTopWidth: 1, borderColor: theme.colors.line },
+  values: {
+    flexShrink: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-end',
+  },
+  valueItem: { flexDirection: 'row' },
   glyph: { width: theme.size.avatarM, alignItems: 'center' },
   description: { marginTop: theme.space.md },
   dock: {

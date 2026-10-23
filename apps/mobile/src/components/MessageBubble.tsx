@@ -241,6 +241,19 @@ export function MessageBubble({
           {time}
         </Text>
       ) : null}
+      {/* Queued or on its way: say so in words, not only the dimmed bubble. The label already reads it. */}
+      {state === 'pending' && last && uploading === null ? (
+        <Text
+          variant="meta"
+          tone="ink3"
+          style={styles.time}
+          importantForAccessibility="no"
+          accessibilityElementsHidden
+          testID={testID ? `${testID}-sending` : undefined}
+        >
+          {copy.sending}
+        </Text>
+      ) : null}
       {state === 'failed' ? (
         <View style={styles.row}>
           <Icon name="alert" size={14} tone="red" />

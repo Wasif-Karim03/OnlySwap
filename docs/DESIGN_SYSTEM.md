@@ -39,7 +39,7 @@ App code never uses raw hex values, font sizes or spacing numbers.
 | `amber` / `amberBg` | #9A6200 / #FBF0DA | #F5B84B / #2A2110 | warnings, held |
 | `sky` / `skyBg` | #1A5FA6 / #E2F0FF | #8CC3FF / #13263A | meetups (DEC 90) |
 | `peach` / `peachBg` | #9A4414 / #FFE9D9 | #FFB58A / #36200F | free food (DEC 90) |
-| `lilac` / `lilacBg` | #5B45C4 / #ECE7FF | #B9A9FF / #231D40 | the Quad (DEC 90) |
+| `lilac` / `lilacBg` | #5B45C4 / #ECE7FF | #B9A9FF / #231D40 | retired (DEC 142): no new uses; the Quad and Settings tiles use neutral `bg2` and ink tones. The token stays until no code uses it |
 | `overlay` | rgba(0,0,0,.45) | rgba(0,0,0,.6) | sheet scrim |
 
 **Accent options** (owner picks one; the rest are not user settings): Pistachio #C8E27D, Butter #FFD95A, Tangerine #FF9A4D, Coral #FF7B67, Bubblegum #FFA3D1, Sky #7CC0FF, Cobalt #2B45E8 (`onAccent` #FFFFFF).
@@ -60,14 +60,14 @@ System fonts: SF Pro (iOS), Roboto (Android), `-apple-system, system-ui` (web). 
 |---|---|---|
 | `display` | 34 / 800 / −0.04em / 1.05 | onboarding hero, big moments |
 | `title` | 26 / 800 / −0.035em / 1.1 | tab root large titles |
-| `heading` | 20 / 750 / −0.025em / 1.2 | sections, sheet titles |
+| `heading` | 20 / 700 / −0.025em / 1.2 | sections, sheet titles |
 | `price` | 28 / 800 / −0.04em / 1.0 | card and listing price |
 | `body` | 16 / 400 / 0 / 1.5 | reading text |
-| `bodyStrong` | 16 / 650 | list primary |
+| `bodyStrong` | 16 / 600 | list primary |
 | `label` | 14 / 600 | buttons in lists, tags, chips |
 | `meta` | 12.5 / 500 / 1.35 | times, counts, hints |
 
-`allowFontScaling` stays on. `maxFontSizeMultiplier` is 1.4 **only** on photo overlays and the tab bar.
+`allowFontScaling` stays on. `maxFontSizeMultiplier` is 1.4 **only** on photo overlays, the tab bar and fixed-size chrome (OTP cells, avatar initials, badges, the segmented pill).
 
 ## 4. Space, radius, elevation
 
@@ -96,7 +96,7 @@ System fonts: SF Pro (iOS), Roboto (Android), `-apple-system, system-ui` (web). 
 
 **Haptics budget (UX-09):**
 - `selection` at the swipe threshold
-- `success` on offer sent, offer accepted and listing posted
+- `success` on offer sent, offer accepted and listing posted (a marketplace listing; Food and Wanted posts get no haptic, DEC 142)
 - `warning` on error shake
 
 Nothing else gets a haptic.

@@ -37,7 +37,7 @@
 | T13 | Information disclosure | Secrets in the app bundle | only `EXPO_PUBLIC_*` bundled; bundle scan in CI | T-SEC-12 |
 | T14 | Information disclosure | Location leakage via photos | EXIF stripped by re-encode | T-UNIT-MEDIA-03 |
 | T15 | Information disclosure | Meetup share link | 22-char token, expires start + 24 h, first names + spot only, `noindex`, disclosed at share time | T-INT-MEET-01 |
-| T16 | Information disclosure | Email enumeration | `lookup_school` reveals only supported domains (public); uniform OTP and waitlist responses | T-SEC-11 |
+| T16 | Information disclosure | Email enumeration | `lookup_school` reveals only supported domains (public); uniform OTP responses in sign-up mode and uniform waitlist responses. Accepted exception (DEC 140): sign-in mode says when an email has no account, rate limited by Supabase Auth | T-SEC-11 |
 | T17 | Denial of service | Media Worker quota exhaustion (100k/day) | long cache + client disk cache; per-IP limit; the domain (Q2) moves serving to the cache/WAF | Perf-10 |
 | T18 | Denial of service | Spam writes fill the DB (500 MB) | per-action rate limits; new-account limits; pruning; alert at 350 MB | T-SEC-10 |
 | T19 | Denial of service | Gmail sender lockout | outbox drip ≤150/day (codes keep 350), waitlist blasts last; codes only when needed; Plan B Resend (DEC 109) | Perf-14 |

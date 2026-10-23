@@ -102,7 +102,8 @@ const styles = StyleSheet.create((theme) => ({
     gap: theme.space.md,
     paddingBottom: theme.space['2xl'],
   },
-  heading: { marginTop: theme.space.md },
+  // Tighter section spacing (3.07): the column gap plus a small step.
+  heading: { marginTop: theme.space.xs },
   li: { flexDirection: 'row', gap: theme.space.sm, paddingLeft: theme.space.xs },
   row: {
     flexDirection: 'row',

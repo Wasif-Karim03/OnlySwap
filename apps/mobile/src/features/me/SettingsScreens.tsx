@@ -17,6 +17,7 @@ import { OptionRow } from '@/components/OptionRow';
 import { SkeletonList } from '@/components/Skeleton';
 import { Text } from '@/components/Text';
 import { Toggle } from '@/components/Toggle';
+import { useToastStore } from '@/components/Toast';
 import { setAnalyticsOptOut } from '@/lib/analytics';
 import { deviceTz, errorText, toAppError } from '@/lib/errors';
 import { fill } from '@/lib/format';
@@ -31,6 +32,7 @@ import {
   locale as activeLocale,
   resolveLocale,
   setLanguage,
+  notificationsScreen,
   settings as copy,
   type LanguagePref,
 } from '@/strings';
@@ -40,6 +42,7 @@ import { THEME_MODES, useThemeModeStore, type ThemeMode } from '@/theme/mode';
 import { AppIconPicker, LiveActivityToggle } from '../appIcon/AppearanceExtras';
 import { authApi, type AuthApi } from '../auth/api';
 import { meApi, type Me, type MeApi } from './api';
+import { DockedScroll } from '../sell/SellStep';
 import { exportApi, type ExportApi } from './exportData';
 import { meKey } from './MeScreens';
 
@@ -59,18 +62,25 @@ export function SettingsScreen({
   const router = useRouter();
   const leave = useLeave('/profile');
   const themeMode = useThemeModeStore((st) => st.mode);
-  const [confirmAll, setConfirmAll] = useState(false);
+  const [confirm, setConfirm] = useState<'local' | 'global' | null>(null);
   const signOut = async (scope: 'local' | 'global') => {
-    await beforeSignOut().catch(() => {});
-    await auth.signOut(scope);
-    router.replace('/welcome');
+    try {
+      await beforeSignOut().catch(() => {});
+      await auth.signOut(scope);
+      router.replace('/welcome');
+    } catch {
+      useToastStore.getState().show('error', copy.signOutFailed);
+    } finally {
+      setConfirm(null);
+    }
   };
   return (
     <View style={styles.grey} testID="screen-settings">
       <NavBar onLeading={leave} />
       <ScrollView contentContainerStyle={styles.body}>
-        {/* DEC 90 mock screen 17: grey page, large title, white inset groups
-            with the small colored icon tiles people know from iOS Settings. */}
+        {/* DEC 90 mock screen 17: grey page, large title, white inset groups.
+            Icons are plain ink: the colored tiles were decoration, and lilac
+            is retired (DESIGN_REVIEW 3.06, owner 2026-10-23). */}
         <Text variant="display" accessibilityRole="header">
           {copy.title}
         </Text>
@@ -78,73 +88,51 @@ export function SettingsScreen({
           <ListRow
             label={copy.notifications}
             icon="bell"
-            iconTile="red"
             onPress={() => router.push('/settings/notifications')}
           />
           <ListRow
             label={copy.privacy}
             icon="lock"
-            iconTile="sky"
             onPress={() => router.push('/settings/privacy')}
           />
           <ListRow
             label={copy.appearance}
             icon="eye"
-            iconTile="ink"
             value={copy.modes[themeMode]}
             onPress={() => router.push('/settings/appearance')}
           />
           <ListRow
             label={copy.language}
             icon="chat"
-            iconTile="green"
             value={copy.languages[getLanguagePref()]}
             onPress={() => router.push('/settings/language')}
           />
         </GroupedList>
         <GroupedList surface="card">
-          <ListRow
-            label={copy.safety}
-            icon="shield"
-            iconTile="lilac"
-            onPress={() => router.push('/safety')}
-          />
+          <ListRow label={copy.safety} icon="shield" onPress={() => router.push('/safety')} />
           <ListRow
             label={copy.blocked}
             icon="ban"
-            iconTile="ink3"
             onPress={() => router.push('/settings/blocked')}
           />
-          <ListRow
-            label={copy.help}
-            icon="help"
-            iconTile="peach"
-            onPress={() => router.push('/help')}
-          />
-          <ListRow
-            label={copy.about}
-            icon="info"
-            iconTile="amber"
-            onPress={() => router.push('/settings/about')}
-          />
+          <ListRow label={copy.help} icon="help" onPress={() => router.push('/help')} />
+          <ListRow label={copy.about} icon="info" onPress={() => router.push('/settings/about')} />
         </GroupedList>
         <GroupedList surface="card">
           <ListRow
             label={copy.school}
             icon="mail"
-            iconTile="sky"
             onPress={() => router.push('/settings/school')}
           />
           <ListRow
             label={copy.data}
             icon="download"
-            iconTile="ink3"
             onPress={() => router.push('/settings/data')}
           />
         </GroupedList>
         <GroupedList surface="card">
-          <ListRow label={copy.signOut} onPress={() => void signOut('local')} />
-          <ListRow label={copy.signOutAll} onPress={() => setConfirmAll(true)} />
+          <ListRow label={copy.signOut} onPress={() => setConfirm('local')} />
+          <ListRow label={copy.signOutAll} onPress={() => setConfirm('global')} />
           <ListRow
             label={copy.deleteAccount}
             destructive
@@ -153,15 +141,20 @@ export function SettingsScreen({
         </GroupedList>
       </ScrollView>
       <ConfirmDialog
-        visible={confirmAll}
+        visible={confirm === 'local'}
+        title={copy.signOutTitle}
+        confirmLabel={copy.signOut}
+        onConfirm={() => signOut('local')}
+        onCancel={() => setConfirm(null)}
+        testID="sign-out-confirm"
+      />
+      <ConfirmDialog
+        visible={confirm === 'global'}
         title={copy.signOutAllTitle}
         message={copy.signOutAllBody}
         confirmLabel={copy.signOutAllConfirm}
-        onConfirm={async () => {
-          setConfirmAll(false);
-          await signOut('global');
-        }}
-        onCancel={() => setConfirmAll(false)}
+        onConfirm={() => signOut('global')}
+        onCancel={() => setConfirm(null)}
       />
     </View>
   );
@@ -181,6 +174,7 @@ export function PrivacyScreen({ api = meApi }: { api?: MeApi }) {
       await api.updateFlags(patch);
     } catch {
       void q.refetch();
+      useToastStore.getState().show('error', notificationsScreen.saveFailed);
     }
   };
   return (
@@ -329,12 +323,28 @@ export function ChangeSchoolScreen({
   return (
     <View style={styles.root} testID="screen-change-school">
       <NavBar title={copy.schoolTitle} onLeading={leave} />
-      <View style={styles.body}>
-        <Text variant="body">{copy.schoolBody}</Text>
-        {sent ? (
-          <Banner kind="info" message={fill(copy.schoolSent, { email })} />
-        ) : (
-          <>
+      <DockedScroll
+        standalone
+        dock={
+          sent ? undefined : (
+            <>
+              {error ? <Banner kind="error" message={error} /> : null}
+              <Button
+                label={copy.schoolSend}
+                loading={busy}
+                disabled={!/^[^@\s]+@[^@\s]+\.edu$/i.test(email.trim())}
+                onPress={send}
+                testID="school-send"
+              />
+            </>
+          )
+        }
+      >
+        <View style={styles.docked}>
+          <Text variant="body">{copy.schoolBody}</Text>
+          {sent ? (
+            <Banner kind="info" message={fill(copy.schoolSent, { email })} />
+          ) : (
             <Input
               kind="email"
               label={copy.schoolEmail}
@@ -342,17 +352,9 @@ export function ChangeSchoolScreen({
               onChangeText={setEmail}
               testID="school-email"
             />
-            {error ? <Banner kind="error" message={error} /> : null}
-            <Button
-              label={copy.schoolSend}
-              loading={busy}
-              disabled={!/^[^@\s]+@[^@\s]+\.edu$/i.test(email.trim())}
-              onPress={send}
-              testID="school-send"
-            />
-          </>
-        )}
-      </View>
+          )}
+        </View>
+      </DockedScroll>
     </View>
   );
 }
@@ -366,9 +368,6 @@ export function AboutScreen() {
     <View style={styles.root} testID="screen-about">
       <NavBar title={copy.aboutTitle} onLeading={leave} />
       <ScrollView contentContainerStyle={styles.body}>
-        <Text variant="meta" tone="ink2">
-          {fill(copy.version, { version: Constants.expoConfig?.version ?? '1.0.0' })}
-        </Text>
         <GroupedList>
           {/* Bundled copies, readable offline (P14-LEGAL-01). */}
           <ListRow label={copy.terms} onPress={() => router.push('/legal/terms')} />
@@ -376,13 +375,15 @@ export function AboutScreen() {
           <ListRow label={copy.rules} onPress={() => router.push('/legal/rules')} />
           <ListRow label={copy.licenses} onPress={() => setLicenses((v) => !v)} />
           <ListRow label={copy.contact} onPress={() => router.push('/help')} />
-          <ListRow label={copy.data} onPress={() => router.push('/settings/data')} />
         </GroupedList>
         {licenses ? (
           <Text variant="meta" tone="ink2" testID="about-licenses">
             {copy.licensesBody}
           </Text>
         ) : null}
+        <Text variant="meta" tone="ink3">
+          {fill(copy.version, { version: Constants.expoConfig?.version ?? '1.0.0' })}
+        </Text>
       </ScrollView>
     </View>
   );
@@ -438,42 +439,54 @@ export function DataExportScreen({
   return (
     <View style={styles.root} testID="screen-data-export">
       <NavBar title={copy.dataTitle} onLeading={leave} />
-      <ScrollView contentContainerStyle={styles.body}>
-        <Text variant="body">{copy.dataIntro}</Text>
-        <View style={styles.list}>
-          <Text variant="label" tone="ink2" accessibilityRole="header">
-            {copy.dataIncludesTitle}
-          </Text>
-          {copy.dataIncludes.map((line) => (
-            <Text key={line} variant="body">
-              {`\u2022 ${line}`}
+      <DockedScroll
+        standalone
+        dock={
+          state.kind === 'sent' ? undefined : (
+            <>
+              {state.kind === 'error' ? <Banner kind="error" message={state.message} /> : null}
+              <Button
+                label={copy.dataButton}
+                loading={busy}
+                disabled={offline}
+                onPress={() => void send()}
+                testID="data-export-send"
+              />
+              {/* The app-wide offline banner already shows; this only says why the button is off. */}
+              {offline ? (
+                <Text variant="meta" tone="ink2">
+                  {copy.dataOffline}
+                </Text>
+              ) : null}
+            </>
+          )
+        }
+      >
+        <View style={styles.docked}>
+          <Text variant="body">{copy.dataIntro}</Text>
+          <View style={styles.list}>
+            <Text variant="label" tone="ink2" accessibilityRole="header">
+              {copy.dataIncludesTitle}
             </Text>
-          ))}
-        </View>
-        <Text variant="meta" tone="ink2">
-          {`${copy.dataOthers} ${copy.dataOncePerDay}`}
-        </Text>
-        {state.kind === 'sent' ? (
-          <View testID="data-export-sent" style={styles.list}>
-            <Text variant="bodyStrong" accessibilityRole="header">
-              {copy.dataSentTitle}
-            </Text>
-            <Banner kind="info" message={copy.dataSent} />
+            {copy.dataIncludes.map((line) => (
+              <Text key={line} variant="body">
+                {`\u2022 ${line}`}
+              </Text>
+            ))}
           </View>
-        ) : (
-          <>
-            {offline ? <Banner kind="offline" message={copy.dataOffline} /> : null}
-            {state.kind === 'error' ? <Banner kind="error" message={state.message} /> : null}
-            <Button
-              label={copy.dataButton}
-              loading={busy}
-              disabled={offline}
-              onPress={() => void send()}
-              testID="data-export-send"
-            />
-          </>
-        )}
-      </ScrollView>
+          <Text variant="meta" tone="ink2">
+            {copy.dataOncePerDay}
+          </Text>
+          {state.kind === 'sent' ? (
+            <View testID="data-export-sent" style={styles.list}>
+              <Text variant="bodyStrong" accessibilityRole="header">
+                {copy.dataSentTitle}
+              </Text>
+              <Banner kind="info" message={copy.dataSent} />
+            </View>
+          ) : null}
+        </View>
+      </DockedScroll>
     </View>
   );
 }
@@ -483,4 +496,5 @@ const styles = StyleSheet.create((theme) => ({
   grey: { flex: 1, backgroundColor: theme.colors.bg2 },
   body: { ...readableColumn, padding: theme.space.screen, gap: theme.space.lg },
   list: { gap: theme.space.xs },
+  docked: { gap: theme.space.lg },
 }));

@@ -25,6 +25,7 @@ export type Edge = {
   cache: {
     match: (request: Request) => Promise<Response | undefined>;
     put: (request: Request, response: Response) => Promise<void>;
+    delete: (request: Request) => Promise<boolean>;
   };
   waitUntil: (promise: Promise<unknown>) => void;
 };
@@ -38,8 +39,16 @@ const TYPES: Record<string, string> = {
   jpeg: 'image/jpeg',
 };
 
-/** Object keys are immutable (a new photo gets a new uuid), so cache for a year. */
-export const CACHE_CONTROL = 'public, max-age=31536000, immutable';
+/**
+ * Object keys are immutable (a new photo gets a new uuid), so browsers cache
+ * for a year. The edge keeps a copy for at most a day (`s-maxage`), so a
+ * deleted account's photos leave the shared cache within 24 h even when the
+ * cache purge fails (LR-02, DEC 139). Entries written by an earlier Worker
+ * (no `s-maxage`) are treated as misses (IR4-01).
+ */
+export const EDGE_TTL_S = 86400;
+/** Keep `s-maxage` equal to EDGE_TTL_S. */
+export const CACHE_CONTROL = 'public, max-age=31536000, immutable, s-maxage=86400';
 
 export const RATE_LIMIT = { windowMs: 60_000, max: 600 };
 
@@ -61,14 +70,19 @@ export function resetRateLimit(): void {
   hits.clear();
 }
 
+/** Keys are plain ASCII; a percent-encoded path is never a canonical key. */
+const KEY_CHARS = /^[A-Za-z0-9/_.-]+$/;
+
+/** The key named by a raw pathname, or null when it is not in canonical form. */
+function canonicalKey(pathname: string): string | null {
+  if (pathname.includes('%')) return null;
+  const key = pathname.replace(/^\/+/, '');
+  return KEY_CHARS.test(key) ? key : null;
+}
+
 /** A key the Worker may serve, or null. */
 export function publicKey(pathname: string): string | null {
-  let key: string;
-  try {
-    key = decodeURIComponent(pathname.replace(/^\/+/, ''));
-  } catch {
-    return null;
-  }
+  const key = canonicalKey(pathname);
   if (!key || key.length > 512) return null;
   if (key.split('/').some((part) => part === '' || part === '.' || part === '..')) return null;
   if (!PUBLIC_PREFIXES.some((p) => key.startsWith(p))) return null;
@@ -80,13 +94,9 @@ export function publicKey(pathname: string): string | null {
 
 /** c/{campus}/chat/{chat}/{file}: private, served only with a valid signature. */
 export function chatKey(pathname: string): string | null {
-  let key: string;
-  try {
-    key = decodeURIComponent(pathname.replace(/^\/+/, ''));
-  } catch {
-    return null;
-  }
+  const key = canonicalKey(pathname);
   if (
+    !key ||
     key.length > 512 ||
     key.split('/').some((part) => part === '' || part === '.' || part === '..')
   ) {
@@ -173,12 +183,18 @@ export async function handle(
   }
   if (!key) return notFound();
 
-  // Public images only; the key ignores the query so cache-busters share one entry.
+  // Public images only. The cache key is the canonical URL of the validated
+  // key (what cachePurge.ts purges), so cache-busters share one entry.
   const shared = edge && cacheControl === CACHE_CONTROL ? edge : undefined;
-  const cacheKey = new Request(`${url.origin}${url.pathname}`);
+  const cacheKey = new Request(`${url.origin}/${key}`);
   if (shared) {
     const hit = await shared.cache.match(cacheKey);
-    if (hit) return answer(request, hit);
+    if (hit) {
+      if (hit.headers.get('cache-control') === CACHE_CONTROL) return answer(request, hit);
+      // A legacy entry (IR4-01): drop it before the R2 read, so a later put
+      // cannot be overtaken and an R2 miss leaves nothing behind.
+      await shared.cache.delete(cacheKey);
+    }
   }
 
   const object = await env.MEDIA.get(key);

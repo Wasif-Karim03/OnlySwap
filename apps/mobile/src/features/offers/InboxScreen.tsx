@@ -1,7 +1,9 @@
+import { motion } from '@onlyswap/tokens';
 import { useQuery } from '@tanstack/react-query';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { EmptyState } from '@/components/EmptyState';
@@ -28,6 +30,7 @@ import { mediaUrl } from '../sell/logic';
 import { offersApi, type OffersApi } from './api';
 import { DealAvatar } from './DealAvatar';
 import {
+  expirySpan,
   inboxRows,
   money,
   needsYouCounts,
@@ -54,6 +57,8 @@ const defaultChatPane = (id: string) => <ChatScreen key={id} id={id} pane />;
  */
 /** Realtime pings closer together than this become one inbox refetch. */
 const PING_DEBOUNCE_MS = 300;
+/** Between the time and "Muted" on a row, and before the time left on an offer. */
+const META_SEPARATOR = ' · ';
 
 export function InboxScreen({
   api = offersApi,
@@ -129,8 +134,14 @@ export function InboxScreen({
           : fill(copy.inboxStatus.accepted, { amount: money(c.agreed_cents) });
     }
     const when = shortAgo(r.at, clock, intlLocale);
+    // An open offer waiting on me says how long is left (static, from expires_at).
+    const span =
+      r.kind === 'offer' && r.needsYou ? expirySpan(r.offer.expires_at, clock, 'short') : null;
+    const timeLeft = span ? fill(copy.timeLeft, { time: span }) : null;
+    const muted = r.kind === 'chat' && r.chat.muted ? copy.muted : null;
+    const meta = [when, muted].filter(Boolean).join(META_SEPARATOR);
     const open = twoPane && r.kind === 'chat' && openChat === r.id;
-    const label = [name, title, status, when, r.needsYou ? copy.unread : null]
+    const label = [name, title, status, timeLeft, when, muted, r.needsYou ? copy.unread : null]
       .filter(Boolean)
       .join(', ');
     return (
@@ -158,24 +169,29 @@ export function InboxScreen({
             </View>
           </View>
           <View style={styles.flex}>
+            {/* Unread is the dot alone (P3): name and status keep one weight and tone. */}
             <View style={styles.top}>
-              <Text
-                variant={r.needsYou ? 'bodyStrong' : 'body'}
-                numberOfLines={1}
-                style={styles.flex}
-              >
+              <Text variant="bodyStrong" numberOfLines={1} style={styles.flex}>
                 {name}
               </Text>
               <Text variant="meta" tone="ink3">
-                {when}
+                {meta}
               </Text>
             </View>
             <Text variant="meta" tone="ink3" numberOfLines={1}>
               {title}
             </Text>
-            <Text variant="meta" tone={r.needsYou ? 'ink' : 'ink2'} numberOfLines={1}>
-              {status}
-            </Text>
+            {/* Two lines at large text: the status is the only place the amount lives. */}
+            <View style={styles.status}>
+              <Text variant="meta" tone="ink2" numberOfLines={2} style={styles.shrink}>
+                {status}
+              </Text>
+              {timeLeft ? (
+                <Text variant="meta" tone="ink2" testID={`time-left-${r.id}`}>
+                  {`${META_SEPARATOR.trim()} ${timeLeft}`}
+                </Text>
+              ) : null}
+            </View>
           </View>
           {r.needsYou ? (
             <View style={styles.dot} testID={`unread-${r.id}`} />
@@ -222,16 +238,19 @@ export function InboxScreen({
           />
         );
     } else {
+      // The list fades in once on load (`fade`, 150 ms; it is also the reduce-motion form).
       body = (
-        <ScrollView
-          contentContainerStyle={styles.list}
-          refreshControl={
-            <RefreshControl refreshing={query.isRefetching} onRefresh={() => query.refetch()} />
-          }
-        >
-          {section(copy.needsYou, r.needsYou, 'needs-you')}
-          {section(copy.earlier, r.earlier, 'earlier')}
-        </ScrollView>
+        <Animated.View style={styles.flex} entering={FadeIn.duration(motion.fade.duration)}>
+          <ScrollView
+            contentContainerStyle={styles.list}
+            refreshControl={
+              <RefreshControl refreshing={query.isRefetching} onRefresh={() => query.refetch()} />
+            }
+          >
+            {section(copy.needsYou, r.needsYou, 'needs-you')}
+            {section(copy.earlier, r.earlier, 'earlier')}
+          </ScrollView>
+        </Animated.View>
       );
     }
   }
@@ -331,6 +350,8 @@ const styles = StyleSheet.create((theme) => ({
     borderColor: theme.colors.bg,
   },
   top: { flexDirection: 'row', alignItems: 'baseline', gap: theme.space.sm },
+  status: { flexDirection: 'row', flexWrap: 'wrap', columnGap: theme.space.xs },
+  shrink: { flexShrink: 1 },
   flex: { flex: 1 },
   panes: { flexDirection: 'row' },
   listPane: {

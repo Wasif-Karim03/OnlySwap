@@ -17,6 +17,7 @@ import {
   ActionButton,
   Button,
   Card,
+  Dialog,
   Loadable,
   ListingCell,
   Page,
@@ -101,24 +102,12 @@ export function ListingsPage() {
         </span>
       </div>
       <Card>
-        {picked.length ? (
-          <BulkBar
-            ids={picked}
-            view={view}
-            onClear={() => setPicked([])}
-            onDone={(text) => {
-              setPicked([]);
-              setBulkMsg(text);
-              done();
-            }}
-          />
-        ) : null}
         <Loadable
           state={state}
           rows={6}
           empty={(d) => d.length === 0}
           emptyText={
-            view === 'held_review' ? 'Nothing is waiting for review.' : 'No listings here.'
+            view === 'held_review' ? 'Nothing is waiting for review.' : 'No listings in this view.'
           }
         >
           {(rows) => (
@@ -138,8 +127,6 @@ export function ListingsPage() {
                     className: 'pick',
                   },
                   'Listing',
-                  'Seller',
-                  'Campus',
                   'Status',
                   'Posted',
                   { label: '', className: 'actions' },
@@ -169,14 +156,10 @@ export function ListingsPage() {
                           }}
                         />
                       </Link>
-                      {l.description ? (
-                        <div className="muted small" style={{ marginTop: 4, maxWidth: 420 }}>
-                          {l.description}
-                        </div>
-                      ) : null}
+                      <div className="muted small row-sub">
+                        {l.seller ?? 'Deleted account'} · {campusName(l.campus_id)}
+                      </div>
                     </td>
-                    <td>{l.seller ?? <span className="muted">Deleted account</span>}</td>
-                    <td className="ink2">{campusName(l.campus_id)}</td>
                     <td>
                       <StatusPill {...listingStatus(l.status)} />
                     </td>
@@ -204,7 +187,8 @@ export function ListingsPage() {
                             label="Remove"
                             kind="danger"
                             size="sm"
-                            reasonPrompt="Remove: reason. The seller sees this in the app, so write it for them."
+                            confirm={`Remove "${l.title}"? Open offers and chats about it wind down.`}
+                            reasonPrompt="The seller sees this in the app, so write it for them."
                             run={(reason) =>
                               rpc('admin_set_listing_status', {
                                 id: l.id,
@@ -236,6 +220,18 @@ export function ListingsPage() {
           )}
         </Loadable>
       </Card>
+      {picked.length ? (
+        <BulkBar
+          ids={picked}
+          view={view}
+          onClear={() => setPicked([])}
+          onDone={(text) => {
+            setPicked([]);
+            setBulkMsg(text);
+            done();
+          }}
+        />
+      ) : null}
     </Page>
   );
 }
@@ -253,19 +249,18 @@ function BulkBar({
   onDone: (result: string) => void;
 }) {
   const [reason, setReason] = useState('');
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
-  const run = async (status: 'held_review' | 'removed' | 'active') => {
+  const [confirmRemove, setConfirmRemove] = useState(false);
+  const run = async (status: 'held_review' | 'removed' | 'active', confirmed = false) => {
     const invalid = reasonError(reason);
     if (invalid) return setMsg({ ok: false, text: invalid });
-    if (
-      status === 'removed' &&
-      !window.confirm(
-        `Remove ${ids.length} listings? Open offers and chats about them wind down, and each seller sees your reason in the app.`,
-      )
-    )
+    if (status === 'removed' && !confirmed) {
+      setConfirmRemove(true);
       return;
-    setBusy(true);
+    }
+    setConfirmRemove(false);
+    setBusy(status);
     setMsg(null);
     try {
       const r = await rpc<{ changed: number; changed_ids: string[]; skipped_ids: string[] }>(
@@ -276,7 +271,7 @@ function BulkBar({
     } catch (e) {
       setMsg({ ok: false, text: errorMessage(e) });
     } finally {
-      setBusy(false);
+      setBusy(null);
     }
   };
   return (
@@ -291,17 +286,34 @@ function BulkBar({
         autoComplete="off"
       />
       {view === 'active' ? (
-        <Button disabled={busy} onClick={() => void run('held_review')}>
+        <Button
+          disabled={busy !== null}
+          pending={busy === 'held_review'}
+          pendingLabel="Working…"
+          onClick={() => void run('held_review')}
+        >
           Hold selected
         </Button>
       ) : null}
       {view !== 'active' ? (
-        <Button variant="primary" disabled={busy} onClick={() => void run('active')}>
+        <Button
+          variant="primary"
+          disabled={busy !== null}
+          pending={busy === 'active'}
+          pendingLabel="Working…"
+          onClick={() => void run('active')}
+        >
           {view === 'removed' ? 'Restore selected' : 'Approve selected'}
         </Button>
       ) : null}
       {view !== 'removed' ? (
-        <Button variant="danger" disabled={busy} onClick={() => void run('removed')}>
+        <Button
+          variant="danger"
+          disabled={busy !== null}
+          pending={busy === 'removed'}
+          pendingLabel="Working…"
+          onClick={() => void run('removed')}
+        >
           Remove selected
         </Button>
       ) : null}
@@ -312,6 +324,24 @@ function BulkBar({
         <span className={`toast ${msg.ok ? 'ok' : 'error'}`} role="status">
           {msg.text}
         </span>
+      ) : null}
+      {confirmRemove ? (
+        <Dialog title="Remove selected" onClose={() => setConfirmRemove(false)}>
+          <div className="cb">
+            <p className="callout red">
+              Remove {ids.length} listings? Open offers and chats about them wind down, and each
+              seller sees your reason in the app.
+            </p>
+          </div>
+          <div className="cf end">
+            <Button variant="ghost" onClick={() => setConfirmRemove(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" autoFocus onClick={() => void run('removed', true)}>
+              Remove selected
+            </Button>
+          </div>
+        </Dialog>
       ) : null}
     </div>
   );

@@ -267,3 +267,47 @@ export function shortAgo(iso: string, now: Date, locale: string): string {
   if (hours < 24 * 7) return then.toLocaleDateString(locale, { weekday: 'short' });
   return then.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
 }
+
+// ---------------------------------------------------------------------------
+// Display-only helpers (design pass, 3.04): no data change, computed on render.
+
+const MINUTE_MS = 60_000;
+const HOUR_MINUTES = 60;
+
+/**
+ * How long an open offer has left before `expires_at`, as a static span:
+ * `short` "6 h" / "45 min" for an inbox row, `long` "6 hours" for the Offer
+ * screen. Null once it has passed. No live countdown: it updates on render.
+ */
+export function expirySpan(expiresAt: string, now: Date, form: 'short' | 'long'): string | null {
+  const ms = Date.parse(expiresAt) - now.getTime();
+  if (!Number.isFinite(ms) || ms <= 0) return null;
+  const mins = Math.max(1, Math.floor(ms / MINUTE_MS));
+  const hours = Math.floor(mins / HOUR_MINUTES);
+  const s = copy.span;
+  if (form === 'short') {
+    return hours >= 1 ? fill(s.hours, { n: hours }) : fill(s.minutes, { n: mins });
+  }
+  if (hours >= 1) return hours === 1 ? s.hourLong : fill(s.hoursLong, { n: hours });
+  return mins === 1 ? s.minuteLong : fill(s.minutesLong, { n: mins });
+}
+
+/**
+ * The Offer screen's visible status line without the amount (the amount is
+ * the big number above it). Falls back to `offerView().line`, which stays the
+ * accessibility label everywhere.
+ */
+export function offerLineShort(
+  o: Pick<Offer, 'status' | 'role' | 'last_actor' | 'other'>,
+  fullLine: string,
+): string {
+  const name = o.other?.display_name ?? copy.deletedUser;
+  const myTurn = isOpen(o.status) && o.role !== o.last_actor;
+  const short = copy.statusShort;
+  if (o.status === 'pending')
+    return fill(myTurn ? short.pending_seller : short.pending_buyer, { name });
+  if (o.status === 'countered')
+    return fill(myTurn ? short.countered_mine : short.countered_theirs, { name });
+  if (o.status === 'accepted') return short.accepted;
+  return fullLine;
+}

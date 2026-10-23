@@ -71,6 +71,11 @@ select is(pg_temp.q('B', format('select public.vote_poll(%L, %L)::text', pg_temp
 select is(
   pg_temp.q('A', format('select public.create_quad_post(%L, %L, %L)::text', 'photo', 'sunset', 'c/elsewhere/x.webp')),
   'ERROR: INVALID:photo_path', 'a photo must live in this post''s folder');
+-- Recorded uploads (0246).
+select tests.register_upload(tests.uid('A'), 'quad', '00000000-0000-4000-8000-00000000a9a1',
+  'c/' || tests.uid('OSU') || '/quad/00000000-0000-4000-8000-00000000a9a1/11111111-1111-4111-8111-111111111111_full.webp');
+select tests.register_upload(tests.uid('C'), 'quad', '00000000-0000-4000-8000-00000000a9a2',
+  'c/' || tests.uid('OSU') || '/quad/00000000-0000-4000-8000-00000000a9a2/22222222-2222-4222-8222-222222222222_full.webp');
 select is(
   pg_temp.q('A', format('select public.create_quad_post(%L, %L, %L, null, null, %L) ->> %L', 'photo', 'sunset from the oval',
     'c/' || tests.uid('OSU') || '/quad/00000000-0000-4000-8000-00000000a9a1/11111111-1111-4111-8111-111111111111_full.webp',

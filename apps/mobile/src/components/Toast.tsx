@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { StyleSheet } from 'react-native-unistyles';
 import { create } from 'zustand';
@@ -38,7 +38,10 @@ export const useToastStore = create<ToastState>((set, get) => ({
 
 const ICON = { info: 'info', success: 'check', error: 'alert' } as const;
 
-/** Mount once near the root. Auto-dismiss 4 s, undo toasts 5 s. */
+/**
+ * Mount once near the root. Auto-dismiss 4 s, undo toasts 5 s, or tap to
+ * dismiss. Sits high enough to clear a docked 54 pt button on any screen.
+ */
 export function ToastHost() {
   const current = useToastStore((s) => s.current);
   const dismiss = useToastStore((s) => s.dismiss);
@@ -60,37 +63,42 @@ export function ToastHost() {
       style={styles.host}
       pointerEvents="box-none"
     >
-      <View
-        style={styles.toast}
-        accessibilityRole="alert"
-        accessibilityLiveRegion="polite"
-        testID="toast"
+      {/* Tap the pill to dismiss it, except an undo toast, where a stray tap
+        would throw away the Undo before its window ends. */}
+      <Pressable
+        accessible={false}
+        onPress={current.onUndo ? undefined : () => dismiss(current.id)}
       >
-        <Icon
-          name={ICON[current.kind]}
-          size={20}
-          tone={current.kind === 'error' ? 'red' : current.kind === 'success' ? 'green' : 'inverse'}
-        />
-        <Text variant="label" tone="inverse" style={styles.message}>
-          {current.message}
-        </Text>
-        {current.onUndo ? (
-          <Tappable
-            accessibilityRole="button"
-            accessibilityLabel={toastCopy.undo}
-            onPress={() => {
-              current.onUndo?.();
-              dismiss(current.id);
-            }}
-          >
-            <View style={styles.undo}>
-              <Text variant="label" tone="inverse" style={styles.undoText}>
-                {toastCopy.undo}
-              </Text>
-            </View>
-          </Tappable>
-        ) : null}
-      </View>
+        <View
+          style={styles.toast}
+          accessibilityRole="alert"
+          accessibilityLiveRegion="polite"
+          testID="toast"
+        >
+          {/* Inverse for every kind: green and red on the ink pill fail 3:1 in
+            dark mode. The glyph (check, alert) carries the meaning (DEC 142). */}
+          <Icon name={ICON[current.kind]} size={20} tone="inverse" />
+          <Text variant="label" tone="inverse" style={styles.message}>
+            {current.message}
+          </Text>
+          {current.onUndo ? (
+            <Tappable
+              accessibilityRole="button"
+              accessibilityLabel={toastCopy.undo}
+              onPress={() => {
+                current.onUndo?.();
+                dismiss(current.id);
+              }}
+            >
+              <View style={styles.undo}>
+                <Text variant="label" tone="inverse" style={styles.undoText}>
+                  {toastCopy.undo}
+                </Text>
+              </View>
+            </Tappable>
+          ) : null}
+        </View>
+      </Pressable>
     </Animated.View>
   );
 }
@@ -100,7 +108,8 @@ const styles = StyleSheet.create((theme, rt) => ({
     position: 'absolute',
     left: theme.space.lg,
     right: theme.space.lg,
-    bottom: rt.insets.bottom + theme.space['2xl'] * 2,
+    // One fixed offset above a docked L button and its padding (display only).
+    bottom: rt.insets.bottom + theme.size.buttonL + theme.space.lg * 2,
   },
   toast: {
     minHeight: theme.size.buttonL,

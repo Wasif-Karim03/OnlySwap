@@ -190,6 +190,12 @@ export function MeetupDayScreen({
           </Text>
         ) : null}
         {m.status === 'cancelled' ? <Banner kind="info" message={copy.cancelled} /> : null}
+        {/* Finished meetups say so in plain words (no banner: nothing to act on). */}
+        {m.status === 'completed' || m.status === 'no_show' ? (
+          <Text variant="body" tone="ink2" testID="meetup-ended">
+            {m.status === 'completed' ? copy.cardDone : copy.cardNoShow}
+          </Text>
+        ) : null}
 
         {m.spot ? <SpotsMap spots={[m.spot]} selectedId={m.spot.id} testID="meetup-map" /> : null}
 

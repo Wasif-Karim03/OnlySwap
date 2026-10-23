@@ -1,9 +1,10 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { Banner } from '@/components/Banner';
 import { Button } from '@/components/Button';
+import { NavBar } from '@/components/NavBar';
 import { Photo } from '@/components/Photo';
 import { Sheet } from '@/components/Sheet';
 import { SuccessCheck } from '@/components/SuccessCheck';
@@ -16,6 +17,7 @@ import { chat as chatCopy, campus as copy } from '@/strings';
 
 import type { PostedListing, SellApi } from '../sell/api';
 import { mediaUrl } from '../sell/logic';
+import { DockedScroll } from '../sell/SellStep';
 import { postErrorText, type UploadedPhotoRef } from './logic';
 
 export type PhotoSource = 'camera' | 'library';
@@ -398,7 +400,78 @@ export function postFailure(e: unknown): { text: string; forbidden: boolean } {
   return { text: postErrorText(err) ?? errorText(err), forbidden: err.code === 'FORBIDDEN' };
 }
 
-/** Posted (or in review) with a way back to the feed. */
+/**
+ * Frame for the campus post forms (3.03): an inline NavBar with title and
+ * close only, the fields, and Post docked at the bottom like the Sell steps.
+ * The dock carries the one "fix the fields" line (polite live region) and any
+ * post error, so nothing important sits under the keyboard or off screen.
+ */
+export function PostForm({
+  title,
+  onClose,
+  fixing,
+  error,
+  posting,
+  disabled,
+  onPost,
+  testID,
+  screenTestID,
+  children,
+}: {
+  title: string;
+  onClose: () => void;
+  /** Show the "Fix the highlighted fields to post." line. */
+  fixing: boolean;
+  /** A failed Post (daily cap, banned word, offline). */
+  error: string | null;
+  posting: boolean;
+  disabled: boolean;
+  onPost: () => void;
+  /** Prefix for the dock's test ids: `{testID}-post`, `-fix`, `-error`. */
+  testID: string;
+  screenTestID: string;
+  children: ReactNode;
+}) {
+  return (
+    <View style={styles.root} testID={screenTestID}>
+      <NavBar title={title} leading="close" onLeading={onClose} />
+      <DockedScroll
+        dock={
+          <>
+            <View collapsable={false} style={styles.gap}>
+              {fixing ? (
+                <Text
+                  variant="meta"
+                  tone="red"
+                  accessibilityLiveRegion="polite"
+                  testID={`${testID}-fix`}
+                >
+                  {copy.fixFirst}
+                </Text>
+              ) : null}
+              {error ? (
+                <View testID={`${testID}-error`}>
+                  <Banner kind="error" message={error} />
+                </View>
+              ) : null}
+            </View>
+            <Button
+              label={copy.post}
+              loading={posting}
+              disabled={disabled}
+              onPress={onPost}
+              testID={`${testID}-post`}
+            />
+          </>
+        }
+      >
+        <View style={styles.fields}>{children}</View>
+      </DockedScroll>
+    </View>
+  );
+}
+
+/** Posted (or in review) with a way back to the feed: left aligned, actions docked (3.03). */
 export function PostedView({
   listing,
   title,
@@ -417,32 +490,38 @@ export function PostedView({
   const review = listing.status === 'held_review';
   return (
     <View style={styles.posted} testID={testID}>
-      <SuccessCheck visible accessibilityLabel={copy.postedCheck} />
-      <Text variant="title" accessibilityRole="header" style={styles.center}>
-        {review ? copy.reviewTitle : title}
-      </Text>
-      <Text variant="body" tone="ink2" style={styles.center}>
-        {review ? copy.reviewBody : body}
-      </Text>
+      {/* No haptic here: Food and Wanted do not count as "listing posted" (owner decision 5). */}
+      <View style={styles.postedCopy}>
+        <SuccessCheck visible accessibilityLabel={copy.postedCheck} />
+        <Text variant="title" accessibilityRole="header">
+          {review ? copy.reviewTitle : title}
+        </Text>
+        <Text variant="body" tone="ink2" style={styles.copyMax}>
+          {review ? copy.reviewBody : body}
+        </Text>
+      </View>
       <View style={styles.actions}>
         <Button label={copy.seeCampus} onPress={onSeeFeed} testID={`${testID}-see`} />
-        <Button label={copy.done} variant="secondary" onPress={onDone} testID={`${testID}-done`} />
+        <Button label={copy.done} variant="text" onPress={onDone} testID={`${testID}-done`} />
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create((theme) => ({
+const styles = StyleSheet.create((theme, rt) => ({
+  root: { flex: 1, backgroundColor: theme.colors.bg },
+  fields: { gap: theme.space.lg },
   gap: { gap: theme.space.sm },
   row: { flexDirection: 'row', gap: theme.space.sm, flexWrap: 'wrap' },
   preview: { width: theme.size.glyphTile * 1.5 },
   posted: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: theme.space.md,
-    padding: theme.space.screen,
+    justifyContent: 'space-between',
+    paddingHorizontal: theme.space.screen,
+    paddingTop: theme.space.md,
+    paddingBottom: rt.insets.bottom + theme.space.md,
   },
-  center: { textAlign: 'center' },
-  actions: { alignSelf: 'stretch', gap: theme.space.sm, marginTop: theme.space.lg },
+  postedCopy: { gap: theme.space.md },
+  copyMax: { maxWidth: theme.size.copyMax },
+  actions: { gap: theme.space.xs },
 }));

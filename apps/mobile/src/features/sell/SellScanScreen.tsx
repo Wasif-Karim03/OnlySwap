@@ -2,8 +2,8 @@ import { useNetInfo } from '@react-native-community/netinfo';
 import { CameraView, type BarcodeScanningResult } from 'expo-camera';
 import { useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
-import { View } from 'react-native';
-import { StyleSheet } from 'react-native-unistyles';
+import { ActivityIndicator, View } from 'react-native';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 import { Banner, isOffline } from '@/components/Banner';
 import { Button } from '@/components/Button';
@@ -11,7 +11,6 @@ import { NavBar } from '@/components/NavBar';
 import { PermissionPrimer } from '@/components/PermissionPrimer';
 import { Text } from '@/components/Text';
 import { useToastStore } from '@/components/Toast';
-import { haptic } from '@/lib/haptics';
 import { sell as copy } from '@/strings';
 
 import { getDraftStore } from './draft';
@@ -38,6 +37,7 @@ export function SellScanScreen({
   lookup?: typeof lookupIsbn;
 }) {
   const router = useRouter();
+  const { theme } = useUnistyles();
   const net = useNetInfo();
   const [granted, setGranted] = useState(false);
   const [status, setStatus] = useState<Status>('scanning');
@@ -69,8 +69,8 @@ export function SellScanScreen({
         setStatus('notFound');
         return;
       }
+      // No haptic: the Toast and the filled form answer back (haptic budget, 3.03).
       store.getState().update({ title: bookListingTitle(book), categoryId: TEXTBOOKS_CATEGORY });
-      haptic('success');
       useToastStore.getState().show('success', copy.scanFound);
       leave();
     } catch {
@@ -107,6 +107,10 @@ export function SellScanScreen({
           accessibilityLabel={copy.scanBody}
           testID="sell-scan-camera"
         />
+        {/* Aim guide: a plain hairline frame, decorative only. */}
+        <View style={styles.guideWrap} pointerEvents="none" accessible={false}>
+          <View style={styles.guide} />
+        </View>
       </View>
       <View style={styles.panel}>
         {problem ? (
@@ -118,14 +122,20 @@ export function SellScanScreen({
             <Button label={copy.scanType} variant="text" onPress={leave} testID="sell-scan-type" />
           </>
         ) : (
-          <Text
-            variant="body"
-            tone="ink2"
-            accessibilityLiveRegion="polite"
-            testID={status === 'looking' ? 'sell-scan-looking' : 'sell-scan-hint'}
-          >
-            {status === 'looking' ? copy.scanLooking : copy.scanBody}
-          </Text>
+          <View style={styles.line}>
+            {status === 'looking' ? (
+              <ActivityIndicator color={theme.colors.ink2} accessible={false} />
+            ) : null}
+            <Text
+              variant="body"
+              tone="ink2"
+              accessibilityLiveRegion="polite"
+              style={styles.flex}
+              testID={status === 'looking' ? 'sell-scan-looking' : 'sell-scan-hint'}
+            >
+              {status === 'looking' ? copy.scanLooking : copy.scanBody}
+            </Text>
+          </View>
         )}
       </View>
     </View>
@@ -135,6 +145,23 @@ export function SellScanScreen({
 const styles = StyleSheet.create((theme, rt) => ({
   screen: { flex: 1, backgroundColor: theme.colors.bg },
   camera: { flex: 1, overflow: 'hidden' },
+  guideWrap: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: theme.space['2xl'],
+  },
+  // A barcode is wide and short: a landscape frame tells the user where to aim.
+  guide: {
+    width: '100%',
+    maxWidth: theme.size.copyMax,
+    aspectRatio: 2,
+    borderWidth: 1,
+    borderColor: theme.colors.onPhoto,
+    borderRadius: theme.radius.card,
+  },
+  line: { flexDirection: 'row', alignItems: 'center', gap: theme.space.sm },
+  flex: { flex: 1 },
   panel: {
     gap: theme.space.sm,
     paddingHorizontal: theme.space.screen,

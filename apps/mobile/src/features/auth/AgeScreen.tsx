@@ -3,11 +3,9 @@ import * as AgeRange from 'expo-age-range';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Platform, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 import { Button } from '@/components/Button';
-import { GlyphTile } from '@/components/EmptyState';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { WebDateInput } from '@/components/WebDateInput';
@@ -28,7 +26,6 @@ import {
 } from './age';
 import { authApi, type AuthApi } from './api';
 import { AuthStep } from './AuthStep';
-import { hadLoginIntent } from './loginIntent';
 import { useGateHandoff } from './useAppGate';
 
 type Phase = 'checking' | 'form' | 'saving' | 'blocked' | 'osRequired';
@@ -65,7 +62,6 @@ export function AgeScreen({
 }) {
   const router = useRouter();
   const { theme } = useUnistyles();
-  const insets = useSafeAreaInsets();
   // Dev only: `/age?form=1` skips the OS signal so the date path can be tried
   // on a Simulator (which answers "18+" for everyone).
   const { form } = useLocalSearchParams<{ form?: string }>();
@@ -146,35 +142,22 @@ export function AgeScreen({
   }, []);
 
   if (phase === 'blocked') {
+    // Left-aligned title and one line in a scrolling column, Close docked (3.01).
     return (
-      <View
-        style={[styles.blocked, { paddingTop: insets.top, paddingBottom: insets.bottom }]}
+      <AuthStep
         testID="screen-age-blocked"
-      >
-        <View style={styles.blockedBody}>
-          <GlyphTile icon="lock" />
-          <Text variant="heading" accessibilityRole="header" style={styles.center}>
-            {copy.blockedTitle}
-          </Text>
-          <Text variant="body" tone="ink2" style={styles.center}>
-            {copy.blockedBody}
-          </Text>
-          <View style={styles.card}>
-            <Text variant="bodyStrong">{copy.blockedCardTitle}</Text>
-            <Text variant="meta" tone="ink2">
-              {copy.blockedCardBody}
-            </Text>
-          </View>
-        </View>
-        <View style={styles.blockedDock}>
+        title={copy.blockedTitle}
+        body={copy.blockedBody}
+        leading="none"
+        dock={
           <Button
             label={copy.close}
             variant="secondary"
             onPress={() => router.replace('/welcome')}
             testID="age-close"
           />
-        </View>
-      </View>
+        }
+      />
     );
   }
 
@@ -187,7 +170,7 @@ export function AgeScreen({
         leading="none"
         step={3}
         dock={
-          <View style={styles.osDock}>
+          <>
             <Button
               label={copy.osRequiredRetry}
               onPress={() => void askOs()}
@@ -195,11 +178,11 @@ export function AgeScreen({
             />
             <Button
               label={copy.close}
-              variant="secondary"
+              variant="text"
               onPress={() => router.replace('/welcome')}
               testID="age-os-close"
             />
-          </View>
+          </>
         }
       >
         <Text variant="meta" tone="ink2">
@@ -239,7 +222,7 @@ export function AgeScreen({
     <AuthStep
       testID="screen-age"
       title={copy.title}
-      body={hadLoginIntent() ? `${copy.newFromSignIn} ${copy.body}` : copy.body}
+      body={copy.body}
       leading="none"
       step={3}
       dock={
@@ -341,19 +324,4 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: focused ? theme.colors.card : theme.colors.bg2,
   }),
   fieldLabel: { fontWeight: '600' },
-  blocked: { flex: 1, backgroundColor: theme.colors.bg, paddingHorizontal: theme.space.screen },
-  blockedBody: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: theme.space.md },
-  center: { textAlign: 'center' },
-  card: {
-    alignSelf: 'stretch',
-    gap: theme.space.xs,
-    marginTop: theme.space.md,
-    padding: theme.space.lg,
-    borderRadius: theme.radius.card,
-    borderWidth: 1,
-    borderColor: theme.colors.line,
-    backgroundColor: theme.colors.card,
-  },
-  blockedDock: { paddingBottom: theme.space['2xl'] },
-  osDock: { gap: theme.space.md },
 }));

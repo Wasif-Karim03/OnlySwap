@@ -1,6 +1,6 @@
 import type { Session } from '@supabase/supabase-js';
 
-import { toAppError } from '@/lib/errors';
+import { toAppError, toFunctionError } from '@/lib/errors';
 import { createRpc, type RpcClient } from '@/lib/rpc';
 import { getSupabase } from '@/lib/supabase';
 
@@ -144,6 +144,22 @@ export function createAuthApi(deps: Deps) {
       if (error) throw authError(error);
     },
 
+    /**
+     * "I already have an account" (DEC 140): emails a code only to an existing
+     * account. Auth answers otp_disabled for an address with no account, which
+     * the screen shows as "no account" instead of creating one.
+     */
+    async signInCode(input: string): Promise<'sent' | 'no_account'> {
+      const email = requireEmail(input);
+      const { error } = await deps.auth().signInWithOtp({
+        email,
+        options: { shouldCreateUser: false },
+      });
+      if (!error) return 'sent';
+      if ((error as { code?: unknown }).code === 'otp_disabled') return 'no_account';
+      throw authError(error);
+    },
+
     async verifyCode(input: string, code: string): Promise<Session> {
       const email = requireEmail(input);
       const token = code.replace(/\D/g, '');
@@ -215,7 +231,7 @@ export function createAuthApi(deps: Deps) {
       const { error } = await deps.functions().invoke('delete-account', {
         body: { mode: 'underage' },
       });
-      if (error) throw toAppError(error);
+      if (error) throw await toFunctionError(error);
     },
 
     /**
@@ -257,7 +273,7 @@ export function createAuthApi(deps: Deps) {
       const { error } = await deps
         .functions()
         .invoke('delete-account', { body: { confirm: 'DELETE' } });
-      if (error) throw toAppError(error);
+      if (error) throw await toFunctionError(error);
     },
 
     /** F20 Help form (P4-AUTH-19). Works signed out: people who lost their inbox can't sign in. */
@@ -265,20 +281,29 @@ export function createAuthApi(deps: Deps) {
       email: string;
       topic: 'general' | 'cant_access_email' | 'safety' | 'bug' | 'other';
       body: string;
+      /** Web only: the Turnstile token (LR-04). Native bodies are unchanged. */
+      turnstileToken?: string;
     }): Promise<void> {
       if (!deps.functions) throw toAppError({ message: 'functions unavailable' });
       const { error } = await deps.functions().invoke('support-request', {
-        body: { email: input.email.trim(), topic: input.topic, body: input.body.trim() },
+        body: {
+          email: input.email.trim(),
+          topic: input.topic,
+          body: input.body.trim(),
+          ...(input.turnstileToken ? { turnstile_token: input.turnstileToken } : {}),
+        },
       });
-      if (error) throw toAppError(error);
+      if (error) throw await toFunctionError(error);
     },
 
     /** A school we don't support yet (A5), via the waitlist-request function (P4-AUTH-11). */
-    async joinWaitlist(input: string): Promise<void> {
+    async joinWaitlist(input: string, turnstileToken?: string): Promise<void> {
       const email = requireEmail(input);
       if (!deps.functions) throw toAppError({ message: 'functions unavailable' });
-      const { error } = await deps.functions().invoke('waitlist-request', { body: { email } });
-      if (error) throw toAppError(error);
+      const { error } = await deps.functions().invoke('waitlist-request', {
+        body: { email, ...(turnstileToken ? { turnstile_token: turnstileToken } : {}) },
+      });
+      if (error) throw await toFunctionError(error);
     },
 
     async getAppConfig(): Promise<AppConfig> {

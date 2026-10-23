@@ -329,7 +329,11 @@ describe('T-UNIT-WEB-06 web build config and hosting files', () => {
 
   it('_headers sets CSP, frame denial, referrer and permissions policies', () => {
     const headers = readFileSync(join(__dirname, '..', 'public', '_headers'), 'utf8');
-    expect(headers).toMatch(/Content-Security-Policy: default-src 'self'; script-src 'self';/);
+    // Only Cloudflare Turnstile may add scripts and frames (LR-04).
+    expect(headers).toMatch(
+      /Content-Security-Policy: default-src 'self'; script-src 'self' https:\/\/challenges\.cloudflare\.com;/,
+    );
+    expect(headers).toMatch(/frame-src https:\/\/challenges\.cloudflare\.com;/);
     expect(headers).toMatch(
       /connect-src [^\n]*https:\/\/\*\.supabase\.co wss:\/\/\*\.supabase\.co/,
     );

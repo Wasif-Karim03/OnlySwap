@@ -235,12 +235,12 @@ function ListingCard({ item, now, mediaBase, onOpen, testID }: CardProps) {
 }
 
 const styles = StyleSheet.create((theme) => ({
-  card: {
-    borderRadius: theme.radius.card,
-    overflow: 'hidden',
-    backgroundColor: theme.colors.card,
-  },
+  // Flat rows on the page; the Feed draws the lines between them.
+  card: { overflow: 'hidden' },
+  // Free food keeps its warm tile so it still stands out among flat rows.
   food: (dim: boolean) => ({
+    marginHorizontal: theme.space.screen,
+    marginVertical: theme.space.sm,
     borderRadius: theme.radius.card,
     backgroundColor: dim ? theme.colors.card : theme.colors.peachBg,
     opacity: dim ? 0.6 : 1,

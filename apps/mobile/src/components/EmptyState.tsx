@@ -1,10 +1,12 @@
 import { size } from '@onlyswap/tokens';
+import { Fragment } from 'react';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { states as statesCopy } from '@/strings';
+
 import { Button } from './Button';
 import { Icon, type IconName } from './icons/Icon';
-import { Tag } from './Tag';
 import { Text } from './Text';
 
 type Action = { label: string; onPress: () => void };
@@ -39,7 +41,10 @@ export function GlyphTile({
 
 /**
  * Empty state (P2-CMP-08, board X5, X6, X35 to X37): glyph tile, title, one
- * line that explains how the screen fills up, and always a next step.
+ * line that explains how the screen fills up, and always a next step. The
+ * copy is a left-aligned block at the top; the primary action docks at the
+ * bottom of the empty area (thumb zone, P7) with the secondary as a text
+ * button under it. Suggestions read as one plain line, not tappable-looking tags.
  */
 export function EmptyState({
   icon,
@@ -53,24 +58,32 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <View testID={testID} style={styles.wrap}>
-      <GlyphTile icon={icon} tile={tile} />
-      <View style={styles.copy}>
-        <Text variant="heading" accessibilityRole="header" style={styles.center}>
-          {title}
-        </Text>
-        {body ? (
-          <Text variant="body" tone="ink2" style={styles.center}>
-            {body}
+      <View style={styles.top}>
+        <GlyphTile icon={icon} tile={tile} />
+        <View style={styles.copy}>
+          <Text variant="heading" accessibilityRole="header">
+            {title}
           </Text>
-        ) : null}
-      </View>
-      {suggestions?.length ? (
-        <View style={styles.chips}>
-          {suggestions.map((s) => (
-            <Tag key={s} label={s} />
-          ))}
+          {body ? (
+            <Text variant="body" tone="ink2">
+              {body}
+            </Text>
+          ) : null}
+          {suggestions?.length ? (
+            <Text variant="meta" tone="ink2">
+              {`${statesCopy.suggestionsLead} `}
+              {suggestions.map((s, i) => (
+                <Fragment key={s}>
+                  {i > 0 ? ', ' : null}
+                  <Text variant="meta" tone="ink2">
+                    {s}
+                  </Text>
+                </Fragment>
+              ))}
+            </Text>
+          ) : null}
         </View>
-      ) : null}
+      </View>
       {action || secondaryAction ? (
         <View style={styles.actions}>
           {action ? <Button label={action.label} onPress={action.onPress} /> : null}
@@ -90,12 +103,12 @@ export function EmptyState({
 const styles = StyleSheet.create((theme) => ({
   wrap: {
     flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: theme.space.screen,
     paddingVertical: theme.space['2xl'],
-    gap: theme.space.lg,
+    gap: theme.space.xl,
   },
+  top: { gap: theme.space.lg, alignItems: 'flex-start' },
   tile: (tile: 'neutral' | 'accent') => ({
     width: theme.size.glyphTile,
     height: theme.size.glyphTile,
@@ -104,13 +117,6 @@ const styles = StyleSheet.create((theme) => ({
     justifyContent: 'center',
     backgroundColor: tile === 'accent' ? theme.colors.accent : theme.colors.bg2,
   }),
-  copy: { gap: theme.space.xs, alignItems: 'center', maxWidth: theme.size.copyMax },
-  center: { textAlign: 'center' },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: theme.space.sm,
-  },
+  copy: { gap: theme.space.xs, maxWidth: theme.size.copyMax },
   actions: { alignSelf: 'stretch', gap: theme.space.xs },
 }));

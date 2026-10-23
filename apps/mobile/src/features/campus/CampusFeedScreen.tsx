@@ -16,8 +16,9 @@ import { Button } from '@/components/Button';
 import { Chip } from '@/components/Chip';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
-import { Icon, type IconName } from '@/components/icons/Icon';
+import type { IconName } from '@/components/icons/Icon';
 import { IconButton } from '@/components/IconButton';
+import { ActionSheet } from '@/components/Sheet';
 import { SkeletonList } from '@/components/Skeleton';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
@@ -45,7 +46,6 @@ import { FeedPost } from './FeedPost';
 import {
   CAMPUS_FILTERS,
   dayOneBody,
-  foundingState,
   isCampusFilter,
   mergeCampusPages,
   type CampusFilter,
@@ -98,6 +98,7 @@ export function CampusFeedScreen({
   // A post screen's "See the Feed" can ask for a filter while the tab is already open.
   // DEC 130: the Quad is a Feed chip (/feed?kind=quad), no longer a tab.
   const [inQuad, setInQuad] = useState(params.kind === 'quad');
+  const [postMenu, setPostMenu] = useState(false);
   const [seenKind, setSeenKind] = useState(params.kind);
   if (params.kind !== seenKind) {
     setSeenKind(params.kind);
@@ -106,8 +107,11 @@ export function CampusFeedScreen({
       setInQuad(false);
     } else if (params.kind === 'quad') setInQuad(true);
   }
-  const quadOn = useQuadStatus(quad).data?.enabled === true;
+  const quadStatus = useQuadStatus(quad);
+  const quadOn = quadStatus.data?.enabled === true;
   const showQuad = inQuad && quadOn;
+  // A cold /feed?kind=quad link waits on the Quad status instead of flashing All first.
+  const quadPending = inQuad && quadStatus.isPending;
   const me = useQuery({ queryKey: meKey, queryFn: loadMe, staleTime: 5 * 60_000 });
 
   const q = useInfiniteQuery({
@@ -194,33 +198,33 @@ export function CampusFeedScreen({
   const myName = meData?.display_name ?? '';
   const myAvatar = meData?.avatar_path ? mediaUrl(base, meData.avatar_path) : null;
 
+  const filterChip = (f: CampusFilter) => (
+    <Chip
+      key={f}
+      label={copy.filters[f]}
+      icon={FILTER_ICON[f]}
+      surface="card"
+      selected={!showQuad && !quadPending && kind === f}
+      onPress={() => {
+        setInQuad(false);
+        setKind(f);
+      }}
+    />
+  );
+
   const header = (
     <>
       <View style={styles.top} testID="feed-header">
-        <View style={styles.flex}>
-          {meData?.campus?.short_name ? (
-            <Text variant="meta" tone="ink3" numberOfLines={1} testID="feed-campus">
-              {meData.campus.short_name}
-            </Text>
-          ) : null}
-          <Text variant="title" accessibilityRole="header" numberOfLines={1}>
-            {copy.title}
-          </Text>
-        </View>
+        <Text variant="title" accessibilityRole="header" numberOfLines={1} style={styles.flex}>
+          {copy.title}
+        </Text>
         <IconButton
           icon="search"
-          filled
-          surface="card"
           accessibilityLabel={feedCopy.search}
           onPress={() => router.push('/search')}
           testID="feed-search"
         />
-        <NotificationBell
-          filled
-          surface="card"
-          accessibilityLabel={feedCopy.notifications}
-          testID="feed-notifications"
-        />
+        <NotificationBell accessibilityLabel={feedCopy.notifications} testID="feed-notifications" />
       </View>
       {/*
         A horizontal ScrollView grows to fill a column by default; flexGrow 0
@@ -234,19 +238,8 @@ export function CampusFeedScreen({
         accessibilityLabel={copy.filtersLabel}
         testID="campus-filters"
       >
-        {CAMPUS_FILTERS.map((f) => (
-          <Chip
-            key={f}
-            label={copy.filters[f]}
-            icon={FILTER_ICON[f]}
-            surface="card"
-            selected={!showQuad && kind === f}
-            onPress={() => {
-              setInQuad(false);
-              setKind(f);
-            }}
-          />
-        ))}
+        {/* All, then the Quad (when on) where it is in view, then the rest. */}
+        {CAMPUS_FILTERS.slice(0, 1).map(filterChip)}
         {quadOn ? (
           <Chip
             label={tabs.quad}
@@ -257,6 +250,7 @@ export function CampusFeedScreen({
             testID="campus-filter-quad"
           />
         ) : null}
+        {CAMPUS_FILTERS.slice(1).map(filterChip)}
       </ScrollView>
     </>
   );
@@ -293,7 +287,7 @@ export function CampusFeedScreen({
     return <QuadScreen api={quad} mediaBase={mediaBase} now={now} loadMe={loadMe} top={header} />;
 
   let body;
-  if (q.isPending) {
+  if (quadPending || q.isPending) {
     body = (
       <View accessibilityLabel={copy.loading} style={styles.pad}>
         <SkeletonList rows={4} testID="campus-loading" />
@@ -305,7 +299,6 @@ export function CampusFeedScreen({
     const pages = q.data?.pages ?? [];
     const first = pages[0];
     const items = mergeCampusPages(pages);
-    const founding = foundingState(first?.founding);
     body = (
       <FlashList
         data={items}
@@ -321,7 +314,6 @@ export function CampusFeedScreen({
         ListHeaderComponent={
           <View style={styles.listHeader}>
             <View style={styles.composer}>
-              <Avatar name={myName} uri={myAvatar} size="M" />
               <Tappable
                 accessibilityRole="button"
                 accessibilityLabel={copy.composerLabel}
@@ -329,55 +321,37 @@ export function CampusFeedScreen({
                 style={styles.flex}
                 testID="feed-composer"
               >
-                <View style={styles.composerField}>
-                  <Text variant="body" tone="ink3" numberOfLines={1}>
+                <View style={styles.composerTap}>
+                  <Avatar name={myName} uri={myAvatar} size="M" />
+                  <Text variant="body" tone="ink3" numberOfLines={1} style={styles.composerText}>
                     {copy.composer}
                   </Text>
                 </View>
               </Tappable>
-            </View>
-            <View style={styles.row}>
-              <PostPill
-                icon="food"
-                label={copy.postFood}
-                onPress={postFood}
-                testID="campus-post-food"
+              <IconButton
+                icon="plus"
+                accessibilityLabel={copy.newPost}
+                onPress={() => setPostMenu(true)}
+                testID="feed-new-post"
               />
-              <PostPill icon="plus" label={copy.askFor} onPress={askFor} testID="campus-ask" />
             </View>
             {first?.day_one && kind === 'all' ? (
-              <View style={styles.panel} testID="campus-day-one">
-                <Text variant="heading" accessibilityRole="header">
+              <View style={styles.dayOne} testID="campus-day-one">
+                <Text variant="bodyStrong" accessibilityRole="header">
                   {copy.dayOneTitle}
                 </Text>
                 <Text variant="body" tone="ink2">
                   {dayOneBody(first.active_listings ?? 0)}
                 </Text>
-                <Button label={copy.dayOneAction} size="M" onPress={sell} />
-              </View>
-            ) : null}
-            {founding && kind === 'all' ? (
-              <View style={styles.panel} testID={`campus-founding-${founding}`}>
-                <Text variant="bodyStrong" accessibilityRole="header">
-                  {founding === 'mine' ? copy.foundingMineTitle : copy.foundingTitle}
-                </Text>
-                <Text variant="meta" tone="ink2">
-                  {founding === 'mine'
-                    ? copy.foundingMineBody
-                    : fill(copy.foundingBody, {
-                        left: first?.founding?.left ?? 0,
-                        limit: first?.founding?.limit ?? 0,
-                      })}
-                </Text>
-                {founding === 'open' && !first?.day_one ? (
+                <View style={styles.dayOneAction}>
                   <Button
-                    label={copy.foundingAction}
-                    variant="secondary"
-                    size="S"
+                    label={copy.dayOneAction}
+                    variant="text"
+                    size="M"
                     fullWidth={false}
                     onPress={sell}
                   />
-                ) : null}
+                </View>
               </View>
             ) : null}
           </View>
@@ -426,6 +400,15 @@ export function CampusFeedScreen({
         {header}
         {body}
       </View>
+      <ActionSheet
+        visible={postMenu}
+        onClose={() => setPostMenu(false)}
+        actions={[
+          { label: copy.postNews, onPress: postNews },
+          { label: copy.postFood, onPress: postFood },
+          { label: copy.askFor, onPress: askFor },
+        ]}
+      />
     </View>
   );
 }
@@ -434,40 +417,9 @@ function Gap() {
   return <View style={styles.gap} />;
 }
 
-/** "Post free food" and "Ask for something": quiet white pills, not main actions. */
-function PostPill({
-  icon,
-  label,
-  onPress,
-  testID,
-}: {
-  icon: IconName;
-  label: string;
-  onPress: () => void;
-  testID: string;
-}) {
-  return (
-    <Tappable
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      onPress={onPress}
-      style={styles.flex}
-      testID={testID}
-    >
-      <View style={styles.pill}>
-        <Icon name={icon} size={18} />
-        <Text variant="label" numberOfLines={2} style={styles.pillText}>
-          {label}
-        </Text>
-      </View>
-    </Tappable>
-  );
-}
-
 const styles = StyleSheet.create((theme, rt) => ({
-  // Grey page, white cards (DEC 90 mock screen 5).
-  root: { flex: 1, backgroundColor: theme.colors.bg2 },
-  row: { flexDirection: 'row', gap: theme.space.sm },
+  // One plain page, posts split by thin lines (owner feedback: simpler, like Apple's apps).
+  root: { flex: 1, backgroundColor: theme.colors.bg },
   flex: { flex: 1 },
   pad: { padding: theme.space.screen },
   top: {
@@ -487,41 +439,31 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingTop: theme.space.xs,
     paddingBottom: theme.space.md,
   },
-  list: { paddingHorizontal: theme.space.screen, paddingBottom: theme.space['2xl'] },
-  listHeader: { gap: theme.space.md, paddingBottom: theme.space.md },
+  list: { paddingBottom: theme.space['2xl'] },
+  listHeader: { gap: theme.space.md, paddingHorizontal: theme.space.screen },
   composer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.space.sm,
-    padding: theme.space.md,
-    borderRadius: theme.radius.card,
-    backgroundColor: theme.colors.card,
+    paddingVertical: theme.space.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.line,
   },
-  composerField: {
+  composerTap: { flexDirection: 'row', alignItems: 'center', gap: theme.space.sm },
+  composerText: {
+    flex: 1,
     minHeight: theme.size.hit,
-    justifyContent: 'center',
-    paddingHorizontal: theme.space.md,
-    borderRadius: theme.radius.chip,
-    backgroundColor: theme.colors.bg2,
+    textAlignVertical: 'center',
+    lineHeight: theme.size.hit,
   },
-  panel: {
-    gap: theme.space.sm,
-    padding: theme.space.lg,
-    borderRadius: theme.radius.card,
-    backgroundColor: theme.colors.card,
-  },
-  pill: {
-    minHeight: theme.size.hit,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+  // Day one is one plain row with a line under it, like the posts (no panel).
+  dayOne: {
     gap: theme.space.xs,
-    paddingHorizontal: theme.space.md,
-    paddingVertical: theme.space.xs,
-    borderRadius: theme.radius.chip,
-    backgroundColor: theme.colors.card,
+    paddingBottom: theme.space.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.line,
   },
-  pillText: { flexShrink: 1, textAlign: 'center' },
-  gap: { height: theme.space.md },
+  dayOneAction: { alignItems: 'flex-start' },
+  gap: { height: 1, marginHorizontal: theme.space.screen, backgroundColor: theme.colors.line },
   more: { paddingVertical: theme.space.lg, alignItems: 'center' },
 }));

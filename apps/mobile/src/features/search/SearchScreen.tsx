@@ -164,7 +164,7 @@ export function SearchScreen({
             {recent.length > 0 ? (
               <View style={styles.section} testID="search-recent">
                 <View style={styles.row}>
-                  <Text variant="bodyStrong" accessibilityRole="header" style={styles.heading}>
+                  <Text variant="label" tone="ink3" accessibilityRole="header" style={styles.flex}>
                     {copy.recent}
                   </Text>
                   <Button label={copy.clearRecent} variant="text" size="S" onPress={clearRecent} />
@@ -184,7 +184,7 @@ export function SearchScreen({
             ) : null}
             {list.length > 0 ? (
               <View style={styles.section} testID="search-trending">
-                <Text variant="bodyStrong" accessibilityRole="header" style={styles.heading}>
+                <Text variant="label" tone="ink3" accessibilityRole="header">
                   {copy.trending}
                 </Text>
                 <View>
@@ -265,7 +265,6 @@ const styles = StyleSheet.create((theme, rt) => ({
   },
   flex: { flex: 1 },
   row: { flexDirection: 'row', alignItems: 'center' },
-  heading: { flex: 1, fontWeight: theme.type.heading.fontWeight },
   body: {
     paddingHorizontal: theme.space.screen,
     paddingTop: theme.space.md,

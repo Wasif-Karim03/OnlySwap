@@ -41,7 +41,7 @@ const MAX_SWAPS = 6;
  * an exact copy of the native splash, so hiding the splash is invisible. The
  * two halves of the mark swap places and click back together, a soft accent
  * ring goes out. A slow start repeats the swap, and once the app has routed
- * underneath, the cover fades away after the current swap.
+ * underneath, the cover fades away at once.
  * Reduce motion: no movement, just the fade.
  */
 export function LaunchIntro() {
@@ -54,7 +54,6 @@ export function LaunchIntro() {
   // between swaps.
   const [swaps, setSwaps] = useState(0);
   const [swapping, setSwapping] = useState(true);
-  const played = reduced || (swaps > 0 && !swapping);
   // A cold start straight into a deep link never shows the Launch screen.
   const ready = flagged || pathname !== '/' || swaps >= MAX_SWAPS;
   const [gone, setGone] = useState(false);
@@ -103,18 +102,20 @@ export function LaunchIntro() {
     return () => clearTimeout(timer);
   }, [reduced, ready, swapping, swaps, swap]);
 
+  // Leaves the moment the app is ready, mid-swap if need be: the owner found
+  // waiting for the swap to finish made a cold start feel slow (3-4 s).
   useEffect(() => {
-    if (!played || !ready) return;
+    if (!ready) return;
     cover.set(
       withTiming(
         0,
-        { duration: motion.fade.duration * 2, easing: Easing.out(Easing.cubic) },
+        { duration: motion.fade.duration, easing: Easing.out(Easing.cubic) },
         (done) => {
           if (done) runOnJS(setGone)(true);
         },
       ),
     );
-  }, [cover, played, ready]);
+  }, [cover, ready]);
 
   const left = useAnimatedStyle(() => ({
     transform: [{ translateX: -PART * unit * t.value }, { translateY: SWAP * unit * t.value }],
@@ -135,7 +136,7 @@ export function LaunchIntro() {
 
   return (
     <Animated.View
-      pointerEvents={played && ready ? 'none' : 'auto'}
+      pointerEvents={ready ? 'none' : 'auto'}
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
       style={[styles.cover, coverStyle]}

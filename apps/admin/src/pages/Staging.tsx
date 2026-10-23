@@ -30,7 +30,7 @@ export function StagingSection() {
             ? `Checked ${timeAgo(state.data.generated_at).toLowerCase()}`
             : missing
               ? 'Not installed'
-              : 'Checking'}
+              : 'Checking…'}
         </span>
         <span className="spacer" />
         <Button icon="refresh" disabled={state.loading} onClick={state.reload}>

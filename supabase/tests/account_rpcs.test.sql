@@ -64,6 +64,7 @@ select is(tests.try_text_as(pg_temp.f(), $$select public.update_profile('Ana', n
   'ERROR: INVALID:bio', 'update_profile: bio up to 80');
 select is(tests.try_text_as(pg_temp.f(), $$select public.update_profile('Ana', null, null, '{}', null, 'c/x/u/y/a.webp')::text$$),
   'ERROR: INVALID:avatar_path', 'update_profile: avatar must be under your own prefix');
+select tests.register_upload(pg_temp.f(), 'avatar', pg_temp.f(), 'c/' || tests.uid('OSU') || '/u/' || pg_temp.f() || '/avatar.webp');
 select ok(tests.try_ok_as(pg_temp.f(), format($$select public.update_profile('Ana', null, null, '{}', null, %L)$$,
   'c/' || tests.uid('OSU') || '/u/' || pg_temp.f() || '/avatar.webp')), 'update_profile: own avatar path accepted');
 

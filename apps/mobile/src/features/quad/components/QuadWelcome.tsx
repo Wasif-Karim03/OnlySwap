@@ -4,23 +4,22 @@ import { StyleSheet } from 'react-native-unistyles';
 
 import { Banner } from '@/components/Banner';
 import { Button } from '@/components/Button';
-import { GlyphTile } from '@/components/EmptyState';
-import { Icon, type IconName } from '@/components/icons/Icon';
 import { Checkbox } from '@/components/OptionRow';
 import { Text } from '@/components/Text';
 import { errorText } from '@/lib/errors';
 import { quad as copy } from '@/strings';
 
-const RULES: { icon: IconName; title: string; body: string }[] = [
-  { icon: 'lock', title: copy.ruleAnonTitle, body: copy.ruleAnonBody },
-  { icon: 'users', title: copy.ruleNamesTitle, body: copy.ruleNamesBody },
-  { icon: 'ban', title: copy.ruleHarmTitle, body: copy.ruleHarmBody },
-  { icon: 'chdn', title: copy.ruleVotesTitle, body: copy.ruleVotesBody },
+const RULES: { title: string; body: string }[] = [
+  { title: copy.ruleAnonTitle, body: copy.ruleAnonBody },
+  { title: copy.ruleNamesTitle, body: copy.ruleNamesBody },
+  { title: copy.ruleHarmTitle, body: copy.ruleHarmBody },
+  { title: copy.ruleVotesTitle, body: copy.ruleVotesBody },
 ];
 
 /**
- * Q01 Welcome to the Quad (first visit). The anonymity disclosure is the first
- * rule and first in reading order; nobody can post until they agree.
+ * Q01 Welcome to the Quad (first visit): title, one line of help, then four
+ * rules as a bold title and one short sentence each. The anonymity disclosure
+ * is the first rule and first in reading order; nobody can post until they agree.
  */
 export function QuadWelcome({
   onAccept,
@@ -48,7 +47,6 @@ export function QuadWelcome({
   return (
     <View style={styles.root} testID="quad-welcome">
       <ScrollView contentContainerStyle={[styles.body, embedded && styles.bodyEmbedded]}>
-        <GlyphTile icon="quad" tile="accent" />
         <Text variant="title" accessibilityRole="header">
           {copy.welcomeTitle}
         </Text>
@@ -57,15 +55,10 @@ export function QuadWelcome({
         </Text>
         {RULES.map((r) => (
           <View key={r.title} style={styles.rule} accessible>
-            <View style={styles.ruleIcon}>
-              <Icon name={r.icon} tone="ink" />
-            </View>
-            <View style={styles.flex}>
-              <Text variant="bodyStrong">{r.title}</Text>
-              <Text variant="body" tone="ink2">
-                {r.body}
-              </Text>
-            </View>
+            <Text variant="bodyStrong">{r.title}</Text>
+            <Text variant="body" tone="ink2">
+              {r.body}
+            </Text>
           </View>
         ))}
         <Checkbox
@@ -98,15 +91,6 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingBottom: theme.space.xl,
   },
   bodyEmbedded: { paddingTop: theme.space.lg },
-  rule: { flexDirection: 'row', gap: theme.space.md },
-  ruleIcon: {
-    width: theme.size.hit,
-    height: theme.size.hit,
-    borderRadius: theme.radius.thumb,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.bg2,
-  },
-  flex: { flex: 1, gap: theme.space.xs },
+  rule: { gap: theme.space.xs },
   dock: { paddingHorizontal: theme.space.screen, paddingVertical: theme.space.md },
 }));

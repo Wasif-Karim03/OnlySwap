@@ -17,7 +17,9 @@ import { rpc } from '../supabase';
 import {
   Button,
   Card,
+  Dialog,
   EmptyState,
+  ErrorState,
   Field,
   Icon,
   Loadable,
@@ -110,7 +112,7 @@ export function ReportsPage() {
             state={queue}
             rows={6}
             empty={(d) => d.length === 0}
-            emptyText={status === 'open' ? 'No open reports. Nice.' : 'Nothing here.'}
+            emptyText={status === 'open' ? 'No open reports.' : 'No reports in this view.'}
           >
             {(list) => (
               <div role="list">
@@ -160,7 +162,7 @@ export function ReportsPage() {
           </div>
         ) : (
           <div className="card">
-            <EmptyState title="Pick a report on the left." />
+            <EmptyState title="Select a report." />
           </div>
         )}
       </div>
@@ -183,6 +185,7 @@ function ReportDetailCard({
   const [days, setDays] = useState(7);
   const [chat, setChat] = useState<ChatLine[] | null>(null);
   const [chatError, setChatError] = useState<string | null>(null);
+  const [askChat, setAskChat] = useState(false);
 
   return (
     <Loadable state={state} rows={8}>
@@ -193,7 +196,8 @@ function ReportDetailCard({
           (a) => ({
             id: a,
             label: reportActionLabel(a, r.target_type),
-            variant: a === 'ban' ? 'ban' : 'secondary',
+            // Ban and Remove always confirm in the reason dialog.
+            variant: a === 'ban' ? 'ban' : a === 'remove_content' ? 'danger' : 'secondary',
             confirm:
               a === 'ban'
                 ? `Ban ${r.target?.display_name ?? 'this person'}? They lose access for good.`
@@ -221,7 +225,7 @@ function ReportDetailCard({
           }),
         );
         return (
-          <section className="card clip" aria-label="Report">
+          <section className="card" aria-label="Report">
             <div className="ch">
               <StatusPill {...reason} />
               <h2>
@@ -234,67 +238,47 @@ function ReportDetailCard({
                 </span>
               </div>
             </div>
-            <div className="cb grid2" style={{ gridTemplateColumns: '1fr 1fr' }}>
-              <div className="stack tight">
-                <div className="muted small strong">What was reported</div>
-                {r.evidence?.text ? <div className="quote">"{r.evidence.text}"</div> : null}
-                {(r.evidence?.excerpts ?? []).map((x, i) => (
-                  <div key={i} className="bubble">
-                    {x}
-                  </div>
-                ))}
-                {!r.evidence?.text && !(r.evidence?.excerpts ?? []).length ? (
-                  <div className="muted">No text was captured with this report.</div>
-                ) : null}
-                {r.details ? (
-                  <>
-                    <div className="muted small strong" style={{ marginTop: 6 }}>
-                      What the reporter said
-                    </div>
-                    <p style={{ lineHeight: 1.45 }}>{r.details}</p>
-                  </>
-                ) : null}
-                {isChat ? (
-                  chat ? (
-                    <div className="stack tight" aria-label="Reported chat">
-                      <div className="muted small strong">Whole chat (this read was logged)</div>
-                      {chat.map((m) => (
-                        <div key={m.id} className="bubble">
-                          <span className="strong">{m.sender ?? 'OnlySwap'}</span>{' '}
-                          <span className="muted small">{whenLabel(m.created_at)}</span>
-                          <div>{m.body}</div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="stack tight">
-                      <div>
-                        <Button
-                          icon="eye"
-                          onClick={async () => {
-                            try {
-                              setChat(
-                                await rpc<ChatLine[]>('admin_read_reported_chat', {
-                                  report_id: r.id,
-                                }),
-                              );
-                            } catch (e) {
-                              setChatError((e as Error).message);
-                            }
-                          }}
-                        >
-                          Read the whole chat (logged)
-                        </Button>
-                      </div>
-                      {chatError ? <p className="error">{chatError}</p> : null}
-                    </div>
-                  )
-                ) : null}
-              </div>
-              <div className="stack tight">
-                <div className="muted small strong">
-                  {r.target ? `${r.target.display_name} history` : 'Person'}
+            <div className="action-bar">
+              {r.status === 'open' ? (
+                <ReasonActions
+                  hint="Saved to the audit log. If you remove a listing, the seller sees this."
+                  actions={actions}
+                  onDone={() => {
+                    state.reload();
+                    onResolved();
+                  }}
+                />
+              ) : (
+                <div className="row">
+                  <StatusPill {...reportStatus(r.status)} />
+                  <span className="ink2">
+                    {r.action_taken ? `${reportActionLabel(r.action_taken, r.target_type)}. ` : ''}
+                    {r.resolved_at ? `Closed ${whenLabel(r.resolved_at)}` : ''}
+                  </span>
                 </div>
+              )}
+            </div>
+            <div className="cb stack tight">
+              <div className="muted small strong">What was reported</div>
+              {r.evidence?.text ? <div className="quote">"{r.evidence.text}"</div> : null}
+              {(r.evidence?.excerpts ?? []).map((x, i) => (
+                <div key={i} className="bubble">
+                  {x}
+                </div>
+              ))}
+              {!r.evidence?.text && !(r.evidence?.excerpts ?? []).length ? (
+                <div className="muted">No text was captured with this report.</div>
+              ) : null}
+              {r.details ? (
+                <>
+                  <div className="muted small strong">What the reporter said</div>
+                  <p className="body-text">{r.details}</p>
+                </>
+              ) : null}
+            </div>
+            <details className="section">
+              <summary>Person history</summary>
+              <div className="cb stack tight">
                 {r.target ? (
                   <>
                     <dl className="kv flush">
@@ -322,34 +306,71 @@ function ReportDetailCard({
                     </div>
                   </>
                 ) : (
-                  <p className="muted">
-                    This report isn't about one person (or the account is gone).
-                  </p>
+                  <EmptyState title="No person to show for this report." />
                 )}
               </div>
-            </div>
-            <div className="cf">
-              {r.status === 'open' ? (
-                <div style={{ width: '100%' }}>
-                  <ReasonActions
-                    placeholder="Reason (required, saved to the audit log). If you remove a listing, the seller sees this."
-                    actions={actions}
-                    onDone={() => {
-                      state.reload();
-                      onResolved();
+            </details>
+            {isChat ? (
+              <details className="section" open={!!chat}>
+                <summary>Read the whole chat (logged)</summary>
+                <div className="cb stack tight">
+                  {chat ? (
+                    <div className="stack tight" aria-label="Reported chat">
+                      <div className="muted small strong">Whole chat (this read was logged)</div>
+                      {chat.map((m) => (
+                        <div key={m.id} className="bubble">
+                          <span className="strong">{m.sender ?? 'OnlySwap'}</span>{' '}
+                          <span className="muted small">{whenLabel(m.created_at)}</span>
+                          <div>{m.body}</div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : chatError ? (
+                    <ErrorState
+                      message="Could not read the chat. Try again."
+                      onRetry={() => setAskChat(true)}
+                    />
+                  ) : (
+                    <div>
+                      <Button icon="eye" onClick={() => setAskChat(true)}>
+                        Read the whole chat
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </details>
+            ) : null}
+            {askChat ? (
+              <Dialog title="Read the whole chat" onClose={() => setAskChat(false)}>
+                <div className="cb">
+                  <p className="ink2">This read is saved to the audit log.</p>
+                </div>
+                <div className="cf end">
+                  <Button variant="ghost" onClick={() => setAskChat(false)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="primary"
+                    autoFocus
+                    onClick={async () => {
+                      setAskChat(false);
+                      setChatError(null);
+                      try {
+                        setChat(
+                          await rpc<ChatLine[]>('admin_read_reported_chat', {
+                            report_id: r.id,
+                          }),
+                        );
+                      } catch (e) {
+                        setChatError((e as Error).message);
+                      }
                     }}
-                  />
+                  >
+                    Read the chat
+                  </Button>
                 </div>
-              ) : (
-                <div className="row">
-                  <StatusPill {...reportStatus(r.status)} />
-                  <span className="ink2">
-                    {r.action_taken ? `${reportActionLabel(r.action_taken, r.target_type)}. ` : ''}
-                    {r.resolved_at ? `Closed ${whenLabel(r.resolved_at)}` : ''}
-                  </span>
-                </div>
-              )}
-            </div>
+              </Dialog>
+            ) : null}
           </section>
         );
       }}
@@ -400,7 +421,7 @@ export function AppealsPage() {
           state={state}
           rows={4}
           empty={(d) => d.length === 0}
-          emptyText={view === 'open' ? 'No appeals waiting.' : 'Nothing here.'}
+          emptyText={view === 'open' ? 'No appeals waiting.' : 'No appeals in this view.'}
         >
           {(rows) =>
             rows.map((ap) => (

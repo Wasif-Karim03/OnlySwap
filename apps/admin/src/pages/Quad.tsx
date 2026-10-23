@@ -95,13 +95,28 @@ export function QuadPage() {
           Held automatically when a post matches a review word, names a student or gets voted down.
         </span>
       </div>
-      <div className="split" style={{ gridTemplateColumns: 'minmax(0, 1fr) 280px' }}>
+      <p className="note">
+        Quad is anonymous. This list never shows who wrote a post. Approve and Remove are written to
+        the audit log.
+      </p>
+      <div
+        className="split"
+        style={{
+          gridTemplateColumns: revealed || revealFor ? 'minmax(0, 1fr) 280px' : 'minmax(0, 1fr)',
+        }}
+      >
         <Card>
           <Loadable
             state={state}
             rows={6}
             empty={(d) => d.length === 0}
-            emptyText="Nothing here right now."
+            emptyText={
+              view === 'held'
+                ? 'Nothing is held.'
+                : view === 'hidden'
+                  ? 'Nothing is hidden.'
+                  : 'No reported posts.'
+            }
           >
             {(rows) => (
               <>
@@ -207,7 +222,7 @@ export function QuadPage() {
                                 setRevealFor(q);
                               }}
                             >
-                              Reveal
+                              Reveal author
                             </Button>
                           ) : null}
                         </div>
@@ -251,23 +266,7 @@ export function QuadPage() {
                 setRevealed(r);
               }}
             />
-          ) : (
-            <div className="card pad stack tight">
-              <div className="strong">Reveal an author</div>
-              <p className="ink2" style={{ lineHeight: 1.5 }}>
-                Owner only, for a legal request or someone in danger. Needs a fresh two-step check,
-                a case number and a reason. The author gets an email receipt and it's written to the
-                audit log. 5 per day.
-              </p>
-              {owner ? (
-                <p className="muted small">Pick "Reveal author" on a post to start.</p>
-              ) : null}
-            </div>
-          )}
-          <p className="note">
-            Quad is anonymous. This list never shows who wrote a post. Approve and Remove are
-            written to the audit log.
-          </p>
+          ) : null}
         </div>
       </div>
     </Page>

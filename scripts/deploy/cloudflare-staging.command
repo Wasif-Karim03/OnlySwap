@@ -114,9 +114,12 @@ say "6/6 Admin ($ADMIN_PROJECT.pages.dev) and web app ($WEB_PROJECT.pages.dev)"
 ( cd apps/admin && VITE_APP_ENV=staging VITE_SUPABASE_URL=$EXPO_PUBLIC_SUPABASE_URL VITE_SUPABASE_ANON_KEY=$EXPO_PUBLIC_SUPABASE_ANON_KEY \
     VITE_MEDIA_URL=$MEDIA_URL pnpm -s build ) >>"$LOG" 2>&1 || die "admin build failed (see $LOG)"
 pages "$ADMIN_PROJECT" apps/admin/dist || die "admin deploy failed"
+# The web app needs a Turnstile site key (export:web's preflight stops without
+# one): Cloudflare's always-pass test key, paired with the staging
+# TURNSTILE_SECRET_KEY on the functions.
 ( cd apps/mobile && EXPO_PUBLIC_APP_ENV=staging EXPO_PUBLIC_SUPABASE_URL=$EXPO_PUBLIC_SUPABASE_URL \
     EXPO_PUBLIC_SUPABASE_ANON_KEY=$EXPO_PUBLIC_SUPABASE_ANON_KEY EXPO_PUBLIC_MEDIA_URL=$MEDIA_URL \
-    EXPO_PUBLIC_SITE_URL=$SITE_URL pnpm -s export:web ) >>"$LOG" 2>&1 || die "web app build failed (see $LOG)"
+    EXPO_PUBLIC_SITE_URL=$SITE_URL EXPO_PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA pnpm -s export:web ) >>"$LOG" 2>&1 || die "web app build failed (see $LOG)"
 pages "$WEB_PROJECT" apps/mobile/dist || die "web app deploy failed"
 
 say "Check"

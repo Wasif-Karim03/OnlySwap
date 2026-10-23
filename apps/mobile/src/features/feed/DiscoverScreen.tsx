@@ -1,22 +1,27 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { StyleSheet } from 'react-native-unistyles';
 import type { StoreApi } from 'zustand';
 
 import { track as trackActivity } from '@/lib/activity';
 import { track } from '@/lib/analytics';
+import { motion } from '@onlyswap/tokens';
+import { useOfflineShown } from '@/components/Banner';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { SkeletonCard } from '@/components/Skeleton';
 import { Text } from '@/components/Text';
 import { useToastStore } from '@/components/Toast';
+import { useScreenReader } from '@/lib/a11y';
 import { getEnv } from '@/lib/env';
 import { isWebPlatform } from '@/lib/platform';
 import { getStorage } from '@/lib/storage';
 import { feed as copy } from '@/strings';
 import { LAYOUT, useLayout } from '@/theme/layout';
+import { useReducedMotion } from '@/theme/reducedMotion';
 
 import { DiscoverHeader } from '../campus/DiscoverHeader';
 import type { Me } from '../me/api';
@@ -47,8 +52,10 @@ const defaultCoach: CoachStorage = {
 type Phase = 'loading' | 'ready' | 'error';
 
 /**
- * B01 Discover (P6-FEED-03): the deck, first-swipe coach, prefetch, end of
- * deck, day-one hero, undo toast and the offline-safe swipe queue.
+ * B01 Discover (P6-FEED-03; DESIGN_REVIEW 3.02): the deck, a one-line
+ * first-swipe hint above the actions, prefetch, end of deck, day-one hero,
+ * undo toast and the offline-safe swipe queue, with a queued-swipes line
+ * while the global offline banner shows.
  */
 export function DiscoverScreen({
   api = feedApi,
@@ -76,6 +83,12 @@ export function DiscoverScreen({
     : isWebPlatform()
       ? layout.width
       : undefined;
+  // Same rule as SwipeDeck's list mode (X33): nothing to swipe, so no swipe hint.
+  const screenReader = useScreenReader();
+  const reduced = useReducedMotion();
+  const swiping = gridWidth === undefined && !screenReader && !reduced;
+  // Appears and clears with the global OfflineBanner (same rule, Banner.tsx).
+  const offline = useOfflineShown();
   const store = useMemo(() => swipes ?? getSwipeStore(api), [swipes, api]);
   useSwipeFlush(store);
 
@@ -109,6 +122,7 @@ export function DiscoverScreen({
         setTotal((t) => (fresh ? page.length : t + page.length));
         cursor.current = nextCursor(page, PAGE);
         setEnded(!cursor.current);
+        setError(null);
         setPhase('ready');
       } catch (e) {
         setError(e);
@@ -179,6 +193,11 @@ export function DiscoverScreen({
     }
   }, [store, api]);
 
+  const dismissCoach = useCallback(() => {
+    setShowCoach(false);
+    coach.markSeen();
+  }, [coach]);
+
   const onSwipe = useCallback(
     (card: DeckCard, dir: SwipeDir) => {
       const item = items.find((i) => i.id === card.id);
@@ -188,10 +207,7 @@ export function DiscoverScreen({
       setItems((prev) => prev.filter((p) => p.id !== card.id));
       store.getState().swipe(card.id, dir, dwellOn(card.id));
       track('card_swiped', { dir });
-      if (showCoach) {
-        setShowCoach(false);
-        coach.markSeen();
-      }
+      if (showCoach) dismissCoach();
       const toast = useToastStore.getState();
       if (dir === 'save') {
         api.save(card.id).catch(() => toast.show('error', copy.saveFailed));
@@ -202,13 +218,16 @@ export function DiscoverScreen({
         router.push({ pathname: '/listing/[id]/offer', params: { id: card.id } });
       }
     },
-    [items, store, showCoach, coach, api, router, undo, dwellOn],
+    [items, store, showCoach, dismissCoach, api, router, undo, dwellOn],
   );
 
   const onOpen = useCallback(
-    (card: DeckCard) =>
-      router.push({ pathname: '/listing/[id]', params: { id: card.id, from: 'discover' } }),
-    [router],
+    (card: DeckCard) => {
+      // The hint ends on the first swipe or tap.
+      if (showCoach) dismissCoach();
+      router.push({ pathname: '/listing/[id]', params: { id: card.id, from: 'discover' } });
+    },
+    [router, showCoach, dismissCoach],
   );
 
   const header = <DiscoverHeader loadMe={loadMe} />;
@@ -222,8 +241,10 @@ export function DiscoverScreen({
         </View>
       </View>
     );
-  } else if (phase === 'error') {
-    body = <ErrorState error={error} onRetry={refresh} testID="discover-error" />;
+  } else if (phase === 'error' || (cards.length === 0 && !ended && error !== null)) {
+    // A failed next page that leaves the deck empty reads like a first-page failure.
+    const retry = phase === 'error' ? refresh : () => load(false);
+    body = <ErrorState error={error} onRetry={retry} testID="discover-error" />;
   } else if (cards.length === 0 && ended) {
     const dayOne = total < DAY_ONE_MAX;
     body = (
@@ -238,28 +259,36 @@ export function DiscoverScreen({
       />
     );
   } else {
+    // One quiet line in the hint slot: offline wins over the first-launch hint.
+    const hint = offline ? (
+      <Animated.View key="offline" entering={FadeIn.duration(motion.fade.duration)}>
+        <Text variant="meta" tone="ink2" accessibilityLiveRegion="polite" testID="discover-offline">
+          {copy.offlineQueued}
+        </Text>
+      </Animated.View>
+    ) : showCoach && swiping && cards.length > 0 ? (
+      <Animated.View
+        key="coach"
+        entering={FadeIn.duration(motion.fade.duration)}
+        style={styles.coach}
+        testID="discover-coach"
+      >
+        <Text variant="meta" tone="ink2" style={styles.coachText}>
+          {copy.coachBody}
+        </Text>
+        {/* Kept: tests pin "Got it"; the hint also ends on the first swipe or tap. */}
+        <Button label={copy.coachOk} size="S" variant="text" onPress={dismissCoach} />
+      </Animated.View>
+    ) : null;
     body = (
       <View style={gridWidth !== undefined ? styles.flex : styles.deck}>
-        <SwipeDeck cards={cards} onSwipe={onSwipe} onOpen={onOpen} gridWidth={gridWidth} />
-        {showCoach && cards.length > 0 && gridWidth === undefined ? (
-          <View style={styles.coach} testID="discover-coach" accessibilityViewIsModal={false}>
-            <Text variant="heading" accessibilityRole="header">
-              {copy.coachTitle}
-            </Text>
-            <Text variant="body" tone="ink2">
-              {copy.coachBody}
-            </Text>
-            <Button
-              label={copy.coachOk}
-              size="M"
-              variant="dark"
-              onPress={() => {
-                setShowCoach(false);
-                coach.markSeen();
-              }}
-            />
-          </View>
-        ) : null}
+        <SwipeDeck
+          cards={cards}
+          onSwipe={onSwipe}
+          onOpen={onOpen}
+          gridWidth={gridWidth}
+          hint={hint}
+        />
       </View>
     );
   }
@@ -277,16 +306,6 @@ const styles = StyleSheet.create((theme) => ({
   flex: { flex: 1 },
   deck: { flex: 1, width: '100%', maxWidth: LAYOUT.deckMax, alignSelf: 'center' },
   stage: { flex: 1, margin: theme.space.screen },
-  coach: {
-    position: 'absolute',
-    left: theme.space.screen,
-    right: theme.space.screen,
-    bottom: theme.space['2xl'] * 3,
-    padding: theme.space.lg,
-    gap: theme.space.sm,
-    borderRadius: theme.radius.card,
-    backgroundColor: theme.colors.bg,
-    borderWidth: 1,
-    borderColor: theme.colors.line,
-  },
+  coach: { flexDirection: 'row', alignItems: 'center', gap: theme.space.sm },
+  coachText: { flex: 1 },
 }));

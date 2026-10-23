@@ -48,7 +48,7 @@ export function SettingsPage({ tab }: { tab: SettingsTab }) {
       </nav>
       {blocked ? (
         <div className="card">
-          <EmptyState title="Only the owner can open this section." />
+          <EmptyState title="Only owners can open this section." />
         </div>
       ) : (
         <>

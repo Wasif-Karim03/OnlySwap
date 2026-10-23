@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { errorMessage, knownError, reasonError, slugFromName } from '../logic';
 import { rpc, supabase } from '../supabase';
 import type { Category } from '../types';
-import { Button, Card, EmptyState, ErrorState, Field, Loading, Table } from '../ui';
+import { Button, Card, Dialog, EmptyState, ErrorState, Field, Loading, Table } from '../ui';
 
 /**
  * Categories (owner, admin_upsert_category): rename, reorder, add. The slug
@@ -47,16 +47,22 @@ export function CategoriesSection() {
         }
       >
         {edit ? (
-          <CategoryForm
-            key={edit === 'new' ? 'new' : edit.id}
-            cat={edit === 'new' ? null : edit}
-            all={rows ?? []}
+          <Dialog
+            title={edit === 'new' ? 'Add category' : `Edit ${edit.name}`}
             onClose={() => setEdit(null)}
-            onSaved={() => {
-              setEdit(null);
-              load();
-            }}
-          />
+            wide
+          >
+            <CategoryForm
+              key={edit === 'new' ? 'new' : edit.id}
+              cat={edit === 'new' ? null : edit}
+              all={rows ?? []}
+              onClose={() => setEdit(null)}
+              onSaved={() => {
+                setEdit(null);
+                load();
+              }}
+            />
+          </Dialog>
         ) : null}
         {error ? (
           <ErrorState message={error} onRetry={load} />
@@ -119,7 +125,6 @@ function CategoryForm({
   return (
     <form
       className="cb stack tight"
-      style={{ borderBottom: '1px solid var(--color-line)' }}
       aria-label={cat ? `Edit ${cat.name}` : 'Add category'}
       onSubmit={async (e) => {
         e.preventDefault();
@@ -202,7 +207,7 @@ function CategoryForm({
             autoComplete="off"
           />
         </Field>
-        <Button type="submit" variant="primary" disabled={busy}>
+        <Button type="submit" variant="primary" pending={busy} pendingLabel="Saving…">
           {cat ? 'Save' : 'Add'}
         </Button>
         <Button variant="ghost" onClick={onClose}>
