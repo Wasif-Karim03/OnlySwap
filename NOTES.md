@@ -25,7 +25,7 @@ Design-only overhaul of OnlySwap (no query/RPC/route/data-shape changes). Phases
 
 ## Next steps (ordered)
 1. (done) B4-B7.
-2. (done) Final code review + fixes. Remaining: simulator pass, then owner decisions (lilac test edit, legal copy, commit approach) (ecc:code-reviewer / typescript-reviewer), simulator pass (light/dark, largest Dynamic Type, Reduce Motion), update NOTES, ask owner how to commit.
+2. (done) Final code review + fixes. Owner decisions applied: lilac retired on Quad pinned note (test updated with OK), legal lines restored (signIn.legal 13+, birthday.privacy, Quad ruleAnon/ruleNames), everything committed as 739a532 on design/overhaul (not pushed; audit/raw/ gitignored). Remaining: simulator pass (light/dark, largest Dynamic Type, Reduce Motion; check chat action row on small phones). (ecc:code-reviewer / typescript-reviewer), simulator pass (light/dark, largest Dynamic Type, Reduce Motion), update NOTES, ask owner how to commit.
 3. Later: TestFlight build (cd apps/mobile && npx eas-cli@latest build --profile testflight --platform ios --auto-submit); old items (Turnstile key, DEC 139, migration 0248 deploy, ASC cleanup).
 
 ## Key files/commands
