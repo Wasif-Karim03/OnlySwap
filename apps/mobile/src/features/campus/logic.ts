@@ -21,10 +21,18 @@ import {
  */
 
 export type CampusFilter = 'all' | 'news' | 'food' | 'free' | 'wanted' | 'new';
-export const CAMPUS_FILTERS: CampusFilter[] = ['all', 'news', 'food', 'free', 'wanted', 'new'];
+/**
+ * The Feed's chips. Feed posts only (DEC 148): things for sale or to give away
+ * live on Discover, so the Free stuff and This week chips are gone. The type
+ * keeps 'free' and 'new' so an old link still opens.
+ */
+export const CAMPUS_FILTERS: CampusFilter[] = ['all', 'news', 'food', 'wanted'];
+export const OLD_CAMPUS_FILTERS: CampusFilter[] = ['free', 'new'];
 
 export function isCampusFilter(x: unknown): x is CampusFilter {
-  return typeof x === 'string' && (CAMPUS_FILTERS as string[]).includes(x);
+  return (
+    typeof x === 'string' && ([...CAMPUS_FILTERS, ...OLD_CAMPUS_FILTERS] as string[]).includes(x)
+  );
 }
 
 /** One post from get_campus_feed: the feed card plus the Around campus fields. */

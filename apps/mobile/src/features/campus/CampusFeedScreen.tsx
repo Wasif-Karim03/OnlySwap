@@ -77,8 +77,8 @@ type Deps = {
 
 /**
  * C01 Feed tab (DEC 98, was Around campus on Discover): one post per row like
- * a social feed. News, free food, free stuff, Wanted posts and the last week's
- * listings, newest first, with "What's happening on campus?" to post news, the
+ * a social feed. News, free food and Wanted posts (DEC 148: no listings for
+ * sale or to give away; those are on Discover), newest first, with "What's happening on campus?" to post news, the
  * Day one hero and the founding sellers card while the campus is new.
  */
 export function CampusFeedScreen({
