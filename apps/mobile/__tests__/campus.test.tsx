@@ -466,8 +466,31 @@ describe('C01 Around campus', () => {
     expect(screen.getByTestId('campus-item-want1-answer')).toBeTruthy();
     // Your own Wanted: no "I have this".
     expect(screen.queryByTestId('campus-item-want2-answer')).toBeNull();
-    expect(screen.getByText(campus.yours)).toBeTruthy();
+    // ...it gets Delete instead (owner review 2026-10-24).
+    expect(screen.getByTestId('campus-item-want2-delete')).toBeTruthy();
     expect(screen.getByText('Floor mirror')).toBeTruthy();
+  });
+
+  it('deletes your own post after confirming', async () => {
+    const api = fakeCampus();
+    const remove = jest.fn(async () => {});
+    renderAt(
+      {
+        feed: () => (
+          <CampusFeedScreen
+            api={api}
+            store={newStore()}
+            now={() => NOW}
+            mediaBase={() => 'http://m'}
+            remove={remove}
+          />
+        ),
+      },
+      '/feed',
+    );
+    fireEvent.press(await screen.findByTestId('campus-item-want2-delete'));
+    fireEvent.press(await screen.findByText(campus.deletePostConfirm));
+    await waitFor(() => expect(remove).toHaveBeenCalledWith('want2'));
   });
 
   it('opens a post', async () => {

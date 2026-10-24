@@ -15,6 +15,7 @@ import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { Chip } from '@/components/Chip';
 import { EmptyState } from '@/components/EmptyState';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { ErrorState } from '@/components/ErrorState';
 import type { IconName } from '@/components/icons/Icon';
 import { IconButton } from '@/components/IconButton';
@@ -70,6 +71,8 @@ type Deps = {
   loadMe?: () => Promise<Me>;
   /** The Quad, shown as a Feed chip where the campus has it on (DEC 130). */
   quad?: QuadApi;
+  /** Deletes one of your own posts (owner review 2026-10-24). */
+  remove?: (id: string) => Promise<void>;
 };
 
 /**
@@ -90,6 +93,7 @@ export function CampusFeedScreen({
   now = () => new Date(),
   loadMe = () => meApi.me(),
   quad = quadApi,
+  remove = (id) => meApi.deleteListing(id),
 }: Deps) {
   const router = useRouter();
   const qc = useQueryClient();
@@ -99,6 +103,7 @@ export function CampusFeedScreen({
   // DEC 130: the Quad is a Feed chip (/feed?kind=quad), no longer a tab.
   const [inQuad, setInQuad] = useState(params.kind === 'quad');
   const [postMenu, setPostMenu] = useState(false);
+  const [deleting, setDeleting] = useState<CampusItem | null>(null);
   const [seenKind, setSeenKind] = useState(params.kind);
   if (params.kind !== seenKind) {
     setSeenKind(params.kind);
@@ -265,6 +270,7 @@ export function CampusFeedScreen({
         onAnswer={() => answer(item)}
         onLike={() => toggleLikeItem(item)}
         onComments={() => openComments(item)}
+        onDelete={item.is_own ? () => setDeleting(item) : undefined}
         testID={`campus-item-${item.id}`}
       />
     ) : (
@@ -279,6 +285,7 @@ export function CampusFeedScreen({
         onOpenLink={(url) => void openUrl(url)}
         onLike={() => toggleLikeItem(item)}
         onComments={() => openComments(item)}
+        onDelete={item.is_own ? () => setDeleting(item) : undefined}
         testID={`campus-item-${item.id}`}
       />
     );
@@ -410,6 +417,22 @@ export function CampusFeedScreen({
           { label: copy.postFood, onPress: postFood },
           { label: copy.askFor, onPress: askFor },
         ]}
+      />
+      <ConfirmDialog
+        visible={deleting !== null}
+        title={copy.deletePostTitle}
+        message={copy.deletePostBody}
+        confirmLabel={copy.deletePostConfirm}
+        destructive
+        onConfirm={async () => {
+          if (!deleting) return;
+          await remove(deleting.id);
+          setDeleting(null);
+          void qc.invalidateQueries({ queryKey: campusKeys.all });
+          void qc.invalidateQueries({ queryKey: ['my-listings'] });
+        }}
+        onCancel={() => setDeleting(null)}
+        testID="campus-delete-confirm"
       />
     </View>
   );

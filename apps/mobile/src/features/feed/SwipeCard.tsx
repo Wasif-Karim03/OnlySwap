@@ -184,9 +184,18 @@ export function SaveButton({ saved, onPress }: { saved: boolean; onPress: () => 
       hitSlop={8}
       testID="deck-save"
     >
-      <Material variant="clear" style={styles.saveCircle}>
-        <Icon name="bookmark" size={20} tone="onPhoto" filled={saved} />
-      </Material>
+      {saved ? (
+        // Saved reads at a glance on any photo: a solid light circle with a
+        // black bookmark (owner feedback 2026-10-24: the filled white icon on
+        // glass was too faint).
+        <View style={[styles.saveCircle, styles.saveCircleOn]} testID="deck-save-on">
+          <Icon name="bookmark" size={20} tone="onAccent" filled />
+        </View>
+      ) : (
+        <Material variant="clear" style={styles.saveCircle}>
+          <Icon name="bookmark" size={20} tone="onPhoto" />
+        </Material>
+      )}
     </Tappable>
   );
 }
@@ -340,6 +349,7 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  saveCircleOn: { backgroundColor: theme.colors.onPhoto },
   overlayBody: {
     position: 'absolute',
     left: 0,

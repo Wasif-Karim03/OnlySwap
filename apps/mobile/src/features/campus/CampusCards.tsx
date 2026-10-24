@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { Button } from '@/components/Button';
+import { IconButton } from '@/components/IconButton';
 import { Photo } from '@/components/Photo';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
@@ -66,6 +67,8 @@ type CardProps = {
   /** Like and Comment (DEC 121): food and wanted cards on the Feed show them when set. */
   onLike?: () => void;
   onComments?: () => void;
+  /** Your own post: Delete (owner review 2026-10-24). */
+  onDelete?: () => void;
   testID?: string;
 };
 
@@ -116,7 +119,7 @@ function FoodCard(props: CardProps) {
         onPress={onOpen}
       >
         <View style={styles.body}>
-          <View style={styles.row}>
+          <View style={[styles.row, item.is_own && props.onDelete ? styles.cornerRoom : null]}>
             <Text variant="label" tone={gone ? 'ink3' : 'peach'} style={styles.flex}>
               {copy.foodTag}
             </Text>
@@ -149,13 +152,24 @@ function FoodCard(props: CardProps) {
           ) : null}
         </View>
       </Tappable>
+      {item.is_own && props.onDelete ? (
+        <View style={styles.foodCorner}>
+          <IconButton
+            icon="trash"
+            accessibilityLabel={copy.deleteOwnPost}
+            onPress={props.onDelete}
+            testID={testID ? `${testID}-delete` : undefined}
+          />
+        </View>
+      ) : null}
       <Social {...props} />
     </View>
   );
 }
 
 function WantedCard(props: CardProps) {
-  const { item, now, onOpen, onAnswer, testID } = props;
+  const { item, now, mediaBase, onOpen, onAnswer, testID } = props;
+  const thumb = thumbOf(item, mediaBase);
   const name = sellerName(item);
   const who = fill(copy.byLine, { name, ago: agoLabel(new Date(item.created_at), now()) });
   const budget = budgetLabel(item.wanted_max_cents);
@@ -169,14 +183,22 @@ function WantedCard(props: CardProps) {
             accessibilityLabel={fill(copy.wantedLabel, { title: item.title, budget, who })}
             onPress={onOpen}
           >
-            <View style={styles.text}>
-              <Text variant="meta" tone="ink2" numberOfLines={1}>
-                {name ? fill(copy.lookingFor, { name }) : copy.someoneLookingFor}
-              </Text>
-              <Text variant="bodyStrong">{item.title}</Text>
-              <Text variant="meta" tone="ink2">
-                {[budget, needByLine(item.need_by)].filter(Boolean).join(feedCopy.metaSeparator)}
-              </Text>
+            <View style={styles.wantedMain}>
+              {/* The photo the asker added (audit 2026-10-24: it was saved but never shown). */}
+              {thumb ? (
+                <View style={styles.wantedThumb} testID={testID ? `${testID}-photo` : undefined}>
+                  <Photo source={thumb.uri} blurhash={thumb.blurhash} fill rounded="thumb" />
+                </View>
+              ) : null}
+              <View style={[styles.text, styles.flex]}>
+                <Text variant="meta" tone="ink2" numberOfLines={1}>
+                  {name ? fill(copy.lookingFor, { name }) : copy.someoneLookingFor}
+                </Text>
+                <Text variant="bodyStrong">{item.title}</Text>
+                <Text variant="meta" tone="ink2">
+                  {[budget, needByLine(item.need_by)].filter(Boolean).join(feedCopy.metaSeparator)}
+                </Text>
+              </View>
             </View>
           </Tappable>
         </View>
@@ -189,6 +211,13 @@ function WantedCard(props: CardProps) {
             accessibilityHint={fill(copy.iHaveThisLabel, { title: item.title })}
             onPress={onAnswer}
             testID={testID ? `${testID}-answer` : undefined}
+          />
+        ) : item.is_own && props.onDelete ? (
+          <IconButton
+            icon="trash"
+            accessibilityLabel={copy.deleteOwnPost}
+            onPress={props.onDelete}
+            testID={testID ? `${testID}-delete` : undefined}
           />
         ) : item.is_own ? (
           <Text variant="label" tone="ink3">
@@ -245,6 +274,15 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: dim ? theme.colors.card : theme.colors.peachBg,
     opacity: dim ? 0.6 : 1,
   }),
+  cornerRoom: { paddingRight: theme.size.hit },
+  foodCorner: { position: 'absolute', top: theme.space.xs, right: theme.space.xs },
+  wantedMain: { flexDirection: 'row', alignItems: 'center', gap: theme.space.md },
+  wantedThumb: {
+    width: theme.size.avatarL,
+    height: theme.size.avatarL,
+    borderRadius: theme.radius.thumb,
+    overflow: 'hidden',
+  },
   wanted: {
     flexDirection: 'row',
     alignItems: 'center',

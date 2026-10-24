@@ -26,7 +26,7 @@ import {
   PrivacyScreen,
   SettingsScreen,
 } from '../src/features/me/SettingsScreens';
-import { me as meCopy, settings } from '../src/strings/en';
+import { campus as campusCopy, me as meCopy, settings } from '../src/strings/en';
 import { useThemeModeStore } from '../src/theme/mode';
 
 const ME: Me = {
@@ -125,6 +125,27 @@ describe('F01-F08 profile', () => {
     expect(listingTab('hold')).toBe('active');
     expect(listingTab('sold')).toBe('sold');
     expect(listingTab('held_review')).toBe('other');
+  });
+
+  it('Feed posts sit on Posts, not Active, and can be deleted (owner review 2026-10-24)', async () => {
+    const a = api({
+      listings: jest.fn(async () => [
+        listing('a', 'active'),
+        listing('w', 'active', { kind: 'wanted', title: 'Bottle' }),
+      ]),
+      deleteListing: jest.fn(async () => {}),
+    });
+    render(
+      { profile: () => <ProfileTabScreen api={a} mediaBase={() => 'http://m'} /> },
+      '/profile',
+    );
+    expect(await screen.findByTestId('profile-listing-a')).toBeTruthy();
+    expect(screen.queryByTestId('profile-listing-w')).toBeNull();
+    fireEvent.press(await screen.findByRole('tab', { name: `${meCopy.tabs.posts} 1` }));
+    expect(await screen.findByTestId('profile-post-w')).toBeTruthy();
+    fireEvent.press(screen.getByTestId('profile-post-delete-w'));
+    fireEvent.press(await screen.findByText(campusCopy.deletePostConfirm));
+    await waitFor(() => expect(a.deleteListing).toHaveBeenCalledWith('w'));
   });
 
   it('F01: header, year at school, one line of real numbers, grid, menu (DEC 90)', async () => {

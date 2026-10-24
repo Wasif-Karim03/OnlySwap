@@ -1,6 +1,8 @@
 // Fixes from the 2026-10-24 device audit (fix/audit-1).
 import { dealStatusLabel } from '../src/features/chat/logic';
+import { isFeedPost } from '../src/features/me/api';
 import { profileStats } from '../src/features/me/MeScreens';
+import { priceInput, validateDetails } from '../src/features/sell/logic';
 import { chat, me, saved } from '../src/strings';
 import { es } from '../src/strings/es';
 
@@ -35,5 +37,27 @@ describe('audit fixes', () => {
     expect(saved.emptyItemsBody).toMatch(/bookmark/);
     expect(saved.emptyItemsBody).not.toMatch(/heart/);
     expect(es.saved.emptyItemsBody).not.toMatch(/corazón/);
+  });
+
+  it('a price of 0 turns the listing into a give-away', () => {
+    expect(priceInput('0')).toEqual({ kind: 'free', price: '' });
+    expect(priceInput('$0.00')).toEqual({ kind: 'free', price: '' });
+    expect(priceInput('10')).toEqual({ price: '10' });
+    expect(priceInput('0.5')).toEqual({ price: '0.5' });
+    // A give-away needs no price or category.
+    expect(
+      validateDetails({
+        kind: 'free',
+        title: 'Desk lamp',
+        categoryId: null,
+        price: '',
+        description: '',
+      }),
+    ).toEqual([]);
+  });
+
+  it('feed posts are kept apart from things for sale', () => {
+    expect(['wanted', 'food', 'news'].every(isFeedPost)).toBe(true);
+    expect(['sale', 'free'].some(isFeedPost)).toBe(false);
   });
 });

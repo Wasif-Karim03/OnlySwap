@@ -504,7 +504,7 @@ describe('T-UNIT-COMMENTS-05 comments screen', () => {
     });
     openComments(api);
     expect(await screen.findByText(copy.offNote)).toBeTruthy();
-    expect(screen.getByTestId('comments-empty')).toBeTruthy();
+    expect(screen.queryByTestId('comments-empty')).toBeNull();
     expect(screen.queryByTestId('comments-input')).toBeNull();
     expect(screen.queryByTestId('comments-post-options')).toBeNull();
   });

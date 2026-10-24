@@ -121,6 +121,14 @@ export const meApi: MeApi = {
   },
 };
 
+/**
+ * Feed posts (an ask, free food, news) are not things for sale: they live on
+ * Profile's Posts tab, never in Active or Sold (owner review 2026-10-24).
+ */
+export function isFeedPost(kind: string): boolean {
+  return kind === 'wanted' || kind === 'food' || kind === 'news';
+}
+
 /** F03 tabs: Active (active + hold), Sold, Other (expired, in review, removed). */
 export function listingTab(status: string): 'active' | 'sold' | 'other' {
   if (status === 'active' || status === 'hold') return 'active';

@@ -148,21 +148,22 @@ export function PostWantedScreen({
       testID="wanted"
       screenTestID="screen-post-wanted"
     >
-      <View style={styles.gap}>
-        <Input
-          label={copy.wantedWhat}
-          placeholder={copy.wantedWhatPlaceholder}
-          value={title}
-          onChangeText={setTitle}
-          maxLength={TITLE_MAX}
-          error={errorFor('title')}
-          testID="wanted-title"
-        />
-        {/* The trust fact, up front as one line instead of a note box (3.03). */}
-        <Text variant="meta" tone="ink2">
-          {copy.wantedNote}
-        </Text>
-      </View>
+      <Input
+        label={copy.wantedWhat}
+        placeholder={copy.wantedWhatPlaceholder}
+        value={title}
+        onChangeText={setTitle}
+        maxLength={TITLE_MAX}
+        error={errorFor('title')}
+        testID="wanted-title"
+      />
+      {/* A photo of what you mean, right under the ask (owner review 2026-10-24). */}
+      <PhotoField
+        state={photo}
+        mediaBase={mediaBase()}
+        onOpenSettings={() => void openSettings()}
+        testID="wanted"
+      />
       <View style={styles.gap}>
         <Input
           label={copy.budgetLabel}
@@ -177,6 +178,35 @@ export function PostWantedScreen({
           {copy.budgetHint}
         </Text>
       </View>
+      <View style={styles.gap}>
+        <Text variant="label" tone="ink2">
+          {copy.needByLabel}
+        </Text>
+        <View
+          style={styles.chips}
+          accessibilityRole="radiogroup"
+          accessibilityLabel={copy.needByLabel}
+          testID="wanted-need-by"
+        >
+          {NEED_BY.map((n) => (
+            <Chip
+              key={n}
+              label={copy.needBy[n]}
+              selected={needBy === n}
+              onPress={() => setNeedBy(n)}
+              testID={`wanted-need-by-${n}`}
+            />
+          ))}
+        </View>
+      </View>
+      <TextArea
+        label={copy.detailsLabel}
+        placeholder={copy.detailsPlaceholder}
+        value={description}
+        onChangeText={setDescription}
+        maxLength={DESCRIPTION_MAX}
+        testID="wanted-details"
+      />
       {parents.length > 0 ? (
         <View style={styles.gap}>
           <Text variant="label" tone="ink2">
@@ -202,46 +232,11 @@ export function PostWantedScreen({
           </Text>
         </View>
       ) : null}
-      <View style={styles.gap}>
-        <Text variant="label" tone="ink2">
-          {copy.needByLabel}
-        </Text>
-        <View
-          style={styles.chips}
-          accessibilityRole="radiogroup"
-          accessibilityLabel={copy.needByLabel}
-          testID="wanted-need-by"
-        >
-          {NEED_BY.map((n) => (
-            <Chip
-              key={n}
-              label={copy.needBy[n]}
-              selected={needBy === n}
-              onPress={() => setNeedBy(n)}
-              testID={`wanted-need-by-${n}`}
-            />
-          ))}
-        </View>
-      </View>
       <Toggle
         label={copy.alertMe}
         description={copy.alertMeBody}
         value={alerts}
         onChange={setAlerts}
-      />
-      <TextArea
-        label={copy.detailsLabel}
-        placeholder={copy.detailsPlaceholder}
-        value={description}
-        onChangeText={setDescription}
-        maxLength={DESCRIPTION_MAX}
-        testID="wanted-details"
-      />
-      <PhotoField
-        state={photo}
-        mediaBase={mediaBase()}
-        onOpenSettings={() => void openSettings()}
-        testID="wanted"
       />
     </PostForm>
   );

@@ -418,11 +418,8 @@ export function CommentsScreen({
               </View>
             ) : null
           }
-          ListEmptyComponent={
-            <View style={styles.empty} testID="comments-empty">
-              <EmptyState icon="chat" title={copy.empty} body={canComment ? copy.emptyBody : ''} />
-            </View>
-          }
+          // No "No comments yet" filler (owner, 2026-10-24): the box to write
+          // in, or the comments-off note, already says what to do.
           ListFooterComponent={
             q.isFetchingNextPage ? (
               <ActivityIndicator
@@ -615,7 +612,6 @@ const styles = StyleSheet.create((theme, rt) => ({
     justifyContent: 'center',
     paddingLeft: theme.size.hit * 2,
   },
-  empty: { paddingTop: theme.space.xl },
   notice: { paddingHorizontal: theme.space.screen, paddingBottom: theme.space.sm },
   readOnly: {
     padding: theme.space.screen,

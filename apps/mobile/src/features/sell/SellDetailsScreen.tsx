@@ -25,7 +25,7 @@ import { addStarter, categoryExample, STARTERS, topCategory } from './help';
 import { TEXTBOOKS_CATEGORY } from './isbn';
 import {
   centsToPrice,
-  cleanPrice,
+  priceInput,
   DESCRIPTION_MAX,
   dollars,
   TITLE_MAX,
@@ -330,7 +330,9 @@ export function SellDetailsScreen({
           placeholder={
             draft.categoryId === null
               ? copy.titlePlaceholder
-              : categoryExample(list, draft.categoryId)
+              : fill(copy.titlePlaceholderExample, {
+                  example: categoryExample(list, draft.categoryId),
+                })
           }
           value={draft.title}
           maxLength={TITLE_MAX}
@@ -359,7 +361,7 @@ export function SellDetailsScreen({
             kind="price"
             placeholder="0"
             value={draft.price}
-            onChangeText={(t) => update({ price: cleanPrice(t) })}
+            onChangeText={(t) => update(priceInput(t))}
             error={errorFor('price')}
             testID="sell-price"
           />

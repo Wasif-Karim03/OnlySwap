@@ -49,7 +49,7 @@ import { centsToDollars, dollarsToCents } from '../search/logic';
 import { mediaUrl, priceLabel, validateDetails, type DetailsError } from '../sell/logic';
 import { errorText as detailErrorText } from '../sell/SellDetailsScreen';
 import { DockedScroll } from '../sell/SellStep';
-import { listingTab, meApi, type Me, type MeApi, type MyListing } from './api';
+import { isFeedPost, listingTab, meApi, type Me, type MeApi, type MyListing } from './api';
 import { NotificationBell } from '@/features/notifications/NotificationBell';
 
 export const meKey = ['me'] as const;
@@ -138,7 +138,9 @@ export function ProfileTabScreen({
   const router = useRouter();
   const q = useQuery({ queryKey: meKey, queryFn: () => api.me() });
   const mine = useQuery({ queryKey: ['my-listings'], queryFn: () => api.listings() });
-  const [tab, setTab] = useState<'active' | 'sold'>('active');
+  const qc = useQueryClient();
+  const [tab, setTab] = useState<'active' | 'sold' | 'posts'>('active');
+  const [deleting, setDeleting] = useState<string | null>(null);
   let body;
   if (q.isPending) body = <SkeletonList rows={5} />;
   else if (q.isError) body = <ErrorState error={q.error} onRetry={() => q.refetch()} />;
@@ -152,15 +154,58 @@ export function ProfileTabScreen({
         : fill(copy.verifiedAt, { campus: m.campus.name })
       : null;
     const stats = profileStats(m, intlLocale);
-    const items = (mine.data ?? []).filter((l) => listingTab(l.status) === tab);
+    const forSale = (mine.data ?? []).filter((l) => !isFeedPost(l.kind));
+    const posts = (mine.data ?? []).filter((l) => isFeedPost(l.kind));
+    const items = tab === 'posts' ? posts : forSale.filter((l) => listingTab(l.status) === tab);
     const counts = {
-      active: (mine.data ?? []).filter((l) => listingTab(l.status) === 'active').length,
-      sold: (mine.data ?? []).filter((l) => listingTab(l.status) === 'sold').length,
+      active: forSale.filter((l) => listingTab(l.status) === 'active').length,
+      sold: forSale.filter((l) => listingTab(l.status) === 'sold').length,
+      posts: posts.length,
     };
     let grid;
     if (mine.isPending) grid = <SkeletonList rows={2} />;
     else if (mine.isError)
       grid = <ErrorState error={mine.error} onRetry={() => mine.refetch()} layout="inline" />;
+    else if (tab === 'posts')
+      grid =
+        items.length === 0 ? (
+          <Text variant="label" tone="ink2" style={styles.emptyGrid} testID="profile-posts-empty">
+            {copy.postsEmpty}
+          </Text>
+        ) : (
+          <View testID="profile-posts">
+            {items.map((l) => {
+              const status =
+                l.status !== 'active' && l.status in copy.statusLabels
+                  ? copy.statusLabels[l.status as keyof typeof copy.statusLabels]
+                  : null;
+              const kindLabel = copy.postKinds[l.kind as keyof typeof copy.postKinds] ?? '';
+              return (
+                <View key={l.id} style={styles.postRow} testID={`profile-post-${l.id}`}>
+                  <Tappable
+                    accessibilityRole="button"
+                    accessibilityLabel={[kindLabel, l.title, status].filter(Boolean).join(', ')}
+                    onPress={() => router.push({ pathname: '/listing/[id]', params: { id: l.id } })}
+                    style={styles.postMain}
+                  >
+                    <Text variant="meta" tone="ink2" numberOfLines={1}>
+                      {status ? `${kindLabel} · ${status}` : kindLabel}
+                    </Text>
+                    <Text variant="bodyStrong" numberOfLines={2}>
+                      {l.title}
+                    </Text>
+                  </Tappable>
+                  <IconButton
+                    icon="trash"
+                    accessibilityLabel={campusCopy.deleteOwnPost}
+                    onPress={() => setDeleting(l.id)}
+                    testID={`profile-post-delete-${l.id}`}
+                  />
+                </View>
+              );
+            })}
+          </View>
+        );
     else if (items.length === 0)
       grid =
         tab === 'active' ? (
@@ -290,12 +335,29 @@ export function ProfileTabScreen({
             segments={[
               { value: 'active', label: `${copy.tabs.active} ${counts.active}` },
               { value: 'sold', label: `${copy.tabs.sold} ${counts.sold}` },
+              { value: 'posts', label: `${copy.tabs.posts} ${counts.posts}` },
             ]}
             value={tab}
             onChange={setTab}
           />
         </View>
         {grid}
+        <ConfirmDialog
+          visible={deleting !== null}
+          title={campusCopy.deletePostTitle}
+          message={campusCopy.deletePostBody}
+          confirmLabel={campusCopy.deletePostConfirm}
+          destructive
+          onConfirm={async () => {
+            if (!deleting) return;
+            await api.deleteListing(deleting);
+            setDeleting(null);
+            void qc.invalidateQueries({ queryKey: ['my-listings'] });
+            void qc.invalidateQueries({ queryKey: ['campus-feed'] });
+          }}
+          onCancel={() => setDeleting(null)}
+          testID="profile-post-delete-confirm"
+        />
         <View style={styles.links}>
           <GroupedList>
             <ListRow label={copy.myListings} onPress={() => router.push('/profile/listings')} />
@@ -579,7 +641,7 @@ export function MyListingsScreen({
   if (q.isPending) body = <SkeletonList />;
   else if (q.isError) body = <ErrorState error={q.error} onRetry={() => q.refetch()} />;
   else {
-    const items = q.data.filter((l) => listingTab(l.status) === tab);
+    const items = q.data.filter((l) => !isFeedPost(l.kind) && listingTab(l.status) === tab);
     body =
       items.length === 0 ? (
         // EmptyState pads itself; cancel the scroll padding so it is not doubled.
@@ -1027,6 +1089,15 @@ const styles = StyleSheet.create((theme) => ({
   links: { marginTop: theme.space.md },
   emptyGrid: { gap: theme.space.sm, paddingVertical: theme.space.md, alignItems: 'flex-start' },
   photoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.xs },
+  postRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.space.md,
+    paddingVertical: theme.space.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.line,
+  },
+  postMain: { flex: 1, gap: theme.space.xs / 2 },
   gridCell: { width: '32.3%' },
   gridPhoto: {
     aspectRatio: 1,

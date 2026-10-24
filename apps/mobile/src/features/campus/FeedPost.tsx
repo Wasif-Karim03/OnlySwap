@@ -29,6 +29,8 @@ type Props = {
   onOpenLink: (url: string) => void;
   onLike: () => void;
   onComments: () => void;
+  /** Your own post: a Delete button where Save sits on other people's posts. */
+  onDelete?: () => void;
   testID?: string;
 };
 
@@ -54,6 +56,7 @@ export function FeedPost({
   onOpenLink,
   onLike,
   onComments,
+  onDelete,
   testID,
 }: Props) {
   const likes = item.like_count ?? 0;
@@ -88,7 +91,7 @@ export function FeedPost({
     <View style={styles.card} testID={testID}>
       <Tappable accessibilityRole="button" accessibilityLabel={label} onPress={onOpen}>
         <View>
-          <View style={[styles.head, !item.is_own && styles.headRoom]}>
+          <View style={[styles.head, (!item.is_own || onDelete) && styles.headRoom]}>
             <Avatar name={name} uri={avatar} size="M" />
             <View style={styles.flex}>
               <Text variant="bodyStrong" numberOfLines={1}>
@@ -231,7 +234,18 @@ export function FeedPost({
       </View>
 
       {/* Save sits over the header's right edge, outside the open-post button. */}
-      {item.is_own ? null : (
+      {item.is_own ? (
+        onDelete ? (
+          <View style={styles.corner}>
+            <IconButton
+              icon="trash"
+              accessibilityLabel={copy.deleteOwnPost}
+              onPress={onDelete}
+              testID={testID ? `${testID}-delete` : undefined}
+            />
+          </View>
+        ) : null
+      ) : (
         <View style={styles.corner}>
           <IconButton
             icon="bookmark"
