@@ -56,7 +56,7 @@ type Phase = 'loading' | 'ready' | 'error';
 /**
  * B01 Discover (P6-FEED-03; DESIGN_REVIEW 3.02): the deck, a one-line
  * first-swipe hint above the actions, prefetch, end of deck, day-one hero,
- * undo toast and the offline-safe swipe queue, with a queued-swipes line
+ * offline-safe swipe queue, with a queued-swipes line
  * while the global offline banner shows.
  */
 export function DiscoverScreen({
@@ -104,11 +104,9 @@ export function DiscoverScreen({
   const [showCoach, setShowCoach] = useState(() => !coach.seen());
   const cursor = useRef<FeedCursor | null>(null);
   const loading = useRef(false);
-  const removed = useRef(new Map<string, FeedItem>());
   const swiped = useRef(new Set<string>());
   // What you saved on this run through the pile, for the end-of-pile thumbnails.
   const [savedHere, setSavedHere] = useState<DeckCard[]>([]);
-  const lastDir = useRef<SwipeDir | null>(null);
   // Time on the top card (DEC 93): counted only while Discover is in front.
   const topCard = useRef<{ id: string; ms: number; since: number | null } | null>(null);
 
@@ -185,20 +183,6 @@ export function DiscoverScreen({
     return t.ms + (t.since !== null ? Date.now() - t.since : 0);
   }, []);
 
-  const undo = useCallback(async () => {
-    const id = await store.getState().undo();
-    if (!id) return;
-    const item = removed.current.get(id);
-    swiped.current.delete(id);
-    if (item) {
-      setItems((prev) => [item, ...prev.filter((p) => p.id !== id)]);
-      if (lastDir.current === 'save' && !item.saved) {
-        void api.unsave(id).catch(() => {});
-        trackActivity('unsaved', { listingId: id, source: 'discover' });
-      }
-    }
-  }, [store, api]);
-
   const dismissCoach = useCallback(() => {
     setShowCoach(false);
     coach.markSeen();
@@ -244,22 +228,17 @@ export function DiscoverScreen({
         onToggleSave(card);
         return;
       }
-      const item = items.find((i) => i.id === card.id);
-      if (item) removed.current.set(card.id, item);
       swiped.current.add(card.id);
-      lastDir.current = dir;
       setItems((prev) => prev.filter((p) => p.id !== card.id));
       store.getState().swipe(card.id, dir, dwellOn(card.id));
       track('card_swiped', { dir });
       if (showCoach) dismissCoach();
-      const toast = useToastStore.getState();
-      if (dir === 'left') {
-        toast.showUndo(copy.undoSkipped, () => void undo());
-      } else {
+      // A pass just moves on: no "Passed / Undo" toast (owner review 2026-10-24).
+      if (dir !== 'left') {
         router.push({ pathname: '/listing/[id]/offer', params: { id: card.id } });
       }
     },
-    [items, store, showCoach, dismissCoach, router, undo, dwellOn, onToggleSave],
+    [store, showCoach, dismissCoach, router, dwellOn, onToggleSave],
   );
 
   const onOpen = useCallback(

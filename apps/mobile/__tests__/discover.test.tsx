@@ -297,7 +297,7 @@ describe('B01 Discover', () => {
     return swipes;
   };
 
-  it('shows the deck, and skipping offers undo that brings the card back', async () => {
+  it('shows the deck, and a pass just moves on with no toast (owner review 2026-10-24)', async () => {
     const page = Array.from({ length: 20 }, (_, i) => item(i + 1));
     const api = fakeApi({ getFeed: jest.fn(async (c) => (c ? [] : page)) });
     const swipes = discover(api);
@@ -305,10 +305,7 @@ describe('B01 Discover', () => {
     deckAction(page[0]!.id, 'skip');
     await waitFor(() => expect(screen.getByTestId('deck-card-' + page[1]!.id)).toBeTruthy());
     expect(swipes.getState().queue.map((q) => q.listing_id)).toEqual([page[0]!.id]);
-    expect(useToastStore.getState().current?.message).toBe(feed.undoSkipped);
-    await act(async () => useToastStore.getState().current?.onUndo?.());
-    await waitFor(() => expect(screen.getByTestId('deck-card-' + page[0]!.id)).toBeTruthy());
-    expect(swipes.getState().queue).toHaveLength(0);
+    expect(useToastStore.getState().current).toBeUndefined();
   });
 
   it('DEC 144: the bookmark saves right away, the card stays, and undo unsaves', async () => {
