@@ -316,7 +316,9 @@ export function DiscoverScreen({
           .filter(Boolean)
           .join(' ')}
         action={
-          savedHere.length > 0 ? { label: copy.seeSaved, onPress: () => router.push('/saved') } : sell
+          savedHere.length > 0
+            ? { label: copy.seeSaved, onPress: () => router.push('/saved') }
+            : sell
         }
         secondaryAction={savedHere.length > 0 ? sell : undefined}
         testID="discover-end"
@@ -409,8 +411,14 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: theme.radius.deck,
     backgroundColor: theme.colors.bg2,
   },
-  pileNext: { transform: [{ translateY: PEEK }, { scale: NEXT_SCALE }], backgroundColor: theme.colors.bg3 },
-  pileDeep: { transform: [{ translateY: PEEK * 2 }, { scale: DEEP_SCALE }], backgroundColor: theme.colors.line },
+  pileNext: {
+    transform: [{ translateY: PEEK }, { scale: NEXT_SCALE }],
+    backgroundColor: theme.colors.bg3,
+  },
+  pileDeep: {
+    transform: [{ translateY: PEEK * 2 }, { scale: DEEP_SCALE }],
+    backgroundColor: theme.colors.line,
+  },
   thumbs: { flexDirection: 'row' },
   thumb: (i: number) => ({
     width: theme.size.hit + theme.space.md,

@@ -150,7 +150,6 @@ export function SwipeDeck({
   };
 
   const visible = cards.slice(0, MOUNTED);
-  const top = visible[0];
 
   return (
     <View style={styles.wrap} testID={testID}>
@@ -295,16 +294,7 @@ function deckActions(saved: boolean) {
   ];
 }
 
-function TopCard({
-  card,
-  size,
-  drag,
-  wiggle,
-  register,
-  onDone,
-  onOpen,
-  onToggleSave,
-}: TopProps) {
+function TopCard({ card, size, drag, wiggle, register, onDone, onOpen, onToggleSave }: TopProps) {
   const x = useSharedValue(0);
   const y = useSharedValue(0);
   const armed = useSharedValue(false);
@@ -324,7 +314,11 @@ function TopCard({
     x.set(
       withDelay(
         500,
-        withSequence(withTiming(-width * 0.08, step), withTiming(width * 0.06, step), withTiming(0, step)),
+        withSequence(
+          withTiming(-width * 0.08, step),
+          withTiming(width * 0.06, step),
+          withTiming(0, step),
+        ),
       ),
     );
   }, [wiggle, width, x]);
@@ -446,7 +440,10 @@ function TopCard({
               {offerSticker(card)}
             </Text>
           </Animated.View>
-          <Animated.View style={[styles.sticker, styles.stickerPass, passStamp]} pointerEvents="none">
+          <Animated.View
+            style={[styles.sticker, styles.stickerPass, passStamp]}
+            pointerEvents="none"
+          >
             <Text variant="title" style={styles.passText}>
               {copy.stampSkip}
             </Text>

@@ -936,7 +936,8 @@ export const feed = {
   dayOneTitleCampus: '{campus} is just getting started',
   dayOneCount: '{n} listings so far',
   dayOneCountOne: '1 listing so far',
-  dayOneBody: "The first things posted get seen by everyone. Got a lamp, a fridge, last year's textbooks?",
+  dayOneBody:
+    "The first things posted get seen by everyone. Got a lamp, a fridge, last year's textbooks?",
   /** Shown with the global offline banner; it never repeats "You're offline". */
   offlineQueued: "Your swipes will be sent when you're back online.",
   /** Round 2: the one status pill, bottom center (design/round2 consistency rules). */

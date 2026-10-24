@@ -915,7 +915,8 @@ const feed: Strings['feed'] = {
   dayOneTitleCampus: '{campus} apenas está empezando',
   dayOneCount: '{n} publicaciones hasta ahora',
   dayOneCountOne: '1 publicación hasta ahora',
-  dayOneBody: 'Lo primero que se publica lo ve todo el mundo. ¿Tienes una lámpara, un mini refri, los libros del año pasado?',
+  dayOneBody:
+    'Lo primero que se publica lo ve todo el mundo. ¿Tienes una lámpara, un mini refri, los libros del año pasado?',
   offlineQueued: 'Lo que deslizaste se enviará cuando vuelvas a tener conexión.',
   offlinePill: 'Sin conexión · se envía al volver',
   movingOutTag: 'Se muda el {day}',

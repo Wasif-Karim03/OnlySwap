@@ -88,7 +88,12 @@ export function SwipeCard({
 }: Props) {
   if (overlay) {
     return (
-      <OverlayFace card={card} photoIndex={photoIndex} onToggleSave={onToggleSave} testID={testID} />
+      <OverlayFace
+        card={card}
+        photoIndex={photoIndex}
+        onToggleSave={onToggleSave}
+        testID={testID}
+      />
     );
   }
   const cover = card.photos[0];
