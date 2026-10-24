@@ -144,6 +144,32 @@ export function movingOutLine(date: string | null | undefined): string | null {
   return fill(copy.movingOut, { date: shown });
 }
 
+/** "12 swaps", "1 swap", or nothing for a new seller (round 2 card meta line). */
+export function swapsLabel(seller: FeedItem['seller']): string | null {
+  const n = seller.swaps_count ?? 0;
+  if (n <= 0) return null;
+  return n === 1 ? copy.trustSwapsOne : fill(copy.trustSwaps, { n });
+}
+
+/**
+ * The yellow tag on a card while the seller is moving out (DEC 133): the
+ * weekday when it is within the next week ("Moving out Fri"), else the date.
+ * Nothing once the date has passed.
+ */
+export function movingOutTag(date: string | null | undefined, now: Date): string | null {
+  if (!date) return null;
+  const [y, m, d] = date.split('-').map(Number);
+  const day = new Date(y ?? 1970, (m ?? 1) - 1, d ?? 1);
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const diff = Math.round((day.getTime() - today.getTime()) / 86_400_000);
+  if (diff < 0) return null;
+  const shown =
+    diff <= 6
+      ? day.toLocaleDateString(intlLocale, { weekday: 'short' })
+      : day.toLocaleDateString(intlLocale, { month: 'short', day: 'numeric' });
+  return fill(copy.movingOutTag, { day: shown });
+}
+
 export function toDeckCard(item: FeedItem, mediaBase: string, now: Date): DeckCard {
   return {
     id: item.id,
@@ -156,6 +182,10 @@ export function toDeckCard(item: FeedItem, mediaBase: string, now: Date): DeckCa
     trust: trustLine(item.seller),
     photos: item.photos.map((p) => ({ uri: mediaUrl(mediaBase, p.path), blurhash: p.blurhash })),
     saveCount: item.save_count,
+    free: item.kind === 'free' || item.price_cents === 0,
+    swaps: swapsLabel(item.seller),
+    movingOut: movingOutTag(item.seller.moving_out_by, now),
+    saved: item.saved,
   };
 }
 

@@ -1,5 +1,5 @@
 import { size } from '@onlyswap/tokens';
-import { Fragment } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
@@ -12,7 +12,10 @@ import { Text } from './Text';
 type Action = { label: string; onPress: () => void };
 
 export type EmptyStateProps = {
-  icon: IconName;
+  /** Kept for callers; round 2 empty states show no glyph (design/round2 consistency rules). */
+  icon?: IconName;
+  /** Something real above the title: a count, or thumbnails of what you saved. */
+  lead?: ReactNode;
   title: string;
   body?: string;
   /** Accent tile for the "start something" moments (board X36, X18); neutral otherwise. */
@@ -43,17 +46,15 @@ export function GlyphTile({
 }
 
 /**
- * Empty state (P2-CMP-08; round 2, design/system.md 7.11): one quiet block,
- * ever. Outline glyph, title, one line that explains how the screen fills
- * up, then the next step right under the copy (an ink capsule sized to its
- * label), with the secondary as a text button. The block sits a little above
- * the middle of the empty area, left-aligned.
+ * Empty state (P2-CMP-08; round 2 finals): one quiet, left-aligned block.
+ * No glyph. An optional real lead (a count, thumbnails), a large title that
+ * states a fact, one line on how the screen fills up, then the next step as
+ * an ink capsule with an optional grey one beside it.
  */
 export function EmptyState({
-  icon,
+  lead,
   title,
   body,
-  tile = 'neutral',
   suggestions,
   action,
   secondaryAction,
@@ -63,9 +64,9 @@ export function EmptyState({
     <View testID={testID} style={styles.wrap}>
       <View style={styles.block}>
         <View style={styles.top}>
-          <GlyphTile icon={icon} tile={tile} />
+          {lead}
           <View style={styles.copy}>
-            <Text variant="heading" accessibilityRole="header">
+            <Text variant="title" accessibilityRole="header">
               {title}
             </Text>
             {body ? (
@@ -102,7 +103,7 @@ export function EmptyState({
               <Button
                 label={secondaryAction.label}
                 onPress={secondaryAction.onPress}
-                variant="text"
+                variant="secondary"
                 fullWidth={false}
               />
             ) : null}
@@ -127,5 +128,5 @@ const styles = StyleSheet.create((theme) => ({
   top: { gap: theme.space.lg, alignItems: 'flex-start' },
   tile: { alignItems: 'flex-start', justifyContent: 'center' },
   copy: { gap: theme.space.xs, maxWidth: theme.size.copyMax },
-  actions: { alignItems: 'flex-start', gap: theme.space.xs },
+  actions: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: theme.space.sm },
 }));

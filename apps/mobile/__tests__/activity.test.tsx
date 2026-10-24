@@ -492,17 +492,20 @@ describe('activity events from the screens', () => {
       '/discover',
     );
     await screen.findByTestId('deck-card-' + L(1));
-    fireEvent.press(screen.getByTestId('deck-skip'));
-    await screen.findByTestId('deck-card-' + L(2));
+    // DEC 144: the bookmark saves and the card stays; only swipes are queued.
     fireEvent.press(screen.getByTestId('deck-save'));
+    await waitFor(() => expect(api.save).toHaveBeenCalledWith(L(1)));
+    deckAction(L(1), 'skip');
+    await screen.findByTestId('deck-card-' + L(2));
+    deckAction(L(2), 'skip');
     await waitFor(() => expect(swipes.getState().queue).toHaveLength(2));
 
     expect(trackMock).not.toHaveBeenCalled();
-    const [left, saved] = swipes.getState().queue;
+    const [left, right] = swipes.getState().queue;
     expect(left).toMatchObject({ listing_id: L(1), dir: 'left' });
-    expect(saved).toMatchObject({ listing_id: L(2), dir: 'save' });
+    expect(right).toMatchObject({ listing_id: L(2), dir: 'left' });
     expect(left!.dwell_ms).toBeGreaterThanOrEqual(0);
-    expect(saved!.dwell_ms).toBeGreaterThanOrEqual(0);
+    expect(right!.dwell_ms).toBeGreaterThanOrEqual(0);
   });
 
   it('Listing sends one listing_viewed with the source and time on page when it closes', async () => {
@@ -564,3 +567,10 @@ describe('activity events from the screens', () => {
     expect(trackMock).not.toHaveBeenCalled();
   });
 });
+
+/** The deck has no buttons (DEC 144); tests drive the top card's accessibility actions. */
+function deckAction(id: string, actionName: 'offer' | 'skip' | 'save' | 'activate') {
+  fireEvent(screen.getByTestId('deck-card-' + id), 'accessibilityAction', {
+    nativeEvent: { actionName },
+  });
+}

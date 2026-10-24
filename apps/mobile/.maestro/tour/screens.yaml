@@ -38,9 +38,9 @@ appId: app.onlyswap
 - tapOn: Settings
 - takeScreenshot: ../../../../sim-shots/08-settings
 - back
-- tapOn: Discover
+- tapOn: Feed
 - tapOn:
-    id: discover-search
+    id: feed-search
 - tapOn:
     id: search-input
 - inputText: lamp

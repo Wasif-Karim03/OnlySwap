@@ -1,7 +1,10 @@
 import { Platform, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { Icon } from '@/components/icons/Icon';
+import { Material } from '@/components/Material';
 import { Photo } from '@/components/Photo';
+import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { fill } from '@/lib/format';
 import { feed as copy } from '@/strings';
@@ -22,6 +25,14 @@ export type DeckCard = {
   trust?: string | null;
   photos: { uri: string; blurhash: string | null }[];
   saveCount: number;
+  /** Round 2 card (DEC 144): optional so other screens building cards stay valid. */
+  free?: boolean;
+  /** "12 swaps"; nothing for a new seller. */
+  swaps?: string | null;
+  /** "Moving out Fri" (DEC 133), shown as a yellow tag. */
+  movingOut?: string | null;
+  /** Whether the viewer saved it; the bookmark on the card toggles this. */
+  saved?: boolean;
 };
 
 export function cardLabel(card: DeckCard): string {
@@ -50,6 +61,10 @@ type Props = {
    * floats over the card's foot. List and grid tiles keep the white block.
    */
   overlay?: boolean;
+  /** Overlay only: which photo shows (edge taps flip through them, DEC 144). */
+  photoIndex?: number;
+  /** Overlay only: the bookmark in the corner. Saving keeps the card (DEC 144). */
+  onToggleSave?: () => void;
   testID?: string;
 };
 
@@ -63,7 +78,19 @@ type Props = {
  * report). Stamps and motion live in SwipeDeck; this stays a plain view so
  * list and grid mode can reuse it.
  */
-export function SwipeCard({ card, compact = false, overlay = false, testID }: Props) {
+export function SwipeCard({
+  card,
+  compact = false,
+  overlay = false,
+  photoIndex = 0,
+  onToggleSave,
+  testID,
+}: Props) {
+  if (overlay) {
+    return (
+      <OverlayFace card={card} photoIndex={photoIndex} onToggleSave={onToggleSave} testID={testID} />
+    );
+  }
   const cover = card.photos[0];
   const trust = !compact && card.trust ? card.trust : null;
   const year = compact ? null : (card.sellerYear ?? null);
@@ -129,6 +156,96 @@ export function SwipeCard({ card, compact = false, overlay = false, testID }: Pr
                 {year}
               </Text>
             ) : null}
+          </Text>
+        ) : null}
+      </View>
+    </View>
+  );
+}
+
+/**
+ * The bookmark in the card's top corner (DEC 144). The live deck renders it
+ * beside the card's touch area, not inside it, so it is its own control for
+ * VoiceOver and never nests one button in another on the web.
+ */
+export function SaveButton({ saved, onPress }: { saved: boolean; onPress: () => void }) {
+  return (
+    <Tappable
+      accessibilityRole="button"
+      accessibilityLabel={saved ? copy.unsaveAction : copy.save}
+      accessibilityState={{ selected: saved }}
+      onPress={onPress}
+      style={styles.saveSlot}
+      hitSlop={8}
+      testID="deck-save"
+    >
+      <Material variant="clear" style={styles.saveCircle}>
+        <Icon name="bookmark" size={20} tone="onPhoto" filled={saved} />
+      </Material>
+    </Tappable>
+  );
+}
+
+/** "Jordan K. · Junior · 12 swaps": who is selling, nothing about verification (everyone is). */
+export function sellerLine(card: DeckCard): string {
+  return [card.sellerName, card.sellerYear, card.swaps].filter(Boolean).join(copy.metaSeparator);
+}
+
+/**
+ * Round 2 Discover card ("Depth", design/round2/proposed/discover-final.html):
+ * the photo fills the card with a soft scrim at the foot. Price leads in the
+ * price style, the item follows, then one quiet seller line. A yellow tag
+ * shows while the seller is moving out, and the bookmark in the corner saves
+ * without moving the card. No action row: swiping is the action.
+ */
+function OverlayFace({
+  card,
+  photoIndex,
+  onToggleSave,
+  testID,
+}: {
+  card: DeckCard;
+  photoIndex: number;
+  onToggleSave?: () => void;
+  testID?: string;
+}) {
+  const index = Math.min(Math.max(photoIndex, 0), Math.max(card.photos.length - 1, 0));
+  const photo = card.photos[index];
+  const seller = sellerLine(card);
+  return (
+    <View style={styles.card(true)} testID={testID}>
+      <View style={styles.photo}>
+        <Photo source={photo?.uri ?? null} blurhash={photo?.blurhash ?? null} fill backdrop />
+        {card.photos.length > 1 ? (
+          <View style={styles.segments} importantForAccessibility="no-hide-descendants">
+            {card.photos.map((p, i) => (
+              <View key={`${p.uri}-${i}`} style={styles.segment(i === index)} />
+            ))}
+          </View>
+        ) : null}
+        <View style={styles.scrim} pointerEvents="none" />
+      </View>
+      {onToggleSave ? <SaveButton saved={!!card.saved} onPress={onToggleSave} /> : null}
+      <View style={styles.overlayBody} pointerEvents="none">
+        {card.movingOut ? (
+          <View style={styles.tag} testID="card-moving-out">
+            <Text variant="label" style={styles.tagText}>
+              {card.movingOut}
+            </Text>
+          </View>
+        ) : null}
+        <Text numberOfLines={2} style={styles.headline}>
+          <Text variant="price" tone="onPhoto">
+            {card.price}
+          </Text>
+          <Text variant="heading" tone="onPhoto" style={styles.headlineTitle}>
+            {'  '}
+            {card.title}
+          </Text>
+        </Text>
+        {seller ? (
+          <Text variant="meta" tone="onPhoto" numberOfLines={1} style={styles.dim(true)}>
+            {seller}
           </Text>
         ) : null}
       </View>
@@ -210,6 +327,35 @@ const styles = StyleSheet.create((theme) => ({
       : null),
   }),
   dim: (overlay: boolean) => ({ opacity: overlay ? 0.88 : 1 }),
+  saveSlot: { position: 'absolute', top: theme.space.lg + theme.space.sm, right: theme.space.md },
+  saveCircle: {
+    width: theme.size.hit,
+    height: theme.size.hit,
+    borderRadius: theme.radius.chip,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  overlayBody: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: theme.space.xl,
+    paddingBottom: theme.space.xl,
+    gap: theme.space.xs,
+  },
+  headline: { color: theme.colors.onPhoto },
+  headlineTitle: { fontWeight: theme.type.bodyStrong.fontWeight },
+  tag: {
+    alignSelf: 'flex-start',
+    backgroundColor: theme.colors.tag,
+    borderRadius: theme.space.xs,
+    paddingHorizontal: theme.space.sm,
+    paddingVertical: 2,
+    marginBottom: theme.space.xs,
+  },
+  // The tag is light in both themes, so its words use the dark on-accent ink.
+  tagText: { color: theme.colors.onAccent, textTransform: 'uppercase', letterSpacing: 0.4 },
   // The seller's name leads line two in the label weight.
   sellerName: { fontWeight: theme.type.label.fontWeight },
 }));

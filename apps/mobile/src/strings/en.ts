@@ -74,6 +74,8 @@ export const toast = {
 
 export const banner = {
   offline: "You're offline",
+  /** Round 2: the offline pill, bottom center on every page. Screens can swap the second half. */
+  offlinePill: 'Offline · showing what you last saw',
   // Web forms: Cloudflare Turnstile (LR-04).
   botCheckLabel: 'Bot check',
   botCheckFailed: "We couldn't verify you. Reload the page and try again.",
@@ -883,9 +885,13 @@ export const sell = {
 
 export const feed = {
   stampOffer: 'Offer',
-  stampSkip: 'Skip',
+  /** Round 2 Discover sticker on a right swipe: the asking price. */
+  stampOfferPrice: 'Offer {price}',
+  /** A free item's right-swipe sticker. */
+  stampAsk: 'Ask for it',
+  stampSkip: 'Pass',
   stampSave: 'Saved',
-  skip: 'Skip',
+  skip: 'Pass',
   save: 'Save',
   saved: 'Saved',
   offer: 'Make an offer',
@@ -908,24 +914,38 @@ export const feed = {
   // Discover (B01)
   title: 'Discover',
   search: 'Search',
-  undoSkipped: 'Skipped',
+  undoSkipped: 'Passed',
   undoSaved: 'Saved',
   undoOffer: 'Opened the offer',
   saveFailed: "Couldn't save that. Try again.",
   /** First-launch hint line above the action row; it ends on the first swipe or tap. */
-  coachBody: 'Swipe right to make an offer, left to skip. Tap a card for details.',
+  coachBody: 'Swipe right to make an offer. Left to pass.',
   offerShort: 'Offer',
   notifications: 'Notifications',
   meetupSpot: 'Meetup spot',
   coachOk: 'Got it',
-  endTitle: "You're all caught up",
-  endBody: 'Check back later for new listings.',
-  endSell: 'List something',
+  endTitle: "That's everything for now",
+  endTitleCampus: "That's everything at {campus} for now",
+  endSavedOne: 'You saved 1 thing along the way.',
+  endSaved: 'You saved {n} things along the way.',
+  seeSaved: 'See saved',
+  endBody: 'New listings land here as soon as someone posts.',
+  endSell: 'Sell something',
   endRefresh: 'Refresh',
-  dayOneTitle: 'Be one of the first',
-  dayOneBody: 'Not much is listed yet. Post yours to get things started.',
+  dayOneTitle: 'Your campus is just getting started',
+  dayOneTitleCampus: '{campus} is just getting started',
+  dayOneCount: '{n} listings so far',
+  dayOneCountOne: '1 listing so far',
+  dayOneBody: "The first things posted get seen by everyone. Got a lamp, a fridge, last year's textbooks?",
   /** Shown with the global offline banner; it never repeats "You're offline". */
   offlineQueued: "Your swipes will be sent when you're back online.",
+  /** Round 2: the one status pill, bottom center (design/round2 consistency rules). */
+  offlinePill: "Offline · swipes send when you're back",
+  /** Yellow tag on a card while the seller is moving out (DEC 133). */
+  movingOutTag: 'Moving out {day}',
+  unsaveAction: 'Remove from saved',
+  photoPrev: 'Previous photo',
+  photoNext: 'Next photo',
   loading: 'Loading listings',
   // Listing (B02)
   back: 'Back',

@@ -14,6 +14,8 @@ import {
   nextCursor,
   parseQueue,
   QUEUE_CAP,
+  movingOutTag,
+  swapsLabel,
   toDeckCard,
   toServer,
   undoPlan,
@@ -223,6 +225,20 @@ describe('feed logic', () => {
     expect(c.price).toBe(feed.free);
     expect(c.photos[0]!.uri).toBe('http://m/c/x/l/5/a.webp');
     expect(c.meta).toBe('Good · 5 minutes ago');
+    expect(c.free).toBe(true);
+    expect(c.saved).toBe(false);
+  });
+
+  it('round 2 card lines: swaps and the moving-out tag', () => {
+    const seller = item(1).seller;
+    expect(swapsLabel({ ...seller, swaps_count: 0 })).toBeNull();
+    expect(swapsLabel({ ...seller, swaps_count: 1 })).toBe(feed.trustSwapsOne);
+    expect(swapsLabel({ ...seller, swaps_count: 12 })).toBe('12 swaps');
+    // NOW is Wed 2027-03-10: within a week it names the day, later the date, past is gone.
+    expect(movingOutTag('2027-03-12', NOW)).toBe('Moving out Fri');
+    expect(movingOutTag('2027-03-30', NOW)).toBe('Moving out Mar 30');
+    expect(movingOutTag('2027-03-01', NOW)).toBeNull();
+    expect(movingOutTag(null, NOW)).toBeNull();
   });
 });
 
@@ -286,7 +302,7 @@ describe('B01 Discover', () => {
     const api = fakeApi({ getFeed: jest.fn(async (c) => (c ? [] : page)) });
     const swipes = discover(api);
     expect(await screen.findByTestId('deck-card-' + page[0]!.id)).toBeTruthy();
-    fireEvent.press(screen.getByTestId('deck-skip'));
+    deckAction(page[0]!.id, 'skip');
     await waitFor(() => expect(screen.getByTestId('deck-card-' + page[1]!.id)).toBeTruthy());
     expect(swipes.getState().queue.map((q) => q.listing_id)).toEqual([page[0]!.id]);
     expect(useToastStore.getState().current?.message).toBe(feed.undoSkipped);
@@ -295,21 +311,30 @@ describe('B01 Discover', () => {
     expect(swipes.getState().queue).toHaveLength(0);
   });
 
-  it('save calls save_listing right away', async () => {
+  it('DEC 144: the bookmark saves right away, the card stays, and undo unsaves', async () => {
     const page = Array.from({ length: 20 }, (_, i) => item(i + 1));
     const api = fakeApi({ getFeed: jest.fn(async (c) => (c ? [] : page)) });
-    discover(api);
+    const swipes = discover(api);
     await screen.findByTestId('deck-card-' + page[0]!.id);
     fireEvent.press(screen.getByTestId('deck-save'));
     await waitFor(() => expect(api.save).toHaveBeenCalledWith(page[0]!.id));
+    expect(screen.getByTestId('deck-card-' + page[0]!.id)).toBeTruthy();
+    expect(swipes.getState().queue).toHaveLength(0);
+    expect(screen.getByTestId('deck-save').props.accessibilityLabel).toBe(feed.unsaveAction);
+    expect(useToastStore.getState().current?.message).toBe(feed.undoSaved);
+    await act(async () => useToastStore.getState().current?.onUndo?.());
+    await waitFor(() => expect(api.unsave).toHaveBeenCalledWith(page[0]!.id));
+    await waitFor(() =>
+      expect(screen.getByTestId('deck-save').props.accessibilityLabel).toBe(feed.save),
+    );
   });
 
-  it('the $ button opens the listing for an offer', async () => {
+  it('a right swipe opens the listing for an offer', async () => {
     const page = Array.from({ length: 20 }, (_, i) => item(i + 1));
     const api = fakeApi({ getFeed: jest.fn(async (c) => (c ? [] : page)) });
     discover(api);
     await screen.findByTestId('deck-card-' + page[0]!.id);
-    fireEvent.press(screen.getByTestId('deck-offer'));
+    deckAction(page[0]!.id, 'offer');
     expect(await screen.findByTestId('screen-offer-stub')).toBeTruthy();
   });
 
@@ -324,19 +349,21 @@ describe('B01 Discover', () => {
     expect(api.getFeed).toHaveBeenCalledTimes(1);
   });
 
-  it('shows the first-swipe coach once', async () => {
-    const api = fakeApi({ getFeed: jest.fn(async () => [item(1)]) });
+  it('shows the first-swipe line once; the first swipe ends it', async () => {
+    const api = fakeApi({ getFeed: jest.fn(async () => [item(1), item(2)]) });
     const coach = { seen: () => false, markSeen: jest.fn() };
     discover(api, coach);
     expect(await screen.findByTestId('discover-coach')).toBeTruthy();
-    fireEvent.press(screen.getByText(feed.coachOk));
-    expect(coach.markSeen).toHaveBeenCalled();
+    expect(screen.getByText(feed.coachBody)).toBeTruthy();
+    deckAction(item(1).id, 'skip');
+    await waitFor(() => expect(coach.markSeen).toHaveBeenCalled());
     expect(screen.queryByTestId('discover-coach')).toBeNull();
   });
 
   it('day one: a nearly empty campus gets the hero', async () => {
     discover(fakeApi({ getFeed: jest.fn(async () => []) }));
     expect(await screen.findByTestId('discover-day-one')).toBeTruthy();
+    expect(screen.getByText(feed.dayOneTitle)).toBeTruthy();
     fireEvent.press(screen.getByText(feed.endSell));
     expect(await screen.findByTestId('screen-sell')).toBeTruthy();
   });
@@ -351,9 +378,10 @@ describe('B01 Discover', () => {
     jest.spyOn(Date, 'now').mockImplementation(() => (t += 1000));
     for (const p of page) {
       await waitFor(() => expect(screen.getByTestId('deck-card-' + p.id)).toBeTruthy());
-      fireEvent.press(screen.getByTestId('deck-skip'));
+      deckAction(p.id, 'skip');
     }
     expect(await screen.findByTestId('discover-end')).toBeTruthy();
+    expect(screen.getByText(feed.endTitle)).toBeTruthy();
   });
 
   it('shows an error with retry', async () => {
@@ -519,3 +547,10 @@ describe('B02 Listing', () => {
     await waitFor(() => expect(api.hide).toHaveBeenCalledWith('L1'));
   });
 });
+
+/** The deck has no buttons (DEC 144); tests drive the top card's accessibility actions. */
+function deckAction(id: string, actionName: 'offer' | 'skip' | 'save' | 'activate') {
+  fireEvent(screen.getByTestId('deck-card-' + id), 'accessibilityAction', {
+    nativeEvent: { actionName },
+  });
+}

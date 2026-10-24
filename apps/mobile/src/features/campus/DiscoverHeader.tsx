@@ -1,65 +1,33 @@
-import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
-import { IconButton } from '@/components/IconButton';
-import { Material } from '@/components/Material';
 import { Text } from '@/components/Text';
 import { feed as copy } from '@/strings';
 
-import { meApi, type Me } from '../me/api';
-import { meKey } from '../me/MeScreens';
 import { NotificationBell } from '@/features/notifications/NotificationBell';
 
 type Props = {
-  /** `card` on a grey screen, so the buttons stay visible. */
+  /** `card` on a grey screen, so the bell stays visible. */
   surface?: 'bg2' | 'card';
-  /** Reads the signed-in student (campus name). Tests pass a fake. */
-  loadMe?: () => Promise<Me>;
 };
 
 /**
- * Discover header (DEC 90, mock screens 4 and 5): the campus name small above
- * a large "Discover", Search and Notifications buttons. The For you |
- * Around campus segment is gone: the feed has its own tab (DEC 98). The
- * campus name comes from the cached
- * `get_me` the Profile tab uses; it is simply left out until it loads.
+ * Discover header (round 2 finals, DEC 145): the page title on the left and
+ * the bell on the right, nothing else. Search lives in the Feed now, and the
+ * header sits on the plain background, so the bell is a plain icon; glass
+ * stays on the tab bar.
  */
-export function DiscoverHeader({ surface = 'bg2', loadMe = () => meApi.me() }: Props) {
-  const router = useRouter();
-  const me = useQuery({ queryKey: meKey, queryFn: loadMe, staleTime: 5 * 60_000 });
-  const campus = me.data?.campus?.short_name ?? null;
+export function DiscoverHeader({ surface = 'bg2' }: Props) {
   return (
-    <View testID="discover-header">
-      <View style={styles.top}>
-        <View style={styles.titles}>
-          {campus ? (
-            <Text variant="meta" tone="ink3" numberOfLines={1} testID="discover-campus">
-              {campus}
-            </Text>
-          ) : null}
-          <Text variant="display" accessibilityRole="header" numberOfLines={1}>
-            {copy.title}
-          </Text>
-        </View>
-        {/* Round 2 (design/system.md 7.3): the two header buttons share one
-            capsule on the material, instead of two filled circles. */}
-        <Material style={styles.actions}>
-          <IconButton
-            icon="search"
-            surface={surface}
-            accessibilityLabel={copy.search}
-            onPress={() => router.push('/search')}
-            testID="discover-search"
-          />
-          <NotificationBell
-            surface={surface}
-            accessibilityLabel={copy.notifications}
-            testID="discover-notifications"
-          />
-        </Material>
-      </View>
+    <View testID="discover-header" style={styles.top}>
+      <Text variant="title" accessibilityRole="header" numberOfLines={1} style={styles.title}>
+        {copy.title}
+      </Text>
+      <NotificationBell
+        surface={surface}
+        accessibilityLabel={copy.notifications}
+        testID="discover-notifications"
+      />
     </View>
   );
 }
@@ -70,9 +38,9 @@ const styles = StyleSheet.create((theme, rt) => ({
     alignItems: 'center',
     gap: theme.space.sm,
     paddingTop: rt.insets.top + theme.space.sm,
-    paddingBottom: theme.space.md,
-    paddingHorizontal: theme.space.screen,
+    paddingBottom: theme.space.sm,
+    paddingLeft: theme.space.screen,
+    paddingRight: theme.space.sm,
   },
-  titles: { flex: 1 },
-  actions: { flexDirection: 'row', alignItems: 'center', borderRadius: theme.radius.chip },
+  title: { flex: 1 },
 }));

@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
@@ -8,25 +9,26 @@ import type { StoreApi } from 'zustand';
 import { track as trackActivity } from '@/lib/activity';
 import { track } from '@/lib/analytics';
 import { motion } from '@onlyswap/tokens';
-import { useOfflineShown } from '@/components/Banner';
-import { Button } from '@/components/Button';
+import { useOfflineNote } from '@/components/Banner';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
-import { SkeletonCard } from '@/components/Skeleton';
+import { Photo } from '@/components/Photo';
 import { Text } from '@/components/Text';
 import { useToastStore } from '@/components/Toast';
 import { useScreenReader } from '@/lib/a11y';
 import { getEnv } from '@/lib/env';
 import { isWebPlatform } from '@/lib/platform';
+import { fill } from '@/lib/format';
 import { getStorage } from '@/lib/storage';
 import { feed as copy } from '@/strings';
 import { LAYOUT, useLayout } from '@/theme/layout';
 import { useReducedMotion } from '@/theme/reducedMotion';
 
 import { DiscoverHeader } from '../campus/DiscoverHeader';
-import type { Me } from '../me/api';
+import { meApi, type Me } from '../me/api';
+import { meKey } from '../me/MeScreens';
 import { feedApi, type FeedApi } from './api';
-import type { SwipeDir } from './deckMath';
+import { DEEP_SCALE, NEXT_SCALE, PEEK, type SwipeDir } from './deckMath';
 import {
   DAY_ONE_MAX,
   mergePage,
@@ -63,14 +65,14 @@ export function DiscoverScreen({
   coach = defaultCoach,
   mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
   now = () => new Date(),
-  loadMe,
+  loadMe = () => meApi.me(),
 }: {
   api?: FeedApi;
   swipes?: StoreApi<SwipeState>;
   coach?: CoachStorage;
   mediaBase?: () => string;
   now?: () => Date;
-  /** The signed-in student, for the campus name in the header. */
+  /** The signed-in student, for the campus name on the end and day-one states. */
   loadMe?: () => Promise<Me>;
 }) {
   const router = useRouter();
@@ -87,8 +89,10 @@ export function DiscoverScreen({
   const screenReader = useScreenReader();
   const reduced = useReducedMotion();
   const swiping = gridWidth === undefined && !screenReader && !reduced;
-  // Appears and clears with the global OfflineBanner (same rule, Banner.tsx).
-  const offline = useOfflineShown();
+  // The one offline pill (Banner.tsx) says what offline means here.
+  useOfflineNote(copy.offlinePill);
+  const me = useQuery({ queryKey: meKey, queryFn: loadMe, staleTime: 5 * 60_000 });
+  const campus = me.data?.campus?.short_name ?? null;
   const store = useMemo(() => swipes ?? getSwipeStore(api), [swipes, api]);
   useSwipeFlush(store);
 
@@ -102,6 +106,8 @@ export function DiscoverScreen({
   const loading = useRef(false);
   const removed = useRef(new Map<string, FeedItem>());
   const swiped = useRef(new Set<string>());
+  // What you saved on this run through the pile, for the end-of-pile thumbnails.
+  const [savedHere, setSavedHere] = useState<DeckCard[]>([]);
   const lastDir = useRef<SwipeDir | null>(null);
   // Time on the top card (DEC 93): counted only while Discover is in front.
   const topCard = useRef<{ id: string; ms: number; since: number | null } | null>(null);
@@ -198,8 +204,46 @@ export function DiscoverScreen({
     coach.markSeen();
   }, [coach]);
 
+  const setSaved = useCallback((id: string, saved: boolean) => {
+    setItems((prev) => prev.map((p) => (p.id === id ? { ...p, saved } : p)));
+  }, []);
+
+  // The bookmark (DEC 144): saving keeps the card where it is, with Undo.
+  const onToggleSave = useCallback(
+    (card: DeckCard) => {
+      const toast = useToastStore.getState();
+      if (showCoach) dismissCoach();
+      if (card.saved) {
+        setSaved(card.id, false);
+        setSavedHere((prev) => prev.filter((c) => c.id !== card.id));
+        api.unsave(card.id).catch(() => {
+          setSaved(card.id, true);
+          toast.show('error', copy.saveFailed);
+        });
+        trackActivity('unsaved', { listingId: card.id, source: 'discover' });
+        return;
+      }
+      setSaved(card.id, true);
+      setSavedHere((prev) => [...prev.filter((c) => c.id !== card.id), card]);
+      api.save(card.id).catch(() => {
+        setSaved(card.id, false);
+        toast.show('error', copy.saveFailed);
+      });
+      toast.showUndo(copy.undoSaved, () => {
+        setSaved(card.id, false);
+        setSavedHere((prev) => prev.filter((c) => c.id !== card.id));
+        void api.unsave(card.id).catch(() => {});
+      });
+    },
+    [api, setSaved, showCoach, dismissCoach],
+  );
+
   const onSwipe = useCallback(
     (card: DeckCard, dir: SwipeDir) => {
+      if (dir === 'save') {
+        onToggleSave(card);
+        return;
+      }
       const item = items.find((i) => i.id === card.id);
       if (item) removed.current.set(card.id, item);
       swiped.current.add(card.id);
@@ -209,16 +253,13 @@ export function DiscoverScreen({
       track('card_swiped', { dir });
       if (showCoach) dismissCoach();
       const toast = useToastStore.getState();
-      if (dir === 'save') {
-        api.save(card.id).catch(() => toast.show('error', copy.saveFailed));
-        toast.showUndo(copy.undoSaved, () => void undo());
-      } else if (dir === 'left') {
+      if (dir === 'left') {
         toast.showUndo(copy.undoSkipped, () => void undo());
       } else {
         router.push({ pathname: '/listing/[id]/offer', params: { id: card.id } });
       }
     },
-    [items, store, showCoach, dismissCoach, api, router, undo, dwellOn],
+    [items, store, showCoach, dismissCoach, router, undo, dwellOn, onToggleSave],
   );
 
   const onOpen = useCallback(
@@ -230,15 +271,13 @@ export function DiscoverScreen({
     [router, showCoach, dismissCoach],
   );
 
-  const header = <DiscoverHeader loadMe={loadMe} />;
+  const header = <DiscoverHeader />;
 
   let body;
   if (phase === 'loading') {
     body = (
       <View style={styles.deck}>
-        <View style={styles.stage} accessibilityLabel={copy.loading} testID="discover-loading">
-          <SkeletonCard />
-        </View>
+        <PilePlaceholder />
       </View>
     );
   } else if (phase === 'error' || (cards.length === 0 && !ended && error !== null)) {
@@ -247,37 +286,54 @@ export function DiscoverScreen({
     body = <ErrorState error={error} onRetry={retry} testID="discover-error" />;
   } else if (cards.length === 0 && ended) {
     const dayOne = total < DAY_ONE_MAX;
-    body = (
+    const sell = { label: copy.endSell, onPress: () => router.push('/sell') };
+    body = dayOne ? (
       <EmptyState
-        icon={dayOne ? 'plussq' : 'cards'}
-        tile={dayOne ? 'accent' : 'neutral'}
-        title={dayOne ? copy.dayOneTitle : copy.endTitle}
-        body={dayOne ? copy.dayOneBody : copy.endBody}
-        action={{ label: copy.endSell, onPress: () => router.push('/sell') }}
-        secondaryAction={{ label: copy.endRefresh, onPress: () => void refresh() }}
-        testID={dayOne ? 'discover-day-one' : 'discover-end'}
+        lead={
+          total > 0 ? (
+            <Text variant="label" tone="ink2" style={styles.eyebrow}>
+              {total === 1 ? copy.dayOneCountOne : fill(copy.dayOneCount, { n: total })}
+            </Text>
+          ) : undefined
+        }
+        title={campus ? fill(copy.dayOneTitleCampus, { campus }) : copy.dayOneTitle}
+        body={copy.dayOneBody}
+        action={sell}
+        testID="discover-day-one"
+      />
+    ) : (
+      <EmptyState
+        lead={savedHere.length > 0 ? <SavedThumbs cards={savedHere} /> : undefined}
+        title={campus ? fill(copy.endTitleCampus, { campus }) : copy.endTitle}
+        body={[
+          savedHere.length === 1
+            ? copy.endSavedOne
+            : savedHere.length > 1
+              ? fill(copy.endSaved, { n: savedHere.length })
+              : null,
+          copy.endBody,
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        action={
+          savedHere.length > 0 ? { label: copy.seeSaved, onPress: () => router.push('/saved') } : sell
+        }
+        secondaryAction={savedHere.length > 0 ? sell : undefined}
+        testID="discover-end"
       />
     );
   } else {
-    // One quiet line in the hint slot: offline wins over the first-launch hint.
-    const hint = offline ? (
-      <Animated.View key="offline" entering={FadeIn.duration(motion.fade.duration)}>
-        <Text variant="meta" tone="ink2" accessibilityLiveRegion="polite" testID="discover-offline">
-          {copy.offlineQueued}
-        </Text>
-      </Animated.View>
-    ) : showCoach && swiping && cards.length > 0 ? (
+    // First time only: one quiet line, and the top card wiggles once.
+    const coachOn = showCoach && swiping && cards.length > 0;
+    const hint = coachOn ? (
       <Animated.View
         key="coach"
         entering={FadeIn.duration(motion.fade.duration)}
-        style={styles.coach}
         testID="discover-coach"
       >
-        <Text variant="meta" tone="ink2" style={styles.coachText}>
+        <Text variant="meta" tone="ink2">
           {copy.coachBody}
         </Text>
-        {/* Kept: tests pin "Got it"; the hint also ends on the first swipe or tap. */}
-        <Button label={copy.coachOk} size="S" variant="text" onPress={dismissCoach} />
       </Animated.View>
     ) : null;
     body = (
@@ -286,6 +342,8 @@ export function DiscoverScreen({
           cards={cards}
           onSwipe={onSwipe}
           onOpen={onOpen}
+          onToggleSave={onToggleSave}
+          wiggle={coachOn}
           gridWidth={gridWidth}
           hint={hint}
         />
@@ -301,11 +359,67 @@ export function DiscoverScreen({
   );
 }
 
+/**
+ * While the first page loads (round 2 frame 8): the pile's shape in quiet
+ * fills, no shimmer. Once cards arrive, each photo shows its own blur
+ * colors (blurhash) until it sharpens.
+ */
+function PilePlaceholder() {
+  return (
+    <View
+      style={styles.pile}
+      accessibilityLabel={copy.loading}
+      accessibilityState={{ busy: true }}
+      testID="discover-loading"
+    >
+      <View style={[styles.pileCard, styles.pileDeep]} />
+      <View style={[styles.pileCard, styles.pileNext]} />
+      <View style={styles.pileCard} />
+    </View>
+  );
+}
+
+/** Up to three photos of what you saved on the way down the pile. */
+function SavedThumbs({ cards }: { cards: DeckCard[] }) {
+  return (
+    <View style={styles.thumbs} accessible={false} importantForAccessibility="no-hide-descendants">
+      {cards.slice(-3).map((c, i) => (
+        <View key={c.id} style={styles.thumb(i)}>
+          <Photo source={c.photos[0]?.uri ?? null} blurhash={c.photos[0]?.blurhash ?? null} fill />
+        </View>
+      ))}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   flex: { flex: 1 },
   deck: { flex: 1, width: '100%', maxWidth: LAYOUT.deckMax, alignSelf: 'center' },
   stage: { flex: 1, margin: theme.space.screen },
-  coach: { flexDirection: 'row', alignItems: 'center', gap: theme.space.sm },
-  coachText: { flex: 1 },
+  eyebrow: { textTransform: 'uppercase', letterSpacing: 0.4 },
+  pile: {
+    flex: 1,
+    marginHorizontal: theme.space.md,
+    marginTop: theme.space.xs,
+    marginBottom: PEEK + theme.space.md,
+  },
+  pileCard: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: theme.radius.deck,
+    backgroundColor: theme.colors.bg2,
+  },
+  pileNext: { transform: [{ translateY: PEEK }, { scale: NEXT_SCALE }], backgroundColor: theme.colors.bg3 },
+  pileDeep: { transform: [{ translateY: PEEK * 2 }, { scale: DEEP_SCALE }], backgroundColor: theme.colors.line },
+  thumbs: { flexDirection: 'row' },
+  thumb: (i: number) => ({
+    width: theme.size.hit + theme.space.md,
+    height: theme.size.hit + theme.space.md,
+    borderRadius: theme.radius.thumb,
+    overflow: 'hidden',
+    marginLeft: i === 0 ? 0 : -theme.space.md,
+    borderWidth: 2,
+    borderColor: theme.colors.bg,
+    transform: [{ rotate: `${(i - 1) * 6}deg` }],
+  }),
 }));

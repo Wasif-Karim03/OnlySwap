@@ -5,12 +5,15 @@ import { AccessibilityInfo } from 'react-native';
 import {
   flyTarget,
   nextScale,
+  PEEK,
   pastThreshold,
+  pileFor,
   releaseDir,
   rotationFor,
   stampOpacity,
+  tapZone,
 } from '../src/features/feed/deckMath';
-import { SwipeDeck, type SwipeDeckHandle } from '../src/features/feed/SwipeDeck';
+import { offerSticker, SwipeDeck, type SwipeDeckHandle } from '../src/features/feed/SwipeDeck';
 import { cardLabel, savedLine, type DeckCard } from '../src/features/feed/SwipeCard';
 import { feed } from '../src/strings/en';
 
@@ -79,6 +82,20 @@ describe('T-UNIT-FEED-02 SwipeDeck gesture math', () => {
     expect(nextScale(-400, W)).toBe(1);
   });
 
+  it('the pile under the top card peeks out and steps up as you swipe', () => {
+    expect(pileFor(1, 0, W)).toEqual({ scale: 0.95, y: PEEK });
+    expect(pileFor(2, 0, W)).toEqual({ scale: 0.91, y: PEEK * 2 });
+    expect(pileFor(1, W * 0.35, W)).toEqual({ scale: 1, y: 0 });
+    expect(pileFor(2, -W, W)).toEqual({ scale: 0.95, y: PEEK });
+  });
+
+  it('taps on the outer 30% flip photos, the middle opens', () => {
+    expect(tapZone(10, W)).toBe('prev');
+    expect(tapZone(W - 10, W)).toBe('next');
+    expect(tapZone(W / 2, W)).toBe('open');
+    expect(tapZone(10, 0)).toBe('open');
+  });
+
   it('flies left, right and up for save', () => {
     expect(flyTarget('right', W, 600)).toEqual({ x: 600, y: 0 });
     expect(flyTarget('left', W, 600)).toEqual({ x: -600, y: 0 });
@@ -111,22 +128,55 @@ describe('SwipeDeck', () => {
     expect(onSwipe).toHaveBeenLastCalledWith(CARDS[0], 'right');
   });
 
-  it('the save button saves the top card', async () => {
+  it('without onToggleSave the bookmark falls back to a save swipe', async () => {
     const onSwipe = jest.fn();
-    const { rerender } = render(<SwipeDeck cards={CARDS} onSwipe={onSwipe} onOpen={jest.fn()} />);
+    render(<SwipeDeck cards={CARDS} onSwipe={onSwipe} onOpen={jest.fn()} />);
     await act(async () => {});
     fireEvent.press(screen.getByTestId('deck-save'));
     expect(onSwipe).toHaveBeenLastCalledWith(CARDS[0], 'save');
-    rerender(<SwipeDeck cards={CARDS.slice(1)} onSwipe={onSwipe} onOpen={jest.fn()} />);
-    expect(screen.getByTestId('deck-card-b')).toBeTruthy();
   });
 
-  it('with no cards the buttons are disabled', async () => {
-    render(<SwipeDeck cards={[]} onSwipe={jest.fn()} onOpen={jest.fn()} />);
+  it('DEC 144: no deck buttons; the bookmark saves and the card stays', async () => {
+    const onSwipe = jest.fn();
+    const onToggleSave = jest.fn();
+    render(
+      <SwipeDeck cards={CARDS} onSwipe={onSwipe} onOpen={jest.fn()} onToggleSave={onToggleSave} />,
+    );
     await act(async () => {});
-    expect(screen.getByTestId('deck-offer').props.accessibilityState).toMatchObject({
-      disabled: true,
-    });
+    expect(screen.queryByTestId('deck-offer')).toBeNull();
+    expect(screen.queryByTestId('deck-skip')).toBeNull();
+    fireEvent.press(screen.getByTestId('deck-save'));
+    expect(onToggleSave).toHaveBeenCalledWith(CARDS[0]);
+    expect(onSwipe).not.toHaveBeenCalled();
+    expect(screen.getByTestId('deck-card-a')).toBeTruthy();
+  });
+
+  it('the top card carries offer, pass, save and open as accessibility actions', async () => {
+    const onSwipe = jest.fn();
+    const onOpen = jest.fn();
+    const onToggleSave = jest.fn();
+    render(
+      <SwipeDeck cards={CARDS} onSwipe={onSwipe} onOpen={onOpen} onToggleSave={onToggleSave} />,
+    );
+    await act(async () => {});
+    const card = screen.getByTestId('deck-card-a');
+    expect(card.props.accessibilityActions.map((a: { name: string }) => a.name)).toEqual([
+      'offer',
+      'skip',
+      'save',
+      'activate',
+    ]);
+    fireEvent(card, 'accessibilityAction', { nativeEvent: { actionName: 'save' } });
+    expect(onToggleSave).toHaveBeenCalledWith(CARDS[0]);
+    fireEvent(card, 'accessibilityAction', { nativeEvent: { actionName: 'activate' } });
+    expect(onOpen).toHaveBeenCalledWith(CARDS[0]);
+    fireEvent(card, 'accessibilityAction', { nativeEvent: { actionName: 'skip' } });
+    expect(onSwipe).toHaveBeenLastCalledWith(CARDS[0], 'left');
+  });
+
+  it('the stickers say the price, or "Ask for it" for free things', () => {
+    expect(offerSticker({ ...CARDS[0]!, price: '$40' })).toBe('Offer $40');
+    expect(offerSticker({ ...CARDS[0]!, price: 'Free', free: true })).toBe(feed.stampAsk);
   });
 
   it('says how many people saved a card', () => {
