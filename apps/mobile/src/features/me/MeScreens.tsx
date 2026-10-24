@@ -87,8 +87,18 @@ export function splitAround(template: string, key: string): [string, string] {
  */
 export function profileStats(m: Pick<Me, 'counts' | 'created_at'>, locale: string) {
   const out: { key: string; value: string; template: string; name: string }[] = [
-    { key: 'sold', value: String(m.counts.sold), template: copy.statsSold, name: 'n' },
-    { key: 'swaps', value: String(m.counts.swaps), template: copy.statsSwaps, name: 'n' },
+    {
+      key: 'sold',
+      value: String(m.counts.sold),
+      template: m.counts.sold === 1 ? copy.statsSoldOne : copy.statsSold,
+      name: 'n',
+    },
+    {
+      key: 'swaps',
+      value: String(m.counts.swaps),
+      template: m.counts.swaps === 1 ? copy.statsSwapsOne : copy.statsSwaps,
+      name: 'n',
+    },
   ];
   if (m.counts.thumbs_total > 0) {
     const pct = Math.round((m.counts.thumbs_up / m.counts.thumbs_total) * 100);

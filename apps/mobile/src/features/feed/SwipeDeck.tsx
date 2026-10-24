@@ -190,6 +190,8 @@ type ActionsProps = {
   onSkip: () => void;
   onOffer: () => void;
   onSave: () => void;
+  /** Fills the bookmark when the item is already saved (DEC 144: bookmark = save). */
+  saved?: boolean;
   testID: string;
 };
 
@@ -199,7 +201,16 @@ type ActionsProps = {
  * either side, no shadow, and the wide offer pill as the screen's one accent
  * fill (P2, P7), with ink words on it.
  */
-function DeckActions({ size, short, disabled, onSkip, onOffer, onSave, testID }: ActionsProps) {
+function DeckActions({
+  size,
+  short,
+  disabled,
+  onSkip,
+  onOffer,
+  onSave,
+  saved = false,
+  testID,
+}: ActionsProps) {
   const icon = size === 'L' ? 26 : 22;
   return (
     <View style={styles.actions(size)}>
@@ -232,14 +243,19 @@ function DeckActions({ size, short, disabled, onSkip, onOffer, onSave, testID }:
       </Tappable>
       <Tappable
         accessibilityRole="button"
-        accessibilityLabel={copy.save}
-        {...a11yState({ disabled: !!disabled })}
+        accessibilityLabel={saved ? copy.unsaveAction : copy.save}
+        {...a11yState({ disabled: !!disabled, selected: saved })}
         disabled={disabled}
         onPress={onSave}
         testID={`${testID}-save`}
       >
         <CircleSurface size={size} disabled={!!disabled}>
-          <Icon name="heart" size={icon} tone={size === 'L' ? 'onPhoto' : 'ink'} />
+          <Icon
+            name="bookmark"
+            size={icon}
+            tone={size === 'L' ? 'onPhoto' : 'ink'}
+            filled={saved}
+          />
         </CircleSurface>
       </Tappable>
     </View>
@@ -552,6 +568,7 @@ function DeckList({ cards, onSwipe, onOpen, onToggleSave, gridWidth, hint, testI
                 onSkip={() => onSwipe(card, 'left')}
                 onOffer={() => onSwipe(card, 'right')}
                 onSave={() => save(card)}
+                saved={!!card.saved}
                 testID={`deck-item-${card.id}`}
               />
             </View>

@@ -43,6 +43,7 @@ import {
   bubbleSpots,
   chatKey,
   chatPhotoUrl,
+  dealStatusLabel,
   newContactFromItems,
   scamHint,
   type BubbleSpot,
@@ -386,7 +387,7 @@ export function ChatScreen({
           </View>
           {c.status === 'open' && !readOnly ? (
             <Text variant="label" tone="green" testID="chat-deal-status">
-              {copy.accepted}
+              {dealStatusLabel(c)}
             </Text>
           ) : null}
         </View>

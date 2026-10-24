@@ -1,3 +1,18 @@
+import { chat as copy } from '@/strings';
+
+/**
+ * The green label in the chat's item bar while the chat is open: "Sold" once
+ * the listing sold or both sides said the deal is done, else "Accepted".
+ */
+export function dealStatusLabel(c: {
+  listing_status: string | null;
+  buyer_outcome: string | null;
+  seller_outcome: string | null;
+}): string {
+  const done = c.buyer_outcome === 'done' && c.seller_outcome === 'done';
+  return c.listing_status === 'sold' || done ? copy.soldStatus : copy.accepted;
+}
+
 /** Query key for one chat's details (get_chat); shared by the chat and meetup screens. */
 export const chatKey = (id: string) => ['chat', id] as const;
 
