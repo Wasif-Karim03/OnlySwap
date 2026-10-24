@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Linking, Platform, View } from 'react-native';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
@@ -88,6 +88,7 @@ export function PostNewsScreen({
   const [day, setDay] = useState<Date | null>(null);
   const [time, setTime] = useState<Date | null>(null);
   const [picker, setPicker] = useState<'date' | 'time' | null>(null);
+  const { theme } = useUnistyles();
   const [place, setPlace] = useState('');
   const [showErrors, setShowErrors] = useState(false);
   const [posting, setPosting] = useState(false);
@@ -296,6 +297,10 @@ export function PostNewsScreen({
                 maximumDate={picker === 'date' ? lastDay : undefined}
                 minuteInterval={5}
                 onChange={onPick}
+                // The wheels draw in the app theme, not the OS one, so the text
+                // never comes out white on a white screen (or black on black).
+                textColor={theme.colors.ink}
+                themeVariant={theme.mode}
                 testID="news-picker"
               />
             ) : null}

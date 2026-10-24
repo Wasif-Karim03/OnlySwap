@@ -174,7 +174,11 @@ export function ProfileTabScreen({
       grid = (
         <View style={styles.photoGrid} testID="profile-grid">
           {items.map((l) => {
-            const price = priceLabel(l.kind, l.price_cents, feedCopy.free);
+            // News and events have no price; tag them News, as My listings does.
+            const price =
+              l.kind === 'news'
+                ? campusCopy.listingNews
+                : priceLabel(l.kind, l.price_cents, feedCopy.free);
             // Hold, review and the like are invisible in the photo grid: say them.
             const status =
               l.status !== 'active' && l.status !== 'sold' && l.status in copy.statusLabels

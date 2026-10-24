@@ -88,7 +88,7 @@ export function FeedPost({
     <View style={styles.card} testID={testID}>
       <Tappable accessibilityRole="button" accessibilityLabel={label} onPress={onOpen}>
         <View>
-          <View style={[styles.head, styles.headRoom]}>
+          <View style={[styles.head, !item.is_own && styles.headRoom]}>
             <Avatar name={name} uri={avatar} size="M" />
             <View style={styles.flex}>
               <Text variant="bodyStrong" numberOfLines={1}>
@@ -101,6 +101,12 @@ export function FeedPost({
             {news ? (
               <Text variant="label" tone="ink2">
                 {copy.newsTag}
+              </Text>
+            ) : null}
+            {/* In the row, not over it, so it never covers News at any text size. */}
+            {item.is_own ? (
+              <Text variant="label" tone="ink3">
+                {copy.yours}
               </Text>
             ) : null}
           </View>
@@ -222,14 +228,8 @@ export function FeedPost({
       </View>
 
       {/* Save sits over the header's right edge, outside the open-post button. */}
-      <View style={styles.corner}>
-        {item.is_own ? (
-          <View style={styles.own}>
-            <Text variant="label" tone="ink3">
-              {copy.yours}
-            </Text>
-          </View>
-        ) : (
+      {item.is_own ? null : (
+        <View style={styles.corner}>
           <IconButton
             icon="bookmark"
             accessibilityLabel={item.saved ? copy.saved : copy.save}
@@ -237,8 +237,8 @@ export function FeedPost({
             onPress={onSave}
             testID={testID ? `${testID}-save` : undefined}
           />
-        )}
-      </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -349,5 +349,4 @@ const styles = StyleSheet.create((theme) => ({
     gap: theme.space.xs,
     paddingHorizontal: theme.space.sm,
   },
-  own: { minHeight: theme.size.hit, justifyContent: 'center', paddingHorizontal: theme.space.md },
 }));

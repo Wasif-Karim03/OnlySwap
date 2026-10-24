@@ -290,6 +290,7 @@ export function AgeScreen({
           maximumDate={maxDate}
           onChange={onPick}
           textColor={theme.colors.ink}
+          themeVariant={theme.mode}
         />
       ) : null}
 
