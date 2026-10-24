@@ -203,7 +203,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           // iOS 27 asserts at launch unless the app adopts the UIScene life
           // cycle (crash found on the iOS 27 Simulator). SDK 57's opt-in; SDK 58
           // does this in the template.
-          ios: { enableSceneSupport: true },
+          // Xcode 27.1 ships Swift 6.4, which rejects SDK 57's precompiled
+          // Expo XCFrameworks (built with Swift 6.3.1). Build them from source;
+          // see patches/expo-modules-jsi@57.1.2.patch for the matching fix.
+          ios: { enableSceneSupport: true, usePrecompiledModules: false },
         },
       ],
       [
