@@ -64,7 +64,7 @@ const styles = StyleSheet.create((theme) => ({
     flexDirection: 'row',
     padding: theme.space.xs,
     gap: theme.space.xs,
-    borderRadius: theme.radius.control,
+    borderRadius: theme.radius.chip,
     backgroundColor: theme.colors[surface],
   }),
   segment: (selected: boolean) => ({
@@ -75,7 +75,7 @@ const styles = StyleSheet.create((theme) => ({
     minHeight: theme.size.buttonM,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: theme.radius.control - theme.space.xs,
+    borderRadius: theme.radius.chip,
     backgroundColor: selected ? theme.colors.card : 'transparent',
   }),
   pressed: { opacity: PRESSED_OPACITY },

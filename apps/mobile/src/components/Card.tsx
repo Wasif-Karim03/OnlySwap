@@ -30,8 +30,8 @@ const styles = StyleSheet.create((theme) => ({
   card: {
     backgroundColor: theme.colors.card,
     borderRadius: theme.radius.card,
-    borderWidth: 1,
-    borderColor: theme.colors.line,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: theme.colors.line2,
     padding: theme.space.lg,
     gap: theme.space.sm,
   },

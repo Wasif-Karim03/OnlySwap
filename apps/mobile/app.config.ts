@@ -124,11 +124,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     extra: { eas: { projectId: EAS_PROJECT_ID } },
     ios: {
       bundleIdentifier: BUNDLE_ID,
-      // iPad (P17-FEAT-02): phones stay portrait (`orientation`); with
-      // requireFullScreen off, prebuild adds all four iPad orientations
-      // (UISupportedInterfaceOrientations~ipad) for Split View and Slide Over.
-      supportsTablet: true,
-      requireFullScreen: false,
+      // Phones only (DEC 146). On an iPad the app runs in a phone-sized window.
+      supportsTablet: false,
       deploymentTarget: '16.4',
       config: { usesNonExemptEncryption: false },
       associatedDomains: [`applinks:${WEB_HOST}`],

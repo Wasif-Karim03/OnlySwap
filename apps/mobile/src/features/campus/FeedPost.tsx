@@ -105,9 +105,12 @@ export function FeedPost({
             ) : null}
             {/* In the row, not over it, so it never covers News at any text size. */}
             {item.is_own ? (
-              <Text variant="label" tone="ink3">
-                {copy.yours}
-              </Text>
+              // Round 2: a quiet tag where Save sits on other people's posts.
+              <View style={styles.ownTag}>
+                <Text variant="meta" tone="ink2" style={styles.ownTagText}>
+                  {copy.yours}
+                </Text>
+              </View>
             ) : null}
           </View>
 
@@ -291,6 +294,13 @@ const styles = StyleSheet.create((theme) => ({
   // Flat rows on the page; the Feed draws the lines between them.
   card: { overflow: 'hidden' },
   flex: { flex: 1 },
+  ownTag: {
+    paddingHorizontal: theme.space.sm,
+    paddingVertical: theme.space.xs / 2,
+    borderRadius: theme.radius.chip,
+    backgroundColor: theme.colors.bg2,
+  },
+  ownTagText: { fontWeight: theme.type.label.fontWeight },
   // Room on the right of the header for Save.
   headRoom: { paddingRight: theme.size.hit + theme.space.sm },
   corner: {

@@ -516,6 +516,16 @@ describe('C01 Around campus', () => {
     expect(screen.queryByTestId('campus-founding-mine')).toBeNull();
   });
 
+  it('day one with nothing posted shows one empty state, not two (round 2)', async () => {
+    open(
+      fakeCampus({
+        feed: jest.fn(async () => page([], { day_one: true, active_listings: 0 })),
+      }),
+    );
+    expect(await screen.findByTestId('campus-empty-all')).toBeTruthy();
+    expect(screen.queryByTestId('campus-day-one')).toBeNull();
+  });
+
   it('error with retry, offline copy', async () => {
     const feed = jest
       .fn()

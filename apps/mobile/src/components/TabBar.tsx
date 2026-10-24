@@ -5,10 +5,12 @@ import { StyleSheet } from 'react-native-unistyles';
 import { fill } from '@/lib/format';
 import { nav as navCopy, welcome as brandCopy } from '@/strings';
 import { LAYOUT } from '@/theme/layout';
+import { liftShadow } from '@/theme/shadow';
 
 import { badgeText, CountPill } from './Badge';
 import { Icon, type IconName } from './icons/Icon';
 import { Mark } from './Mark';
+import { Material } from './Material';
 import { Text } from './Text';
 import { a11yState } from '@/lib/a11y';
 
@@ -86,48 +88,51 @@ export function TabBar({
       />
     );
   }
-  const android = variant === 'android';
   return (
-    <View testID={testID} accessibilityRole="tablist" style={styles.bar(android, safeBottom)}>
-      {items.map((item) => {
-        const active = item.key === activeKey;
-        return (
-          <Pressable
-            key={item.key}
-            testID={testID ? `${testID}-${item.key}` : undefined}
-            accessibilityRole="tab"
-            accessibilityLabel={tabAccessibilityLabel(item)}
-            {...a11yState({ selected: active })}
-            onPress={() => onSelect(item.key)}
-            onLongPress={onLongPress ? () => onLongPress(item.key) : undefined}
-            style={({ pressed }) => [styles.item, pressed && styles.pressed]}
-          >
-            <View
-              style={item.prominent ? styles.prominent : styles.iconWrap(android, active)}
-              testID={item.prominent && testID ? `${testID}-${item.key}-prominent` : undefined}
-            >
-              <Icon
-                name={item.icon}
-                size={size.tabIcon}
-                tone={item.prominent || (android && active) ? 'onAccent' : active ? 'ink' : 'ink3'}
-                strokeWidth={active || item.prominent ? 2.2 : 1.8}
-              />
-              <CountPill count={item.badge} hidden={false} style={styles.badge(android)} />
-            </View>
-            {item.prominent ? null : (
-              <Text
-                variant="meta"
-                tone={active ? 'ink' : 'ink3'}
-                overlay
-                numberOfLines={1}
-                style={styles.label}
+    <View style={styles.bar(safeBottom)}>
+      <View style={styles.lift}>
+        <Material testID={testID} accessibilityRole="tablist" style={styles.capsule}>
+          {items.map((item) => {
+            const active = item.key === activeKey;
+            return (
+              <Pressable
+                key={item.key}
+                testID={testID ? `${testID}-${item.key}` : undefined}
+                accessibilityRole="tab"
+                accessibilityLabel={tabAccessibilityLabel(item)}
+                {...a11yState({ selected: active })}
+                onPress={() => onSelect(item.key)}
+                onLongPress={onLongPress ? () => onLongPress(item.key) : undefined}
+                style={({ pressed }) => [styles.item, pressed && styles.pressed]}
               >
-                {item.label}
-              </Text>
-            )}
-          </Pressable>
-        );
-      })}
+                <View
+                  style={item.prominent ? styles.prominent : styles.iconWrap(active)}
+                  testID={item.prominent && testID ? `${testID}-${item.key}-prominent` : undefined}
+                >
+                  <Icon
+                    name={item.icon}
+                    size={size.tabIcon}
+                    tone={item.prominent ? 'onAccent' : active ? 'inverse' : 'ink3'}
+                    strokeWidth={active || item.prominent ? 2.2 : 1.8}
+                  />
+                  <CountPill count={item.badge} hidden={false} style={styles.badge} />
+                </View>
+                {item.prominent ? null : (
+                  <Text
+                    variant="meta"
+                    tone={active ? 'ink' : 'ink3'}
+                    overlay
+                    numberOfLines={1}
+                    style={styles.label}
+                  >
+                    {item.label}
+                  </Text>
+                )}
+              </Pressable>
+            );
+          })}
+        </Material>
+      </View>
     </View>
   );
 }
@@ -218,16 +223,26 @@ const styles = StyleSheet.create((theme, rt) => ({
   railLabel: { flex: 1 },
   // Pressed: icon and label dim; nothing scales, so the row never shifts (3.08 TabBar).
   pressed: { opacity: PRESSED_OPACITY },
-  bar: (android: boolean, safeBottom: boolean) => ({
+  // Round 2 (design/system.md 7.2): a floating capsule inset from the edges,
+  // on the material surface with a hairline and one soft shadow. It stays in
+  // the layout flow, so no screen's bottom padding changes.
+  bar: (safeBottom: boolean) => ({
+    paddingHorizontal: theme.space.lg,
+    paddingTop: theme.space.sm,
+    paddingBottom: (safeBottom ? rt.insets.bottom : 0) + theme.space.md,
+    backgroundColor: theme.colors.bg,
+  }),
+  // One soft shadow, on a wrapper: the material clips its own edges.
+  lift: { borderRadius: theme.radius.chip, ...liftShadow() },
+  capsule: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingTop: android ? theme.space.md : theme.space.sm,
-    paddingBottom:
-      (safeBottom ? rt.insets.bottom : 0) + (android ? theme.space.md : theme.space.xs),
-    backgroundColor: theme.colors.bg,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.line,
-  }),
+    alignItems: 'center',
+    minHeight: theme.size.hit + theme.space.xl - theme.space.xs,
+    paddingHorizontal: theme.space.xs,
+    paddingVertical: theme.space.sm,
+    borderRadius: theme.radius.chip,
+  },
   label: { fontWeight: '600' },
   prominent: {
     width: theme.size.tabPillH + theme.space.md + theme.space.xs,
@@ -243,17 +258,18 @@ const styles = StyleSheet.create((theme, rt) => ({
     gap: theme.space.xs,
     minHeight: theme.size.hit,
   },
-  iconWrap: (android: boolean, active: boolean) => ({
-    width: android ? theme.size.tabPillW : theme.size.tabIcon,
-    height: android ? theme.size.tabPillH : theme.size.tabIcon,
+  // The selected tab sits on an ink pill (selection is ink, not accent).
+  iconWrap: (active: boolean) => ({
+    width: theme.size.tabPillW - theme.space.md,
+    height: theme.size.tabPillH,
     borderRadius: theme.radius.chip,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: android && active ? theme.colors.accent : 'transparent',
+    backgroundColor: active ? theme.colors.ink : 'transparent',
   }),
-  badge: (android: boolean) => ({
+  badge: {
     position: 'absolute',
-    top: android ? 0 : -theme.space.xs,
-    left: android ? theme.size.tabPillW / 2 + theme.space.sm : theme.space.lg,
-  }),
+    top: -theme.space.xs,
+    left: (theme.size.tabPillW - theme.space.md) / 2 + theme.space.sm,
+  },
 }));

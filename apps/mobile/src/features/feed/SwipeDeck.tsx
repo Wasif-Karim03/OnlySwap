@@ -27,6 +27,7 @@ import { StyleSheet } from 'react-native-unistyles';
 
 import { motion } from '@onlyswap/tokens';
 import { Icon } from '@/components/icons/Icon';
+import { Material } from '@/components/Material';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { useScreenReader, a11yState } from '@/lib/a11y';
@@ -159,7 +160,6 @@ export function SwipeDeck({
           )
           .reverse()}
       </View>
-      {hint ? <View style={styles.hint}>{hint}</View> : null}
       <DeckActions
         size="L"
         disabled={!top}
@@ -168,6 +168,7 @@ export function SwipeDeck({
         onSave={() => fly.current?.('save')}
         testID={testID}
       />
+      {hint ? <View style={styles.hint}>{hint}</View> : null}
     </View>
   );
 }
@@ -202,9 +203,9 @@ function DeckActions({ size, short, disabled, onSkip, onOffer, onSave, testID }:
         onPress={onSkip}
         testID={`${testID}-skip`}
       >
-        <View style={styles.circle(size, !!disabled)}>
-          <Icon name="x" size={icon} />
-        </View>
+        <CircleSurface size={size} disabled={!!disabled}>
+          <Icon name="x" size={icon} tone={size === 'L' ? 'onPhoto' : 'ink'} />
+        </CircleSurface>
       </Tappable>
       <Tappable
         accessibilityRole="button"
@@ -229,12 +230,35 @@ function DeckActions({ size, short, disabled, onSkip, onOffer, onSave, testID }:
         onPress={onSave}
         testID={`${testID}-save`}
       >
-        <View style={styles.circle(size, !!disabled)}>
-          <Icon name="heart" size={icon} />
-        </View>
+        <CircleSurface size={size} disabled={!!disabled}>
+          <Icon name="heart" size={icon} tone={size === 'L' ? 'onPhoto' : 'ink'} />
+        </CircleSurface>
       </Tappable>
     </View>
   );
+}
+
+/**
+ * The side buttons. On the deck they float over the photo, so they use the
+ * clear material (round 2); under list and grid tiles they stay quiet circles.
+ */
+function CircleSurface({
+  size,
+  disabled,
+  children,
+}: {
+  size: 'L' | 'M';
+  disabled: boolean;
+  children: ReactNode;
+}) {
+  if (size === 'L') {
+    return (
+      <Material variant="clear" style={styles.glassCircle(disabled)}>
+        {children}
+      </Material>
+    );
+  }
+  return <View style={styles.circle(size, disabled)}>{children}</View>;
 }
 
 type TopProps = {
@@ -338,7 +362,7 @@ function TopCard({ card, size, drag, register, onDone, onOpen }: TopProps) {
         accessibilityHint={copy.cardHint}
         testID={`deck-card-${card.id}`}
       >
-        <SwipeCard card={card} />
+        <SwipeCard card={card} overlay />
         <Animated.View style={[styles.stamp, styles.stampLeft, offerStamp]} pointerEvents="none">
           <Text variant="title" tone="onAccent">
             {copy.stampOffer}
@@ -381,7 +405,7 @@ function UnderCard({ card, depth, size, drag }: UnderProps) {
       importantForAccessibility="no-hide-descendants"
       accessibilityElementsHidden
     >
-      <SwipeCard card={card} />
+      <SwipeCard card={card} overlay />
     </Animated.View>
   );
 }
@@ -468,7 +492,7 @@ const styles = StyleSheet.create((theme) => ({
   wrap: { flex: 1 },
   hint: { paddingHorizontal: theme.space.screen, paddingTop: theme.space.md },
   listHint: { width: '100%' },
-  stage: { flex: 1, marginHorizontal: theme.space.screen, marginTop: theme.space.sm },
+  stage: { flex: 1, marginHorizontal: theme.space.md, marginTop: theme.space.sm },
   cardSlot: { ...StyleSheet.absoluteFillObject },
   stamp: {
     position: 'absolute',
@@ -488,8 +512,18 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: 'center',
     gap: size === 'L' ? theme.space.lg : theme.space.sm,
     paddingVertical: size === 'L' ? theme.space.lg : 0,
-    // The deck row spans the screen so the offer pill can be the wide primary.
-    paddingHorizontal: size === 'L' ? theme.space.screen : 0,
+    // The deck row floats over the card's foot (round 2): it overlaps the
+    // stage by its own height, and the card leaves that room under its text.
+    marginTop: size === 'L' ? -(theme.size.buttonL + theme.space.lg * 2) : 0,
+    paddingHorizontal: size === 'L' ? theme.space.xl + theme.space.sm : 0,
+  }),
+  glassCircle: (disabled: boolean) => ({
+    width: theme.size.buttonL,
+    height: theme.size.buttonL,
+    borderRadius: theme.radius.chip,
+    alignItems: 'center',
+    justifyContent: 'center',
+    opacity: disabled ? 0.35 : 1,
   }),
   circle: (size: 'L' | 'M', disabled: boolean) => ({
     width: size === 'L' ? theme.size.buttonL : theme.size.hit,

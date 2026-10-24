@@ -14,7 +14,14 @@ import { a11yState } from '@/lib/a11y';
  * they keep the same colors in light and dark mode because the accent does.
  */
 export type ButtonVariant =
-  'primary' | 'dark' | 'secondary' | 'text' | 'destructive' | 'onAccent' | 'textOnAccent';
+  | 'primary'
+  | 'accent'
+  | 'dark'
+  | 'secondary'
+  | 'text'
+  | 'destructive'
+  | 'onAccent'
+  | 'textOnAccent';
 export type ButtonSize = 'L' | 'M' | 'S';
 
 export type ButtonProps = {
@@ -31,8 +38,11 @@ export type ButtonProps = {
   fullWidth?: boolean;
 };
 
+// DEC 143: `primary` is an ink capsule; the accent fill moved to `accent`,
+// kept for the few accent jobs (Sell, the deck offer, success moments).
 const TONE: Record<ButtonVariant, TextTone> = {
-  primary: 'onAccent',
+  primary: 'inverse',
+  accent: 'onAccent',
   dark: 'inverse',
   secondary: 'ink',
   text: 'ink',
@@ -91,9 +101,9 @@ export function Button({
   const inactive = disabled || loading;
   const { focusVisible, focusProps } = useWebFocusRing();
   const spinnerColor =
-    variant === 'primary'
+    variant === 'accent'
       ? theme.colors.onAccent
-      : variant === 'dark'
+      : variant === 'primary' || variant === 'dark'
         ? theme.colors.bg
         : variant === 'onAccent'
           ? theme.colors.onPhoto
@@ -150,15 +160,16 @@ const styles = StyleSheet.create((theme) => ({
   body: (variant: ButtonVariant, size: ButtonSize, disabled: boolean) => ({
     minHeight: theme.size[`button${size}`],
     paddingHorizontal: size === 'S' ? theme.space.lg : theme.space.xl,
-    borderRadius: theme.radius.control,
+    // Capsules (DEC 143): controls near the screen edge are fully rounded.
+    borderRadius: theme.radius.chip,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: theme.space.sm,
     opacity: disabled ? 0.35 : 1,
     backgroundColor:
-      variant === 'primary'
+      variant === 'accent'
         ? theme.colors.accent
-        : variant === 'dark'
+        : variant === 'primary' || variant === 'dark'
           ? theme.colors.ink
           : variant === 'secondary'
             ? theme.colors.bg2
@@ -182,6 +193,6 @@ const styles = StyleSheet.create((theme) => ({
     left: -theme.space.xs,
     borderWidth: 2,
     borderColor: theme.colors.ink,
-    borderRadius: theme.radius.control + theme.space.xs,
+    borderRadius: theme.radius.chip,
   },
 }));

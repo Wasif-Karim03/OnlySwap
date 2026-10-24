@@ -1,4 +1,4 @@
-import { View } from 'react-native';
+import { Platform, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { Photo } from '@/components/Photo';
@@ -44,6 +44,12 @@ type Props = {
   card: DeckCard;
   /** Narrow grid tiles: the seller's name only, no trust or year. */
   compact?: boolean;
+  /**
+   * The live deck (round 2, design/system.md): the photo fills the card and
+   * the same lines sit on a bottom scrim, leaving room for the action row that
+   * floats over the card's foot. List and grid tiles keep the white block.
+   */
+  overlay?: boolean;
   testID?: string;
 };
 
@@ -57,12 +63,14 @@ type Props = {
  * report). Stamps and motion live in SwipeDeck; this stays a plain view so
  * list and grid mode can reuse it.
  */
-export function SwipeCard({ card, compact = false, testID }: Props) {
+export function SwipeCard({ card, compact = false, overlay = false, testID }: Props) {
   const cover = card.photos[0];
   const trust = !compact && card.trust ? card.trust : null;
   const year = compact ? null : (card.sellerYear ?? null);
+  const quiet = overlay ? 'onPhoto' : 'ink2';
+  const faint = overlay ? 'onPhoto' : 'ink3';
   return (
-    <View style={styles.card} testID={testID}>
+    <View style={styles.card(overlay)} testID={testID}>
       <View style={styles.photo}>
         <Photo source={cover?.uri ?? null} blurhash={cover?.blurhash ?? null} fill backdrop />
         {card.photos.length > 1 ? (
@@ -72,36 +80,55 @@ export function SwipeCard({ card, compact = false, testID }: Props) {
             ))}
           </View>
         ) : null}
+        {overlay ? <View style={styles.scrim} pointerEvents="none" /> : null}
       </View>
-      <View style={styles.body}>
+      <View style={styles.body(overlay)}>
         <View style={styles.titleRow}>
-          <Text variant="heading" numberOfLines={1} style={styles.title}>
+          <Text
+            variant="heading"
+            tone={overlay ? 'onPhoto' : 'ink'}
+            numberOfLines={1}
+            style={styles.title(overlay)}
+          >
             {card.title}
           </Text>
-          <Text variant="heading" numberOfLines={1} style={styles.price}>
+          <Text
+            variant="heading"
+            tone={overlay ? 'onPhoto' : 'ink'}
+            numberOfLines={1}
+            style={styles.price(overlay)}
+          >
             {card.price}
           </Text>
         </View>
         {card.sellerName || trust ? (
-          <Text variant="meta" tone="ink2" numberOfLines={1}>
+          <Text variant="meta" tone={quiet} numberOfLines={1} style={styles.dim(overlay)}>
             {card.sellerName ? (
-              <Text variant="meta" style={styles.sellerName}>
+              <Text variant="meta" tone={overlay ? 'onPhoto' : 'ink'} style={styles.sellerName}>
                 {card.sellerName}
               </Text>
             ) : null}
             {card.sellerName && trust ? copy.metaSeparator : null}
             {trust ? (
-              <Text variant="meta" tone="ink2" testID="card-trust">
+              <Text variant="meta" tone={quiet} testID="card-trust">
                 {trust}
               </Text>
             ) : null}
           </Text>
         ) : null}
         {card.meta || year ? (
-          <Text variant="meta" tone="ink3" numberOfLines={1}>
-            {card.meta ? <Text variant="meta" tone="ink3">{card.meta}</Text> : null}
+          <Text variant="meta" tone={faint} numberOfLines={1} style={styles.dim(overlay)}>
+            {card.meta ? (
+              <Text variant="meta" tone={faint}>
+                {card.meta}
+              </Text>
+            ) : null}
             {card.meta && year ? copy.metaSeparator : null}
-            {year ? <Text variant="meta" tone="ink3">{year}</Text> : null}
+            {year ? (
+              <Text variant="meta" tone={faint}>
+                {year}
+              </Text>
+            ) : null}
           </Text>
         ) : null}
       </View>
@@ -110,13 +137,28 @@ export function SwipeCard({ card, compact = false, testID }: Props) {
 }
 
 const styles = StyleSheet.create((theme) => ({
-  card: {
+  card: (overlay: boolean) => ({
     flex: 1,
-    borderRadius: theme.radius.card,
+    borderRadius: overlay ? theme.radius.deck : theme.radius.card,
     overflow: 'hidden',
     backgroundColor: theme.colors.card,
-    borderWidth: 1,
+    borderWidth: overlay ? 0 : 1,
     borderColor: theme.colors.line,
+  }),
+  // The one gradient the spec allows: the photo scrim (DESIGN_SYSTEM §8).
+  scrim: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: '55%',
+    experimental_backgroundImage: `linear-gradient(to bottom, transparent, ${theme.colors.scrimEnd})`,
+    // react-native-web reads the CSS property instead.
+    ...(Platform.OS === 'web'
+      ? ({
+          backgroundImage: `linear-gradient(to bottom, transparent, ${theme.colors.scrimEnd})`,
+        } as object)
+      : null),
   },
   photo: { flex: 1, backgroundColor: theme.colors.bg2 },
   segments: {
@@ -134,16 +176,40 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.onPhoto,
     opacity: on ? 1 : 0.5,
   }),
-  body: {
-    paddingHorizontal: theme.space.lg,
-    paddingTop: theme.space.md,
-    paddingBottom: theme.space.lg,
-    gap: theme.space.xs,
-  },
+  // Overlay: the lines sit on the scrim above the floating action row
+  // (button height plus its padding).
+  body: (overlay: boolean) =>
+    overlay
+      ? {
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          paddingHorizontal: theme.space.xl,
+          paddingBottom: theme.size.buttonL + theme.space.xl + theme.space.sm,
+          gap: theme.space.xs,
+        }
+      : {
+          paddingHorizontal: theme.space.lg,
+          paddingTop: theme.space.md,
+          paddingBottom: theme.space.lg,
+          gap: theme.space.xs,
+        },
   titleRow: { flexDirection: 'row', alignItems: 'baseline', gap: theme.space.sm },
-  title: { flex: 1 },
+  title: (overlay: boolean) => ({
+    flex: 1,
+    ...(overlay
+      ? { fontSize: theme.type.title.fontSize, lineHeight: theme.type.title.lineHeight }
+      : null),
+  }),
   // Heading size with the price weight (DESIGN_SYSTEM §3 `price`), so it sits on the title's line.
-  price: { fontWeight: theme.type.price.fontWeight },
+  price: (overlay: boolean) => ({
+    fontWeight: theme.type.price.fontWeight,
+    ...(overlay
+      ? { fontSize: theme.type.price.fontSize, lineHeight: theme.type.price.lineHeight }
+      : null),
+  }),
+  dim: (overlay: boolean) => ({ opacity: overlay ? 0.88 : 1 }),
   // The seller's name leads line two in the label weight.
   sellerName: { fontWeight: theme.type.label.fontWeight },
 }));

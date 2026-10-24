@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { IconButton } from '@/components/IconButton';
+import { Material } from '@/components/Material';
 import { Text } from '@/components/Text';
 import { feed as copy } from '@/strings';
 
@@ -38,26 +39,26 @@ export function DiscoverHeader({ surface = 'bg2', loadMe = () => meApi.me() }: P
               {campus}
             </Text>
           ) : null}
-          <Text variant="title" accessibilityRole="header" numberOfLines={1}>
+          <Text variant="display" accessibilityRole="header" numberOfLines={1}>
             {copy.title}
           </Text>
         </View>
-        <View style={styles.actions}>
+        {/* Round 2 (design/system.md 7.3): the two header buttons share one
+            capsule on the material, instead of two filled circles. */}
+        <Material style={styles.actions}>
           <IconButton
             icon="search"
-            filled
             surface={surface}
             accessibilityLabel={copy.search}
             onPress={() => router.push('/search')}
             testID="discover-search"
           />
           <NotificationBell
-            filled
             surface={surface}
             accessibilityLabel={copy.notifications}
             testID="discover-notifications"
           />
-        </View>
+        </Material>
       </View>
     </View>
   );
@@ -73,5 +74,5 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingHorizontal: theme.space.screen,
   },
   titles: { flex: 1 },
-  actions: { flexDirection: 'row', alignItems: 'center', gap: theme.space.sm },
+  actions: { flexDirection: 'row', alignItems: 'center', borderRadius: theme.radius.chip },
 }));

@@ -211,7 +211,7 @@ describe('P2-CMP-08 EmptyState, ErrorState, Skeleton', () => {
       expect(el.props.accessibilityLabel).toBe(states.loading);
       expect(el.props.accessibilityState).toEqual({ busy: true });
     }
-    expect(lineHeight('body')).toBe(16);
+    expect(lineHeight('body')).toBe(17); // body text size (DEC 143 type scale)
   });
 });
 

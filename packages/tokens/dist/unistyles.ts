@@ -25,7 +25,11 @@ export const palette = {
   "lilacBg": "#ECE7FF",
   "overlay": "rgba(0,0,0,0.45)",
   "onPhoto": "#FFFFFF",
-  "photoBg": "#000000"
+  "photoBg": "#000000",
+  "materialSolid": "rgba(255,255,255,0.94)",
+  "materialHairline": "rgba(0,0,0,0.08)",
+  "materialClear": "rgba(0,0,0,0.28)",
+  "scrimEnd": "rgba(0,0,0,0.6)"
 },
   dark: {
   "bg": "#0C0C0D",
@@ -51,7 +55,11 @@ export const palette = {
   "lilacBg": "#231D40",
   "overlay": "rgba(0,0,0,0.6)",
   "onPhoto": "#FFFFFF",
-  "photoBg": "#000000"
+  "photoBg": "#000000",
+  "materialSolid": "rgba(26,26,28,0.94)",
+  "materialHairline": "rgba(255,255,255,0.10)",
+  "materialClear": "rgba(0,0,0,0.36)",
+  "scrimEnd": "rgba(0,0,0,0.6)"
 },
 } as const;
 
@@ -101,54 +109,54 @@ export const defaultAccent: AccentName = "pistachio";
 export const type = {
   "display": {
     "fontSize": 34,
-    "fontWeight": "800",
-    "letterSpacing": -1.36,
-    "lineHeight": 35.7
+    "fontWeight": "700",
+    "letterSpacing": 0,
+    "lineHeight": 40.8
   },
   "title": {
-    "fontSize": 26,
-    "fontWeight": "800",
-    "letterSpacing": -0.91,
-    "lineHeight": 28.6
+    "fontSize": 28,
+    "fontWeight": "700",
+    "letterSpacing": 0,
+    "lineHeight": 33.88
   },
   "heading": {
     "fontSize": 20,
-    "fontWeight": "700",
-    "letterSpacing": -0.5,
-    "lineHeight": 24
+    "fontWeight": "600",
+    "letterSpacing": 0,
+    "lineHeight": 25
   },
   "price": {
     "fontSize": 28,
-    "fontWeight": "800",
-    "letterSpacing": -1.12,
-    "lineHeight": 28,
+    "fontWeight": "700",
+    "letterSpacing": 0,
+    "lineHeight": 30.8,
     "fontVariant": [
       "tabular-nums"
     ]
   },
   "body": {
-    "fontSize": 16,
+    "fontSize": 17,
     "fontWeight": "400",
     "letterSpacing": 0,
-    "lineHeight": 24
+    "lineHeight": 22.1
   },
   "bodyStrong": {
-    "fontSize": 16,
+    "fontSize": 17,
     "fontWeight": "600",
     "letterSpacing": 0,
-    "lineHeight": 24
+    "lineHeight": 22.1
   },
   "label": {
-    "fontSize": 14,
+    "fontSize": 15,
     "fontWeight": "600",
     "letterSpacing": 0,
-    "lineHeight": 18.2
+    "lineHeight": 19.95
   },
   "meta": {
-    "fontSize": 12.5,
-    "fontWeight": "500",
+    "fontSize": 13,
+    "fontWeight": "400",
     "letterSpacing": 0,
-    "lineHeight": 16.88
+    "lineHeight": 17.94
   }
 } as const;
 
@@ -169,9 +177,10 @@ export const radius = {
   "chip": 999,
   "control": 15,
   "card": 18,
-  "sheet": 28,
+  "sheet": 34,
   "thumb": 12,
-  "avatar": 999
+  "avatar": 999,
+  "deck": 28
 } as const;
 
 export const size = {
@@ -229,6 +238,11 @@ export const motion = {
   "skeleton": {
     "duration": 1300,
     "delay": 300
+  },
+  "peak": {
+    "duration": 550,
+    "dampingRatio": 0.7,
+    "from": 0.6
   }
 } as const;
 

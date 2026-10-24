@@ -335,7 +335,9 @@ export function CampusFeedScreen({
                 testID="feed-new-post"
               />
             </View>
-            {first?.day_one && kind === 'all' ? (
+            {/* Owner round 2: one empty message per screen. With no posts, the
+                list's empty state already says it, so the day-one note waits. */}
+            {first?.day_one && kind === 'all' && items.length > 0 ? (
               <View style={styles.dayOne} testID="campus-day-one">
                 <Text variant="bodyStrong" accessibilityRole="header">
                   {copy.dayOneTitle}

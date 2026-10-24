@@ -117,7 +117,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     alignItems: 'center',
     gap: theme.space.sm,
     paddingHorizontal: theme.space.lg,
-    borderRadius: theme.radius.control,
+    borderRadius: theme.radius.chip,
     backgroundColor: theme.colors.ink,
     shadowColor: theme.elevation.soft.color,
     shadowOpacity: theme.elevation.soft.opacity,

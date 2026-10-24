@@ -226,12 +226,15 @@ describe('DEC 90 tab bar', () => {
     expect(screen.getByRole('tab', { name: `${tabs.inbox}, 3 new` })).toBeTruthy();
   });
 
-  it('white bar with a hairline; on is ink, off is ink3', () => {
+  // Round 2 (design/system.md 7.2): a floating capsule on the material
+  // surface replaces the white bar with a top hairline.
+  it('floating capsule; on is ink, off is ink3', () => {
     render(
       <TabBar items={items} activeKey="discover" onSelect={() => {}} variant="ios" testID="tb" />,
     );
     const bar = StyleSheet.flatten(screen.getByTestId('tb').props.style);
-    expect(bar).toMatchObject({ backgroundColor: lightTheme.colors.bg, borderTopWidth: 1 });
+    expect(bar).toMatchObject({ borderRadius: lightTheme.radius.chip });
+    expect(bar).not.toHaveProperty('borderTopWidth');
     const color = (label: string) =>
       (StyleSheet.flatten(screen.getByText(label).props.style) as { color?: string }).color;
     expect(color(tabs.discover)).toBe(lightTheme.colors.ink);

@@ -1,8 +1,17 @@
+import { motion } from '@onlyswap/tokens';
+import { useEffect } from 'react';
 import { View } from 'react-native';
-import Animated, { interpolate, useAnimatedStyle } from 'react-native-reanimated';
+import Animated, {
+  interpolate,
+  ReduceMotion,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { useSuccessProgress } from '@/theme/motion';
+import { useReducedMotion } from '@/theme/reducedMotion';
 
 type Props = { visible: boolean; accessibilityLabel: string };
 
@@ -12,8 +21,27 @@ type Props = { visible: boolean; accessibilityLabel: string };
  */
 export function SuccessCheck({ visible, accessibilityLabel }: Props) {
   const { progress, opacity } = useSuccessProgress(visible);
+  const reduced = useReducedMotion();
+  // Peak moment (round 2, design/system.md 6): the circle pops in on the one
+  // bouncy spring. Reduce motion keeps the plain fade.
+  const pop = useSharedValue(reduced ? 1 : motion.peak.from);
+  useEffect(() => {
+    if (!visible || reduced) {
+      pop.value = 1;
+      return;
+    }
+    pop.value = motion.peak.from;
+    pop.value = withSpring(1, {
+      duration: motion.peak.duration,
+      dampingRatio: motion.peak.dampingRatio,
+      reduceMotion: ReduceMotion.Never,
+    });
+  }, [visible, reduced, pop]);
 
-  const wrap = useAnimatedStyle(() => ({ opacity: opacity.value }));
+  const wrap = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ scale: pop.value }],
+  }));
   // A check is an L (short foot + tall stem) rotated 45 degrees. The foot draws
   // first, then the stem grows upward.
   const foot = useAnimatedStyle(() => ({

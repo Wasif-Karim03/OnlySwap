@@ -478,7 +478,7 @@ export function ChatScreen({
               disabled={!text.trim()}
               onPress={send}
               filled
-              surface="accent"
+              surface="ink"
               testID="chat-send"
             />
           </View>
@@ -578,31 +578,35 @@ const styles = StyleSheet.create((theme, rt) => ({
   // One white surface, iMessage style (owner 2026-10-15; was grey, DEC 90).
   root: { flex: 1, backgroundColor: theme.colors.bg },
   flex: { flex: 1 },
-  header: {
-    backgroundColor: theme.colors.bg,
-    borderBottomWidth: 1,
-    borderColor: theme.colors.line,
-  },
+  // Round 2: no divider lines; the item rides on a soft inset tile, like a
+  // pinned card, and space does the separating.
+  header: { backgroundColor: theme.colors.bg, paddingBottom: theme.space.sm },
   deal: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.space.md,
-    paddingHorizontal: theme.space.screen,
-    paddingTop: theme.space.xs,
-    paddingBottom: theme.space.md,
+    marginHorizontal: theme.space.lg,
+    padding: theme.space.md,
+    borderRadius: theme.radius.card,
+    backgroundColor: theme.colors.bg2,
   },
   dealActions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
     gap: theme.space.sm,
-    paddingHorizontal: theme.space.screen,
+    paddingHorizontal: theme.space.lg,
     paddingVertical: theme.space.sm,
-    borderTopWidth: 1,
-    borderColor: theme.colors.line,
     backgroundColor: theme.colors.bg,
   },
-  thumb: { width: theme.size.hit, height: theme.size.hit },
+  // Its own fill, so an item with no photo still shows a tile on the bg2 strip.
+  thumb: {
+    width: theme.size.hit,
+    height: theme.size.hit,
+    borderRadius: theme.radius.thumb,
+    overflow: 'hidden',
+    backgroundColor: theme.colors.bg3,
+  },
   list: { paddingVertical: theme.space.md },
   day: { textAlign: 'center', marginTop: theme.space.lg, fontWeight: theme.type.label.fontWeight },
   tip: { paddingHorizontal: theme.space['2xl'], paddingVertical: theme.space.md },
@@ -619,11 +623,9 @@ const styles = StyleSheet.create((theme, rt) => ({
     flexDirection: 'row',
     alignItems: 'flex-end',
     gap: theme.space.sm,
-    paddingHorizontal: theme.space.screen,
+    paddingHorizontal: theme.space.md,
     paddingTop: theme.space.sm,
     paddingBottom: Math.max(rt.insets.bottom, theme.space.sm),
-    borderTopWidth: 1,
-    borderColor: theme.colors.line,
     backgroundColor: theme.colors.bg,
   },
   input: {

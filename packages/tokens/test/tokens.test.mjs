@@ -76,7 +76,7 @@ test('P2-TOK-01 space, radius and motion match DESIGN_SYSTEM §4-5', () => {
   );
   assert.equal(tokens.radius.control, 15);
   assert.equal(tokens.radius.card, 18);
-  assert.equal(tokens.radius.sheet, 28);
+  assert.equal(tokens.radius.sheet, 34); // DEC 143
   assert.equal(tokens.radius.thumb, 12);
   assert.equal(tokens.size.hit, 44);
   assert.deepEqual([tokens.size.buttonL, tokens.size.buttonM, tokens.size.buttonS], [54, 44, 36]);

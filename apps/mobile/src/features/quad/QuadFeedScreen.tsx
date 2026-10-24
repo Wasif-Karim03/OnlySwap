@@ -344,8 +344,6 @@ const styles = StyleSheet.create((theme, rt) => ({
   dock: {
     paddingHorizontal: theme.space.screen,
     paddingVertical: theme.space.sm,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.line,
     backgroundColor: theme.colors.bg,
   },
   dockFill: {
@@ -353,7 +351,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: theme.space.xl,
-    borderRadius: theme.radius.control,
+    borderRadius: theme.radius.chip,
     backgroundColor: theme.colors.ink,
   },
 }));

@@ -179,7 +179,7 @@ export function MessageBubble({
       {photoView}
       {body ? (
         <View style={photo ? styles.caption : null}>
-          <Text variant="body" tone={mine ? 'onAccent' : 'ink'} style={styles.flex}>
+          <Text variant="body" tone={mine ? 'inverse' : 'ink'} style={styles.flex}>
             {body}
           </Text>
         </View>
@@ -291,9 +291,10 @@ const styles = StyleSheet.create((theme) => ({
     maxWidth: rowWidth > 0 ? Math.floor((rowWidth - theme.space.md * 2) * 0.78) : '78%',
     paddingHorizontal: theme.space.md,
     paddingVertical: theme.space.sm,
-    // Mine: the accent as a fill with ink text (UX-03 allows it as a fill).
+    // Mine: an ink bubble (DEC 143 keeps the accent for Sell, the deck offer
+    // and success moments; it flips to a light bubble in dark mode).
     backgroundColor: mine
-      ? theme.colors.accent
+      ? theme.colors.ink
       : surface === 'card'
         ? theme.colors.card
         : theme.colors.bg2,

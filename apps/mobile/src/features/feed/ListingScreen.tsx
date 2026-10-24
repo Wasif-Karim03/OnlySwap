@@ -14,6 +14,7 @@ import { ErrorState } from '@/components/ErrorState';
 import { IconButton } from '@/components/IconButton';
 import { GroupedList, ListRow } from '@/components/ListRow';
 import { NavBar } from '@/components/NavBar';
+import { Material } from '@/components/Material';
 import { PhotoCarousel } from '@/components/PhotoCarousel';
 import { ReportSheet } from '@/components/ReportSheet';
 import { Sheet } from '@/components/Sheet';
@@ -573,21 +574,23 @@ export function ListingScreen({
 
       {/* Quiet chrome over the photo: back, share and more. Save lives in the dock (thumb zone). */}
       <View style={styles.top(wide)} pointerEvents="box-none">
-        <IconButton
-          icon="back"
-          filled
-          surface="card"
-          accessibilityLabel={navCopy.back}
-          onPress={leave}
-        />
-        <View style={styles.row}>
+        <PhotoButton>
           <IconButton
-            icon="share"
-            filled
-            surface="card"
-            accessibilityLabel={copy.share}
-            onPress={onShare}
+            icon="back"
+            tone="onPhoto"
+            accessibilityLabel={navCopy.back}
+            onPress={leave}
           />
+        </PhotoButton>
+        <View style={styles.row}>
+          <PhotoButton>
+            <IconButton
+              icon="share"
+              tone="onPhoto"
+              accessibilityLabel={copy.share}
+              onPress={onShare}
+            />
+          </PhotoButton>
           {/* A sold listing has no dock, so a buyer un-saves it up here. */}
           {!owner && !buyerDock ? (
             <IconButton
@@ -599,14 +602,15 @@ export function ListingScreen({
               testID="listing-save"
             />
           ) : null}
-          <IconButton
-            icon="more"
-            filled
-            surface="card"
-            accessibilityLabel={copy.more}
-            onPress={() => (owner ? setOwnerOptions(true) : setOptions(true))}
-            testID="listing-more"
-          />
+          <PhotoButton>
+            <IconButton
+              icon="more"
+              tone="onPhoto"
+              accessibilityLabel={copy.more}
+              onPress={() => (owner ? setOwnerOptions(true) : setOptions(true))}
+              testID="listing-more"
+            />
+          </PhotoButton>
         </View>
       </View>
 
@@ -791,7 +795,17 @@ function Unavailable({ result, onBack }: { result: { access: string }; onBack: (
   );
 }
 
+/** A button over the photo, on the clear material (DEC 143). */
+function PhotoButton({ children }: { children: ReactNode }) {
+  return (
+    <Material variant="clear" style={styles.photoButton}>
+      {children}
+    </Material>
+  );
+}
+
 const styles = StyleSheet.create((theme, rt) => ({
+  photoButton: { borderRadius: theme.radius.chip },
   root: { flex: 1, backgroundColor: theme.colors.bg },
   pad: { flex: 1, padding: theme.space.screen },
   scroll: { paddingBottom: theme.size.buttonL + theme.space['2xl'] * 2 },
@@ -829,9 +843,9 @@ const styles = StyleSheet.create((theme, rt) => ({
   list: {
     marginTop: theme.space.lg,
     marginBottom: theme.space.sm,
+    // Round 2: a soft grouped tile instead of a bordered box.
     borderRadius: theme.radius.card,
-    borderWidth: 1,
-    borderColor: theme.colors.line,
+    backgroundColor: theme.colors.bg2,
     overflow: 'hidden',
   },
   listRow: {
@@ -842,7 +856,11 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingHorizontal: theme.space.md + theme.space.xs,
     paddingVertical: theme.space.sm,
   },
-  divider: { borderTopWidth: 1, borderColor: theme.colors.line },
+  divider: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderColor: theme.colors.line2,
+    marginLeft: theme.space.md + theme.space.xs,
+  },
   values: {
     flexShrink: 1,
     flexDirection: 'row',
@@ -864,7 +882,5 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingTop: theme.space.md,
     paddingBottom: Math.max(rt.insets.bottom, theme.space.md),
     backgroundColor: theme.colors.bg,
-    borderTopWidth: 1,
-    borderColor: theme.colors.line,
   },
 }));

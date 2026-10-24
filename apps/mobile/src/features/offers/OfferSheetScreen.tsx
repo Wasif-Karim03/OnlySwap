@@ -136,7 +136,7 @@ export function OfferSheetScreen({
           <Text variant="title" accessibilityRole="header">
             {free ? copy.askedTitle : copy.sentTitle}
           </Text>
-          <Text variant="body" tone="ink2" style={styles.center}>
+          <Text variant="body" tone="ink2" style={styles.lead}>
             {fill(copy.sentBody, { name })}
           </Text>
         </View>
@@ -232,23 +232,23 @@ export function OfferSheetScreen({
           </View>
         ) : null}
         {free ? (
-          <Text variant="body" tone="ink2" style={styles.center}>
+          <Text variant="body" tone="ink2" style={styles.lead}>
             {copy.askBody}
           </Text>
         ) : (
           <View style={styles.amountBlock}>
-            <Text variant="label" tone="ink3" style={styles.center}>
+            <Text variant="label" tone="ink3" style={styles.lead}>
               {copy.amountLabel}
             </Text>
             {firm ? (
               <>
                 <Text
-                  style={[styles.center, styles.big]}
+                  style={[styles.lead, styles.big]}
                   accessibilityLabel={`${copy.amountLabel}: ${money(ask)}`}
                 >
                   {money(ask)}
                 </Text>
-                <Text variant="meta" tone="ink2" style={styles.center}>
+                <Text variant="meta" tone="ink2" style={styles.lead}>
                   {copy.firmNote}
                 </Text>
               </>
@@ -284,7 +284,7 @@ export function OfferSheetScreen({
                   <Text
                     variant="meta"
                     tone="amber"
-                    style={styles.center}
+                    style={styles.lead}
                     accessibilityLiveRegion="polite"
                   >
                     {copy.lowWarning}
@@ -328,7 +328,7 @@ export function OfferSheetScreen({
       </ScrollView>
       <View style={styles.dock}>
         {/* The main trust message sits right above Send, never below the fold. */}
-        <Text variant="meta" tone="ink2" style={styles.center} testID="offer-pay-in-person">
+        <Text variant="meta" tone="ink2" style={styles.lead} testID="offer-pay-in-person">
           {copy.payInPerson}
         </Text>
         <Button
@@ -349,22 +349,30 @@ const styles = StyleSheet.create((theme, rt) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   body: { ...readableColumn, padding: theme.space.screen, gap: theme.space.lg },
   flex: { flex: 1 },
-  item: { flexDirection: 'row', alignItems: 'center', gap: theme.space.md },
+  // Round 2: the item sits on a soft tile, so it reads as context, not content.
+  item: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.space.md,
+    padding: theme.space.md,
+    borderRadius: theme.radius.card,
+    backgroundColor: theme.colors.bg2,
+  },
   thumb: {
     width: theme.size.avatarM + theme.space.sm,
     height: theme.size.avatarM + theme.space.sm,
   },
   amountBlock: { gap: theme.space.sm, paddingTop: theme.space.md },
-  // The offer number: the display style at almost twice the size (DEC 90).
+  // The offer number is the biggest thing on the sheet (round 2): left-aligned,
+  // bold, tabular, with no tight tracking.
   big: {
-    fontSize: theme.type.display.fontSize * 1.85,
-    lineHeight: theme.type.display.fontSize * 2.2,
-    fontWeight: theme.type.display.fontWeight,
-    letterSpacing: theme.type.display.letterSpacing * 1.85,
+    fontSize: theme.type.display.fontSize * 1.65,
+    lineHeight: theme.type.display.fontSize * 1.9,
+    fontWeight: theme.type.price.fontWeight,
     color: theme.colors.ink,
     fontVariant: ['tabular-nums'],
   },
-  bigInput: { textAlign: 'center', paddingVertical: 0 },
+  bigInput: { textAlign: 'left', paddingVertical: 0 },
   bundle: {
     gap: theme.space.sm,
     padding: theme.space.lg,
@@ -373,17 +381,19 @@ const styles = StyleSheet.create((theme, rt) => ({
     borderColor: theme.colors.line,
     backgroundColor: theme.colors.card,
   },
-  quick: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: theme.space.sm },
+  quick: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
   noteBlock: { gap: theme.space.sm },
   noteChips: { gap: theme.space.sm },
-  center: { textAlign: 'center' },
+  // Round 2: copy reads left-aligned, like the rest of the sheet.
+  lead: { textAlign: 'left' },
   success: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
     gap: theme.space.md,
     padding: theme.space.screen,
+    paddingBottom: theme.space['2xl'] * 2,
   },
   dock: {
     ...readableColumn,

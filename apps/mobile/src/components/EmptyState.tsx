@@ -32,19 +32,22 @@ export function GlyphTile({
   icon: IconName;
   tile?: 'neutral' | 'accent';
 }) {
+  // Round 2 (design/system.md 7.11): a bare outline glyph in ink3, no filled
+  // box. `tile` stays in the API so callers don't change; it no longer paints.
+  void tile;
   return (
-    <View style={styles.tile(tile)} accessible={false}>
-      <Icon name={icon} size={size.glyphIcon} tone={tile === 'accent' ? 'onAccent' : 'ink2'} />
+    <View style={styles.tile} accessible={false}>
+      <Icon name={icon} size={size.glyphIcon} tone="ink3" strokeWidth={1.5} />
     </View>
   );
 }
 
 /**
- * Empty state (P2-CMP-08, board X5, X6, X35 to X37): glyph tile, title, one
- * line that explains how the screen fills up, and always a next step. The
- * copy is a left-aligned block at the top; the primary action docks at the
- * bottom of the empty area (thumb zone, P7) with the secondary as a text
- * button under it. Suggestions read as one plain line, not tappable-looking tags.
+ * Empty state (P2-CMP-08; round 2, design/system.md 7.11): one quiet block,
+ * ever. Outline glyph, title, one line that explains how the screen fills
+ * up, then the next step right under the copy (an ink capsule sized to its
+ * label), with the secondary as a text button. The block sits a little above
+ * the middle of the empty area, left-aligned.
  */
 export function EmptyState({
   icon,
@@ -58,65 +61,71 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <View testID={testID} style={styles.wrap}>
-      <View style={styles.top}>
-        <GlyphTile icon={icon} tile={tile} />
-        <View style={styles.copy}>
-          <Text variant="heading" accessibilityRole="header">
-            {title}
-          </Text>
-          {body ? (
-            <Text variant="body" tone="ink2">
-              {body}
+      <View style={styles.block}>
+        <View style={styles.top}>
+          <GlyphTile icon={icon} tile={tile} />
+          <View style={styles.copy}>
+            <Text variant="heading" accessibilityRole="header">
+              {title}
             </Text>
-          ) : null}
-          {suggestions?.length ? (
-            <Text variant="meta" tone="ink2">
-              {`${statesCopy.suggestionsLead} `}
-              {suggestions.map((s, i) => (
-                <Fragment key={s}>
-                  {i > 0 ? ', ' : null}
-                  <Text variant="meta" tone="ink2">
-                    {s}
-                  </Text>
-                </Fragment>
-              ))}
-            </Text>
-          ) : null}
+            {body ? (
+              <Text variant="body" tone="ink2">
+                {body}
+              </Text>
+            ) : null}
+            {suggestions?.length ? (
+              <Text variant="meta" tone="ink2">
+                {`${statesCopy.suggestionsLead} `}
+                {suggestions.map((s, i) => (
+                  <Fragment key={s}>
+                    {i > 0 ? ', ' : null}
+                    <Text variant="meta" tone="ink2">
+                      {s}
+                    </Text>
+                  </Fragment>
+                ))}
+              </Text>
+            ) : null}
+          </View>
         </View>
+        {action || secondaryAction ? (
+          <View style={styles.actions}>
+            {action ? (
+              <Button
+                label={action.label}
+                onPress={action.onPress}
+                variant="dark"
+                fullWidth={false}
+              />
+            ) : null}
+            {secondaryAction ? (
+              <Button
+                label={secondaryAction.label}
+                onPress={secondaryAction.onPress}
+                variant="text"
+                fullWidth={false}
+              />
+            ) : null}
+          </View>
+        ) : null}
       </View>
-      {action || secondaryAction ? (
-        <View style={styles.actions}>
-          {action ? <Button label={action.label} onPress={action.onPress} /> : null}
-          {secondaryAction ? (
-            <Button
-              label={secondaryAction.label}
-              onPress={secondaryAction.onPress}
-              variant="text"
-            />
-          ) : null}
-        </View>
-      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create((theme) => ({
+  // Centered vertically with extra room below, so the block sits above the
+  // middle (about 40% down) instead of floating at the very top.
   wrap: {
     flexGrow: 1,
-    justifyContent: 'space-between',
-    paddingHorizontal: theme.space.screen,
-    paddingVertical: theme.space['2xl'],
-    gap: theme.space.xl,
-  },
-  top: { gap: theme.space.lg, alignItems: 'flex-start' },
-  tile: (tile: 'neutral' | 'accent') => ({
-    width: theme.size.glyphTile,
-    height: theme.size.glyphTile,
-    borderRadius: theme.radius.sheet,
-    alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: tile === 'accent' ? theme.colors.accent : theme.colors.bg2,
-  }),
+    paddingHorizontal: theme.space.screen,
+    paddingTop: theme.space['2xl'],
+    paddingBottom: theme.space['2xl'] * 3,
+  },
+  block: { gap: theme.space.xl, alignItems: 'flex-start' },
+  top: { gap: theme.space.lg, alignItems: 'flex-start' },
+  tile: { alignItems: 'flex-start', justifyContent: 'center' },
   copy: { gap: theme.space.xs, maxWidth: theme.size.copyMax },
-  actions: { alignSelf: 'stretch', gap: theme.space.xs },
+  actions: { alignItems: 'flex-start', gap: theme.space.xs },
 }));

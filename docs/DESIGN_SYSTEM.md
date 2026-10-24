@@ -58,14 +58,14 @@ System fonts: SF Pro (iOS), Roboto (Android), `-apple-system, system-ui` (web). 
 
 | Token | Size / weight / tracking / line | Use |
 |---|---|---|
-| `display` | 34 / 800 / −0.04em / 1.05 | onboarding hero, big moments |
-| `title` | 26 / 800 / −0.035em / 1.1 | tab root large titles |
-| `heading` | 20 / 700 / −0.025em / 1.2 | sections, sheet titles |
-| `price` | 28 / 800 / −0.04em / 1.0 | card and listing price |
-| `body` | 16 / 400 / 0 / 1.5 | reading text |
-| `bodyStrong` | 16 / 600 | list primary |
-| `label` | 14 / 600 | buttons in lists, tags, chips |
-| `meta` | 12.5 / 500 / 1.35 | times, counts, hints |
+| `display` | 34 / 700 / 0 / 1.2 | large titles, big moments (DEC 143) |
+| `title` | 28 / 700 / 0 / 1.21 | tab root titles, success titles |
+| `heading` | 20 / 600 / 0 / 1.25 | sections, sheet titles |
+| `price` | 28 / 700 / 0 / 1.1 | card and listing price |
+| `body` | 17 / 400 / 0 / 1.3 | reading text |
+| `bodyStrong` | 17 / 600 / 0 / 1.3 | list primary, buttons |
+| `label` | 15 / 600 / 0 / 1.33 | buttons in lists, tags, chips |
+| `meta` | 13 / 400 / 0 / 1.38 | times, counts, hints |
 
 `allowFontScaling` stays on. `maxFontSizeMultiplier` is 1.4 **only** on photo overlays, the tab bar and fixed-size chrome (OTP cells, avatar initials, badges, the segmented pill).
 
@@ -74,7 +74,7 @@ System fonts: SF Pro (iOS), Roboto (Android), `-apple-system, system-ui` (web). 
 | Group | Values |
 |---|---|
 | **Space (4-pt)** | `xs` 4, `sm` 8, `md` 12, `lg` 16, `xl` 24, `2xl` 32; screen edge 20; list row min height 52 |
-| **Radius** | `chip` full, `control` 15 (buttons, inputs), `card` 18, `sheet` 28 (top corners), `thumb` 12, `avatar` full |
+| **Radius** | `chip` full, `control` 15 (buttons, inputs), `card` 18, `sheet` 34 (top corners, DEC 143), `deck` 28 (DEC 143), `thumb` 12, `avatar` full |
 | **Elevation** | cards have no shadow (hairline `line` instead). Sheets and toasts have one soft shadow (`0 8 24 rgba(0,0,0,.12)`). No stacked shadows (UX-14) |
 
 ## 5. Motion and haptics
@@ -98,6 +98,7 @@ System fonts: SF Pro (iOS), Roboto (Android), `-apple-system, system-ui` (web). 
 - `selection` at the swipe threshold
 - `success` on offer sent, offer accepted and listing posted (a marketplace listing; Food and Wanted posts get no haptic, DEC 142)
 - `warning` on error shake
+- `success` when an item is marked sold, and a soft impact when both ratings are in (DEC 143)
 
 Nothing else gets a haptic.
 
@@ -151,7 +152,7 @@ Components live in `apps/mobile/src/components/`. Each is built with every state
 
 The following aren't allowed in code review:
 - gradient buttons or backgrounds (except the photo scrim)
-- glassmorphism panels
+- glassmorphism panels on content (cards, rows, posts, sheets). Floating chrome may use the system material (DEC 143)
 - more than one shadow per element
 - emoji in UI
 - "✨", "🚀" or hype words ("seamless", "unlock", "supercharge")

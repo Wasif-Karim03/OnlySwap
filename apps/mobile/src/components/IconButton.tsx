@@ -22,10 +22,11 @@ type Props = {
   /**
    * Fill color when `filled`: `bg2` (default) on white screens, `card` with a
    * 1 px `line` hairline over photos and on grey screens (no shadow,
-   * DESIGN_SYSTEM §4), `accent` for a flat "on" state such as Saved (DEC 90).
+   * DESIGN_SYSTEM §4), `accent` for a flat "on" state such as Saved (DEC 90),
+   * `ink` for a primary round action such as Send (DEC 143).
    * The icon follows the fill.
    */
-  surface?: 'bg2' | 'card' | 'accent';
+  surface?: 'bg2' | 'card' | 'accent' | 'ink';
   /** `onPhoto` for controls over photos or the dark photo viewer. */
   tone?: Extract<TextTone, 'ink' | 'ink3' | 'onPhoto'>;
   /** An on state (Saved): the icon is drawn solid and screen readers hear "selected". */
@@ -69,7 +70,13 @@ export function IconButton({
       <View style={styles.hit(!!filled, !!disabled, surface)}>
         <Icon
           name={icon}
-          tone={filled && surface === 'accent' ? 'onAccent' : tone}
+          tone={
+            filled && surface === 'accent'
+              ? 'onAccent'
+              : filled && surface === 'ink'
+                ? 'inverse'
+                : tone
+          }
           filled={!!selected}
         />
         <Badge count={badge} testID={testID ? `${testID}-badge` : undefined} />
@@ -79,7 +86,7 @@ export function IconButton({
 }
 
 const styles = StyleSheet.create((theme) => ({
-  hit: (filled: boolean, disabled: boolean, surface: 'bg2' | 'card' | 'accent') => ({
+  hit: (filled: boolean, disabled: boolean, surface: 'bg2' | 'card' | 'accent' | 'ink') => ({
     width: theme.size.hit,
     height: theme.size.hit,
     borderRadius: theme.radius.chip,
