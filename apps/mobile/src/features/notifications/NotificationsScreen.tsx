@@ -206,22 +206,34 @@ export function NotificationsScreen({
 
   return (
     <View style={styles.root} testID="screen-notifications">
-      <NavBar onLeading={leave} />
-      {/* Mark all read sits in the title row at size M, a full 44 pt target (3.07). */}
+      {/* Mark all read sits in the top bar so the title keeps one line at any
+          width (owner review 2026-10-24: "Notification-s" wrapped). */}
+      <NavBar
+        onLeading={leave}
+        trailing={
+          unread > 0 ? (
+            <Button
+              label={copy.markAll}
+              variant="text"
+              size="M"
+              fullWidth={false}
+              onPress={markAll}
+              testID="notifications-mark-all"
+            />
+          ) : undefined
+        }
+      />
       <View style={styles.titleRow}>
-        <Text variant="display" accessibilityRole="header" style={styles.flex}>
+        <Text
+          variant="display"
+          accessibilityRole="header"
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.7}
+          style={styles.flex}
+        >
           {copy.title}
         </Text>
-        {unread > 0 ? (
-          <Button
-            label={copy.markAll}
-            variant="text"
-            size="M"
-            fullWidth={false}
-            onPress={markAll}
-            testID="notifications-mark-all"
-          />
-        ) : null}
       </View>
       {body}
     </View>

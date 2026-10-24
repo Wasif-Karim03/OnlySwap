@@ -180,27 +180,47 @@ export function ProfileTabScreen({
                   ? copy.statusLabels[l.status as keyof typeof copy.statusLabels]
                   : null;
               const kindLabel = copy.postKinds[l.kind as keyof typeof copy.postKinds] ?? '';
+              const open = () => router.push({ pathname: '/listing/[id]', params: { id: l.id } });
+              const label = [kindLabel, l.title, status].filter(Boolean).join(', ');
+              // A small post card: the photo big on top, as in the Feed (owner
+              // review 2026-10-24: text alone was hard to scan).
               return (
-                <View key={l.id} style={styles.postRow} testID={`profile-post-${l.id}`}>
-                  <Tappable
-                    accessibilityRole="button"
-                    accessibilityLabel={[kindLabel, l.title, status].filter(Boolean).join(', ')}
-                    onPress={() => router.push({ pathname: '/listing/[id]', params: { id: l.id } })}
-                    style={styles.postMain}
-                  >
-                    <Text variant="meta" tone="ink2" numberOfLines={1}>
-                      {status ? `${kindLabel} · ${status}` : kindLabel}
-                    </Text>
-                    <Text variant="bodyStrong" numberOfLines={2}>
-                      {l.title}
-                    </Text>
-                  </Tappable>
-                  <IconButton
-                    icon="trash"
-                    accessibilityLabel={campusCopy.deleteOwnPost}
-                    onPress={() => setDeleting(l.id)}
-                    testID={`profile-post-delete-${l.id}`}
-                  />
+                <View key={l.id} style={styles.postCard} testID={`profile-post-${l.id}`}>
+                  {l.photos[0] ? (
+                    <Tappable
+                      accessibilityRole="button"
+                      accessibilityLabel={label}
+                      onPress={open}
+                      testID={`profile-post-photo-${l.id}`}
+                    >
+                      <Photo
+                        source={mediaUrl(base, l.photos[0].path)}
+                        aspectRatio={4 / 3}
+                        rounded="thumb"
+                      />
+                    </Tappable>
+                  ) : null}
+                  <View style={styles.postRow}>
+                    <Tappable
+                      accessibilityRole="button"
+                      accessibilityLabel={label}
+                      onPress={open}
+                      style={styles.postMain}
+                    >
+                      <Text variant="meta" tone="ink2" numberOfLines={1}>
+                        {status ? `${kindLabel} · ${status}` : kindLabel}
+                      </Text>
+                      <Text variant="bodyStrong" numberOfLines={2}>
+                        {l.title}
+                      </Text>
+                    </Tappable>
+                    <IconButton
+                      icon="trash"
+                      accessibilityLabel={campusCopy.deleteOwnPost}
+                      onPress={() => setDeleting(l.id)}
+                      testID={`profile-post-delete-${l.id}`}
+                    />
+                  </View>
                 </View>
               );
             })}
@@ -1089,14 +1109,13 @@ const styles = StyleSheet.create((theme) => ({
   links: { marginTop: theme.space.md },
   emptyGrid: { gap: theme.space.sm, paddingVertical: theme.space.md, alignItems: 'flex-start' },
   photoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.xs },
-  postRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.space.md,
-    paddingVertical: theme.space.sm,
+  postCard: {
+    gap: theme.space.sm,
+    paddingVertical: theme.space.md,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.line,
   },
+  postRow: { flexDirection: 'row', alignItems: 'center', gap: theme.space.md },
   postMain: { flex: 1, gap: theme.space.xs / 2 },
   gridCell: { width: '32.3%' },
   gridPhoto: {

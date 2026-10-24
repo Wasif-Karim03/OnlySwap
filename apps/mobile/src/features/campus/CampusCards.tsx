@@ -169,7 +169,10 @@ function FoodCard(props: CardProps) {
 
 function WantedCard(props: CardProps) {
   const { item, now, mediaBase, onOpen, onAnswer, testID } = props;
-  const thumb = thumbOf(item, mediaBase);
+  // The full photo, shown big under the words like a social post (owner
+  // review 2026-10-24: the small thumbnail on the left was hard to see).
+  const first = item.photos[0];
+  const photo = first ? { uri: mediaUrl(mediaBase, first.path), blurhash: first.blurhash } : null;
   const name = sellerName(item);
   const who = fill(copy.byLine, { name, ago: agoLabel(new Date(item.created_at), now()) });
   const budget = budgetLabel(item.wanted_max_cents);
@@ -183,22 +186,14 @@ function WantedCard(props: CardProps) {
             accessibilityLabel={fill(copy.wantedLabel, { title: item.title, budget, who })}
             onPress={onOpen}
           >
-            <View style={styles.wantedMain}>
-              {/* The photo the asker added (audit 2026-10-24: it was saved but never shown). */}
-              {thumb ? (
-                <View style={styles.wantedThumb} testID={testID ? `${testID}-photo` : undefined}>
-                  <Photo source={thumb.uri} blurhash={thumb.blurhash} fill rounded="thumb" />
-                </View>
-              ) : null}
-              <View style={[styles.text, styles.flex]}>
-                <Text variant="meta" tone="ink2" numberOfLines={1}>
-                  {name ? fill(copy.lookingFor, { name }) : copy.someoneLookingFor}
-                </Text>
-                <Text variant="bodyStrong">{item.title}</Text>
-                <Text variant="meta" tone="ink2">
-                  {[budget, needByLine(item.need_by)].filter(Boolean).join(feedCopy.metaSeparator)}
-                </Text>
-              </View>
+            <View style={styles.text}>
+              <Text variant="meta" tone="ink2" numberOfLines={1}>
+                {name ? fill(copy.lookingFor, { name }) : copy.someoneLookingFor}
+              </Text>
+              <Text variant="bodyStrong">{item.title}</Text>
+              <Text variant="meta" tone="ink2">
+                {[budget, needByLine(item.need_by)].filter(Boolean).join(feedCopy.metaSeparator)}
+              </Text>
             </View>
           </Tappable>
         </View>
@@ -225,6 +220,17 @@ function WantedCard(props: CardProps) {
           </Text>
         ) : null}
       </View>
+      {photo ? (
+        <Tappable
+          accessibilityRole="button"
+          accessibilityLabel={fill(copy.wantedLabel, { title: item.title, budget, who })}
+          onPress={onOpen}
+          style={styles.wantedPhoto}
+          testID={testID ? `${testID}-photo` : undefined}
+        >
+          <Photo source={photo.uri} blurhash={photo.blurhash} aspectRatio={4 / 3} rounded="thumb" />
+        </Tappable>
+      ) : null}
       <Social {...props} />
     </View>
   );
@@ -276,13 +282,7 @@ const styles = StyleSheet.create((theme) => ({
   }),
   cornerRoom: { paddingRight: theme.size.hit },
   foodCorner: { position: 'absolute', top: theme.space.xs, right: theme.space.xs },
-  wantedMain: { flexDirection: 'row', alignItems: 'center', gap: theme.space.md },
-  wantedThumb: {
-    width: theme.size.avatarL,
-    height: theme.size.avatarL,
-    borderRadius: theme.radius.thumb,
-    overflow: 'hidden',
-  },
+  wantedPhoto: { paddingHorizontal: theme.space.lg, paddingBottom: theme.space.sm },
   wanted: {
     flexDirection: 'row',
     alignItems: 'center',

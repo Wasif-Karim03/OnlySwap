@@ -430,7 +430,12 @@ describe('C01 Around campus', () => {
     category_id: 4,
     wanted_max_cents: 4000,
   });
-  const MINE = campusItem('want2', { kind: 'wanted', title: 'Bike lock', is_own: true });
+  const MINE = campusItem('want2', {
+    kind: 'wanted',
+    title: 'Bike lock',
+    is_own: true,
+    photos: [{ path: 'l/lock_full.webp', thumb_path: 'l/lock_thumb.webp', blurhash: null }],
+  } as Partial<CampusItem>);
   const FREE = campusItem('free1', { kind: 'free', title: 'Floor mirror', price_cents: 0 });
 
   function fakeCampus(over: Partial<CampusApi> = {}): CampusApi {
@@ -468,6 +473,8 @@ describe('C01 Around campus', () => {
     expect(screen.queryByTestId('campus-item-want2-answer')).toBeNull();
     // ...it gets Delete instead (owner review 2026-10-24).
     expect(screen.getByTestId('campus-item-want2-delete')).toBeTruthy();
+    // A Wanted photo shows full width, like a post (owner review 2026-10-24).
+    expect(screen.getByTestId('campus-item-want2-photo')).toBeTruthy();
     expect(screen.getByText('Floor mirror')).toBeTruthy();
   });
 

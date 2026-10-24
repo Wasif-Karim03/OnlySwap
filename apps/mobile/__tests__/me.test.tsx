@@ -131,7 +131,11 @@ describe('F01-F08 profile', () => {
     const a = api({
       listings: jest.fn(async () => [
         listing('a', 'active'),
-        listing('w', 'active', { kind: 'wanted', title: 'Bottle' }),
+        listing('w', 'active', {
+          kind: 'wanted',
+          title: 'Bottle',
+          photos: [{ path: 'l/w_full.webp', thumb_path: 'l/w_thumb.webp', blurhash: null }],
+        } as Partial<MyListing>),
       ]),
       deleteListing: jest.fn(async () => {}),
     });
@@ -143,6 +147,8 @@ describe('F01-F08 profile', () => {
     expect(screen.queryByTestId('profile-listing-w')).toBeNull();
     fireEvent.press(await screen.findByRole('tab', { name: `${meCopy.tabs.posts} 1` }));
     expect(await screen.findByTestId('profile-post-w')).toBeTruthy();
+    // The photo shows big on the post card, not only after opening it.
+    expect(screen.getByTestId('profile-post-photo-w')).toBeTruthy();
     fireEvent.press(screen.getByTestId('profile-post-delete-w'));
     fireEvent.press(await screen.findByText(campusCopy.deletePostConfirm));
     await waitFor(() => expect(a.deleteListing).toHaveBeenCalledWith('w'));
