@@ -39,9 +39,9 @@ import { meKey } from '../me/MeScreens';
 import { quadApi, type QuadApi } from '../quad/api';
 import { useQuadStatus } from '../quad/cache';
 import { QuadScreen } from '../quad/QuadFeedScreen';
-import { answerWanted, getDraftStore, type DraftState } from '../sell/draft';
+import type { DraftState } from '../sell/draft';
 import { listingLink, mediaUrl, priceLabel } from '../sell/logic';
-import { campusApi, campusKeys, type CampusApi } from './api';
+import { campusApi, campusKeys, wantedChatApi, type CampusApi, type WantedChatApi } from './api';
 import { CampusCard } from './CampusCards';
 import { FeedPost } from './FeedPost';
 import {
@@ -61,6 +61,7 @@ type Deps = {
   api?: CampusApi;
   saves?: Pick<FeedApi, 'save' | 'unsave'>;
   likes?: Pick<CommentsApi, 'likePost'>;
+  /** Unused since DEC 149 (I have this opens a chat); kept so callers still compile. */
   store?: StoreApi<DraftState>;
   mediaBase?: () => string;
   site?: () => string;
@@ -73,6 +74,8 @@ type Deps = {
   quad?: QuadApi;
   /** Deletes one of your own posts (owner review 2026-10-24). */
   remove?: (id: string) => Promise<void>;
+  /** "I have this" opens a chat with the asker (DEC 149). */
+  wantedChat?: WantedChatApi;
 };
 
 /**
@@ -85,7 +88,6 @@ export function CampusFeedScreen({
   api = campusApi,
   saves = feedApi,
   likes = commentsApi,
-  store = getDraftStore(),
   mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
   site = () => getEnv().EXPO_PUBLIC_SITE_URL,
   share = (content) => Share.share(content),
@@ -94,6 +96,7 @@ export function CampusFeedScreen({
   loadMe = () => meApi.me(),
   quad = quadApi,
   remove = (id) => meApi.deleteListing(id),
+  wantedChat = wantedChatApi,
 }: Deps) {
   const router = useRouter();
   const qc = useQueryClient();
@@ -132,9 +135,14 @@ export function CampusFeedScreen({
   const base = mediaBase();
   const open = (item: CampusItem) =>
     router.push({ pathname: '/listing/[id]', params: { id: item.id, from: 'campus' } });
-  const answer = (item: CampusItem) => {
-    answerWanted(store, item);
-    router.push('/sell');
+  const answer = async (item: CampusItem) => {
+    try {
+      const { chat_id } = await wantedChat.start(item.id, copy.iHaveThisMessage);
+      void qc.invalidateQueries({ queryKey: ['inbox'] });
+      router.push({ pathname: '/chat/[id]', params: { id: chat_id } });
+    } catch {
+      useToastStore.getState().show('error', copy.iHaveThisFailed);
+    }
   };
   const postNews = () => router.push('/sell/news');
   const postFood = () => router.push('/sell/food');
@@ -267,7 +275,7 @@ export function CampusFeedScreen({
         now={now}
         mediaBase={base}
         onOpen={() => open(item)}
-        onAnswer={() => answer(item)}
+        onAnswer={() => void answer(item)}
         onLike={() => toggleLikeItem(item)}
         onComments={() => openComments(item)}
         onDelete={item.is_own ? () => setDeleting(item) : undefined}

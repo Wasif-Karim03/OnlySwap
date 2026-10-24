@@ -516,16 +516,25 @@ describe('C01 Around campus', () => {
     expect(screen.getByText(campus.empty.wanted.title)).toBeTruthy();
   });
 
-  it('"I have this" opens Sell prefilled with wanted_ref', async () => {
-    const store = newStore();
-    open(fakeCampus(), store);
+  it('"I have this" opens a chat with the asker (DEC 149)', async () => {
+    const start = jest.fn(async () => ({ chat_id: 'c7', existing: false }));
+    renderAt(
+      {
+        feed: () => (
+          <CampusFeedScreen
+            api={fakeCampus()}
+            now={() => NOW}
+            mediaBase={() => 'http://m'}
+            wantedChat={{ start }}
+          />
+        ),
+        'chat/[id]': () => <Stub id="screen-chat" />,
+      },
+      '/feed',
+    );
     fireEvent.press(await screen.findByTestId('campus-item-want1-answer'));
-    expect(await screen.findByTestId('screen-sell')).toBeTruthy();
-    expect(store.getState().draft).toMatchObject({
-      title: 'TI-84 Plus',
-      categoryId: 4,
-      wantedRef: 'want1',
-    });
+    expect(await screen.findByTestId('screen-chat')).toBeTruthy();
+    expect(start).toHaveBeenCalledWith('want1', campus.iHaveThisMessage);
   });
 
   it('day one hero, and no founding sellers banner in the Feed', async () => {
@@ -847,6 +856,7 @@ describe('B02 Listing for food and Wanted posts', () => {
       reportListing: jest.fn(async () => {}),
     };
   }
+  const startChat = jest.fn(async () => ({ chat_id: 'c7', existing: false }));
   const show = (result: ListingResult, store = newStore()) =>
     renderAt(
       {
@@ -860,9 +870,11 @@ describe('B02 Listing for food and Wanted posts', () => {
             share={jest.fn(async () => {})}
             now={() => NOW}
             draftStore={store}
+            wantedChat={{ start: startChat }}
           />
         ),
         'listing/[id]/offer': () => <Stub id="screen-offer" />,
+        'chat/[id]': () => <Stub id="screen-chat" />,
       },
       '/listing/L1',
     );
@@ -879,8 +891,8 @@ describe('B02 Listing for food and Wanted posts', () => {
     expect(await screen.findByText(campus.listingWanted)).toBeTruthy();
     expect(screen.queryByTestId('listing-offer')).toBeNull();
     fireEvent.press(screen.getByTestId('listing-i-have-this'));
-    expect(await screen.findByTestId('screen-sell')).toBeTruthy();
-    expect(store.getState().draft.wantedRef).toBe('L1');
+    expect(await screen.findByTestId('screen-chat')).toBeTruthy();
+    expect(startChat).toHaveBeenCalledWith('L1', campus.iHaveThisMessage);
   });
 
   it('food: a countdown and no offer button', async () => {

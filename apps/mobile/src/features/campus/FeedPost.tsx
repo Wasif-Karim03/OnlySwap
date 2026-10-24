@@ -202,6 +202,7 @@ export function FeedPost({
           a11yLabel={[commentCopy.likePost, likesText(likes)].filter(Boolean).join('. ')}
           selected={liked}
           filled={liked}
+          green
           onPress={onLike}
           testID={testID ? `${testID}-like` : undefined}
         />
@@ -211,6 +212,7 @@ export function FeedPost({
           a11yLabel={[commentCopy.openComments, commentsText(commentCount)]
             .filter(Boolean)
             .join('. ')}
+          green
           onPress={onComments}
           testID={testID ? `${testID}-comment` : undefined}
         />
@@ -266,6 +268,7 @@ function Action({
   a11yLabel,
   selected = false,
   filled = false,
+  green = false,
   onPress,
   testID,
 }: {
@@ -275,6 +278,8 @@ function Action({
   a11yLabel: string;
   selected?: boolean;
   filled?: boolean;
+  /** Like and Comment take the app's green (owner review 2026-10-24). */
+  green?: boolean;
   onPress: () => void;
   testID?: string;
 }) {
@@ -290,7 +295,7 @@ function Action({
         <Icon
           name={icon}
           size={20}
-          tone={selected ? 'ink' : 'ink2'}
+          tone={green ? 'green' : selected ? 'ink' : 'ink2'}
           strokeWidth={selected ? 2.4 : 1.8}
           filled={filled}
         />

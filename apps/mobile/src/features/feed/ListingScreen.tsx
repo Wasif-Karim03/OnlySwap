@@ -41,7 +41,8 @@ import { canAnswer, eventLabel, linkHost } from '../campus/logic';
 import { AppealSheet, type AppealReason } from '../safety/AppealSheet';
 import { safetyApi } from '../safety/api';
 import { sellApi } from '../sell/api';
-import { answerWanted, getDraftStore } from '../sell/draft';
+import type { getDraftStore } from '../sell/draft';
+import { wantedChatApi, type WantedChatApi } from '../campus/api';
 import {
   listingLink,
   mediaUrl,
@@ -86,7 +87,7 @@ export function ListingScreen({
   share = (content) => Share.share(content),
   openUrl = (url) => Linking.openURL(url),
   now = () => new Date(),
-  draftStore = getDraftStore(),
+  wantedChat = wantedChatApi,
   appeal = (listingId, reason, body) => safetyApi.appeal('listing', listingId, reason, body),
   more = moreApi,
   viewedStore = viewedStorage,
@@ -102,7 +103,9 @@ export function ListingScreen({
   /** Opens a news post's link (DEC 98). */
   openUrl?: (url: string) => Promise<unknown>;
   now?: () => Date;
+  /** Unused since DEC 149; kept so callers still compile. */
   draftStore?: ReturnType<typeof getDraftStore>;
+  wantedChat?: WantedChatApi;
   /** Appeals an admin removal (create_appeal 'listing', DEC 99). */
   appeal?: (listingId: string, reason: AppealReason, body: string) => Promise<void>;
   /** More like this (DEC 128). */
@@ -291,9 +294,14 @@ export function ListingScreen({
           label={campusCopy.iHaveThis}
           variant="dark"
           accessibilityHint={fill(campusCopy.iHaveThisLabel, { title: item.title })}
-          onPress={() => {
-            answerWanted(draftStore, item);
-            router.push('/sell');
+          onPress={async () => {
+            // DEC 149: straight into a chat with the asker.
+            try {
+              const { chat_id } = await wantedChat.start(item.id, campusCopy.iHaveThisMessage);
+              router.push({ pathname: '/chat/[id]', params: { id: chat_id } });
+            } catch {
+              useToastStore.getState().show('error', campusCopy.iHaveThisFailed);
+            }
           }}
           testID="listing-i-have-this"
         />

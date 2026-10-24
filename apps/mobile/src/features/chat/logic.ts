@@ -5,12 +5,26 @@ import { chat as copy } from '@/strings';
  * the listing sold or both sides said the deal is done, else "Accepted".
  */
 export function dealStatusLabel(c: {
+  offer_id?: string | null;
   listing_status: string | null;
   buyer_outcome: string | null;
   seller_outcome: string | null;
-}): string {
+}): string | null {
   const done = c.buyer_outcome === 'done' && c.seller_outcome === 'done';
-  return c.listing_status === 'sold' || done ? copy.soldStatus : copy.accepted;
+  if (c.listing_status === 'sold' || done) return copy.soldStatus;
+  // A chat from "I have this" (DEC 149) has no accepted offer yet.
+  return c.offer_id === null ? null : copy.accepted;
+}
+
+/** The line under the item: the agreed price, or what an ask offered to pay. */
+export function dealPriceLine(
+  c: { offer_id?: string | null; agreed_cents: number },
+  money: (cents: number) => string,
+): string {
+  if (c.offer_id !== null) return copy.inPerson.replace('{amount}', money(c.agreed_cents));
+  return c.agreed_cents > 0
+    ? copy.wantedUpTo.replace('{amount}', money(c.agreed_cents))
+    : copy.wantedAsk;
 }
 
 /** Query key for one chat's details (get_chat); shared by the chat and meetup screens. */

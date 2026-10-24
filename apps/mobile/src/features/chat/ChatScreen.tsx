@@ -43,6 +43,7 @@ import {
   bubbleSpots,
   chatKey,
   chatPhotoUrl,
+  dealPriceLine,
   dealStatusLabel,
   newContactFromItems,
   scamHint,
@@ -377,7 +378,7 @@ export function ChatScreen({
               {c.listing_title}
             </Text>
             <Text variant="meta" tone="ink3">
-              {fill(copy.inPerson, { amount: money(c.agreed_cents) })}
+              {dealPriceLine(c, money)}
             </Text>
             {c.bundle?.length ? (
               <Text variant="meta" tone="ink2" numberOfLines={2} testID="chat-bundle">
@@ -385,7 +386,7 @@ export function ChatScreen({
               </Text>
             ) : null}
           </View>
-          {c.status === 'open' && !readOnly ? (
+          {c.status === 'open' && !readOnly && dealStatusLabel(c) ? (
             <Text variant="label" tone="green" testID="chat-deal-status">
               {dealStatusLabel(c)}
             </Text>

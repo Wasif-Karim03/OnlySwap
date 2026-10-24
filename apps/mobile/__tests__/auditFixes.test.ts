@@ -1,5 +1,5 @@
 // Fixes from the 2026-10-24 device audit (fix/audit-1).
-import { dealStatusLabel } from '../src/features/chat/logic';
+import { dealPriceLine, dealStatusLabel } from '../src/features/chat/logic';
 import { isFeedPost } from '../src/features/me/api';
 import { profileStats } from '../src/features/me/MeScreens';
 import { priceInput, validateDetails } from '../src/features/sell/logic';
@@ -59,5 +59,22 @@ describe('audit fixes', () => {
   it('feed posts are kept apart from things for sale', () => {
     expect(['wanted', 'food', 'news'].every(isFeedPost)).toBe(true);
     expect(['sale', 'free'].some(isFeedPost)).toBe(false);
+  });
+
+  it('a chat from "I have this" reads as an ask, not an accepted deal (DEC 149)', () => {
+    const ask = {
+      offer_id: null,
+      listing_status: 'active',
+      buyer_outcome: null,
+      seller_outcome: null,
+    };
+    expect(dealStatusLabel(ask)).toBeNull();
+    expect(dealStatusLabel({ ...ask, listing_status: 'sold' })).toBe(chat.soldStatus);
+    const money = (c: number) => `$${c / 100}`;
+    expect(dealPriceLine({ offer_id: null, agreed_cents: 5000 }, money)).toBe(
+      'Asked for, up to $50',
+    );
+    expect(dealPriceLine({ offer_id: null, agreed_cents: 0 }, money)).toBe(chat.wantedAsk);
+    expect(dealPriceLine({ offer_id: 'o1', agreed_cents: 900 }, money)).toBe('$9 in person');
   });
 });

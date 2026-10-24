@@ -1266,6 +1266,9 @@ export const chat = {
   },
   agreed: 'Agreed {amount}',
   inPerson: '{amount} in person',
+  /** A chat started from "I have this" on an ask (DEC 149): no price agreed yet. */
+  wantedUpTo: 'Asked for, up to {amount}',
+  wantedAsk: 'Asked for in the Feed',
   accepted: 'Accepted',
   /** Header label once the listing sold through this chat. */
   soldStatus: 'Sold',
@@ -2093,7 +2096,10 @@ export const campus = {
   goneBody: 'Time ran out on this one.',
   noPlace: 'Ask in the post for the spot',
   iHaveThis: 'I have this',
-  iHaveThisLabel: 'I have this: list {title} for them',
+  iHaveThisLabel: 'I have this: message them about {title}',
+  /** The first chat message when you answer an ask (DEC 149). */
+  iHaveThisMessage: 'I have this',
+  iHaveThisFailed: "Couldn't open the chat. Try again.",
   yours: 'Your post',
   /** Delete on your own Feed posts (owner review 2026-10-24). */
   deleteOwnPost: 'Delete your post',

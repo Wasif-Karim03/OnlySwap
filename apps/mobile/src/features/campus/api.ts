@@ -1,5 +1,6 @@
 import { createRpc, type RpcClient } from '@/lib/rpc';
 import { getSupabase } from '@/lib/supabase';
+import { uuid } from '@/lib/uuid';
 
 import type { FeedCursor } from '../feed/logic';
 import type { PostedListing } from '../sell/api';
@@ -34,6 +35,19 @@ export const wantedPrefsApi: WantedPrefsApi = {
   setWantedPrefs: async (id, needBy, alerts) => {
     await rpc('set_wanted_prefs', { id, need_by: needBy, alerts });
   },
+};
+
+/**
+ * "I have this" (DEC 149): opens a chat with the person who asked, with
+ * "I have this" as the first message. Answering again opens the same chat.
+ */
+export type WantedChatApi = {
+  start: (wantedId: string, body: string) => Promise<{ chat_id: string; existing: boolean }>;
+};
+
+export const wantedChatApi: WantedChatApi = {
+  start: (wantedId, body) =>
+    rpc('start_wanted_chat', { wanted_id: wantedId, body, client_id: uuid() }),
 };
 
 export const campusKeys = {

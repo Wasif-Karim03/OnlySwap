@@ -42,11 +42,11 @@ export function SocialBar({
           <Icon
             name="heart"
             size={20}
-            tone={liked ? 'ink' : 'ink2'}
+            tone="green"
             strokeWidth={liked ? 2.4 : 1.8}
             filled={liked}
           />
-          <Text variant={liked ? 'bodyStrong' : 'label'} tone={liked ? 'ink' : 'ink2'}>
+          <Text variant={liked ? 'bodyStrong' : 'label'} tone={liked ? 'green' : 'ink2'}>
             {copy.like}
           </Text>
         </View>
@@ -58,7 +58,7 @@ export function SocialBar({
         testID={testID ? `${testID}-comment` : undefined}
       >
         <View style={styles.action}>
-          <Icon name="chat" size={20} tone="ink2" />
+          <Icon name="chat" size={20} tone="green" />
           <Text variant="label" tone="ink2">
             {copy.comment}
           </Text>
