@@ -334,6 +334,48 @@ describe('E02 Offer', () => {
     await waitFor(() => expect(a.withdraw).toHaveBeenCalledWith('o1'));
   });
 
+  it('a failed withdraw closes the dialog, says why and shows the new state (audit)', async () => {
+    const get = jest
+      .fn()
+      .mockResolvedValueOnce(offer({ role: 'buyer' }))
+      .mockResolvedValue(offer({ role: 'buyer', status: 'accepted', chat_id: 'c9' }));
+    const a = api({
+      get,
+      withdraw: jest.fn(async () => {
+        throw { code: 'P0001', message: 'INVALID:status' };
+      }),
+    });
+    render({ 'offer/[id]': () => <OfferScreen id="o1" api={a} /> }, '/offer/o1');
+    fireEvent.press(await screen.findByTestId('offer-withdraw'));
+    fireEvent.press(await screen.findByText(offers.withdrawConfirm));
+    expect(await screen.findByTestId('offer-open-chat')).toBeTruthy();
+    expect(screen.queryByTestId('offer-withdraw')).toBeNull();
+    await waitFor(() => expect(screen.queryByText(offers.withdrawConfirm)).toBeNull());
+  });
+
+  it('refetches when the other side acts (realtime ping)', async () => {
+    let ping: () => void = () => {};
+    const realtime: RealtimeSource = {
+      userId: async () => 'me',
+      subscribe: (_t, _e, cb) => {
+        ping = () => cb({});
+        return () => {};
+      },
+    };
+    const get = jest
+      .fn()
+      .mockResolvedValueOnce(offer({ role: 'buyer' }))
+      .mockResolvedValue(offer({ role: 'buyer', status: 'accepted', chat_id: 'c9' }));
+    render(
+      { 'offer/[id]': () => <OfferScreen id="o1" api={api({ get })} realtime={realtime} /> },
+      '/offer/o1',
+    );
+    expect(await screen.findByTestId('offer-withdraw')).toBeTruthy();
+    await waitFor(() => expect(get).toHaveBeenCalledTimes(1));
+    ping();
+    expect(await screen.findByTestId('offer-open-chat')).toBeTruthy();
+  });
+
   it('accepted opens the chat', async () => {
     const a = api({ get: jest.fn(async () => offer({ status: 'accepted', chat_id: 'c9' })) });
     render({ 'offer/[id]': () => <OfferScreen id="o1" api={a} /> }, '/offer/o1');

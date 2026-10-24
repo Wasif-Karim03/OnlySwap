@@ -21,6 +21,7 @@ import { getEnv } from '@/lib/env';
 import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
+import { supabaseRealtime, useUserChannel, type RealtimeSource } from '@/lib/realtime';
 import { offers as copy } from '@/strings';
 import { readableColumn } from '@/theme/layout';
 
@@ -51,15 +52,20 @@ export function OfferScreen({
   api = offersApi,
   mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
   now = () => new Date(),
+  realtime = supabaseRealtime,
 }: {
   id: string;
   api?: OffersApi;
   mediaBase?: () => string;
   now?: () => Date;
+  realtime?: RealtimeSource;
 }) {
   const router = useRouter();
   const qc = useQueryClient();
-  const query = useQuery({ queryKey: offerKey(id), queryFn: () => api.get(id) });
+  // Always fresh: the other side can accept, counter or decline while this
+  // screen is open (audit 2026-10-24: Withdraw stayed up on an accepted offer).
+  const query = useQuery({ queryKey: offerKey(id), queryFn: () => api.get(id), staleTime: 0 });
+  useUserChannel('inbox', () => void query.refetch(), realtime);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [counterOpen, setCounterOpen] = useState(false);
@@ -330,9 +336,15 @@ export function OfferScreen({
         confirmLabel={copy.withdrawConfirm}
         destructive
         onConfirm={async () => {
-          await api.withdraw(o.id);
-          setWithdrawOpen(false);
-          await refresh();
+          try {
+            await api.withdraw(o.id);
+          } catch (e) {
+            // Usually the offer moved on (accepted or expired) before the tap.
+            setError(errorText(e));
+          } finally {
+            setWithdrawOpen(false);
+            void refresh();
+          }
         }}
         onCancel={() => setWithdrawOpen(false)}
       />
