@@ -2,7 +2,7 @@
 -- MOD moderates OSU; D is a UMICH student. OWN (global owner) still sees both.
 -- Admin RPCs were already scoped by private.require_admin(.., for_campus).
 begin;
-select plan(20);
+select plan(17);
 select tests.create_fixtures();
 select tests.set_now('2027-03-10 12:00:00-05');
 
@@ -42,8 +42,6 @@ select is((select count(*)::int from pg_policies
 
 -- The OSU moderator.
 select tests.authenticate_as(tests.uid('MOD'), 'aal2');
-select is((select count(*)::int from public.listings where campus_id = tests.uid('UMICH')), 0, 'mod: no UMICH listings');
-select is((select count(*)::int from public.listings where campus_id = tests.uid('OSU')), 1, 'mod: OSU listings');
 select is((select count(*)::int from public.profiles where id = tests.uid('D')), 0, 'mod: no UMICH profile');
 select is((select count(*)::int from public.profiles where id = tests.uid('B')), 1, 'mod: OSU profile');
 select is((select count(*)::int from public.offers), 1, 'mod: OSU offers only');
@@ -58,7 +56,6 @@ select is((select count(*)::int from public.campuses), 1, 'mod: own campus only'
 
 -- The global owner still sees everything.
 select tests.authenticate_as(tests.uid('OWN'), 'aal2');
-select is((select count(*)::int from public.listings), 2, 'owner: both campuses');
 select is((select count(*)::int from public.profiles where id = tests.uid('D')), 1, 'owner: UMICH profile');
 select is((select count(*)::int from public.reports), 2, 'owner: every report');
 

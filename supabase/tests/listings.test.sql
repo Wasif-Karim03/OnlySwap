@@ -194,8 +194,8 @@ select ok(tests.try_ok_as(tests.uid('A'), format($$select public.delete_listing(
   'the seller deletes a listing');
 select is((select status::text || '|' || (deleted_at is not null)::text from public.listings where id = (select id from ids where name = 'free')),
   'deleted|true', 'soft delete: the row stays, marked deleted');
-select is(tests.try_text_as(tests.uid('B'), format($$select count(*)::text from public.listings where id = %L$$, (select id from ids where name = 'free'))),
-  '0', 'others no longer see it');
+select is(tests.try_text_as(tests.uid('B'), format($$select public.get_listing(%L) ->> 'access'$$, (select id from ids where name = 'free'))),
+  'gone', 'others no longer see it');
 
 -- relist ----------------------------------------------------------------------------------------
 update public.listings set status = 'expired', bumped_at = '2027-01-01' where id = (select id from ids where name = 'v');

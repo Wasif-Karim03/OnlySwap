@@ -70,15 +70,17 @@ select is(tests.try_text_as(tests.uid('A'), 'select string_agg(title, '','') fro
   'Pinned', 'announcements: pinned, own campus');
 
 -- listings -----------------------------------------------------------------------
-select is(tests.try_text_as(tests.uid('A'), 'select string_agg(title, '','' order by title) from public.listings where seller_id = auth.uid()'),
-  'Active lamp,Held item,Sold desk', 'listings: A sees own in every status except deleted');
-select is(tests.try_text_as(tests.uid('B'), 'select string_agg(title, '','' order by title) from public.listings'),
-  'Active lamp,C bike,Sold desk', 'listings: B sees active/hold/sold only');
-select is(tests.try_text_as(tests.uid('D'), 'select string_agg(title, '','') from public.listings'),
-  'D fridge', 'listings: D sees only umich');
-select is(tests.try_text_as(tests.uid('B'), 'select count(*)::text from public.listing_photos'), '1',
-  'listing_photos: follow the listing (held photo hidden from B)');
-select is(tests.try_text_as(tests.uid('A'), 'select count(*)::text from public.listing_photos'), '2', 'listing_photos: owner sees both');
+-- 0254: no direct reads at all; the RPCs apply rate limits, blocks and scope.
+select alike(tests.try_text_as(tests.uid('A'), 'select count(*)::text from public.listings where seller_id = auth.uid()'),
+  'ERROR: permission denied%', 'listings: no direct reads, even of own listings');
+select alike(tests.try_text_as(tests.uid('B'), 'select count(*)::text from public.listings'),
+  'ERROR: permission denied%', 'listings: B cannot page through the campus');
+select alike(tests.try_text_as(tests.uid('D'), 'select count(*)::text from public.listings'),
+  'ERROR: permission denied%', 'listings: D neither');
+select alike(tests.try_text_as(tests.uid('B'), 'select count(*)::text from public.listing_photos'),
+  'ERROR: permission denied%', 'listing_photos: no direct reads');
+select alike(tests.try_text_as(tests.uid('A'), 'select count(*)::text from public.listing_photos'),
+  'ERROR: permission denied%', 'listing_photos: not even the owner');
 select alike(tests.try_text_as(tests.uid('A'), format('update public.listings set status = %L where id = %L returning 1', 'sold', '00000000-0000-4000-8000-0000000001a1')),
   'ERROR: permission denied%', 'listings: no direct updates, even by the seller');
 
@@ -104,8 +106,8 @@ select is(tests.try_text_as(tests.uid('A'), 'select count(*)::text from public.r
 
 -- blocks hide listings both ways -------------------------------------------------
 insert into public.blocks (blocker_id, blocked_id) values (tests.uid('C'), tests.uid('B'));
-select is(tests.try_text_as(tests.uid('B'), $$select count(*)::text from public.listings where title = 'C bike'$$), '0',
-  'blocks: B no longer sees the listings of C, who blocked B');
+select is(tests.try_text_as(tests.uid('B'), $$select count(*)::text from jsonb_array_elements(public.search_listings('bike')) i where i ->> 'title' = 'C bike'$$), '0',
+  'blocks: B no longer finds the listings of C, who blocked B');
 select is(tests.try_text_as(tests.uid('C'), 'select count(*)::text from public.blocks'), '1', 'blocks: blocker sees own');
 select is(tests.try_text_as(tests.uid('B'), 'select count(*)::text from public.blocks'), '0', 'blocks: the blocked person does not');
 select is(tests.try_text_as(tests.uid('B'), format('select count(*)::text from public.public_profiles where id = %L', tests.uid('C'))),

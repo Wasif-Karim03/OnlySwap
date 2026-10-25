@@ -36,7 +36,7 @@ select is(tests.try_text_as(tests.uid('A'), format($$select (public.create_listi
   'true', 'LIST-04: first create_listing returns the listing');
 select is(tests.try_text_as(tests.uid('A'), $$select (public.create_listing(id => r.id, title => 'Chair') ->> 'id') = r.id::text from r$$),
   'true', 'LIST-04: second call returns the same row');
-select is(tests.try_text_as(tests.uid('A'), $$select count(*)::text from public.listings where id = (select id from r)$$),
+select is((select count(*)::text from public.listings where id = (select id from r)),
   '1', 'LIST-04: one row');
 select is(tests.try_text_as(tests.uid('A'), $$select public.create_listing(id => gen_random_uuid(), kind => 'sale', title => 'Chair', price_cents => 1000)::text$$),
   'ERROR: FORBIDDEN', 'LIST-04: an unreserved id is FORBIDDEN');

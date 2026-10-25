@@ -46,3 +46,4 @@ crash-logs/
 
 # Generated audit output (exports, coverage, load logs)
 audit/raw/
+workers/media/wrangler.prod.toml
