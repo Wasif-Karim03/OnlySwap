@@ -11,7 +11,7 @@ import { fill } from '@/lib/format';
 import { intlLocale, quad as copy } from '@/strings';
 
 import { agoLabel } from '../../feed/logic';
-import { QuadAuthorLine } from './QuadAuthor';
+import { authorName, QuadAuthorLine } from './QuadAuthor';
 import { shortAgo } from '../../offers/logic';
 import { mediaUrl } from '../../sell/logic';
 import type { QuadPoll, QuadPost } from '../api';
@@ -141,6 +141,8 @@ export function QuadPostCard({
     : null;
   const replies = repliesLabel(post.reply_count);
   const label = [
+    // Who is speaking comes first now that names show (DEC 150; UX audit 2026-10-25).
+    post.author !== undefined ? authorName(post.author ?? null, post.is_mine) : null,
     post.status === 'held' ? copy.underReview : null,
     post.place ? fill(copy.checkinAt, { place: post.place }) : null,
     post.body,

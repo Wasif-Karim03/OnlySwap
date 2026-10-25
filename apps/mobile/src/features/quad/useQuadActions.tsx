@@ -8,10 +8,12 @@ import { ActionSheet } from '@/components/Sheet';
 import { useToastStore } from '@/components/Toast';
 import { track } from '@/lib/analytics';
 import { errorText, toAppError } from '@/lib/errors';
-import { quad as copy } from '@/strings';
+import { fill } from '@/lib/format';
+import { profileView, quad as copy } from '@/strings';
 
 import type { QuadApi, QuadPoll, QuadPost, QuadReply, QuadReportReason } from './api';
 import { dropPost, patchPost, patchReply, quadKeys } from './cache';
+import { authorName } from './components/QuadAuthor';
 import { createVoteSender, tapVote, type VoteState } from './logic';
 
 export type OptionsTarget =
@@ -45,6 +47,11 @@ export function useQuadActions({
   const [target, setTarget] = useState<OptionsTarget | null>(null);
   const [reporting, setReporting] = useState<OptionsTarget | null>(null);
   const [deleting, setDeleting] = useState<QuadPost | null>(null);
+  const [deletingReply, setDeletingReply] = useState<{ postId: string; reply: QuadReply } | null>(
+    null,
+  );
+  // DEC 150: authors have real names, so they can be blocked from the Quad.
+  const [blocking, setBlocking] = useState<{ id: string; name: string } | null>(null);
 
   const apply = (key: Key, s: VoteState) => {
     const [kind, a, b] = key.split(':') as [string, string, string | undefined];
@@ -106,6 +113,18 @@ export function useQuadActions({
     }
   };
 
+  const authorOf = (t: OptionsTarget) => {
+    const item = t.kind === 'post' ? t.post : t.reply;
+    return item.author?.id ? { id: item.author.id, name: authorName(item.author, false) } : null;
+  };
+
+  /** Blocks hide posts and replies both ways; refresh what's on screen. */
+  const afterBlock = async () => {
+    toast('info', copy.blockedToast);
+    await qc.invalidateQueries({ queryKey: quadKeys.feeds });
+    void qc.invalidateQueries({ queryKey: ['quad', 'thread'] });
+  };
+
   const actions = (() => {
     if (!target) return [];
     const list: { label: string; onPress: () => void; destructive?: boolean }[] = [];
@@ -138,6 +157,14 @@ export function useQuadActions({
         label: copy.copyText,
         onPress: () => void copyText(p.body).then(() => toast('info', copy.copied)),
       });
+      const who = p.is_mine ? null : authorOf(target);
+      if (who) {
+        list.push({
+          label: fill(profileView.block, { name: who.name }),
+          destructive: true,
+          onPress: () => setBlocking(who),
+        });
+      }
       if (p.is_mine) {
         list.push({ label: copy.deletePost, destructive: true, onPress: () => setDeleting(p) });
       } else {
@@ -149,11 +176,38 @@ export function useQuadActions({
       }
     } else {
       const r = target.reply;
+      const postId = target.postId;
       list.push({
         label: copy.copyText,
         onPress: () => void copyText(r.body).then(() => toast('info', copy.copied)),
       });
-      if (!r.is_mine) {
+      if (r.is_mine) {
+        list.push({
+          label: copy.deleteReply,
+          destructive: true,
+          onPress: () => setDeletingReply({ postId, reply: r }),
+        });
+      } else {
+        // Same tools as a post: harassment mostly happens in replies.
+        list.push({
+          label: copy.hideAuthor,
+          onPress: () =>
+            void run(async () => {
+              await api.hideReplyAuthor(r.id);
+              toast('info', copy.hiddenToast);
+              await qc.invalidateQueries({ queryKey: quadKeys.feeds });
+              void qc.invalidateQueries({ queryKey: quadKeys.hides });
+              void qc.invalidateQueries({ queryKey: ['quad', 'thread'] });
+            }),
+        });
+        const who = authorOf(target);
+        if (who) {
+          list.push({
+            label: fill(profileView.block, { name: who.name }),
+            destructive: true,
+            onPress: () => setBlocking(who),
+          });
+        }
         list.push({
           label: copy.reportReply,
           destructive: true,
@@ -167,6 +221,7 @@ export function useQuadActions({
   const reportType = reporting?.kind === 'reply' ? 'quad_reply' : 'quad_post';
   const reportId =
     reporting?.kind === 'reply' ? reporting.reply.id : reporting ? reporting.post.id : '';
+  const reportWho = reporting ? authorOf(reporting) : null;
 
   const overlays = (
     <>
@@ -180,9 +235,14 @@ export function useQuadActions({
         visible={!!reporting}
         onClose={() => setReporting(null)}
         target={reportType}
-        onSubmit={async ({ reason, details }) => {
+        name={reportWho?.name}
+        onSubmit={async ({ reason, details, block }) => {
           await api.report(reportType, reportId, reason as QuadReportReason, details);
           track('report_submitted', { target_type: reportType });
+          if (block && reportWho) {
+            await api.blockUser(reportWho.id);
+            await afterBlock();
+          }
         }}
         testID="quad-report"
       />
@@ -204,6 +264,38 @@ export function useQuadActions({
           onGone?.(id);
         }}
         testID="quad-delete"
+      />
+      <ConfirmDialog
+        visible={!!deletingReply}
+        title={copy.deleteReplyTitle}
+        message={copy.deleteReplyBody}
+        confirmLabel={copy.deleteReply}
+        destructive
+        onCancel={() => setDeletingReply(null)}
+        onConfirm={async () => {
+          if (!deletingReply) return;
+          await api.deleteReply(deletingReply.reply.id);
+          setDeletingReply(null);
+          void qc.invalidateQueries({ queryKey: ['quad', 'thread'] });
+          void qc.invalidateQueries({ queryKey: quadKeys.mine });
+          toast('info', copy.replyDeleted);
+        }}
+        testID="quad-delete-reply"
+      />
+      <ConfirmDialog
+        visible={!!blocking}
+        title={fill(profileView.blockTitle, { name: blocking?.name ?? '' })}
+        message={profileView.blockBody}
+        confirmLabel={profileView.blockConfirm}
+        destructive
+        onCancel={() => setBlocking(null)}
+        onConfirm={async () => {
+          if (!blocking) return;
+          await api.blockUser(blocking.id);
+          setBlocking(null);
+          await afterBlock();
+        }}
+        testID="quad-block"
       />
     </>
   );

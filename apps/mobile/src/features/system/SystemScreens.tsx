@@ -47,7 +47,14 @@ function backAround(end: Date, today: Date = new Date()): string {
 /** X12 Maintenance (P11-STATE-01): app_config maintenance.enabled; Try again re-runs the launch gate. */
 export function MaintenanceScreen({ api = authApi }: { api?: Pick<AuthApi, 'getAppConfig'> }) {
   const router = useRouter();
-  const q = useQuery({ queryKey: ['app-config'], queryFn: () => api.getAppConfig() });
+  // Same key as the launch gate (useAppGate), so Try again routes from fresh
+  // config instead of the cached "maintenance on" (UX audit 2026-10-25).
+  const q = useQuery({
+    queryKey: ['app_config'],
+    queryFn: () => api.getAppConfig(),
+    staleTime: 0,
+    refetchInterval: 60_000,
+  });
   const until = q.data?.maintenance.until ? backAround(new Date(q.data.maintenance.until)) : null;
   return (
     <View style={styles.root} testID="screen-maintenance">
@@ -59,7 +66,12 @@ export function MaintenanceScreen({ api = authApi }: { api?: Pick<AuthApi, 'getA
             ? `${copy.maintenanceBody} ${fill(copy.maintenanceUntil, { time: until })}`
             : copy.maintenanceBody
         }
-        action={{ label: copy.tryAgain, onPress: () => router.replace('/') }}
+        action={{
+          label: copy.tryAgain,
+          onPress: () => {
+            void q.refetch().then(() => router.replace('/'));
+          },
+        }}
       />
     </View>
   );

@@ -277,7 +277,8 @@ function CircleSurface({
 }) {
   if (size === 'L') {
     return (
-      <Material variant="clear" style={styles.glassCircle(disabled)}>
+      // Solid: the row floats over the moving card, and glass there redrew every frame.
+      <Material variant="clear" solid style={styles.glassCircle(disabled)}>
         {children}
       </Material>
     );

@@ -68,19 +68,25 @@ type Props = Omit<ViewProps, 'style'> & {
   /** `regular` for chrome on the page; `clear` for buttons over a photo. */
   variant?: MaterialVariant;
   style?: StyleProp<ViewStyle>;
+  /**
+   * Always the solid surface. For controls riding on something that moves
+   * (swipe cards): glass and blur re-sample what's behind them every frame,
+   * which kept the GPU busy and warmed the phone during swipes.
+   */
+  solid?: boolean;
 };
 
 /**
  * The floating layer (navigation chrome only, never content). One material
  * per stack: what sits on it uses fills or plain ink, never another Material.
  */
-export function Material({ children, variant = 'regular', style, ...rest }: Props) {
+export function Material({ children, variant = 'regular', style, solid = false, ...rest }: Props) {
   const { rt } = useUnistyles();
   const reduceTransparency = useReduceTransparency();
   const tier = materialTier({
     os: Platform.OS,
     glass: glassAvailable(),
-    reduceTransparency,
+    reduceTransparency: reduceTransparency || solid,
   });
   const dark = rt.themeName === 'dark';
 

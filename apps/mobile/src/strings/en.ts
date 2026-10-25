@@ -110,6 +110,7 @@ export const nav = {
   close: 'Close',
   tabWithBadge: '{label}, {count} new',
   step: 'Step {step} of {total}',
+  notYou: 'Not you? Sign out',
 } as const;
 
 /** Permission primers (P2-CMP-10, board X18, X21, A12). Buttons say Continue, not Allow. */
@@ -209,7 +210,7 @@ export const report = {
   },
   titleQuadPost: 'Report this post',
   titleQuadReply: 'Report this reply',
-  privateQuad: 'Reports are anonymous too.',
+  privateQuad: "Reports are private. They won't know it was you.",
   crisisTitle: 'If someone is in danger right now',
   crisisBody:
     'Call or text 988, the Suicide and Crisis Lifeline, any time. It is free. Your report still goes to a person here.',
@@ -570,8 +571,13 @@ export const age = {
   invalidDate: 'Check the date and try again.',
   blockedTitle: "OnlySwap isn't available to you yet",
   blockedBody:
-    "You need to be 13 or older to use OnlySwap. We haven't kept your email or any details.",
+    'You need to be 13 or older to use OnlySwap. We deleted your account and details. If you think this is a mistake, contact support.',
   close: 'Close',
+  support: 'Contact support',
+  confirmTitle: 'Is {date} right?',
+  confirmBody: "Check it before you go on. You can't change it later.",
+  confirmYes: "Yes, that's right",
+  confirmChange: 'Change it',
   osRequiredTitle: 'Share your age range to continue',
   osRequiredBody:
     'Where you live, the law asks Apple to share your age range with apps. We learn only 13 to 17 or 18 and older, never your birthday.',
@@ -840,9 +846,9 @@ export const sell = {
   decideInChatBody: 'You and the buyer pick a spot',
   spotsMax: 'Pick up to 5 spots.',
   spotsFailed: "Meetup spots didn't load.",
-  noSpots: 'No meetup spots here yet. You and the buyer can pick one in chat.',
-  noteLabel: 'Somewhere else? (optional)',
-  notePlaceholder: 'For example, the lobby of your building',
+  noSpots: 'No Meetup spots here yet. Ask us to add one from Help.',
+  noteLabel: 'Anything buyers should know? (optional)',
+  notePlaceholder: 'For example, free after 3pm on weekdays',
   availabilityLabel: 'Usually free',
   availability: {
     weekdays: 'Weekdays',
@@ -1273,6 +1279,7 @@ export const chat = {
   /** Header label once the listing sold through this chat. */
   soldStatus: 'Sold',
   planMeetup: 'Plan meetup',
+  changeMeetup: 'Change time',
   markSold: 'Mark sold',
   didItSell: 'Did it sell?',
   details: 'Chat details',
@@ -1319,7 +1326,8 @@ export const chat = {
 export const meetup = {
   // Handoff code (DEC 132)
   handoffTitle: 'Handoff code',
-  handoffBuyer: 'Show this to the seller when you have the item.',
+  handoffBuyer: 'Show this to the seller when you have the item. Never send it in chat.',
+  handoffLater: 'Your code shows up 30 minutes before the meetup.',
   handoffSellerTitle: 'Swap done?',
   handoffSellerBody: 'Ask the buyer for their 4-digit code and type it here.',
   handoffLabel: 'Buyer code',
@@ -1351,7 +1359,7 @@ export const meetup = {
   suggestAnother: 'Suggest another',
   theySuggested: '{name} suggested {when} at {place}',
   youSuggested: 'You suggested {when} at {place}. Waiting for {name}.',
-  noSpots: 'No Meetup spots here yet. Type a public place.',
+  noSpots: 'No Meetup spots here yet. Ask us to add one from Help.',
   // Card in chat (P8-MEET-04)
   cardProposed: 'Suggested: {when}',
   cardConfirmed: 'Meetup set: {when}',
@@ -1394,6 +1402,7 @@ export const meetup = {
   noShowConfirm: 'Report no-show',
   noShowSent: "Thanks. We'll look into it.",
   emergency: 'Call 911',
+  safetyTips: 'Meetup safety',
   emergencyHint: 'If you ever feel unsafe, leave and call 911.',
   cancelled: 'This meetup was cancelled.',
   rescheduledFrom: 'Moved from {when}',
@@ -1935,6 +1944,11 @@ export const quad = {
   reportReply: 'Report reply',
   copied: 'Copied',
   hiddenToast: "Hidden. You won't see their posts or replies.",
+  deleteReply: 'Delete reply',
+  deleteReplyTitle: 'Delete this reply?',
+  deleteReplyBody: "It comes off the thread for everyone. This can't be undone.",
+  replyDeleted: 'Reply deleted',
+  blockedToast: "Blocked. You won't see each other's posts or messages.",
   deleteTitle: 'Delete this post?',
   deleteBody: "It comes off the Quad for everyone. This can't be undone.",
   deleted: 'Post deleted',

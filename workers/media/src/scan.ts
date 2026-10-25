@@ -115,6 +115,8 @@ export async function handleScan(request: Request, env: ScanEnv): Promise<Respon
     const m = message(e);
     if (/429|rate|limit|neuron|capacity|quota/i.test(m))
       return json(429, { error: 'RATE_LIMITED' });
+    // Error text only (no photo data), so a failing format shows in Worker logs.
+    console.log(JSON.stringify({ event: 'scan', error: m.slice(0, 200) }));
     return json(200, { verdict: 'retry' });
   }
   const text =

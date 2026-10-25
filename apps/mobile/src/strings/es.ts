@@ -108,6 +108,7 @@ const nav: Strings['nav'] = {
   close: 'Cerrar',
   tabWithBadge: '{label}, {count} nuevos',
   step: 'Paso {step} de {total}',
+  notYou: '¿No eres tú? Cerrar sesión',
 };
 
 const primer: Strings['primer'] = {
@@ -204,7 +205,7 @@ const report: Strings['report'] = {
   },
   titleQuadPost: 'Reportar esta publicación',
   titleQuadReply: 'Reportar esta respuesta',
-  privateQuad: 'Los reportes también son anónimos.',
+  privateQuad: 'Los reportes son privados. No sabrán que fuiste tú.',
   crisisTitle: 'Si alguien está en peligro ahora mismo',
   crisisBody:
     'Llama o envía un mensaje al 988, la Línea de Prevención del Suicidio y Crisis, a cualquier hora. Es gratis y hay atención en español. Tu reporte igual llega a una persona aquí.',
@@ -564,8 +565,13 @@ const age: Strings['age'] = {
   invalidDate: 'Revisa la fecha e intenta de nuevo.',
   blockedTitle: 'OnlySwap todavía no está disponible para ti',
   blockedBody:
-    'Necesitas tener 13 años o más para usar OnlySwap. No guardamos tu correo ni ningún dato.',
+    'Necesitas tener 13 años o más para usar OnlySwap. Borramos tu cuenta y tus datos. Si crees que es un error, contacta a soporte.',
   close: 'Cerrar',
+  support: 'Contactar a soporte',
+  confirmTitle: '¿Es correcto el {date}?',
+  confirmBody: 'Revísalo antes de seguir. No podrás cambiarlo después.',
+  confirmYes: 'Sí, es correcto',
+  confirmChange: 'Cambiarlo',
   osRequiredTitle: 'Comparte tu rango de edad para seguir',
   osRequiredBody:
     'Donde vives, la ley pide a Apple que comparta tu rango de edad con las apps. Solo sabemos si tienes de 13 a 17 o 18 años o más, nunca tu fecha de nacimiento.',
@@ -824,9 +830,9 @@ const sell: Strings['sell'] = {
   decideInChatBody: 'Tú y quien compra eligen un lugar',
   spotsMax: 'Elige hasta 5 lugares.',
   spotsFailed: 'Los Puntos de encuentro no cargaron.',
-  noSpots: 'Todavía no hay Puntos de encuentro aquí. Pueden elegir uno en el chat.',
-  noteLabel: '¿En otro lugar? (opcional)',
-  notePlaceholder: 'Por ejemplo, el lobby de tu edificio',
+  noSpots: 'Aún no hay Puntos de encuentro aquí. Pídenos uno desde Ayuda.',
+  noteLabel: '¿Algo que deban saber? (opcional)',
+  notePlaceholder: 'Por ejemplo, libre después de las 3pm entre semana',
   availabilityLabel: 'Normalmente libre',
   availability: {
     weekdays: 'Entre semana',
@@ -1233,6 +1239,7 @@ const chat: Strings['chat'] = {
   accepted: 'Aceptada',
   soldStatus: 'Vendido',
   planMeetup: 'Planear encuentro',
+  changeMeetup: 'Cambiar hora',
   markSold: 'Marcar vendido',
   didItSell: '¿Se vendió?',
   details: 'Detalles del chat',
@@ -1276,7 +1283,8 @@ const chat: Strings['chat'] = {
 
 const meetup: Strings['meetup'] = {
   handoffTitle: 'Código de entrega',
-  handoffBuyer: 'Muéstralo al vendedor cuando tengas el artículo.',
+  handoffBuyer: 'Muéstralo al vendedor cuando tengas el artículo. Nunca lo envíes por chat.',
+  handoffLater: 'Tu código aparece 30 minutos antes del encuentro.',
   handoffSellerTitle: '¿Intercambio hecho?',
   handoffSellerBody: 'Pide al comprador su código de 4 dígitos y escríbelo aquí.',
   handoffLabel: 'Código del comprador',
@@ -1307,7 +1315,7 @@ const meetup: Strings['meetup'] = {
   suggestAnother: 'Proponer otra',
   theySuggested: '{name} propuso {when} en {place}',
   youSuggested: 'Propusiste {when} en {place}. Esperando a {name}.',
-  noSpots: 'Todavía no hay Puntos de encuentro aquí. Escribe un lugar público.',
+  noSpots: 'Aún no hay Puntos de encuentro aquí. Pídenos uno desde Ayuda.',
   cardProposed: 'Propuesto: {when}',
   cardConfirmed: 'Encuentro confirmado: {when}',
   cardConfirmedAt: 'Encuentro {day}, {time}',
@@ -1348,6 +1356,7 @@ const meetup: Strings['meetup'] = {
   noShowConfirm: 'Reportar que no llegó',
   noShowSent: 'Gracias. Lo revisaremos.',
   emergency: 'Llamar al 911',
+  safetyTips: 'Seguridad en encuentros',
   emergencyHint: 'Si en algún momento te sientes en peligro, vete y llama al 911.',
   cancelled: 'Este encuentro se canceló.',
   rescheduledFrom: 'Cambiado de {when}',
@@ -1856,6 +1865,11 @@ const quad: Strings['quad'] = {
   reportReply: 'Reportar respuesta',
   copied: 'Copiado',
   hiddenToast: 'Oculto. No verás sus publicaciones ni respuestas.',
+  deleteReply: 'Eliminar respuesta',
+  deleteReplyTitle: '¿Eliminar esta respuesta?',
+  deleteReplyBody: 'Se quita del hilo para todos. No se puede deshacer.',
+  replyDeleted: 'Respuesta eliminada',
+  blockedToast: 'Bloqueado. No verán sus publicaciones ni mensajes.',
   deleteTitle: '¿Borrar esta publicación?',
   deleteBody: 'Se quita del Quad para todos. No se puede deshacer.',
   deleted: 'Publicación borrada',

@@ -25,9 +25,15 @@ export function prefetchTabs(
   ]);
 }
 
+/** Long enough for Discover's first page, short enough to beat a tab switch. */
+export const TAB_PREFETCH_DELAY_MS = 1500;
+
 export function useTabPrefetch(): void {
   const qc = useQueryClient();
   useEffect(() => {
-    void prefetchTabs(qc);
+    // After a short wait, so Discover's first cards have the network and the
+    // JS thread to themselves on a cold start (the app opens on Discover).
+    const t = setTimeout(() => void prefetchTabs(qc), TAB_PREFETCH_DELAY_MS);
+    return () => clearTimeout(t);
   }, [qc]);
 }

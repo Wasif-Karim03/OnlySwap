@@ -31,6 +31,8 @@ export type StorageSchema = {
   'meetup.safetySeen': boolean;
   /** Invite code from an /i/{code} link, sent with the sign-up (features/auth/invite.ts). */
   'auth.inviteCode': { code: string; savedAt: string };
+  /** A shared listing opened while signed out, opened after sign-in (features/auth/pendingLink.ts). */
+  'auth.pendingListing': { id: string; savedAt: string };
   /** Upcoming meetups the app has seen, for the widget (features/widgets/logic.ts KnownMeetup[]). */
   'widgets.meetups': unknown;
   /** The last widget payload sent to the home screen (Android redraws from it). */

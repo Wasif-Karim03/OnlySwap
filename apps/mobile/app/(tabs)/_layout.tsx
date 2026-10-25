@@ -63,11 +63,20 @@ export default function TabsLayout() {
     <Tabs
       initialRouteName="discover"
       tabBar={(props) => <AppTabBar {...props} rail={rail} />}
-      screenOptions={{ headerShown: false, tabBarPosition: rail ? 'left' : 'bottom' }}
+      // freezeOnBlur: tabs you aren't looking at stop re-rendering (they caught
+      // every cache and realtime update before, which kept the phone warm).
+      // They catch up the moment they come back into view.
+      screenOptions={{
+        headerShown: false,
+        tabBarPosition: rail ? 'left' : 'bottom',
+        freezeOnBlur: true,
+      }}
     >
       <Tabs.Screen name="discover" options={{ title: tabs.discover }} />
       <Tabs.Screen name="feed" options={{ title: tabs.feed }} />
-      <Tabs.Screen name="sell" options={{ title: tabs.sell }} />
+      {/* Sell starts at step 1 every time it's opened again, so + never lands
+          on an old Posted screen (UX audit 2026-10-25). The draft is kept. */}
+      <Tabs.Screen name="sell" options={{ title: tabs.sell, popToTopOnBlur: true }} />
       <Tabs.Screen name="quad" options={{ title: tabs.quad, href: null }} />
       <Tabs.Screen name="inbox" options={{ title: tabs.inbox }} />
       <Tabs.Screen name="profile" options={{ title: tabs.profile }} />

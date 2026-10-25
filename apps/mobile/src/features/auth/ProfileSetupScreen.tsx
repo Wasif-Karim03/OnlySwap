@@ -17,6 +17,7 @@ import { primer, profileSetup as copy, states } from '@/strings';
 
 import { authApi, type AuthApi, type ClassYear } from './api';
 import { AuthStep } from './AuthStep';
+import { NotYouSignOut } from './NotYouSignOut';
 import { avatarDeps, type AvatarDeps } from './avatar';
 import { lastInitialOf, shownAs, validateName } from './logic';
 import { useGateHandoff } from './useAppGate';
@@ -128,6 +129,7 @@ export function ProfileSetupScreen({
       title={copy.title}
       body={copy.body}
       leading="none"
+      trailing={<NotYouSignOut api={api} />}
       step={4}
       dock={
         <Button

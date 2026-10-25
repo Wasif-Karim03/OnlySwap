@@ -12,6 +12,7 @@ import { clearInviteCode } from './invite';
 import { useLaunchIntro } from './LaunchIntro';
 import { launchStartedAt, SPLASH_MARK } from './launchTiming';
 import { GATE_HREF } from './logic';
+import { takeListingLink } from './pendingLink';
 import { useAppGate } from './useAppGate';
 
 const SIGNED_OUT_ROUTES = new Set<string>(['welcome', 'maintenance', 'update']);
@@ -33,7 +34,9 @@ export function LaunchScreen() {
     // Signed in (anything past Welcome and the system screens): an invite
     // link only opens the app, so a kept code is dropped (R11-INVITE-01).
     if (!SIGNED_OUT_ROUTES.has(gate.route)) clearInviteCode();
-    router.replace(GATE_HREF[gate.route] as Href);
+    // A listing link opened while signed out waits for sign-in (pendingLink.ts).
+    const pending = gate.route === 'home' ? takeListingLink() : null;
+    router.replace((pending ? `/listing/${pending}?from=link` : GATE_HREF[gate.route]) as Href);
     useLaunchIntro.getState().setReady();
     void SplashScreen.hideAsync().catch(() => {});
     if (__DEV__ && launchStartedAt.ms && process.env.NODE_ENV !== 'test') {

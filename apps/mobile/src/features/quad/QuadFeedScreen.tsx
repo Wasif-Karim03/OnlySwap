@@ -233,7 +233,7 @@ function QuadFeed({
         <View style={[styles.header, top !== undefined && styles.headerEmbedded]}>
           <View style={styles.flex}>
             <View style={styles.anon}>
-              <Icon name="lock" size={16} tone="ink2" />
+              <Icon name="users" size={16} tone="ink2" />
               <Text variant="label" tone="ink2" testID="quad-anon">
                 {campus ? fill(copy.anonAt, { campus }) : copy.subtitle}
               </Text>

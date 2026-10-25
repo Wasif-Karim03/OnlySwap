@@ -15,6 +15,7 @@ import { rules as copy, states } from '@/strings';
 
 import { authApi, type AuthApi } from './api';
 import { AuthStep } from './AuthStep';
+import { NotYouSignOut } from './NotYouSignOut';
 import { useGateHandoff } from './useAppGate';
 import { a11yState } from '@/lib/a11y';
 
@@ -111,6 +112,7 @@ export function RulesScreen({
       title={isUpdate ? copy.updatedTitle : copy.title}
       body={isUpdate ? copy.updatedBody : copy.body}
       leading="none"
+      trailing={<NotYouSignOut api={api} />}
       step={isUpdate ? undefined : 5}
       dock={
         <Button

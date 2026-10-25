@@ -192,7 +192,7 @@ export function SaveButton({ saved, onPress }: { saved: boolean; onPress: () => 
           <Icon name="bookmark" size={20} tone="onAccent" filled />
         </View>
       ) : (
-        <Material variant="clear" style={styles.saveCircle}>
+        <Material variant="clear" solid style={styles.saveCircle}>
           <Icon name="bookmark" size={20} tone="onPhoto" />
         </Material>
       )}
@@ -248,17 +248,24 @@ function OverlayFace({
             </Text>
           </View>
         ) : null}
-        <Text numberOfLines={2} style={styles.headline}>
-          <Text variant="price" tone="onPhoto">
+        {/* overlay: text on the photo stops growing at 1.4x (CLAUDE.md rule 10). */}
+        <Text overlay numberOfLines={2} style={styles.headline}>
+          <Text overlay variant="price" tone="onPhoto">
             {card.price}
           </Text>
-          <Text variant="heading" tone="onPhoto" style={styles.headlineTitle}>
+          <Text overlay variant="heading" tone="onPhoto" style={styles.headlineTitle}>
             {'  '}
             {card.title}
           </Text>
         </Text>
+        {/* Condition and age first: an offer is a swipe away (UX audit 2026-10-25). */}
+        {card.meta ? (
+          <Text overlay variant="meta" tone="onPhoto" numberOfLines={1} testID="card-meta">
+            {card.meta}
+          </Text>
+        ) : null}
         {seller ? (
-          <Text variant="meta" tone="onPhoto" numberOfLines={1} style={styles.dim(true)}>
+          <Text overlay variant="meta" tone="onPhoto" numberOfLines={1} style={styles.dim(true)}>
             {seller}
           </Text>
         ) : null}

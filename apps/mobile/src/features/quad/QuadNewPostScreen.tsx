@@ -46,7 +46,13 @@ import {
   type Vibe,
 } from './logic';
 
-const MODES: PostMode[] = ['text', 'photo', 'poll', 'checkin'];
+// Check-ins are off (UX audit 2026-10-25): with real names (DEC 150) a
+// check-in told strangers where a named student, maybe under 18, is right
+// now. The mode and its rendering stay so turning it back on is one line.
+export const CHECKINS_ENABLED = false;
+const MODES: PostMode[] = CHECKINS_ENABLED
+  ? ['text', 'photo', 'poll', 'checkin']
+  : ['text', 'photo', 'poll'];
 // DEC 130: the Quad is the Feed's Quad chip; after posting it opens on New.
 const QUAD_HOME = { pathname: '/feed', params: { kind: 'quad' } } as const;
 const QUAD_NEW = { pathname: '/feed', params: { kind: 'quad', sort: 'new' } } as const;
@@ -202,9 +208,9 @@ export function QuadNewPostScreen({
       <NavBar title={copy.newTitle} leading="close" onLeading={close} />
       <KeyboardAvoidingView behavior="padding" style={styles.flex}>
         <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-          {/* The anonymity promise comes first, above the keyboard. */}
+          {/* Who sees your name, first, above the keyboard (DEC 150: not anonymous). */}
           <View style={styles.anon}>
-            <Icon name="lock" size={16} tone="ink2" />
+            <Icon name="user" size={16} tone="ink2" />
             <Text variant="label" tone="ink2" style={styles.flex}>
               {copy.anonNote}
             </Text>

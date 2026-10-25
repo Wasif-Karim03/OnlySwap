@@ -1,9 +1,10 @@
 import { useEffect, useRef } from 'react';
-import { Pressable, View } from 'react-native';
+import { AccessibilityInfo, Platform, Pressable, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { StyleSheet } from 'react-native-unistyles';
 import { create } from 'zustand';
 
+import { useScreenReader } from '@/lib/a11y';
 import { toast as toastCopy } from '@/strings';
 
 import { Icon } from './icons/Icon';
@@ -14,6 +15,8 @@ export type ToastKind = 'info' | 'success' | 'error';
 
 export const TOAST_MS = 4000;
 export const UNDO_MS = 5000;
+/** With VoiceOver or TalkBack on, a toast stays long enough to hear and act on. */
+export const SCREEN_READER_TOAST_MS = 10_000;
 
 type ToastItem = { id: number; kind: ToastKind; message: string; onUndo?: () => void };
 
@@ -46,12 +49,17 @@ export function ToastHost() {
   const current = useToastStore((s) => s.current);
   const dismiss = useToastStore((s) => s.dismiss);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const screenReader = useScreenReader();
 
   useEffect(() => {
     if (!current) return undefined;
-    timer.current = setTimeout(() => dismiss(current.id), current.onUndo ? UNDO_MS : TOAST_MS);
+    // iOS ignores accessibilityLiveRegion, so VoiceOver never read toasts
+    // (UX audit 2026-10-25). Android announces through the live region.
+    if (Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility(current.message);
+    const ms = screenReader ? SCREEN_READER_TOAST_MS : current.onUndo ? UNDO_MS : TOAST_MS;
+    timer.current = setTimeout(() => dismiss(current.id), ms);
     return () => clearTimeout(timer.current);
-  }, [current, dismiss]);
+  }, [current, dismiss, screenReader]);
 
   if (!current) return null;
   return (

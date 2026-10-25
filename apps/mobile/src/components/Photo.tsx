@@ -43,6 +43,20 @@ export type PhotoProps = {
 };
 
 /**
+ * Downloads photos to the disk cache ahead of time (no decoding, so it's cheap),
+ * so they show at once when they come on screen. Best effort: never throws.
+ */
+export function prefetchPhotos(urls: readonly (string | null | undefined)[]): void {
+  const list = urls.filter((u): u is string => typeof u === 'string' && u.length > 0);
+  if (list.length === 0 || typeof Image.prefetch !== 'function') return;
+  try {
+    void Promise.resolve(Image.prefetch(list, 'disk')).catch(() => undefined);
+  } catch {
+    // ignore
+  }
+}
+
+/**
  * Item photo (P2-CMP-07): expo-image with a blurhash while loading and a
  * neutral placeholder with an image glyph when it fails. Fades in 150 ms,
  * instantly with reduce motion.

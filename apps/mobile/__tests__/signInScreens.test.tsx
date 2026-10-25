@@ -347,6 +347,8 @@ describe('P4-AUTH-07 A05 age check', () => {
       screen.getByTestId('age-picker').props.onChange({ type: 'set' }, new Date(2000, 4, 17));
     });
     fireEvent.press(screen.getByTestId('age-continue'));
+    // UX audit 2026-10-25: a neutral double-check before the date is sent.
+    fireEvent.press(await screen.findByRole('button', { name: ageCopy.confirmYes }));
     await waitFor(() => expect(router.getPathname()).toBe('/'));
     expect(api.confirmAge).toHaveBeenCalledWith({
       method: 'self_declared',
@@ -362,6 +364,8 @@ describe('P4-AUTH-07 A05 age check', () => {
       screen.getByTestId('age-picker').props.onChange({ type: 'set' }, new Date(2010, 0, 1));
     });
     fireEvent.press(screen.getByTestId('age-continue'));
+    // UX audit 2026-10-25: a neutral double-check before the date is sent.
+    fireEvent.press(await screen.findByRole('button', { name: ageCopy.confirmYes }));
     expect(await screen.findByText(ageCopy.blockedTitle)).toBeTruthy();
     expect(api.deleteUnderageAccount).toHaveBeenCalled();
   });
@@ -376,6 +380,8 @@ describe('P4-AUTH-07 A05 age check', () => {
       screen.getByTestId('age-picker').props.onChange({ type: 'set' }, new Date(1900, 0, 1));
     });
     fireEvent.press(screen.getByTestId('age-continue'));
+    // UX audit 2026-10-25: a neutral double-check before the date is sent.
+    fireEvent.press(await screen.findByRole('button', { name: ageCopy.confirmYes }));
     expect(await screen.findByText(ageCopy.invalidDate)).toBeTruthy();
   });
 

@@ -239,7 +239,7 @@ export function MeetupDayScreen({
           </View>
         </View>
 
-        <Handoff meetup={m} api={api} onDone={refresh} />
+        <Handoff meetup={m} api={api} onDone={refresh} now={clock} />
         {confirmed && m.my_here_at ? (
           <Text variant="label" tone="green" testID="meetup-you-here">
             {copy.youreHere}
@@ -341,20 +341,36 @@ export function MeetupDayScreen({
           />
         ) : null}
         {/* 911 stays one tap away on every state (SECURITY; DEC 90 red text link). */}
-        <Tappable
-          accessibilityRole="button"
-          accessibilityLabel={copy.emergency}
-          accessibilityHint={copy.emergencyHint}
-          onPress={() => void openUrl('tel:911')}
-          style={styles.safetyHit}
-          testID="meetup-911"
-        >
-          <View style={styles.safety}>
-            <Text variant="label" tone="red">
-              {copy.emergency}
-            </Text>
-          </View>
-        </Tappable>
+        <View style={styles.safetyRow}>
+          <Tappable
+            accessibilityRole="button"
+            accessibilityLabel={copy.emergency}
+            accessibilityHint={copy.emergencyHint}
+            onPress={() => void openUrl('tel:911')}
+            style={styles.safetyHit}
+            testID="meetup-911"
+          >
+            <View style={styles.safety}>
+              <Text variant="label" tone="red">
+                {copy.emergency}
+              </Text>
+            </View>
+          </Tappable>
+          {/* The safety center one tap from the meetup (UX audit 2026-10-25). */}
+          <Tappable
+            accessibilityRole="link"
+            accessibilityLabel={copy.safetyTips}
+            onPress={() => router.push('/safety')}
+            style={styles.safetyHit}
+            testID="meetup-safety"
+          >
+            <View style={styles.safety}>
+              <Text variant="label" tone="ink2">
+                {copy.safetyTips}
+              </Text>
+            </View>
+          </Tappable>
+        </View>
       </View>
 
       <ConfirmDialog
@@ -430,6 +446,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     borderTopColor: theme.colors.line,
     backgroundColor: theme.colors.bg,
   },
+  safetyRow: { flexDirection: 'row', justifyContent: 'center', flexWrap: 'wrap' },
   safetyHit: { alignSelf: 'center' },
   safety: {
     minHeight: theme.size.hit,

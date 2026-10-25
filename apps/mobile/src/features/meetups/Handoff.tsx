@@ -27,14 +27,27 @@ export function cleanHandoffCode(text: string): string {
  * code; the seller types it to finish the swap (both done, sold, rate). The
  * server counts wrong tries and locks after 5; "Did it sell?" still works.
  */
+/** The buyer's code shows from this long before the start (UX audit 2026-10-25). */
+export const HANDOFF_REVEAL_MS = 30 * 60_000;
+
+/**
+ * Shown days early, the code could be talked out of the buyer in chat and
+ * the swap marked done before anything changed hands.
+ */
+export function handoffVisible(startsAt: string, now: Date): boolean {
+  return new Date(startsAt).getTime() - now.getTime() <= HANDOFF_REVEAL_MS;
+}
+
 export function Handoff({
   meetup: m,
   api,
   onDone,
+  now = new Date(),
 }: {
   meetup: Meetup;
   api: Pick<MeetupsApi, 'confirmHandoff'>;
   onDone: () => Promise<unknown>;
+  now?: Date;
 }) {
   const router = useRouter();
   const qc = useQueryClient();
@@ -46,6 +59,18 @@ export function Handoff({
 
   if (!m.i_am_seller) {
     if (!m.handoff_code) return null;
+    if (!handoffVisible(m.starts_at, now)) {
+      return (
+        <View style={styles.panel} testID="meetup-handoff-later">
+          <Text variant="label" tone="ink3">
+            {copy.handoffTitle}
+          </Text>
+          <Text variant="meta" tone="ink2">
+            {copy.handoffLater}
+          </Text>
+        </View>
+      );
+    }
     return (
       <View
         style={styles.panel}

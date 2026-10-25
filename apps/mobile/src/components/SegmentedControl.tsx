@@ -48,7 +48,7 @@ export function SegmentedControl<T extends string>({
             onPress={() => onChange(s.value)}
             style={({ pressed }) => [styles.segment(selected), pressed && styles.pressed]}
           >
-            <Text variant="label" tone={selected ? 'ink' : 'ink2'}>
+            <Text variant="label" tone={selected ? 'inverse' : 'ink2'}>
               {s.label}
             </Text>
             <CountPill count={s.badge} hidden={false} />
@@ -76,7 +76,9 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: theme.radius.chip,
-    backgroundColor: selected ? theme.colors.card : 'transparent',
+    // Ink fill like Chip and the tab bar pill: a card fill on bg2 was 1.11:1,
+    // so the chosen segment couldn't be told apart (UX audit 2026-10-25).
+    backgroundColor: selected ? theme.colors.ink : 'transparent',
   }),
   pressed: { opacity: PRESSED_OPACITY },
 }));

@@ -2,16 +2,19 @@ import DateTimePicker, { type DateTimePickerEvent } from '@react-native-communit
 import * as AgeRange from 'expo-age-range';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Platform, View } from 'react-native';
+import { ActivityIndicator, Linking, Platform, View } from 'react-native';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 import { Button } from '@/components/Button';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { WebDateInput } from '@/components/WebDateInput';
+import { getEnv } from '@/lib/env';
 import { errorCopy, toAppError } from '@/lib/errors';
+import { fill } from '@/lib/format';
 import { isWebPlatform } from '@/lib/platform';
-import { age as copy } from '@/strings';
+import { age as copy, intlLocale } from '@/strings';
 
 import {
   bandForSignal,
@@ -26,6 +29,7 @@ import {
 } from './age';
 import { authApi, type AuthApi } from './api';
 import { AuthStep } from './AuthStep';
+import { NotYouSignOut } from './NotYouSignOut';
 import { useGateHandoff } from './useAppGate';
 
 type Phase = 'checking' | 'form' | 'saving' | 'blocked' | 'osRequired';
@@ -70,6 +74,9 @@ export function AgeScreen({
   const [date, setDate] = useState<Date | null>(null);
   const [pickerOpen, setPickerOpen] = useState(Platform.OS === 'ios');
   const [error, setError] = useState<string | null>(null);
+  // A neutral double-check before the date is sent (UX audit 2026-10-25): an
+  // under-13 answer deletes the account for good, so a wheel slip must not.
+  const [confirming, setConfirming] = useState(false);
   const started = useRef(false);
   const regulation = useRef<Regulation>(NOT_REGULATED);
 
@@ -150,12 +157,20 @@ export function AgeScreen({
         body={copy.blockedBody}
         leading="none"
         dock={
-          <Button
-            label={copy.close}
-            variant="secondary"
-            onPress={() => router.replace('/welcome')}
-            testID="age-close"
-          />
+          <>
+            <Button
+              label={copy.close}
+              variant="secondary"
+              onPress={() => router.replace('/welcome')}
+              testID="age-close"
+            />
+            <Button
+              label={copy.support}
+              variant="text"
+              onPress={() => void Linking.openURL(`${getEnv().EXPO_PUBLIC_SITE_URL}/help#contact`)}
+              testID="age-support"
+            />
+          </>
         }
       />
     );
@@ -224,15 +239,14 @@ export function AgeScreen({
       title={copy.title}
       body={copy.body}
       leading="none"
+      trailing={<NotYouSignOut api={api} />}
       step={3}
       dock={
         <Button
           label={copy.continue}
           disabled={!date || phase === 'saving'}
           loading={phase === 'saving'}
-          onPress={() =>
-            date && void submit({ method: 'self_declared', birthDate: toIsoDate(date) })
-          }
+          onPress={() => date && setConfirming(true)}
           testID="age-continue"
         />
       }
@@ -303,6 +317,27 @@ export function AgeScreen({
       <Text variant="meta" tone="ink3">
         {copy.privacy}
       </Text>
+      <ConfirmDialog
+        visible={confirming}
+        title={fill(copy.confirmTitle, {
+          date: date
+            ? date.toLocaleDateString(intlLocale, {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+              })
+            : '',
+        })}
+        message={copy.confirmBody}
+        confirmLabel={copy.confirmYes}
+        cancelLabel={copy.confirmChange}
+        onCancel={() => setConfirming(false)}
+        onConfirm={() => {
+          setConfirming(false);
+          if (date) void submit({ method: 'self_declared', birthDate: toIsoDate(date) });
+        }}
+        testID="age-confirm"
+      />
     </AuthStep>
   );
 }

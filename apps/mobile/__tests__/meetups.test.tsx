@@ -62,11 +62,11 @@ describe('meetup logic', () => {
     expect(dayOptions(NOW)[0]!.label).toBe(meetup.today);
   });
 
-  it('offers half-hour slots from 8 AM to 10 PM, at least 15 minutes out', () => {
+  it('offers half-hour slots from 8 AM to 8 PM, at least 15 minutes out', () => {
     const today = timeOptions(NOW, NOW);
     expect(today[0]).toEqual(new Date(2027, 2, 10, 12, 30));
-    expect(today[today.length - 1]).toEqual(new Date(2027, 2, 10, 22, 0));
-    expect(timeOptions(new Date(2027, 2, 11), NOW)).toHaveLength(29);
+    expect(today[today.length - 1]).toEqual(new Date(2027, 2, 10, 20, 0));
+    expect(timeOptions(new Date(2027, 2, 11), NOW)).toHaveLength(25);
   });
 
   it('counts down and up', () => {

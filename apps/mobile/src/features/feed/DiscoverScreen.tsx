@@ -12,7 +12,7 @@ import { motion } from '@onlyswap/tokens';
 import { useOfflineNote } from '@/components/Banner';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
-import { Photo } from '@/components/Photo';
+import { Photo, prefetchPhotos } from '@/components/Photo';
 import { Text } from '@/components/Text';
 import { useToastStore } from '@/components/Toast';
 import { useScreenReader } from '@/lib/a11y';
@@ -27,6 +27,7 @@ import { useReducedMotion } from '@/theme/reducedMotion';
 import { DiscoverHeader } from '../campus/DiscoverHeader';
 import { meApi, type Me } from '../me/api';
 import { meKey } from '../me/MeScreens';
+import { takeOfferSent } from '../offers/sentOffers';
 import { feedApi, type FeedApi } from './api';
 import { DEEP_SCALE, NEXT_SCALE, PEEK, type SwipeDir } from './deckMath';
 import {
@@ -44,6 +45,8 @@ import { getSwipeStore, useSwipeFlush, type SwipeState } from './swipes';
 export const PAGE = 20;
 /** Fetch the next page when this few cards are left. */
 const PREFETCH_AT = 5;
+/** Cover photos downloaded ahead, past the 3 mounted cards. */
+const COVER_PREFETCH = 4;
 
 type CoachStorage = { seen: () => boolean; markSeen: () => void };
 const defaultCoach: CoachStorage = {
@@ -105,6 +108,20 @@ export function DiscoverScreen({
   const cursor = useRef<FeedCursor | null>(null);
   const loading = useRef(false);
   const swiped = useRef(new Set<string>());
+  const pendingOffer = useRef<{ item: FeedItem; dwell: number | undefined } | null>(null);
+  useFocusEffect(
+    useCallback(() => {
+      const held = pendingOffer.current;
+      if (!held) return;
+      pendingOffer.current = null;
+      if (takeOfferSent(held.item.id)) {
+        store.getState().swipe(held.item.id, 'right', held.dwell);
+        return;
+      }
+      swiped.current.delete(held.item.id);
+      setItems((prev) => (prev.some((p) => p.id === held.item.id) ? prev : [held.item, ...prev]));
+    }, [store]),
+  );
   // What you saved on this run through the pile, for the end-of-pile thumbnails.
   const [savedHere, setSavedHere] = useState<DeckCard[]>([]);
   // Time on the top card (DEC 93): counted only while Discover is in front.
@@ -157,6 +174,12 @@ export function DiscoverScreen({
     const t = now();
     return items.map((i) => toDeckCard(i, base, t));
   }, [items, mediaBase, now]);
+
+  // The deck mounts 3 cards; the covers of the next few download ahead so a
+  // revealed card shows its photo at once instead of a blurhash.
+  useEffect(() => {
+    prefetchPhotos(cards.slice(3, 3 + COVER_PREFETCH).map((c) => c.photos[0]?.uri));
+  }, [cards]);
 
   // Time on card for the top card of the deck (not the grid); it goes with the swipe (E-03, DEC 100).
   const topId = gridWidth === undefined && phase === 'ready' ? cards[0]?.id : undefined;
@@ -229,16 +252,21 @@ export function DiscoverScreen({
         return;
       }
       swiped.current.add(card.id);
+      const removed = items.find((p) => p.id === card.id) ?? null;
       setItems((prev) => prev.filter((p) => p.id !== card.id));
-      store.getState().swipe(card.id, dir, dwellOn(card.id));
       track('card_swiped', { dir });
       if (showCoach) dismissCoach();
       // A pass just moves on: no "Passed / Undo" toast (owner review 2026-10-24).
-      if (dir !== 'left') {
-        router.push({ pathname: '/listing/[id]/offer', params: { id: card.id } });
+      if (dir === 'left') {
+        store.getState().swipe(card.id, dir, dwellOn(card.id));
+        return;
       }
+      // Right: held until the offer sheet closes. Recorded only if the offer
+      // went out; otherwise the card comes back on top (UX audit 2026-10-25).
+      pendingOffer.current = removed ? { item: removed, dwell: dwellOn(card.id) } : null;
+      router.push({ pathname: '/listing/[id]/offer', params: { id: card.id } });
     },
-    [store, showCoach, dismissCoach, router, dwellOn, onToggleSave],
+    [items, store, showCoach, dismissCoach, router, dwellOn, onToggleSave],
   );
 
   const onOpen = useCallback(

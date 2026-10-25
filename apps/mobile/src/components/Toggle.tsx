@@ -88,6 +88,8 @@ const styles = StyleSheet.create((theme) => ({
     width: theme.size.toggleH - KNOB_INSET * 2,
     height: theme.size.toggleH - KNOB_INSET * 2,
     borderRadius: theme.radius.chip,
-    backgroundColor: on ? theme.colors.bg : theme.colors.card,
+    // Off: a grey knob on the light track. The white knob was 1.23:1 (1.05:1
+    // in dark), so an off switch looked like empty space (UX audit 2026-10-25).
+    backgroundColor: on ? theme.colors.bg : theme.colors.ink3,
   }),
 }));

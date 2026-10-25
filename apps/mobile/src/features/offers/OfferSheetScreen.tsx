@@ -31,6 +31,7 @@ import { dollarsToCents } from '../search/logic';
 import { centsToPrice, cleanPrice, mediaUrl } from '../sell/logic';
 import { offersApi, type OffersApi } from './api';
 import { isLowOffer, money, quickAmounts } from './logic';
+import { markOfferSent } from './sentOffers';
 
 const QUICK_NOTES = ['today', 'campus', 'available', 'cash'] as const;
 
@@ -162,6 +163,7 @@ export function OfferSheetScreen({
           quick,
         );
       else await api.make(item.id, cents, note, quick);
+      markOfferSent(listingId);
       haptic('success'); // Budget: "offer sent" (DESIGN_SYSTEM §5).
       track('offer_sent', { pct_of_ask_bucket: pctBucket(cents, ask) });
       void qc.invalidateQueries({ queryKey: ['inbox'] });

@@ -207,10 +207,16 @@ export function ChatScreen({
     void state.send(body);
   };
 
+  // No meetup, or the last one ended without a swap: plan (again). Your own
+  // proposal can be changed; a new one replaces it on the server.
+  const lastMeetup = meetupQ.data;
+  const canPlan =
+    !lastMeetup || lastMeetup.status === 'cancelled' || lastMeetup.status === 'no_show';
+  const canChange = !!lastMeetup && lastMeetup.status === 'proposed' && lastMeetup.proposed_by_me;
   const planButton =
-    !readOnly && !meetupQ.data ? (
+    !readOnly && (canPlan || canChange) ? (
       <Button
-        label={copy.planMeetup}
+        label={canChange ? copy.changeMeetup : copy.planMeetup}
         size="M"
         variant="dark"
         fullWidth={false}

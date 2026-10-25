@@ -123,6 +123,12 @@ export function firstSentId(items: ChatItem[]): number | null {
 const URL_RE =
   /\b(?:https?:\/\/|www\.)\S+|\b[a-z0-9-]+\.(?:com|net|org|io|co|me|app|link|ly|xyz)\b/i;
 const PHONE_RE = /(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b/;
+// Moving the chat to another app is the usual first step off-platform (UX
+// audit 2026-10-25), and it matters most with minors on the app.
+const SOCIAL_RE =
+  /\b(?:snap(?:chat)?|insta(?:gram)?|whats\s?app|telegram|discord|kik|wechat)\b|\b(?:ig|sc)\s*[:@-]|(?:^|\s)@[a-z0-9._]{3,}/i;
+// The handoff code is only for the meetup itself; never ask for it in chat.
+const CODE_RE = /\bcode\b\D{0,12}\d{4}\b/i;
 const PAY_RE =
   /\b(?:venmo|zelle|cash\s?app|cashapp|paypal|apple\s?pay|gift\s?cards?|wire|western\s?union|crypto|bitcoin|deposit|pay\s(?:first|upfront|up front|ahead))\b/i;
 
@@ -131,7 +137,7 @@ export function scamHint(body: string | null | undefined): 'link' | 'phone' | 'p
   if (!body) return null;
   if (PAY_RE.test(body)) return 'payment';
   if (URL_RE.test(body)) return 'link';
-  if (PHONE_RE.test(body)) return 'phone';
+  if (PHONE_RE.test(body) || SOCIAL_RE.test(body) || CODE_RE.test(body)) return 'phone';
   return null;
 }
 

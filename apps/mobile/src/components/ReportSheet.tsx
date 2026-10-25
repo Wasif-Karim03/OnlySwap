@@ -75,11 +75,11 @@ export function isQuadTarget(target: ReportTarget): target is 'quad_post' | 'qua
 }
 
 /**
- * Listings can't be blocked; people, chats and messages can. Quad authors
- * are anonymous, so there is nobody to name in a block (hide them instead).
+ * Listings can't be blocked; people, chats, messages and Quad posts and
+ * replies can (DEC 150: the Quad shows real names, so there is someone to block).
  */
 export function canBlock(target: ReportTarget): boolean {
-  return target !== 'listing' && !isQuadTarget(target);
+  return target !== 'listing';
 }
 
 function reasonGroup(target: ReportTarget): 'listing' | 'person' | 'quad' {
