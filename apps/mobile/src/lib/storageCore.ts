@@ -27,6 +27,8 @@ export type StorageSchema = {
   'search.recent': unknown;
   /** Last time we asked for an App Store / Play review (ISO), X26. */
   'review.lastAskedAt': string;
+  /** The one-time "Before you meet" safety reminder was seen (DEC 151). */
+  'meetup.safetySeen': boolean;
   /** Invite code from an /i/{code} link, sent with the sign-up (features/auth/invite.ts). */
   'auth.inviteCode': { code: string; savedAt: string };
   /** Upcoming meetups the app has seen, for the widget (features/widgets/logic.ts KnownMeetup[]). */

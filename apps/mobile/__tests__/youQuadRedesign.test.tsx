@@ -420,7 +420,7 @@ describe('DEC 90 The Quad', () => {
       }) as Me;
     renderAt({ quad: () => <QuadScreen api={api} now={() => NOW} loadMe={loadMe} /> }, '/quad');
     expect(await screen.findByTestId('quad-post-p1')).toBeTruthy();
-    expect(await screen.findByText('Anonymous · Demo U')).toBeTruthy();
+    expect(await screen.findByText('Demo U students')).toBeTruthy();
     const pinned = screen.getByTestId('quad-pinned');
     expect(StyleSheet.flatten(pinned.props.style).backgroundColor).toBe(lightTheme.colors.bg2);
     expect(pinned.props.accessibilityLabel).toBe('Pinned: Finals week.. Library open 24 h.');

@@ -8,8 +8,8 @@ import { track } from '@/lib/analytics';
 import { Banner } from '@/components/Banner';
 import { Button } from '@/components/Button';
 import { Chip } from '@/components/Chip';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { IconButton } from '@/components/IconButton';
-import { Input } from '@/components/Input';
 import { NavBar } from '@/components/NavBar';
 import { OptionRow } from '@/components/OptionRow';
 import { SkeletonList } from '@/components/Skeleton';
@@ -17,6 +17,8 @@ import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
 import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
+import { getStorage } from '@/lib/storage';
+import type { TypedStorage } from '@/lib/storageCore';
 import { meetup as copy } from '@/strings';
 import { readableColumn } from '@/theme/layout';
 
@@ -26,11 +28,10 @@ import { meetupsApi, type MeetupsApi } from './api';
 import { dayOptions, timeLabel, timeOptions } from './logic';
 import { SpotsMap } from './SpotsMap';
 
-const CUSTOM = '__custom';
-
 /**
  * E05 Plan the pickup (P8-MEET-02): Meetup spots (police-designated first,
- * with a Directions link), a custom public place, day and time. R11-MAP-01
+ * with a Directions link), day and time. DEC 151: campus Meetup spots only
+ * (no custom places), with a one-time safety reminder. R11-MAP-01
  * adds a collapsible spots map above the list (synced selection); still no
  * location permission, and the list stays the accessible UI.
  */
@@ -40,18 +41,20 @@ export function PlanMeetupScreen({
   spots = () => sellApi.spots(),
   openUrl = (url: string) => Linking.openURL(url),
   now = () => new Date(),
+  store = getStorage(),
 }: {
   chatId: string;
   api?: MeetupsApi;
   spots?: () => Promise<Spot[]>;
   openUrl?: (url: string) => Promise<unknown>;
   now?: () => Date;
+  store?: Pick<TypedStorage, 'get' | 'set'>;
 }) {
   const router = useRouter();
   const qc = useQueryClient();
   const spotsQ = useQuery({ queryKey: ['spots'], queryFn: spots, staleTime: 3600_000 });
-  const [place, setPlace] = useState<string | null>(null);
-  const [custom, setCustom] = useState('');
+  const [picked, setPlace] = useState<string | null>(null);
+  const [safetyOpen, setSafetyOpen] = useState(false);
   const days = dayOptions(now());
   const [dayKey, setDayKey] = useState(days[0]!.key);
   const [time, setTime] = useState<number | null>(null);
@@ -63,24 +66,25 @@ export function PlanMeetupScreen({
       : router.replace({ pathname: '/chat/[id]', params: { id: chatId } });
 
   const list = sortSpots(spotsQ.data ?? []);
+  // The campus's default spot is picked to start with.
+  const place = picked ?? list.find((s) => s.isDefault)?.id ?? null;
   const day = days.find((d) => d.key === dayKey) ?? days[0]!;
   const times = timeOptions(day.date, now());
   const chosenTime = times.find((t) => t.getTime() === time) ?? null;
-  const placeReady = place === CUSTOM ? custom.trim().length > 0 : place !== null;
+  const placeReady = place !== null;
 
   const submit = async () => {
     if (!chosenTime || !placeReady) return;
+    if (!store.get('meetup.safetySeen')) {
+      setSafetyOpen(true);
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
-      await api.propose(chatId, chosenTime, place === CUSTOM ? { custom } : { spotId: place! });
+      await api.propose(chatId, chosenTime, { spotId: place! });
       track('meetup_planned', {
-        spot_type:
-          place === CUSTOM
-            ? 'custom'
-            : spotsQ.data?.find((s) => s.id === place)?.police
-              ? 'police'
-              : 'meetup_spot',
+        spot_type: spotsQ.data?.find((s) => s.id === place)?.police ? 'police' : 'meetup_spot',
       });
       void qc.invalidateQueries({ queryKey: ['chat-meetup', chatId] });
       close();
@@ -129,21 +133,10 @@ export function PlanMeetupScreen({
             />
           </View>
         ))}
-        <OptionRow
-          label={copy.somewhereElse}
-          selected={place === CUSTOM}
-          onPress={() => setPlace(CUSTOM)}
-          kind="radio"
-        />
-        {place === CUSTOM ? (
-          <Input
-            label={copy.customLabel}
-            placeholder={copy.customPlaceholder}
-            value={custom}
-            onChangeText={setCustom}
-            maxLength={60}
-            testID="meetup-custom"
-          />
+        {list.length > 0 ? (
+          <Text variant="meta" tone="ink2" testID="meetup-spots-only">
+            {copy.spotsOnlyNote}
+          </Text>
         ) : null}
 
         <Text variant="heading" accessibilityRole="header" style={styles.section}>
@@ -183,6 +176,19 @@ export function PlanMeetupScreen({
           testID="meetup-suggest"
         />
       </View>
+      <ConfirmDialog
+        visible={safetyOpen}
+        title={copy.safetyTitle}
+        message={copy.safetyBody}
+        confirmLabel={copy.safetyConfirm}
+        onConfirm={() => {
+          store.set('meetup.safetySeen', true);
+          setSafetyOpen(false);
+          void submit();
+        }}
+        onCancel={() => setSafetyOpen(false)}
+        testID="meetup-safety"
+      />
     </View>
   );
 }

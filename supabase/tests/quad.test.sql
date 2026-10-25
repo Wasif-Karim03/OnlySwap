@@ -116,15 +116,13 @@ select is((select count(*)::int from public.notifications where user_id = tests.
 select is(pg_temp.q('B', format('select public.create_quad_reply(%L, %L) ->> %L', pg_temp.pid('best study spot?'), 'call 614 555 0182', 'reason')),
   'pii:phone', 'replies get the same checks');
 
--- T-INT-QUAD-ANON / T-SEC-04 (database half): no author ids anywhere ----------------------------
+-- DEC 150: the Quad shows who wrote each post and reply (no longer anonymous) ----------------
 select is(
   concat_ws('|',
     pg_temp.q('B', format($f$select (public.get_quad_feed('new')::text like '%%%s%%')::text$f$, tests.uid('A'))),
-    pg_temp.q('B', format($f$select (public.get_quad_thread(%L)::text like '%%%s%%')::text$f$, pg_temp.pid('best study spot?'), tests.uid('A'))),
-    pg_temp.q('A', format($f$select (public.get_quad_feed('new')::text like '%%%s%%')::text$f$, tests.uid('A'))),
-    pg_temp.q('A', format($f$select (public.get_my_quad()::text like '%%%s%%')::text$f$, tests.uid('A'))),
-    pg_temp.q('B', format($f$select (public.get_quad_thread(%L)::text ~ 'author|user_id')::text$f$, pg_temp.pid('best study spot?')))),
-  'false|false|false|false|false', 'no Quad response carries an author id or field, even for your own posts');
+    pg_temp.q('B', format($f$select (public.get_quad_thread(%L) -> 'post' -> 'author' ->> 'display_name') is not null$f$, pg_temp.pid('best study spot?'))),
+    pg_temp.q('A', format($f$select (public.get_my_quad()::text like '%%%s%%')::text$f$, tests.uid('A')))),
+  'true|true|true', 'Quad responses name the author (id, display name, photo), like the rest of the app');
 select is(pg_temp.q('B', $$select count(*)::text from public.quad_posts$$),
   'ERROR: permission denied for table quad_posts', 'no direct reads of posts');
 select is(pg_temp.q('B', $$select count(*)::text from public.quad_replies$$),

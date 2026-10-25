@@ -11,6 +11,7 @@ import { fill } from '@/lib/format';
 import { intlLocale, quad as copy } from '@/strings';
 
 import { agoLabel } from '../../feed/logic';
+import { QuadAuthorLine } from './QuadAuthor';
 import { shortAgo } from '../../offers/logic';
 import { mediaUrl } from '../../sell/logic';
 import type { QuadPoll, QuadPost } from '../api';
@@ -151,6 +152,15 @@ export function QuadPostCard({
 
   const content = (
     <View style={styles.content}>
+      {post.author !== undefined ? (
+        <QuadAuthorLine
+          author={post.author}
+          mine={post.is_mine}
+          mediaBase={mediaBase}
+          meta={card ? time : undefined}
+          testID={testID ? `${testID}-author` : undefined}
+        />
+      ) : null}
       {card ? (
         post.status === 'held' ? (
           <View style={styles.meta}>

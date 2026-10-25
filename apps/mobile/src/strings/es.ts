@@ -1290,6 +1290,12 @@ const meetup: Strings['meetup'] = {
   directions: 'Cómo llegar a {name}',
   directionsShort: 'Cómo llegar',
   somewhereElse: 'Otro lugar',
+  spotsOnlyNote:
+    'Los encuentros son en los Puntos de encuentro de tu campus: lugares públicos y con personal.',
+  safetyTitle: 'Antes de encontrarte',
+  safetyBody:
+    'Encuéntrate en el punto que elegiste, mejor de día. Dile a un amigo a dónde vas. Revisa el artículo antes de pagar y nunca pagues por adelantado. Puedes reportar o bloquear a cualquiera desde el chat.',
+  safetyConfirm: 'Entendido',
   customLabel: 'Lugar',
   customPlaceholder: 'Por ejemplo, el lobby de Morrill Tower',
   dayTitle: 'Cuándo',
@@ -1781,8 +1787,8 @@ const system: Strings['system'] = {
 
 const quad: Strings['quad'] = {
   title: 'El Quad',
-  subtitle: 'Anónimo para estudiantes',
-  anonAt: 'Anónimo · {campus}',
+  subtitle: 'Tu campus, conversando',
+  anonAt: 'Estudiantes de {campus}',
   sortLabel: 'Ordenar publicaciones',
   sorts: { hot: 'Popular', new: 'Nuevo', top: 'Top' },
   newPost: 'Nueva publicación',
@@ -1790,11 +1796,11 @@ const quad: Strings['quad'] = {
   openMine: 'Tu Quad',
   openMuted: 'Silenciados y ocultos',
   menuTitle: 'Tu Quad',
-  welcomeTitle: 'Dilo sin tu nombre',
+  welcomeTitle: 'Tu campus, en voz alta',
   welcomeIntro: 'Cuatro cosas que debes saber primero.',
-  ruleAnonTitle: 'Anónimo para estudiantes, no para nosotros',
+  ruleAnonTitle: 'Tu nombre aparece en lo que publicas',
   ruleAnonBody:
-    'Aquí nadie ve quién eres. Guardamos tu cuenta y solo la compartimos si la ley lo exige o si alguien está en peligro.',
+    'Las publicaciones y respuestas muestran tu nombre y la inicial de tu apellido, como en el resto de OnlySwap.',
   ruleNamesTitle: 'No expongas a estudiantes',
   ruleNamesBody:
     'Nada de nombres, iniciales, fotos ni cuartos de estudiantes en forma negativa. Con los profes sí se vale.',
@@ -1866,7 +1872,7 @@ const quad: Strings['quad'] = {
   you: 'Tú',
   repliesOffNote: 'El autor desactivó las respuestas.',
   noReplies: 'Todavía no hay respuestas. Agrega una abajo.',
-  replyLabel: 'Responder en anónimo',
+  replyLabel: 'Escribir una respuesta',
   replyPlaceholder: 'Agrega una respuesta',
   sendReply: 'Enviar respuesta',
   replyHeld: 'Tu respuesta espera una revisión rápida.',
@@ -1876,7 +1882,8 @@ const quad: Strings['quad'] = {
   modes: { text: 'Texto', photo: 'Foto', poll: 'Encuesta', checkin: 'Check-in' },
   bodyLabel: '¿Qué tienes en mente?',
   bodyPlaceholder: 'No pongas nombres de estudiantes',
-  anonNote: 'Publicas en anónimo. Los demás estudiantes no pueden ver quién eres.',
+  anonNote: 'Tu nombre y la inicial de tu apellido aparecen en esta publicación.',
+  deletedAuthor: 'Usuario eliminado',
   discardTitle: '¿Descartar esta publicación?',
   discardBody: 'Lo que escribiste no se guardará.',
   discardKeep: 'Seguir escribiendo',

@@ -38,7 +38,12 @@ export type QuadPost = {
   is_mine: boolean;
   my_vote: VoteValue;
   poll: QuadPoll | null;
+  /** Missing on servers before migration 0251. */
+  author?: QuadAuthor | null;
 };
+
+/** DEC 150: who wrote a post or reply; null once the account is gone. */
+export type QuadAuthor = { id: string; display_name: string | null; avatar_path: string | null };
 
 export type QuadReply = {
   id: string;
@@ -46,6 +51,7 @@ export type QuadReply = {
   alias_no: number;
   is_op: boolean;
   is_mine: boolean;
+  author?: QuadAuthor | null;
   score: number;
   status: QuadStatus;
   created_at: string;

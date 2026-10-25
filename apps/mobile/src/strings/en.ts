@@ -1336,6 +1336,12 @@ export const meetup = {
   somewhereElse: 'Somewhere else',
   customLabel: 'Place',
   customPlaceholder: 'For example, the lobby of Morrill Tower',
+  /** DEC 151: meetups only at campus Meetup spots, for everyone. */
+  spotsOnlyNote: 'Meetups happen at your campus Meetup spots: public, staffed places.',
+  safetyTitle: 'Before you meet',
+  safetyBody:
+    'Meet at the spot you picked, ideally in daylight. Tell a friend where you are going. Check the item before you pay, and never pay ahead. You can report or block anyone from the chat.',
+  safetyConfirm: 'Got it',
   dayTitle: 'When',
   timeTitle: 'Time',
   today: 'Today',
@@ -1855,8 +1861,9 @@ export const system = {
 /** The Quad (R1.1, DESIGN_SYSTEM Q01 to Q14 with D7; check-in is R2). */
 export const quad = {
   title: 'The Quad',
-  subtitle: 'Anonymous to students',
-  anonAt: 'Anonymous · {campus}',
+  // DEC 150: the Quad shows names (no longer anonymous; Apple 1.2).
+  subtitle: 'Your campus, talking',
+  anonAt: '{campus} students',
   sortLabel: 'Sort posts',
   sorts: { hot: 'Hot', new: 'New', top: 'Top' },
   newPost: 'New post',
@@ -1865,11 +1872,11 @@ export const quad = {
   openMuted: 'Muted and hidden',
   menuTitle: 'Your Quad',
   // Q01 Welcome
-  welcomeTitle: 'Say it without your name on it',
+  welcomeTitle: 'Your campus, out loud',
   welcomeIntro: 'Four things to know first.',
-  ruleAnonTitle: 'Anonymous to students, not to us',
+  ruleAnonTitle: 'Your name is on what you post',
   ruleAnonBody:
-    'Nobody here sees who you are. We keep your account on file and only share it if the law requires it or someone is in danger.',
+    'Posts and replies show your first name and last initial, like everywhere else on OnlySwap.',
   ruleNamesTitle: "Don't call out students",
   ruleNamesBody:
     'No names, initials, photos or dorm rooms of students in a negative way. Professors are fair game.',
@@ -1945,7 +1952,7 @@ export const quad = {
   you: 'You',
   repliesOffNote: 'The poster turned off replies.',
   noReplies: 'No replies yet. Add one below.',
-  replyLabel: 'Reply anonymously',
+  replyLabel: 'Write a reply',
   replyPlaceholder: 'Add a reply',
   sendReply: 'Send reply',
   replyHeld: 'Your reply is waiting for a quick review.',
@@ -1956,7 +1963,9 @@ export const quad = {
   modes: { text: 'Text', photo: 'Photo', poll: 'Poll', checkin: 'Check-in' },
   bodyLabel: "What's on your mind?",
   bodyPlaceholder: 'Keep names of students out of it',
-  anonNote: "Posting anonymously. Other students can't see who you are.",
+  anonNote: 'Your first name and last initial show on this post.',
+  /** A post or reply whose author deleted their account. */
+  deletedAuthor: 'Deleted user',
   discardTitle: 'Discard this post?',
   discardBody: "What you wrote won't be saved.",
   discardKeep: 'Keep writing',

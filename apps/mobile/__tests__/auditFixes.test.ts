@@ -1,9 +1,10 @@
 // Fixes from the 2026-10-24 device audit (fix/audit-1).
 import { dealPriceLine, dealStatusLabel } from '../src/features/chat/logic';
 import { isFeedPost } from '../src/features/me/api';
+import { authorName } from '../src/features/quad/components/QuadAuthor';
 import { profileStats } from '../src/features/me/MeScreens';
 import { priceInput, validateDetails } from '../src/features/sell/logic';
-import { chat, me, saved } from '../src/strings';
+import { chat, me, quad, saved } from '../src/strings';
 import { es } from '../src/strings/es';
 
 const counts = { sold: 0, swaps: 0, thumbs_up: 0, thumbs_total: 0 };
@@ -76,5 +77,13 @@ describe('audit fixes', () => {
     );
     expect(dealPriceLine({ offer_id: null, agreed_cents: 0 }, money)).toBe(chat.wantedAsk);
     expect(dealPriceLine({ offer_id: 'o1', agreed_cents: 900 }, money)).toBe('$9 in person');
+  });
+
+  it('the Quad names its authors (DEC 150)', () => {
+    const a = { id: 'u1', display_name: 'Maya R.', avatar_path: null };
+    expect(authorName(a, false)).toBe('Maya R.');
+    expect(authorName(a, true)).toBe(`Maya R. (${quad.you})`);
+    expect(authorName(null, false)).toBe(quad.deletedAuthor);
+    expect(quad.anonNote).not.toMatch(/anonym/i);
   });
 });

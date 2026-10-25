@@ -25,7 +25,7 @@ No harassment, threats, hate, sexual messages, or calling out other students. An
 
 ## In the Quad
 
-The Quad is anonymous to other students, not to OnlySwap.
+Quad posts and replies show your name, like everywhere else on OnlySwap.
 
 - Talk about campus, not about people. Don't name, rate or call out another student, even without their full name.
 - No threats, harassment, bullying or hate.

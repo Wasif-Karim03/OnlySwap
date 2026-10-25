@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { Avatar } from '@/components/Avatar';
 import { IconButton } from '@/components/IconButton';
 import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
@@ -9,7 +10,9 @@ import { quad as copy } from '@/strings';
 
 import { agoLabel } from '../../feed/logic';
 import type { QuadReply } from '../api';
+import { mediaUrl } from '../../sell/logic';
 import { aliasSwatch, aliasTag } from '../logic';
+import { authorName } from './QuadAuthor';
 import { pointsLabel, VoteControl } from './VoteControl';
 
 /** "OP" or "Anon A": the per-thread name (UX-11, D7: letters and colours, no emoji). */
@@ -41,16 +44,32 @@ type Props = {
   now: Date;
   onVote: (dir: 1 | -1) => void;
   onOptions: () => void;
+  /** For the author's photo (DEC 150). */
+  mediaBase?: string;
   testID?: string;
 };
 
 /** A reply in a thread (Q6): alias, time, text, votes. Held replies show only to their author. */
-export function ReplyRow({ reply, now, onVote, onOptions, testID }: Props) {
+export function ReplyRow({ reply, now, onVote, onOptions, mediaBase, testID }: Props) {
   const held = reply.status === 'held';
-  const name = aliasName(reply.alias_no);
+  // DEC 150: real names; the alias only for servers before migration 0251.
+  const named = reply.author !== undefined;
+  const name = named ? authorName(reply.author ?? null, false) : aliasName(reply.alias_no);
   return (
     <View style={styles.row} testID={testID}>
-      <AliasBadge aliasNo={reply.alias_no} />
+      {named ? (
+        <Avatar
+          name={name}
+          uri={
+            reply.author?.avatar_path && mediaBase
+              ? mediaUrl(mediaBase, reply.author.avatar_path)
+              : null
+          }
+          size="S"
+        />
+      ) : (
+        <AliasBadge aliasNo={reply.alias_no} />
+      )}
       <View style={styles.flex}>
         <View style={styles.meta}>
           <Text variant="label">{reply.is_mine ? `${name} (${copy.you})` : name}</Text>

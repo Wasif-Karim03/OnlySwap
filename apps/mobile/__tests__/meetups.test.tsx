@@ -44,6 +44,16 @@ const m = (patch: Partial<Meetup> = {}): Meetup => ({
   ...patch,
 });
 
+/** A tiny in-memory store for the one-time safety reminder (DEC 151). */
+function seenStore(seen: boolean) {
+  const m = new Map<string, unknown>(seen ? [['meetup.safetySeen', true]] : []);
+  const store = {
+    get: ((key: string) => m.get(key)) as never,
+    set: ((key: string, v: unknown) => void m.set(key, v)) as never,
+  };
+  return Object.assign(store, { seen: () => m.get('meetup.safetySeen') });
+}
+
 describe('meetup logic', () => {
   it('labels days and times', () => {
     expect(whenLabel(new Date(2027, 2, 10, 16, 30).toISOString(), NOW)).toBe('Today 4:30 PM');
@@ -163,6 +173,7 @@ describe('E05 Plan the pickup', () => {
             spots={async () => spots}
             openUrl={openUrl}
             now={() => NOW}
+            store={seenStore(true)}
           />
         ),
       },
@@ -182,25 +193,35 @@ describe('E05 Plan the pickup', () => {
     );
   });
 
-  it('a custom place works too', async () => {
+  it('DEC 151: campus spots only, the default spot picked, a safety reminder the first time', async () => {
     const a = api();
+    const store = seenStore(false);
     render(
       {
         'chat/[id]/meetup': () => (
-          <PlanMeetupScreen chatId="c1" api={a} spots={async () => []} now={() => NOW} />
+          <PlanMeetupScreen
+            chatId="c1"
+            api={a}
+            spots={async () => spots.map((x) => ({ ...x, isDefault: x.id === 's1' }))}
+            now={() => NOW}
+            store={store}
+          />
         ),
       },
       '/chat/c1/meetup',
     );
-    fireEvent.press(await screen.findByText(meetup.somewhereElse));
-    fireEvent.changeText(screen.getByTestId('meetup-custom'), 'Morrill Tower lobby');
+    await screen.findByText('Police station lobby');
+    expect(screen.queryByText(meetup.somewhereElse)).toBeNull();
+    expect(screen.getByTestId('meetup-spots-only')).toBeTruthy();
     fireEvent.press(screen.getByText('6:00 PM'));
     fireEvent.press(screen.getByTestId('meetup-suggest'));
+    expect(await screen.findByText(meetup.safetyTitle)).toBeTruthy();
+    expect(a.propose).not.toHaveBeenCalled();
+    fireEvent.press(screen.getByText(meetup.safetyConfirm));
     await waitFor(() =>
-      expect(a.propose).toHaveBeenCalledWith('c1', new Date(2027, 2, 10, 18, 0), {
-        custom: 'Morrill Tower lobby',
-      }),
+      expect(a.propose).toHaveBeenCalledWith('c1', new Date(2027, 2, 10, 18, 0), { spotId: 's1' }),
     );
+    expect(store.seen()).toBe(true);
   });
 });
 

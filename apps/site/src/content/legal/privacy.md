@@ -14,7 +14,7 @@ OnlySwap is a campus marketplace for verified students. We collect only what we 
 | School email address | To verify you're a student and to sign you in with a code. Other students never see it. |
 | Name you choose, class year, optional photo and interests | Your public profile. Others see your first name and last initial. |
 | Age range (13 to 17, or 18 and older) | To keep out anyone under 13 and to apply protections for teens. If your phone shares an age range, we use that. If we ask for your birthday, we check it and keep only the range. We don't store your date of birth. |
-| Listings, photos, prices, offers | To run the marketplace. Photo location data (EXIF) is removed before upload. |
+| Listings, photos, prices, offers | To run the marketplace. Photo location data (EXIF) is removed before upload. Listing, Quad and profile photos are checked automatically for nudity, violence, weapons, drugs and hate symbols; a flagged photo is held for a person to review. |
 | Messages and meetup plans | To let you arrange deals. Staff read a chat only when someone reports it, and every read is logged. |
 | Photos you send in chat | To show an item's condition. Stored privately, see section 4. |
 | Quad posts, replies, polls, votes, hides and mutes | To run the Quad, your campus board. See section 4. |
@@ -40,7 +40,7 @@ Our team can see your activity in the app (like swipes, saves and offers) to run
 These processors handle data only to provide their service to us:
 
 - Supabase (database, sign-in, server functions)
-- Cloudflare (photo storage, the website)
+- Cloudflare (photo storage, the website, automatic photo checks)
 - Expo, Apple and Google (push notifications)
 - Sentry (crash reports)
 - PostHog (usage events)
@@ -52,12 +52,7 @@ We share information with authorities only when the law requires it or someone's
 
 ### The Quad
 
-The Quad is a board for students at your school. Posts and replies are anonymous to other students: they never see your name, profile or account, and replies show only a letter like "Anon A".
-
-Posts are not anonymous to OnlySwap. We keep the link between each post or reply and the account that wrote it so we can enforce the rules. A person on our team can see who wrote something only when:
-
-- the law requires it, for example a valid request from the police or a court, or
-- someone's safety is at serious risk, for example a threat of violence or harm to a child.
+The Quad is a board for students at your school. Posts and replies show your first name, last initial and profile photo, like the rest of OnlySwap, and are linked to your account.
 
 Only the owner of OnlySwap can do this. Each time, they need a case reference and a fresh two-step sign-in check, the action is written to our audit log, and we email the account that wrote the post to say it happened.
 

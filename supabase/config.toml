@@ -443,6 +443,10 @@ verify_jwt = false
 [functions.send-email]
 verify_jwt = false
 
+# DEC 152: internal; the scan_photos cron calls it with the service key.
+[functions.scan-photos]
+verify_jwt = false
+
 [functions.archive-chats]
 verify_jwt = false
 

@@ -132,6 +132,7 @@ export function QuadThreadScreen({
             <ReplyRow
               reply={item}
               now={t}
+              mediaBase={mediaBase()}
               onVote={(dir) => actions.vote({ kind: 'reply', postId: post.id, reply: item }, dir)}
               onOptions={() => actions.openOptions({ kind: 'reply', postId: post.id, reply: item })}
               testID={`quad-reply-${item.id}`}
