@@ -3,7 +3,7 @@
 #   bash scripts/deploy/prod-supabase.command
 # Before the first run: pause the old project so the free plan has a slot, buy
 # the domain, and make the keys in docs/runbooks/production.md (Gmail app
-# password, Turnstile secret, Workers AI token). Safe to re-run: it finds the
+# password, Turnstile secret). Safe to re-run: it finds the
 # existing project and only fills in what's missing.
 #
 # What it does, all from the Supabase CLI (free plan, $0):
@@ -167,8 +167,8 @@ echo "vault: 6 secrets in place" | tee -a "$LOG"
 say "7/8 Function secrets"
 TURNSTILE=$(ask_secret onlyswap-turnstile-secret "Turnstile SECRET key for $DOMAIN (Cloudflare > Turnstile)")
 case "$TURNSTILE" in 1x0000*|2x0000*|3x0000*) die "that is a Cloudflare test key; production needs the real secret";; '') die "Turnstile secret needed";; esac
-CF_ACCOUNT=$(ask_plain onlyswap-cf-account-id "Cloudflare account id (32 letters and digits)")
-CF_AI=$(ask_secret onlyswap-cf-ai-token "Cloudflare Workers AI token (photo scanning; Enter to skip for now)")
+# Photo scanning (DEC 152): shared with the media Worker by cloudflare-prod.command.
+[ -n "$(kc_get onlyswap-vault-scan_key)" ] || kc_set onlyswap-vault-scan_key "$(openssl rand -hex 32)"
 SENTRY=$(ask_plain onlyswap-sentry-functions-dsn "Sentry DSN for onlyswap-functions (Enter to skip for now)")
 SECF=$(mktemp); chmod 600 "$SECF"
 {
@@ -181,8 +181,7 @@ SECF=$(mktemp); chmod 600 "$SECF"
   echo "EMAIL_FROM=OnlySwap <$GMAIL_USER>"
   echo "INTERNAL_FUNCTION_KEY=$(kc_get onlyswap-vault-internal_function_key)"
   echo "TURNSTILE_SECRET_KEY=$TURNSTILE"
-  [ -n "$CF_ACCOUNT" ] && echo "CF_ACCOUNT_ID=$CF_ACCOUNT"
-  [ -n "$CF_AI" ] && echo "CF_AI_TOKEN=$CF_AI"
+  echo "SCAN_KEY=$(kc_get onlyswap-vault-scan_key)"
   [ -n "$SENTRY" ] && echo "SENTRY_DSN=$SENTRY"
 } > "$SECF"
 SB secrets set --project-ref "$REF" --env-file "$SECF" >/dev/null 2>>"$LOG"; rc=$?; rm -f "$SECF"
@@ -190,7 +189,6 @@ SB secrets set --project-ref "$REF" --env-file "$SECF" >/dev/null 2>>"$LOG"; rc=
 # Test-only secrets must never be on prod.
 SB secrets unset E2E_SECRET --project-ref "$REF" --yes >/dev/null 2>&1 || true
 echo "function secrets set" | tee -a "$LOG"
-[ -z "$CF_AI" ] && echo "photo scanning waits until you add the Workers AI token (run this again)" | tee -a "$LOG"
 
 say "8/8 Deploy Edge Functions (all but test-inbox)"
 FNS=$(ls -d supabase/functions/*/ | xargs -n1 basename | grep -v -e '^_shared$' -e '^test-inbox$' | tr '\n' ' ')

@@ -4,10 +4,9 @@ import { test } from 'node:test';
 
 import {
   handleScanPhotos,
-  parseVerdict,
   RateLimited,
-  toDataUri,
-  workersAiClassifier,
+  readVerdict,
+  workerScanner,
   type ScanDeps,
   type ScanRow,
   type Verdict,
@@ -27,26 +26,25 @@ function deps(over: Partial<ScanDeps> = {}) {
     configured: true,
     claim: async () => rows,
     finish: async (id, v) => void finished.push([id, v]),
-    image: async (p) => `data:image/webp;base64,${p}`,
-    classify: async (img) =>
-      img.endsWith('a.webp') ? '{"verdict":"ok"}' : '{"verdict":"flag","reason":"sexual"}',
+    classify: async (path) =>
+      path === 'a.webp' ? { verdict: 'ok' } : { verdict: 'flag', reason: 'sexual' },
     ...over,
   };
   return { d, finished };
 }
 
-test('parseVerdict reads ok, flag and anything else as retry', () => {
-  assert.deepEqual(parseVerdict('{"verdict":"ok"}'), { verdict: 'ok' });
-  assert.deepEqual(parseVerdict('Sure. {"verdict":"flag","reason":"Weapon"}'), {
+test('readVerdict accepts ok and flag, anything else is a retry', () => {
+  assert.deepEqual(readVerdict({ verdict: 'ok' }), { verdict: 'ok' });
+  assert.deepEqual(readVerdict({ verdict: 'flag', reason: 'weapon' }), {
     verdict: 'flag',
     reason: 'weapon',
   });
-  assert.deepEqual(parseVerdict('{"verdict":"flag","reason":"weird"}'), {
+  assert.deepEqual(readVerdict({ verdict: 'flag', reason: 'weird' }), {
     verdict: 'flag',
     reason: 'other',
   });
-  assert.deepEqual(parseVerdict('I cannot tell'), { verdict: 'retry' });
-  assert.deepEqual(parseVerdict(''), { verdict: 'retry' });
+  assert.deepEqual(readVerdict({ verdict: 'retry' }), { verdict: 'retry' });
+  assert.deepEqual(readVerdict(null), { verdict: 'retry' });
 });
 
 test('only the service key may call it', async () => {
@@ -61,7 +59,7 @@ test('only the service key may call it', async () => {
   );
 });
 
-test('without Cloudflare settings nothing is claimed', async () => {
+test('without the scan settings nothing is claimed', async () => {
   let claimed = false;
   const { d } = deps({ configured: false, claim: async () => ((claimed = true), rows) });
   const res = await handleScanPhotos(req, d);
@@ -92,22 +90,19 @@ test('a rate limit puts the rest back for the next run', async () => {
   );
 });
 
-test('the classifier sends the image and reads result.response', async () => {
-  let sent: { url: string; body: Record<string, unknown> } | null = null;
+test('the scanner posts the path to the media Worker with the scan key', async () => {
+  let sent: { url: string; init: RequestInit } | null = null;
   const fake = (async (url: string, init: RequestInit) => {
-    sent = { url, body: JSON.parse(String(init.body)) };
-    return new Response(
-      JSON.stringify({ result: { response: '{"verdict":"ok"}' }, success: true }),
-    );
+    sent = { url, init };
+    return new Response(JSON.stringify({ verdict: 'ok' }));
   }) as unknown as typeof fetch;
-  const text = await workersAiClassifier('acct', 'tok', fake)('data:image/webp;base64,AAAA');
-  assert.equal(text, '{"verdict":"ok"}');
-  assert.match(sent!.url, /accounts\/acct\/ai\/run\/@cf\/meta\/llama-3\.2-11b-vision-instruct$/);
-  assert.equal(sent!.body.image, 'data:image/webp;base64,AAAA');
+  const v = await workerScanner('https://media.example/', 'scan-secret', fake)('c/x/l/a_full.webp');
+  assert.deepEqual(v, { verdict: 'ok' });
+  assert.equal(sent!.url, 'https://media.example/internal/scan');
+  assert.equal((sent!.init.headers as Record<string, string>).authorization, 'Bearer scan-secret');
+  assert.deepEqual(JSON.parse(String(sent!.init.body)), { path: 'c/x/l/a_full.webp' });
   const limited = (async () => new Response('', { status: 429 })) as unknown as typeof fetch;
-  await assert.rejects(workersAiClassifier('a', 't', limited)('x'), RateLimited);
-});
-
-test('toDataUri encodes bytes as base64', () => {
-  assert.equal(toDataUri(new Uint8Array([104, 105]), 'image/jpeg'), 'data:image/jpeg;base64,aGk=');
+  await assert.rejects(workerScanner('https://m', 'k', limited)('x'), RateLimited);
+  const broken = (async () => new Response('', { status: 503 })) as unknown as typeof fetch;
+  await assert.rejects(workerScanner('https://m', 'k', broken)('x'), /scan worker 503/);
 });

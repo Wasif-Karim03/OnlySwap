@@ -7,6 +7,11 @@ workers_dev = true
 # Chat photos (R1.1) need the signing secret, the same value as the Vault
 # secret media_signing_key: `npx wrangler secret put MEDIA_SIGNING_KEY` (and --env staging).
 
+# Photo screening (DEC 152): Workers AI through the binding, no API token.
+# Secret: `npx wrangler secret put SCAN_KEY` (same value as the Edge Function's).
+[ai]
+binding = "AI"
+
 [[r2_buckets]]
 binding = "MEDIA"
 bucket_name = "onlyswap-media"
@@ -14,6 +19,9 @@ preview_bucket_name = "onlyswap-media-staging"
 
 [env.staging]
 name = "onlyswap-media-staging"
+
+[env.staging.ai]
+binding = "AI"
 
 [[env.staging.r2_buckets]]
 binding = "MEDIA"

@@ -11,7 +11,6 @@ Staging (`onlyswap-staging`) stays the test backend. Production is a clean copy 
 | Google | A Gmail sender for production, 2-Step Verification on, an app password named OnlySwap | prod-supabase |
 | Cloudflare, Turnstile | A widget for the domain (Managed). Site key and secret | both scripts |
 | Cloudflare, R2 | Account API token, Object Read and Write, scoped to `onlyswap-media` and `onlyswap-private` (create the buckets first or let the script make them, then scope the token) | cloudflare-prod |
-| Cloudflare, API tokens | Custom token, Account / Workers AI / Read | prod-supabase |
 | Sentry | Projects `onlyswap-mobile` and `onlyswap-functions` | prod-supabase, eas-prod-env |
 | PostHog | Project for production, IP capture and GeoIP off | eas-prod-env |
 | App Store Connect | App record for `app.onlyswap`; send Claude the Apple ID (numbers) for `eas.json` | eas submit |
@@ -30,7 +29,7 @@ Creates the project, applies `supabase/migrations` only (never `migrations_stagi
 bash scripts/deploy/cloudflare-prod.command
 ```
 
-Buckets, CORS (your site and `app.` only), the media Worker on `media.<domain>`, R2 keys for the functions, the website, the admin console and the web app. Then add the custom domains it prints (site on the domain, `admin.`, `app.`). Turn on the CSAM Scanning Tool (`docs/runbooks/photo-screening.md`). Accept the Workers AI license once (same runbook).
+Buckets, CORS (your site and `app.` only), the media Worker on `media.<domain>`, R2 keys for the functions, the website, the admin console and the web app. Then add the custom domains it prints (site on the domain, `admin.`, `app.`). Turn on the CSAM Scanning Tool (`docs/runbooks/photo-screening.md`). Photo screening needs no setup: the script gives the media Worker its scan key.
 
 ## 3. Data
 

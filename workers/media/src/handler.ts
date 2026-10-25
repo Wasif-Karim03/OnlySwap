@@ -2,7 +2,8 @@
 // listing photos, avatars and share cards from the `onlyswap-media` bucket.
 // Quad photos (R1.1) are public like listing photos (unguessable keys).
 // Everything else is a 404; chat photos are read through signed URLs (S47).
-// No imports, so Node tests run the same code as the Worker.
+// Only ./scan.ts is imported, so Node tests run the same code as the Worker.
+import { handleScan, SCAN_PATH, type Ai } from './scan.ts';
 
 /** The parts of an R2 bucket binding the Worker uses. */
 export type Bucket = {
@@ -13,7 +14,7 @@ export type Bucket = {
   } | null>;
 };
 
-export type Env = { MEDIA: Bucket; MEDIA_SIGNING_KEY?: string };
+export type Env = { MEDIA: Bucket; MEDIA_SIGNING_KEY?: string; AI?: Ai; SCAN_KEY?: string };
 
 /**
  * The edge cache (E-07): `caches.default` plus `ctx.waitUntil` in the Worker.
@@ -164,6 +165,10 @@ export async function handle(
   now: number = Date.now(),
   edge?: Edge,
 ): Promise<Response> {
+  // Photo screening for the scan-photos Edge Function (DEC 152).
+  if (request.method === 'POST' && new URL(request.url).pathname === SCAN_PATH) {
+    return handleScan(request, env);
+  }
   if (request.method !== 'GET' && request.method !== 'HEAD') {
     return new Response('Method not allowed', { status: 405, headers: { allow: 'GET, HEAD' } });
   }
