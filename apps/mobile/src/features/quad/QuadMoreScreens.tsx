@@ -1,9 +1,10 @@
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { FlatList, RefreshControl, ScrollView, View } from 'react-native';
+import { FlatList, ScrollView, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { Banner } from '@/components/Banner';
 import { Button } from '@/components/Button';
 import { Chip } from '@/components/Chip';
@@ -159,9 +160,7 @@ export function QuadMineScreen({
     body = (
       <ScrollView
         contentContainerStyle={styles.list}
-        refreshControl={
-          <RefreshControl refreshing={q.isRefetching} onRefresh={() => void q.refetch()} />
-        }
+        refreshControl={<PullToRefresh onRefresh={() => q.refetch()} />}
       >
         {list.length === 0 ? (
           <EmptyState

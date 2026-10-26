@@ -20,7 +20,8 @@ type Props = {
 export function DiscoverHeader({ surface = 'bg2' }: Props) {
   return (
     <View testID="discover-header" style={styles.top}>
-      <Text variant="title" accessibilityRole="header" numberOfLines={1} style={styles.title}>
+      {/* Same size as the other tab titles (NavBar large: display). */}
+      <Text variant="display" accessibilityRole="header" numberOfLines={1} style={styles.title}>
         {copy.title}
       </Text>
       <NotificationBell
@@ -41,6 +42,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingBottom: theme.space.sm,
     paddingLeft: theme.space.screen,
     paddingRight: theme.space.sm,
+    minHeight: theme.size.navBar + theme.space.lg,
   },
   title: { flex: 1 },
 }));

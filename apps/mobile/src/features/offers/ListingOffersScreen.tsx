@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { FlatList, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { NavBar } from '@/components/NavBar';
@@ -54,8 +55,7 @@ export function ListingOffersScreen({
         data={query.data}
         keyExtractor={(o) => o.id}
         contentContainerStyle={styles.list}
-        refreshing={query.isRefetching}
-        onRefresh={() => void query.refetch()}
+        refreshControl={<PullToRefresh onRefresh={() => query.refetch()} />}
         renderItem={({ item: o }) => {
           const v = offerView(o);
           const buyer = o.other?.display_name ?? copy.deletedUser;

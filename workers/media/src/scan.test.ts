@@ -3,7 +3,15 @@ import assert from 'node:assert/strict';
 import { beforeEach, test } from 'node:test';
 
 import { handle, resetRateLimit, type Env } from './handler.ts';
-import { parseVerdict, scanKey, SCAN_MODEL, type Ai } from './scan.ts';
+import {
+  parseVerdict,
+  scanKey,
+  SCAN_MODEL,
+  type Ai,
+  toScanJpeg,
+  SCAN_WIDTH,
+  type Images,
+} from './scan.ts';
 
 const PHOTO = 'c/osu/l/L1/abc_full.webp';
 const calls: { model: string; input: Record<string, unknown> }[] = [];
@@ -106,10 +114,91 @@ test('the daily allowance running out is a 429, other errors a retry', async () 
   reply = () => {
     throw new Error('model crashed');
   };
-  assert.deepEqual(await (await scan({ path: PHOTO })).json(), { verdict: 'retry' });
+  assert.deepEqual(await (await scan({ path: PHOTO })).json(), {
+    verdict: 'retry',
+    error: 'model crashed',
+  });
 });
 
 test('photos are still served with GET', async () => {
   const res = await handle(new Request(`https://media.onlyswap.test/${PHOTO}`), env());
   assert.equal(res.status, 200);
+});
+
+// DEC 152 follow-up (2026-10-25): WebP photos reach the model as a JPEG.
+test('toScanJpeg converts through the Images binding and falls back to the original', async () => {
+  const seen: { t?: Record<string, unknown>; o?: { format: string } } = {};
+  const images: Images = {
+    input: () => ({
+      transform: (t) => {
+        seen.t = t;
+        return {
+          output: async (o) => {
+            seen.o = o;
+            return { response: () => new Response(new Uint8Array([9, 9])) };
+          },
+        };
+      },
+    }),
+  };
+  const original = new Uint8Array([1, 2, 3]);
+  assert.deepEqual(
+    [...(await toScanJpeg({ MEDIA: { get: async () => null }, IMAGES: images }, original))],
+    [9, 9],
+  );
+  assert.equal(seen.o?.format, 'image/jpeg');
+  assert.equal(seen.t?.width, SCAN_WIDTH);
+  // No binding, or the binding failing (e.g. over the free allowance): the original.
+  assert.equal(await toScanJpeg({ MEDIA: { get: async () => null } }, original), original);
+  const broken: Images = {
+    input: () => ({
+      transform: () => ({
+        output: async () => {
+          throw new Error('9422');
+        },
+      }),
+    }),
+  };
+  assert.equal(
+    await toScanJpeg({ MEDIA: { get: async () => null }, IMAGES: broken }, original),
+    original,
+  );
+});
+
+test('an answer in words gets one follow-up asking for the JSON alone', async () => {
+  calls.length = 0;
+  let n = 0;
+  reply = () => {
+    n += 1;
+    return n === 1
+      ? { response: 'The photo shows a knife on a table.' }
+      : { response: '{"verdict":"flag","reason":"weapon"}' };
+  };
+  assert.deepEqual(await (await scan({ path: PHOTO })).json(), {
+    verdict: 'flag',
+    reason: 'weapon',
+  });
+  assert.equal(calls.length, 2);
+  const second = calls[1]!.input.messages as { role: string }[];
+  assert.deepEqual(
+    second.map((m) => m.role),
+    ['system', 'user', 'assistant', 'user'],
+  );
+});
+
+test('still no JSON after the follow-up: retry, with the words for the test script', async () => {
+  reply = () => ({ response: 'A knife.' });
+  const body = (await (await scan({ path: PHOTO })).json()) as { verdict: string; raw?: string };
+  assert.equal(body.verdict, 'retry');
+  assert.equal(body.raw, 'A knife.');
+});
+
+test('an answer Workers AI already parsed into an object is read as the verdict', async () => {
+  reply = () => ({ response: { verdict: 'flag', reason: 'weapon' } });
+  assert.deepEqual(await (await scan({ path: PHOTO })).json(), {
+    verdict: 'flag',
+    reason: 'weapon',
+  });
+  reply = () => ({ response: { verdict: 'ok' } });
+  assert.deepEqual(await (await scan({ path: PHOTO })).json(), { verdict: 'ok' });
 });

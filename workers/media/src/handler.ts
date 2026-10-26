@@ -3,7 +3,7 @@
 // Quad photos (R1.1) are public like listing photos (unguessable keys).
 // Everything else is a 404; chat photos are read through signed URLs (S47).
 // Only ./scan.ts is imported, so Node tests run the same code as the Worker.
-import { handleScan, SCAN_PATH, type Ai } from './scan.ts';
+import { handleScan, SCAN_PATH, type Ai, type Images } from './scan.ts';
 
 /** The parts of an R2 bucket binding the Worker uses. */
 export type Bucket = {
@@ -14,7 +14,13 @@ export type Bucket = {
   } | null>;
 };
 
-export type Env = { MEDIA: Bucket; MEDIA_SIGNING_KEY?: string; AI?: Ai; SCAN_KEY?: string };
+export type Env = {
+  MEDIA: Bucket;
+  MEDIA_SIGNING_KEY?: string;
+  AI?: Ai;
+  SCAN_KEY?: string;
+  IMAGES?: Images;
+};
 
 /**
  * The edge cache (E-07): `caches.default` plus `ctx.waitUntil` in the Worker.

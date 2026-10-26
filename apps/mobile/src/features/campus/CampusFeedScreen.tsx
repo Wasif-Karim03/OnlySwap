@@ -11,6 +11,7 @@ import { ActivityIndicator, Linking, Platform, ScrollView, Share, View } from 'r
 import { StyleSheet } from 'react-native-unistyles';
 import type { StoreApi } from 'zustand';
 
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { Chip } from '@/components/Chip';
@@ -24,6 +25,7 @@ import { SkeletonList } from '@/components/Skeleton';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { useToastStore } from '@/components/Toast';
+import { errorText } from '@/lib/errors';
 import { track as trackActivity } from '@/lib/activity';
 import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
@@ -228,7 +230,7 @@ export function CampusFeedScreen({
   const header = (
     <>
       <View style={styles.top} testID="feed-header">
-        <Text variant="title" accessibilityRole="header" numberOfLines={1} style={styles.flex}>
+        <Text variant="display" accessibilityRole="header" numberOfLines={1} style={styles.flex}>
           {copy.title}
         </Text>
         <IconButton
@@ -319,8 +321,7 @@ export function CampusFeedScreen({
         data={items}
         keyExtractor={(x) => x.id}
         contentContainerStyle={styles.list}
-        refreshing={q.isRefetching && !q.isFetchingNextPage}
-        onRefresh={() => void q.refetch()}
+        refreshControl={<PullToRefresh onRefresh={() => q.refetch()} />}
         onEndReached={() => {
           if (q.hasNextPage && !q.isFetchingNextPage) void q.fetchNextPage();
         }}
@@ -432,12 +433,30 @@ export function CampusFeedScreen({
         message={copy.deletePostBody}
         confirmLabel={copy.deletePostConfirm}
         destructive
-        onConfirm={async () => {
+        onConfirm={() => {
           if (!deleting) return;
-          await remove(deleting.id);
+          // Gone at once (owner device check 2026-10-25: delete felt slow, it
+          // waited for the call and a full Feed reload). A failed call puts the
+          // Feed back from the server and says so.
+          const id = deleting.id;
           setDeleting(null);
-          void qc.invalidateQueries({ queryKey: campusKeys.all });
-          void qc.invalidateQueries({ queryKey: ['my-listings'] });
+          qc.setQueriesData<InfiniteData<CampusPage>>({ queryKey: campusKeys.all }, (old) =>
+            old
+              ? {
+                  ...old,
+                  pages: old.pages.map((p) => ({
+                    ...p,
+                    items: p.items.filter((x) => x.id !== id),
+                  })),
+                }
+              : old,
+          );
+          void remove(id)
+            .then(() => qc.invalidateQueries({ queryKey: ['my-listings'] }))
+            .catch((e: unknown) => {
+              useToastStore.getState().show('error', errorText(e));
+              void qc.invalidateQueries({ queryKey: campusKeys.all });
+            });
         }}
         onCancel={() => setDeleting(null)}
         testID="campus-delete-confirm"

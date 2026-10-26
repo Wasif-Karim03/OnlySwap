@@ -12,6 +12,12 @@ workers_dev = true
 [ai]
 binding = "AI"
 
+# WebP photos are turned into a small JPEG before Workers AI looks at them
+# (DEC 152 follow-up): the vision model could not read WebP. Free plan:
+# 5,000 unique transformations a month; past that the original is sent.
+[images]
+binding = "IMAGES"
+
 [[r2_buckets]]
 binding = "MEDIA"
 bucket_name = "onlyswap-media"
@@ -22,6 +28,9 @@ name = "onlyswap-media-staging"
 
 [env.staging.ai]
 binding = "AI"
+
+[env.staging.images]
+binding = "IMAGES"
 
 [[env.staging.r2_buckets]]
 binding = "MEDIA"

@@ -5,6 +5,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { Chip } from '@/components/Chip';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
@@ -162,8 +163,7 @@ function QuadFeed({
         keyExtractor={(p) => p.id}
         contentContainerStyle={styles.list}
         ItemSeparatorComponent={Gap}
-        refreshing={q.isRefetching && !q.isFetchingNextPage}
-        onRefresh={() => void q.refetch()}
+        refreshControl={<PullToRefresh onRefresh={() => q.refetch()} />}
         onEndReached={() => {
           if (q.hasNextPage && !q.isFetchingNextPage) void q.fetchNextPage();
         }}

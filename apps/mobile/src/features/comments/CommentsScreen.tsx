@@ -6,6 +6,7 @@ import { ActivityIndicator, FlatList, TextInput, View } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { Banner } from '@/components/Banner';
 import { Chip } from '@/components/Chip';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -355,8 +356,7 @@ export function CommentsScreen({
           renderItem={renderThread}
           contentContainerStyle={styles.list}
           keyboardShouldPersistTaps="handled"
-          refreshing={q.isRefetching && !q.isFetchingNextPage}
-          onRefresh={() => void q.refetch()}
+          refreshControl={<PullToRefresh onRefresh={() => q.refetch()} />}
           onEndReached={() => {
             if (q.hasNextPage && !q.isFetchingNextPage) void q.fetchNextPage();
           }}

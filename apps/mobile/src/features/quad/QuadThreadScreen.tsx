@@ -5,6 +5,7 @@ import { FlatList, TextInput, View } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { Banner } from '@/components/Banner';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
@@ -109,8 +110,7 @@ export function QuadThreadScreen({
           keyExtractor={(r: QuadReply) => r.id}
           contentContainerStyle={styles.list}
           keyboardShouldPersistTaps="handled"
-          refreshing={q.isRefetching}
-          onRefresh={() => void q.refetch()}
+          refreshControl={<PullToRefresh onRefresh={() => q.refetch()} />}
           ListHeaderComponent={
             <QuadPostCard
               post={post}

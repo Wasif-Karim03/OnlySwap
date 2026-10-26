@@ -33,6 +33,8 @@ export type StorageSchema = {
   'auth.inviteCode': { code: string; savedAt: string };
   /** A shared listing opened while signed out, opened after sign-in (features/auth/pendingLink.ts). */
   'auth.pendingListing': { id: string; savedAt: string };
+  /** Last Inbox, Profile and bell data, shown at once on the next launch (lib/queryPersist.ts). */
+  'query.cache': unknown;
   /** Upcoming meetups the app has seen, for the widget (features/widgets/logic.ts KnownMeetup[]). */
   'widgets.meetups': unknown;
   /** The last widget payload sent to the home screen (Android redraws from it). */

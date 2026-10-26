@@ -2,10 +2,11 @@ import { motion } from '@onlyswap/tokens';
 import { useQuery } from '@tanstack/react-query';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { RefreshControl, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { NavBar } from '@/components/NavBar';
@@ -243,9 +244,7 @@ export function InboxScreen({
         <Animated.View style={styles.flex} entering={FadeIn.duration(motion.fade.duration)}>
           <ScrollView
             contentContainerStyle={styles.list}
-            refreshControl={
-              <RefreshControl refreshing={query.isRefetching} onRefresh={() => query.refetch()} />
-            }
+            refreshControl={<PullToRefresh onRefresh={() => query.refetch()} />}
           >
             {section(copy.needsYou, r.needsYou, 'needs-you')}
             {section(copy.earlier, r.earlier, 'earlier')}

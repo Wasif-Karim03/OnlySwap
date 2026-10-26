@@ -36,6 +36,8 @@ select status, reason, count(*) from private.photo_scans group by 1, 2;
 
 Post a listing with a normal photo (it should end `ok` within about a minute) and one with a kitchen knife or a pill bottle (it should end `flagged`, and the listing leaves Discover). Check the report in the admin queue, then clear it. Function logs show counts only: `{"event":"scan-photos","claimed":1,"passed":1,...}`.
 
-Open question until the first real run: whether the model reads `.webp` photos. If every scan ends `failed` after three tries, tell Claude; the fix is converting to JPEG in the Worker.
+WebP (answered 2026-10-25 on staging): the model can't read our `.webp` photos, so the Worker turns each one into a 768 px JPEG through the Images binding (`[images] binding = "IMAGES"`, free plan 5,000 unique transformations a month) before asking. Without the binding, or past the allowance, the original goes and the scan likely ends `failed` for moderators. The rules sit in the user turn next to a short system turn (Workers AI refuses an image with no system turn: error 3030), an answer in words gets one follow-up asking for the JSON alone, and Workers AI may hand the JSON back already parsed. Knives of every kind are flagged, matching the banned-items list.
+
+Test one photo without the app: `bash scripts/deploy/test-photo-scan.command [photo key]` prints the Worker's answer (with the model's words or the error when there's no verdict). A photo that runs out of tries is marked `failed` by the minute job (migration 0256).
 
 Tuning: if the model flags too much, edit `SCAN_PROMPT` in `workers/media/src/scan.ts` and redeploy the Worker. A photo that fails three times stays `failed` for moderators.

@@ -36,6 +36,7 @@ import { startActivity } from '@/lib/activity';
 import { getEnv } from '@/lib/env';
 import { getSupabase } from '@/lib/supabase';
 import { createQueryClient, wireQueryManagers } from '@/lib/queryClient';
+import { clearPersistedQueries, startQueryPersist } from '@/lib/queryPersist';
 import { startTelemetry, useTelemetry } from '@/lib/telemetry';
 import { useWebTitle } from '@/lib/webTitle';
 import { useKeepModeOnFontScale } from '@/theme/mode';
@@ -76,9 +77,16 @@ export default function RootLayout() {
   useEffect(() => watchSessionExpiry(getSupabase().auth), []);
   // Sign-out or another account: drop the last account's cached data (C-03).
   useEffect(
-    () => watchAccountReset(getSupabase().auth, queryClient, [resetChatStores, resetSwipeStore]),
+    () =>
+      watchAccountReset(getSupabase().auth, queryClient, [
+        resetChatStores,
+        resetSwipeStore,
+        clearPersistedQueries,
+      ]),
     [queryClient],
   );
+  // Inbox, Profile and the bell open with the last data, then refresh (lib/queryPersist.ts).
+  useEffect(() => startQueryPersist(queryClient, getSupabase().auth), [queryClient]);
   // Home screen widget + meetup Live Activity follow the meetups the app loads (P17-FEAT-01).
   useEffect(() => startWidgetSync(queryClient), [queryClient]);
   // Activity events for the admin console (DEC 93): follows sign-in, flushes on background.
