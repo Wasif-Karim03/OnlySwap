@@ -1631,6 +1631,9 @@ const me: Strings['me'] = {
   listingsEmptyTitle: 'Todavía no hay nada publicado',
   listingsEmptyBody: 'Aquí aparecen tus publicaciones.',
   listingsEmptyOther: 'Todavía no hay nada aquí',
+  listingsEmptySold: 'Todavía no vendiste nada',
+  listingsEmptySoldBody: 'Lo que marques como vendido aparece aquí.',
+  listingsEmptyOtherBody: 'Las publicaciones vencidas, en revisión o quitadas aparecen aquí.',
   statusLabels: {
     active: 'Activa',
     hold: 'Apartada',

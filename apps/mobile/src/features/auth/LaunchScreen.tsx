@@ -1,6 +1,7 @@
 import { useRouter, type Href } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
@@ -14,6 +15,12 @@ import { launchStartedAt, SPLASH_MARK } from './launchTiming';
 import { GATE_HREF } from './logic';
 import { takeListingLink } from './pendingLink';
 import { useAppGate } from './useAppGate';
+
+/**
+ * Longest the launch waits for a route before it says so with Retry (owner
+ * device check 2026-10-26: a stalled database left the logo up for good).
+ */
+export const LAUNCH_STALL_MS = 15_000;
 
 const SIGNED_OUT_ROUTES = new Set<string>(['welcome', 'maintenance', 'update']);
 
@@ -47,16 +54,37 @@ export function LaunchScreen() {
     }
   }, [gate.route, router]);
 
+  const qc = useQueryClient();
+  const [stalled, setStalled] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
-    if (!gate.failed) return;
+    if (gate.route || gate.failed) return undefined;
+    const t = setTimeout(() => setStalled(true), LAUNCH_STALL_MS);
+    return () => clearTimeout(t);
+  }, [gate.route, gate.failed, attempt]);
+
+  const failed = gate.failed || (stalled && !gate.route);
+  useEffect(() => {
+    if (!failed) return;
     useLaunchIntro.getState().setReady();
     void SplashScreen.hideAsync().catch(() => {});
-  }, [gate.failed]);
+  }, [failed]);
 
-  if (gate.failed) {
+  if (failed) {
+    const retry = async () => {
+      setStalled(false);
+      setAttempt((n) => n + 1);
+      await Promise.all([
+        qc.resetQueries({ queryKey: ['app_config'] }),
+        qc.resetQueries({ queryKey: ['profile'] }),
+      ]);
+    };
     return (
       <View style={styles.root} testID="screen-launch-error">
-        <ErrorState error={gate.error} onRetry={gate.retry} />
+        <ErrorState
+          error={gate.failed ? gate.error : new Error('launch stalled')}
+          onRetry={gate.failed ? gate.retry : retry}
+        />
       </View>
     );
   }

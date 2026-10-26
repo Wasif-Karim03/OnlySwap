@@ -1687,6 +1687,9 @@ export const me = {
   listingsEmptyTitle: 'Nothing listed yet',
   listingsEmptyBody: 'Your listings show up here.',
   listingsEmptyOther: 'Nothing here yet',
+  listingsEmptySold: 'Nothing sold yet',
+  listingsEmptySoldBody: 'Items you mark as sold show up here.',
+  listingsEmptyOtherBody: 'Expired, in-review or removed listings show up here.',
   statusLabels: {
     active: 'Active',
     hold: 'On hold',

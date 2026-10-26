@@ -664,19 +664,32 @@ export function MyListingsScreen({
     const items = q.data.filter((l) => !isFeedPost(l.kind) && listingTab(l.status) === tab);
     body =
       items.length === 0 ? (
-        // EmptyState pads itself; cancel the scroll padding so it is not doubled.
-        <View style={styles.emptyBleed}>
-          <EmptyState
-            icon="tag"
-            title={tab === 'active' ? copy.listingsEmptyTitle : copy.listingsEmptyOther}
-            action={
-              tab === 'active'
-                ? { label: copy.sellNudge, onPress: () => router.push('/sell') }
+        // Inline: Selling options sit right below, so no full-screen stretch
+        // (owner device check 2026-10-26: the options box was pushed off).
+        <EmptyState
+          inline
+          icon="tag"
+          title={
+            tab === 'active'
+              ? copy.listingsEmptyTitle
+              : tab === 'sold'
+                ? copy.listingsEmptySold
+                : copy.listingsEmptyOther
+          }
+          body={
+            tab === 'sold'
+              ? copy.listingsEmptySoldBody
+              : tab === 'other'
+                ? copy.listingsEmptyOtherBody
                 : undefined
-            }
-            testID="my-listings-empty"
-          />
-        </View>
+          }
+          action={
+            tab === 'active'
+              ? { label: copy.sellNudge, onPress: () => router.push('/sell') }
+              : undefined
+          }
+          testID="my-listings-empty"
+        />
       ) : (
         <View style={styles.grid}>
           {items.map((l: MyListing) => (
@@ -1173,7 +1186,6 @@ const styles = StyleSheet.create((theme) => ({
     paddingBottom: theme.space['2xl'],
   },
   optionRow: { paddingHorizontal: theme.space.lg },
-  emptyBleed: { flexGrow: 1, marginHorizontal: -theme.space.screen },
   optionBlock: {
     paddingHorizontal: theme.space.lg,
     paddingVertical: theme.space.md,

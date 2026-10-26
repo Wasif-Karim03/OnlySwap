@@ -24,6 +24,8 @@ export type EmptyStateProps = {
   suggestions?: string[];
   action?: Action;
   secondaryAction?: Action;
+  /** A section inside a longer page: own height, no full-screen stretch. */
+  inline?: boolean;
   testID?: string;
 };
 
@@ -46,7 +48,8 @@ export function GlyphTile({
 }
 
 /**
- * Empty state (P2-CMP-08; round 2 finals): one quiet, left-aligned block.
+ * Empty state (P2-CMP-08): one quiet block, centered (owner device check
+ * 2026-10-26: left-aligned read as off to one side).
  * No glyph. An optional real lead (a count, thumbnails), a large title that
  * states a fact, one line on how the screen fills up, then the next step as
  * an ink capsule with an optional grey one beside it.
@@ -58,24 +61,25 @@ export function EmptyState({
   suggestions,
   action,
   secondaryAction,
+  inline = false,
   testID,
 }: EmptyStateProps) {
   return (
-    <View testID={testID} style={styles.wrap}>
+    <View testID={testID} style={styles.wrap(inline)}>
       <View style={styles.block}>
         <View style={styles.top}>
           {lead}
           <View style={styles.copy}>
-            <Text variant="title" accessibilityRole="header">
+            <Text variant="title" accessibilityRole="header" style={styles.center}>
               {title}
             </Text>
             {body ? (
-              <Text variant="body" tone="ink2">
+              <Text variant="body" tone="ink2" style={styles.center}>
                 {body}
               </Text>
             ) : null}
             {suggestions?.length ? (
-              <Text variant="meta" tone="ink2">
+              <Text variant="meta" tone="ink2" style={styles.center}>
                 {`${statesCopy.suggestionsLead} `}
                 {suggestions.map((s, i) => (
                   <Fragment key={s}>
@@ -115,18 +119,29 @@ export function EmptyState({
 }
 
 const styles = StyleSheet.create((theme) => ({
-  // Centered vertically with extra room below, so the block sits above the
-  // middle (about 40% down) instead of floating at the very top.
-  wrap: {
-    flexGrow: 1,
+  // Full screen: centered vertically with extra room below, so the block sits
+  // above the middle (about 40% down). Inline (a section of a page with more
+  // below it, e.g. My listings): its own height and a little air, no stretch.
+  wrap: (inline: boolean) =>
+    inline
+      ? { paddingVertical: theme.space['2xl'] }
+      : {
+          flexGrow: 1,
+          justifyContent: 'center',
+          paddingHorizontal: theme.space.screen,
+          paddingTop: theme.space['2xl'],
+          paddingBottom: theme.space['2xl'] * 3,
+        },
+  block: { gap: theme.space.xl, alignItems: 'center' },
+  top: { gap: theme.space.lg, alignItems: 'center' },
+  tile: { alignItems: 'center', justifyContent: 'center' },
+  copy: { gap: theme.space.xs, maxWidth: theme.size.copyMax, alignItems: 'center' },
+  center: { textAlign: 'center' },
+  actions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: theme.space.screen,
-    paddingTop: theme.space['2xl'],
-    paddingBottom: theme.space['2xl'] * 3,
+    gap: theme.space.sm,
   },
-  block: { gap: theme.space.xl, alignItems: 'flex-start' },
-  top: { gap: theme.space.lg, alignItems: 'flex-start' },
-  tile: { alignItems: 'flex-start', justifyContent: 'center' },
-  copy: { gap: theme.space.xs, maxWidth: theme.size.copyMax },
-  actions: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: theme.space.sm },
 }));
