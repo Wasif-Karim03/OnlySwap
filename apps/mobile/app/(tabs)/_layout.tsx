@@ -63,14 +63,11 @@ export default function TabsLayout() {
     <Tabs
       initialRouteName="discover"
       tabBar={(props) => <AppTabBar {...props} rail={rail} />}
-      // freezeOnBlur: tabs you aren't looking at stop re-rendering (they caught
-      // every cache and realtime update before, which kept the phone warm).
-      // They catch up the moment they come back into view.
-      screenOptions={{
-        headerShown: false,
-        tabBarPosition: rail ? 'left' : 'bottom',
-        freezeOnBlur: true,
-      }}
+      // No freezeOnBlur: Unistyles applies styles natively, and a frozen tab
+      // came back with them missing (owner device check 2026-10-26: wrong
+      // title size, unreadable Buying/Selling, empty state off center after
+      // visiting Profile).
+      screenOptions={{ headerShown: false, tabBarPosition: rail ? 'left' : 'bottom' }}
     >
       <Tabs.Screen name="discover" options={{ title: tabs.discover }} />
       <Tabs.Screen name="feed" options={{ title: tabs.feed }} />
