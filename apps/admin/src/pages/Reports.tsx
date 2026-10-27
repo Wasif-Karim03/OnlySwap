@@ -205,7 +205,9 @@ function AutoFlag({
     <div className="auto-flag" role="alert">
       <div className="auto-flag-head">
         <Icon name="flag" />
-        <span className="strong">Red alert: photo flagged for {AUTO_WORDS[why] ?? AUTO_WORDS.other}</span>
+        <span className="strong">
+          Red alert: photo flagged for {AUTO_WORDS[why] ?? AUTO_WORDS.other}
+        </span>
       </div>
       <dl className="kv flush">
         <dt>Posted by</dt>

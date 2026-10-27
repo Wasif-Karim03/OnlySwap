@@ -11,31 +11,114 @@
        supabase/functions/_shared/emailLayout.ts). Email-safe: tables,
        inline styles, hosted PNG logo. Supabase fills {{ .Token }} and
        {{ .SiteURL }}. -->
-  <body style="margin:0;padding:0;background:#FFFFFF;-webkit-text-size-adjust:100%">
-    <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent">Type it in the app. It expires in 10 minutes.</div>
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#FFFFFF">
+  <body style="margin: 0; padding: 0; background: #ffffff; -webkit-text-size-adjust: 100%">
+    <div style="display: none; max-height: 0; overflow: hidden; opacity: 0; color: transparent">
+      Type it in the app. It expires in 10 minutes.
+    </div>
+    <table
+      role="presentation"
+      width="100%"
+      cellpadding="0"
+      cellspacing="0"
+      border="0"
+      bgcolor="#FFFFFF"
+    >
       <tr>
-        <td align="center" style="padding:16px">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px">
+        <td align="center" style="padding: 16px">
+          <table
+            role="presentation"
+            width="100%"
+            cellpadding="0"
+            cellspacing="0"
+            border="0"
+            style="max-width: 520px"
+          >
             <tr>
               <td>
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                   <tr>
-                    <td bgcolor="#C8E27D" style="border-radius:22px;padding:22px 22px 24px">
+                    <td bgcolor="#C8E27D" style="border-radius: 22px; padding: 22px 22px 24px">
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                         <tr>
-                          <td style="vertical-align:middle;padding-right:7px"><img src="{{ .SiteURL }}/email/logo.png" width="18" height="18" alt="" style="display:block;border:0" /></td>
-                          <td style="vertical-align:middle;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;letter-spacing:-0.2px;color:#111110">onlyswap</td>
+                          <td style="vertical-align: middle; padding-right: 7px">
+                            <img
+                              src="{{ .SiteURL }}/email/logo.png"
+                              width="18"
+                              height="18"
+                              alt=""
+                              style="display: block; border: 0"
+                            />
+                          </td>
+                          <td
+                            style="
+                              vertical-align: middle;
+                              font-family:
+                                -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+                                Arial, sans-serif;
+                              font-size: 15px;
+                              font-weight: 700;
+                              letter-spacing: -0.2px;
+                              color: #111110;
+                            "
+                          >
+                            onlyswap
+                          </td>
                         </tr>
                       </table>
-                      <div style="height:20px;line-height:20px">&nbsp;</div>
-                      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:26px;line-height:30px;font-weight:700;letter-spacing:-0.4px;color:#111110">Here's your code to sign in</div>
-                      <div style="height:20px;line-height:20px">&nbsp;</div>
-                      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <div style="height: 20px; line-height: 20px">&nbsp;</div>
+                      <div
+                        style="
+                          font-family:
+                            -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+                            sans-serif;
+                          font-size: 26px;
+                          line-height: 30px;
+                          font-weight: 700;
+                          letter-spacing: -0.4px;
+                          color: #111110;
+                        "
+                      >
+                        Here's your code to sign in
+                      </div>
+                      <div style="height: 20px; line-height: 20px">&nbsp;</div>
+                      <table
+                        role="presentation"
+                        width="100%"
+                        cellpadding="0"
+                        cellspacing="0"
+                        border="0"
+                      >
                         <tr>
-                          <td align="center" bgcolor="#FFFFFF" style="border-radius:16px;padding:18px 8px 16px">
-                            <div style="font-family:'SF Mono',ui-monospace,Menlo,Consolas,monospace;font-size:40px;line-height:44px;font-weight:700;letter-spacing:7px;color:#111110">{{ .Token }}</div>
-                            <div style="padding-top:6px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:13px;line-height:18px;color:#5A5A54">Expires in 10 minutes</div>
+                          <td
+                            align="center"
+                            bgcolor="#FFFFFF"
+                            style="border-radius: 16px; padding: 18px 8px 16px"
+                          >
+                            <div
+                              style="
+                                font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+                                font-size: 40px;
+                                line-height: 44px;
+                                font-weight: 700;
+                                letter-spacing: 7px;
+                                color: #111110;
+                              "
+                            >
+                              {{ .Token }}
+                            </div>
+                            <div
+                              style="
+                                padding-top: 6px;
+                                font-family:
+                                  -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+                                  Arial, sans-serif;
+                                font-size: 13px;
+                                line-height: 18px;
+                                color: #5a5a54;
+                              "
+                            >
+                              Expires in 10 minutes
+                            </div>
                           </td>
                         </tr>
                       </table>
@@ -45,16 +128,78 @@
               </td>
             </tr>
             <tr>
-              <td style="padding:24px 6px 0">
-                <p style="margin:0 0 14px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:16px;line-height:24px;color:#111110">Go back to OnlySwap and type this code. You don't need a password.</p>
-                <p style="margin:0 0 14px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:16px;line-height:24px;color:#5A5A54">Didn't try to sign in? You can ignore this email. Nobody gets into your account without this code, and we'll never ask you for it.</p>
+              <td style="padding: 24px 6px 0">
+                <p
+                  style="
+                    margin: 0 0 14px;
+                    font-family:
+                      -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+                      sans-serif;
+                    font-size: 16px;
+                    line-height: 24px;
+                    color: #111110;
+                  "
+                >
+                  Go back to OnlySwap and type this code. You don't need a password.
+                </p>
+                <p
+                  style="
+                    margin: 0 0 14px;
+                    font-family:
+                      -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+                      sans-serif;
+                    font-size: 16px;
+                    line-height: 24px;
+                    color: #5a5a54;
+                  "
+                >
+                  Didn't try to sign in? You can ignore this email. Nobody gets into your account
+                  without this code, and we'll never ask you for it.
+                </p>
               </td>
             </tr>
             <tr>
-              <td style="padding:12px 6px 8px">
-                <div style="border-top:1px solid #ECECE8;height:1px;line-height:1px">&nbsp;</div>
-                <p style="margin:16px 0 8px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:13px;line-height:19px;color:#8A8A84">OnlySwap is for students only. We sent this because your school email was entered in the app.</p>
-                <p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:13px;line-height:19px;color:#8A8A84"><a href="{{ .SiteURL }}/help" style="color:#5A5A54;text-decoration:underline">Help</a>&nbsp;&nbsp;·&nbsp;&nbsp;<a href="{{ .SiteURL }}/privacy" style="color:#5A5A54;text-decoration:underline">Privacy</a>&nbsp;&nbsp;·&nbsp;&nbsp;<a href="{{ .SiteURL }}/safety" style="color:#5A5A54;text-decoration:underline">Safety</a></p>
+              <td style="padding: 12px 6px 8px">
+                <div style="border-top: 1px solid #ecece8; height: 1px; line-height: 1px">
+                  &nbsp;
+                </div>
+                <p
+                  style="
+                    margin: 16px 0 8px;
+                    font-family:
+                      -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+                      sans-serif;
+                    font-size: 13px;
+                    line-height: 19px;
+                    color: #8a8a84;
+                  "
+                >
+                  OnlySwap is for students only. We sent this because your school email was entered
+                  in the app.
+                </p>
+                <p
+                  style="
+                    margin: 0;
+                    font-family:
+                      -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+                      sans-serif;
+                    font-size: 13px;
+                    line-height: 19px;
+                    color: #8a8a84;
+                  "
+                >
+                  <a href="{{ .SiteURL }}/help" style="color: #5a5a54; text-decoration: underline"
+                    >Help</a
+                  >&nbsp;&nbsp;·&nbsp;&nbsp;<a
+                    href="{{ .SiteURL }}/privacy"
+                    style="color: #5a5a54; text-decoration: underline"
+                    >Privacy</a
+                  >&nbsp;&nbsp;·&nbsp;&nbsp;<a
+                    href="{{ .SiteURL }}/safety"
+                    style="color: #5a5a54; text-decoration: underline"
+                    >Safety</a
+                  >
+                </p>
               </td>
             </tr>
           </table>

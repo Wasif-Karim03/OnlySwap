@@ -30,7 +30,7 @@ select is((select status from public.listings where id = '00000000-0000-4000-800
 select is((select reason || ':' || coalesce(reporter_id::text, 'system') from public.reports
            where target_id = '00000000-0000-4000-8000-0000000d0002'), 'sexual:system',
   'and files a system report for moderators');
-select is((select priority from public.reports where target_id = '00000000-0000-4000-8000-0000000d0002'), 1,
+select is((select priority::int from public.reports where target_id = '00000000-0000-4000-8000-0000000d0002'), 1,
   'an automatic photo flag is urgent (DEC 154)');
 select is((select count(*)::int from public.email_outbox where template = 'priority_report'
            and vars ->> 'report_id' = (select id::text from public.reports where target_id = '00000000-0000-4000-8000-0000000d0002')), 0,

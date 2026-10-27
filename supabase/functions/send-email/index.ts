@@ -6,7 +6,13 @@
 import nodemailer from 'npm:nodemailer@6.9.16';
 import postgres from 'npm:postgres@3.4.7';
 
-import { DEFAULT_ADMIN_URL, handleSendEmail, resendSender, type OutboxRow, type Rendered } from '../_shared/mailer.ts';
+import {
+  DEFAULT_ADMIN_URL,
+  handleSendEmail,
+  resendSender,
+  type OutboxRow,
+  type Rendered,
+} from '../_shared/mailer.ts';
 import { withMonitoring } from '../_shared/monitor.ts';
 
 const sql = postgres(Deno.env.get('SUPABASE_DB_URL')!, { max: 1, prepare: false });

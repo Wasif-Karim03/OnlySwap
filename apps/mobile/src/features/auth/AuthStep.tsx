@@ -53,18 +53,11 @@ export function AuthStep({
   const insets = useSafeAreaInsets();
   const router = useRouter();
   // With no history (opened by replace or a link) back still leaves for welcome.
-  const back =
-    onBack ?? (() => (router.canGoBack() ? router.back() : router.replace('/welcome')));
+  const back = onBack ?? (() => (router.canGoBack() ? router.back() : router.replace('/welcome')));
   return (
     <View style={styles.root} testID={testID}>
       {step ? (
-        <StepNav
-          step={step}
-          leading={leading}
-          onBack={back}
-          trailing={trailing}
-          top={insets.top}
-        />
+        <StepNav step={step} leading={leading} onBack={back} trailing={trailing} top={insets.top} />
       ) : (
         <NavBar leading={leading} onLeading={back} trailing={trailing} />
       )}

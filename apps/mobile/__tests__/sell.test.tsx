@@ -367,7 +367,11 @@ describe('P5-SELL-02 D01 Sell · photos', () => {
       ),
     });
     const store = createDraftStore(memoryStorage(), { now: () => NOW });
-    const four = ['a', 'b', 'c', 'd'].map((n) => ({ uri: `file:///${n}.jpg`, width: 1, height: 1 }));
+    const four = ['a', 'b', 'c', 'd'].map((n) => ({
+      uri: `file:///${n}.jpg`,
+      width: 1,
+      height: 1,
+    }));
     setup('/sell', photosRoute(api, store, { pick: async () => four }));
     expect(await screen.findByText(sell.photosBody)).toBeTruthy();
     tap('sell-add-library');

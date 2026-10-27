@@ -87,5 +87,24 @@
     "jest-expo": "~57.0.6",
     "react-test-renderer": "19.2.3",
     "typescript": "~6.0.3"
+  },
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": [
+          "react-native-edge-to-edge",
+          "app-transaction"
+        ]
+      }
+    },
+    "install": {
+      "exclude": [
+        "expo",
+        "expo-router",
+        "expo-notifications",
+        "expo-widgets",
+        "@expo/ui"
+      ]
+    }
   }
 }

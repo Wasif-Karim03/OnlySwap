@@ -315,7 +315,9 @@ export function render(
       const why = str(vars.reason, 'other');
       const words = REASON_WORDS[why] ?? REASON_WORDS.other!;
       const kind = KIND_WORDS[str(vars.kind)] ?? 'Post';
-      const poster = str(vars.poster) || (str(vars.kind) === 'quad' ? 'Anonymous (reveal in the console)' : 'Unknown');
+      const poster =
+        str(vars.poster) ||
+        (str(vars.kind) === 'quad' ? 'Anonymous (reveal in the console)' : 'Unknown');
       const what = str(vars.what);
       const campus = str(vars.campus);
       const posted = str(vars.posted_at);
