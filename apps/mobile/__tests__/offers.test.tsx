@@ -354,7 +354,8 @@ describe('E02 Offer', () => {
     await waitFor(() => expect(screen.queryByText(offers.withdrawConfirm)).toBeNull(), {
       timeout: 5000,
     });
-  });
+    // The whole flow (dialog, failed call, refetch) runs past Jest's 5 s default on CI runners.
+  }, 20_000);
 
   it('refetches when the other side acts (realtime ping)', async () => {
     let ping: () => void = () => {};
