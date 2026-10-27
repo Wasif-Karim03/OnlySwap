@@ -52,7 +52,8 @@ body {
   line-height: 1.4;
   background: var(--a-page);
   color: var(--color-ink);
-  color-scheme: light dark;
+  /* Always light: the console ignores the system dark mode (owner, 2026-10-27). */
+  color-scheme: light;
   -webkit-font-smoothing: antialiased;
 }
 h1,
