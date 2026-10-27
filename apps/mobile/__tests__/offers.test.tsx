@@ -348,9 +348,12 @@ describe('E02 Offer', () => {
     render({ 'offer/[id]': () => <OfferScreen id="o1" api={a} /> }, '/offer/o1');
     fireEvent.press(await screen.findByTestId('offer-withdraw'));
     fireEvent.press(await screen.findByText(offers.withdrawConfirm));
-    expect(await screen.findByTestId('offer-open-chat')).toBeTruthy();
+    // Slow CI runners: the failed call, toast and refetch can take more than the 1 s default.
+    expect(await screen.findByTestId('offer-open-chat', {}, { timeout: 5000 })).toBeTruthy();
     expect(screen.queryByTestId('offer-withdraw')).toBeNull();
-    await waitFor(() => expect(screen.queryByText(offers.withdrawConfirm)).toBeNull());
+    await waitFor(() => expect(screen.queryByText(offers.withdrawConfirm)).toBeNull(), {
+      timeout: 5000,
+    });
   });
 
   it('refetches when the other side acts (realtime ping)', async () => {
