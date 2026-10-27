@@ -1,5 +1,4 @@
 import type { ExpoConfig } from 'expo/config';
-import { IOSConfig } from 'expo/config-plugins';
 
 import buildConfig, { BLOCKED_ANDROID_PERMISSIONS, BUNDLE_ID, WEB_HOST } from '../app.config';
 import { permissions } from '../src/strings/en';
@@ -45,30 +44,9 @@ describe('T-STORE (TESTING §7) app.config.ts matches the locked native config (
     expect(cfg.ios?.deploymentTarget).toBe('16.4');
   });
 
-  it('P17-FEAT-02 supports iPad in every orientation, multitasking on, phones portrait only', () => {
-    expect(cfg.ios?.supportsTablet).toBe(true);
-    expect(cfg.ios?.requireFullScreen).toBe(false);
-    // What prebuild writes to Info.plist, from the same Expo config plugins.
-    const plist = IOSConfig.RequiresFullScreen.setRequiresFullScreen(
-      cfg,
-      IOSConfig.Orientation.setOrientation(cfg, {}),
-    ) as Record<string, unknown>;
-    expect(plist.UISupportedInterfaceOrientations).toEqual([
-      'UIInterfaceOrientationPortrait',
-      'UIInterfaceOrientationPortraitUpsideDown',
-    ]);
-    expect([...(plist['UISupportedInterfaceOrientations~ipad'] as string[])].sort()).toEqual(
-      [
-        'UIInterfaceOrientationLandscapeLeft',
-        'UIInterfaceOrientationLandscapeRight',
-        'UIInterfaceOrientationPortrait',
-        'UIInterfaceOrientationPortraitUpsideDown',
-      ].sort(),
-    );
-    expect(plist.UIRequiresFullScreen).toBe(false);
-    expect(IOSConfig.DeviceFamily.getDeviceFamilies(cfg)).toEqual([1, 2]);
-    // Android stays phone-portrait (no tablets, CLAUDE.md platforms).
-    expect(cfg.android).not.toHaveProperty('screenOrientation');
+  it('DEC 146 is phones only (no iPad build)', () => {
+    expect(cfg.ios?.supportsTablet).toBe(false);
+    expect(cfg.ios?.requireFullScreen).toBeUndefined();
   });
 
   it('declares exactly the three iOS capabilities', () => {
@@ -89,9 +67,17 @@ describe('T-STORE (TESTING §7) app.config.ts matches the locked native config (
       ]),
     );
     expect(reasons).toEqual({
-      NSPrivacyAccessedAPICategoryUserDefaults: ['CA92.1'],
+      NSPrivacyAccessedAPICategoryUserDefaults: ['CA92.1', '1C8F.1'],
       NSPrivacyAccessedAPICategoryFileTimestamp: ['C617.1'],
+      NSPrivacyAccessedAPICategorySystemBootTime: ['35F9.1'],
     });
+  });
+
+  it('AR-06: the widget privacy manifest plugin runs after expo-widgets (listed before it)', () => {
+    const names = (cfg.plugins ?? []).map((p) => (Array.isArray(p) ? p[0] : p));
+    const mine = names.indexOf('./plugins/withWidgetPrivacyManifest');
+    expect(mine).toBeGreaterThanOrEqual(0);
+    expect(mine).toBeLessThan(names.indexOf('expo-widgets'));
   });
 
   it('blocks location, media, audio, contacts, exact alarms and the ad id on Android', () => {
@@ -115,11 +101,12 @@ describe('T-STORE (TESTING §7) app.config.ts matches the locked native config (
     expect(blocked).toEqual([...BLOCKED_ANDROID_PERMISSIONS]);
   });
 
-  it('pins Android SDK levels (min 26, target and compile 36) and adopts iOS scenes', () => {
+  it('pins Android SDK levels (min 26, target and compile 36), adopts iOS scenes, builds Expo modules from source', () => {
     expect(pluginOptions(cfg, 'expo-build-properties')).toEqual({
       android: { minSdkVersion: 26, compileSdkVersion: 36, targetSdkVersion: 36 },
       // iOS 27 asserts at launch without the UIScene life cycle.
-      ios: { enableSceneSupport: true },
+      // Swift 6.4 (Xcode 27.1) rejects the precompiled Expo XCFrameworks.
+      ios: { enableSceneSupport: true, usePrecompiledModules: false },
     });
   });
 
@@ -214,5 +201,15 @@ describe('Android WorkManager pin (first R2 build: duplicate classes)', () => {
         );
       },
     );
+  });
+});
+
+describe('AR-06 widget privacy manifest', () => {
+  it('declares App Group UserDefaults (1C8F.1) and no tracking', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { MANIFEST } = require('../plugins/withWidgetPrivacyManifest');
+    expect(MANIFEST).toContain('NSPrivacyAccessedAPICategoryUserDefaults');
+    expect(MANIFEST).toContain('<string>1C8F.1</string>');
+    expect(MANIFEST).toMatch(/<key>NSPrivacyTracking<\/key>\s*<false\/>/);
   });
 });

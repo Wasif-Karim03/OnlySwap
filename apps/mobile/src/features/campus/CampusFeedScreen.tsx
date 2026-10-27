@@ -1,96 +1,249 @@
 import { FlashList } from '@shopify/flash-list';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useQuery,
+  useQueryClient,
+  type InfiniteData,
+} from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
-import { ActivityIndicator, ScrollView, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { ActivityIndicator, Linking, Platform, ScrollView, Share, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import type { StoreApi } from 'zustand';
 
+import { PullToRefresh } from '@/components/PullToRefresh';
+import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { Chip } from '@/components/Chip';
 import { EmptyState } from '@/components/EmptyState';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { ErrorState } from '@/components/ErrorState';
-import { Icon, type IconName } from '@/components/icons/Icon';
+import type { IconName } from '@/components/icons/Icon';
+import { IconButton } from '@/components/IconButton';
+import { ActionSheet } from '@/components/Sheet';
 import { SkeletonList } from '@/components/Skeleton';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
+import { useToastStore } from '@/components/Toast';
+import { errorText } from '@/lib/errors';
+import { track as trackActivity } from '@/lib/activity';
 import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
-import { campus as copy } from '@/strings';
+import { campus as copy, comments as commentCopy, feed as feedCopy, tabs } from '@/strings';
 import { feedColumn } from '@/theme/layout';
 
+import { commentsApi, type CommentsApi } from '../comments/api';
+import { createLikeSender, toggleLike } from '../comments/logic';
+import { feedApi, type FeedApi } from '../feed/api';
 import type { FeedCursor } from '../feed/logic';
-import { answerWanted, getDraftStore, type DraftState } from '../sell/draft';
-import { campusApi, campusKeys, type CampusApi } from './api';
-import type { Me } from '../me/api';
+import { meApi, type Me } from '../me/api';
+import { meKey } from '../me/MeScreens';
+import { quadApi, type QuadApi } from '../quad/api';
+import { useQuadStatus } from '../quad/cache';
+import { QuadScreen } from '../quad/QuadFeedScreen';
+import type { DraftState } from '../sell/draft';
+import { listingLink, mediaUrl, priceLabel } from '../sell/logic';
+import { campusApi, campusKeys, wantedChatApi, type CampusApi, type WantedChatApi } from './api';
 import { CampusCard } from './CampusCards';
-import { DiscoverHeader } from './DiscoverHeader';
+import { FeedPost } from './FeedPost';
 import {
   CAMPUS_FILTERS,
-  campusRows,
   dayOneBody,
-  foundingState,
   isCampusFilter,
   mergeCampusPages,
   type CampusFilter,
   type CampusItem,
   type CampusPage,
-  type CampusRow,
 } from './logic';
+import { NotificationBell } from '@/features/notifications/NotificationBell';
 
 const FILTER_ICON: Partial<Record<CampusFilter, IconName>> = { food: 'food', free: 'gift' };
 
 type Deps = {
   api?: CampusApi;
+  saves?: Pick<FeedApi, 'save' | 'unsave'>;
+  likes?: Pick<CommentsApi, 'likePost'>;
+  /** Unused since DEC 149 (I have this opens a chat); kept so callers still compile. */
   store?: StoreApi<DraftState>;
   mediaBase?: () => string;
+  site?: () => string;
+  share?: (content: { message: string; url?: string }) => Promise<unknown>;
+  openUrl?: (url: string) => Promise<unknown>;
   now?: () => Date;
-  /** The signed-in student, for the campus name in the header. */
+  /** The signed-in student, for the campus name and the composer avatar. */
   loadMe?: () => Promise<Me>;
+  /** The Quad, shown as a Feed chip where the campus has it on (DEC 130). */
+  quad?: QuadApi;
+  /** Deletes one of your own posts (owner review 2026-10-24). */
+  remove?: (id: string) => Promise<void>;
+  /** "I have this" opens a chat with the asker (DEC 149). */
+  wantedChat?: WantedChatApi;
 };
 
 /**
- * C01 Around campus (P6-CAMP-01; board C1, C3, C4, C6, C7): the second side
- * of Discover (D19). Free food with a live countdown, free stuff, Wanted
- * posts with "I have this" and the last week's listings, newest first, with
- * the Day one hero and the founding sellers card while the campus is new.
+ * C01 Feed tab (DEC 98, was Around campus on Discover): one post per row like
+ * a social feed. News, free food and Wanted posts (DEC 148: no listings for
+ * sale or to give away; those are on Discover), newest first, with "What's happening on campus?" to post news, the
+ * Day one hero and the founding sellers card while the campus is new.
  */
 export function CampusFeedScreen({
   api = campusApi,
-  store = getDraftStore(),
+  saves = feedApi,
+  likes = commentsApi,
   mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
+  site = () => getEnv().EXPO_PUBLIC_SITE_URL,
+  share = (content) => Share.share(content),
+  openUrl = (url) => Linking.openURL(url),
   now = () => new Date(),
-  loadMe,
+  loadMe = () => meApi.me(),
+  quad = quadApi,
+  remove = (id) => meApi.deleteListing(id),
+  wantedChat = wantedChatApi,
 }: Deps) {
   const router = useRouter();
+  const qc = useQueryClient();
   const params = useLocalSearchParams<{ kind?: string }>();
   const [kind, setKind] = useState<CampusFilter>(isCampusFilter(params.kind) ? params.kind : 'all');
+  // A post screen's "See the Feed" can ask for a filter while the tab is already open.
+  // DEC 130: the Quad is a Feed chip (/feed?kind=quad), no longer a tab.
+  const [inQuad, setInQuad] = useState(params.kind === 'quad');
+  const [postMenu, setPostMenu] = useState(false);
+  const [deleting, setDeleting] = useState<CampusItem | null>(null);
+  const [seenKind, setSeenKind] = useState(params.kind);
+  if (params.kind !== seenKind) {
+    setSeenKind(params.kind);
+    if (isCampusFilter(params.kind)) {
+      setKind(params.kind);
+      setInQuad(false);
+    } else if (params.kind === 'quad') setInQuad(true);
+  }
+  const quadStatus = useQuadStatus(quad);
+  const quadOn = quadStatus.data?.enabled === true;
+  const showQuad = inQuad && quadOn;
+  // A cold /feed?kind=quad link waits on the Quad status instead of flashing All first.
+  const quadPending = inQuad && quadStatus.isPending;
+  const me = useQuery({ queryKey: meKey, queryFn: loadMe, staleTime: 5 * 60_000 });
 
   const q = useInfiniteQuery({
     queryKey: campusKeys.feed(kind),
     queryFn: ({ pageParam }) => api.feed(kind, pageParam),
     initialPageParam: null as FeedCursor | null,
     getNextPageParam: (last: CampusPage) => last.next_cursor ?? undefined,
+    // A refetch reloads every page scrolled so far, so not on every return to
+    // the app (E-20). Pull to refresh still reloads at once.
+    staleTime: 2 * 60_000,
   });
 
   const base = mediaBase();
   const open = (item: CampusItem) =>
     router.push({ pathname: '/listing/[id]', params: { id: item.id, from: 'campus' } });
-  const answer = (item: CampusItem) => {
-    answerWanted(store, item);
-    router.push('/sell');
+  const answer = async (item: CampusItem) => {
+    try {
+      const { chat_id } = await wantedChat.start(item.id, copy.iHaveThisMessage);
+      void qc.invalidateQueries({ queryKey: ['inbox'] });
+      router.push({ pathname: '/chat/[id]', params: { id: chat_id } });
+    } catch {
+      useToastStore.getState().show('error', copy.iHaveThisFailed);
+    }
   };
+  const postNews = () => router.push('/sell/news');
   const postFood = () => router.push('/sell/food');
   const askFor = () => router.push('/sell/wanted');
   const sell = () => router.push('/sell');
 
+  // Saved shows at once on every cached Feed filter; put back if the call fails.
+  const patchItem = (id: string, patch: Partial<CampusItem>) =>
+    qc.setQueriesData<InfiniteData<CampusPage>>({ queryKey: campusKeys.all }, (old) =>
+      old
+        ? {
+            ...old,
+            pages: old.pages.map((p) => ({
+              ...p,
+              items: p.items.map((x) => (x.id === id ? { ...x, ...patch } : x)),
+            })),
+          }
+        : old,
+    );
+  const toggleSave = async (item: CampusItem) => {
+    const was = item.saved;
+    patchItem(item.id, { saved: !was });
+    try {
+      const n = was ? await saves.unsave(item.id) : await saves.save(item.id);
+      patchItem(item.id, { saved: !was, save_count: n });
+      if (was) trackActivity('unsaved', { listingId: item.id, source: 'campus' });
+    } catch {
+      patchItem(item.id, { saved: was });
+      useToastStore.getState().show('error', copy.saveFailed);
+    }
+  };
+  // Likes show at once; the sender keeps one call per post in flight and the
+  // server's count wins. A failure reloads the Feed to the true state.
+  const likeSender = useRef(
+    createLikeSender(
+      (id, liked) => likes.likePost(id, liked),
+      (id, res) => {
+        if (res) patchItem(id, { liked: res.liked, like_count: res.like_count });
+        else {
+          useToastStore.getState().show('error', commentCopy.likeFailed);
+          void qc.invalidateQueries({ queryKey: campusKeys.all });
+        }
+      },
+    ),
+  ).current;
+  const toggleLikeItem = (item: CampusItem) => {
+    const next = toggleLike({ liked: item.liked === true, count: item.like_count ?? 0 });
+    patchItem(item.id, { liked: next.liked, like_count: next.count });
+    likeSender(item.id, next.liked);
+  };
+  const openComments = (item: CampusItem) =>
+    router.push({ pathname: '/listing/[id]/comments', params: { id: item.id } });
+  const onShare = async (item: CampusItem) => {
+    const url = listingLink(site(), item.id);
+    const text =
+      item.kind === 'news'
+        ? item.title
+        : fill(feedCopy.shareMessage, {
+            title: item.title,
+            price: priceLabel(item.kind, item.price_cents, feedCopy.free),
+          });
+    await share(Platform.OS === 'ios' ? { message: text, url } : { message: `${text} ${url}` });
+  };
+
+  const meData = me.data;
+  const myName = meData?.display_name ?? '';
+  const myAvatar = meData?.avatar_path ? mediaUrl(base, meData.avatar_path) : null;
+
+  const filterChip = (f: CampusFilter) => (
+    <Chip
+      key={f}
+      label={copy.filters[f]}
+      icon={FILTER_ICON[f]}
+      surface="card"
+      selected={!showQuad && !quadPending && kind === f}
+      onPress={() => {
+        setInQuad(false);
+        setKind(f);
+      }}
+    />
+  );
+
   const header = (
     <>
-      <DiscoverHeader value="campus" surface="card" loadMe={loadMe} />
+      <View style={styles.top} testID="feed-header">
+        <Text variant="display" accessibilityRole="header" numberOfLines={1} style={styles.flex}>
+          {copy.title}
+        </Text>
+        <IconButton
+          icon="search"
+          accessibilityLabel={feedCopy.search}
+          onPress={() => router.push('/search')}
+          testID="feed-search"
+        />
+        <NotificationBell accessibilityLabel={feedCopy.notifications} testID="feed-notifications" />
+      </View>
       {/*
         A horizontal ScrollView grows to fill a column by default; flexGrow 0
-        keeps the chip row to its own height (DEC 90 fix: it left a ~300 pt
-        gap above the feed).
+        keeps the chip row to its own height (DEC 90 fix).
       */}
       <ScrollView
         horizontal
@@ -100,50 +253,58 @@ export function CampusFeedScreen({
         accessibilityLabel={copy.filtersLabel}
         testID="campus-filters"
       >
-        {CAMPUS_FILTERS.map((f) => (
+        {/* All, then the Quad (when on) where it is in view, then the rest. */}
+        {CAMPUS_FILTERS.slice(0, 1).map(filterChip)}
+        {quadOn ? (
           <Chip
-            key={f}
-            label={copy.filters[f]}
-            icon={FILTER_ICON[f]}
+            label={tabs.quad}
+            icon="quad"
             surface="card"
-            selected={kind === f}
-            onPress={() => setKind(f)}
+            selected={showQuad}
+            onPress={() => setInQuad(true)}
+            testID="campus-filter-quad"
           />
-        ))}
+        ) : null}
+        {CAMPUS_FILTERS.slice(1).map(filterChip)}
       </ScrollView>
     </>
   );
 
-  const renderRow = (row: CampusRow) =>
-    row.kind === 'wide' ? (
+  const renderItem = (item: CampusItem) =>
+    item.kind === 'food' || item.kind === 'wanted' ? (
       <CampusCard
-        item={row.item}
+        item={item}
         now={now}
         mediaBase={base}
-        onOpen={() => open(row.item)}
-        onAnswer={() => answer(row.item)}
-        testID={`campus-item-${row.item.id}`}
+        onOpen={() => open(item)}
+        onAnswer={() => void answer(item)}
+        onLike={() => toggleLikeItem(item)}
+        onComments={() => openComments(item)}
+        onDelete={item.is_own ? () => setDeleting(item) : undefined}
+        testID={`campus-item-${item.id}`}
       />
     ) : (
-      <View style={styles.pair}>
-        {row.items.map((item) => (
-          <View key={item.id} style={styles.flex}>
-            <CampusCard
-              item={item}
-              now={now}
-              mediaBase={base}
-              onOpen={() => open(item)}
-              onAnswer={() => answer(item)}
-              testID={`campus-item-${item.id}`}
-            />
-          </View>
-        ))}
-        {row.items.length === 1 ? <View style={styles.flex} /> : null}
-      </View>
+      <FeedPost
+        item={item}
+        now={now}
+        mediaBase={base}
+        onOpen={() => open(item)}
+        onSave={() => void toggleSave(item)}
+        onOffer={() => router.push({ pathname: '/listing/[id]/offer', params: { id: item.id } })}
+        onShare={() => void onShare(item)}
+        onOpenLink={(url) => void openUrl(url)}
+        onLike={() => toggleLikeItem(item)}
+        onComments={() => openComments(item)}
+        onDelete={item.is_own ? () => setDeleting(item) : undefined}
+        testID={`campus-item-${item.id}`}
+      />
     );
 
+  if (showQuad)
+    return <QuadScreen api={quad} mediaBase={mediaBase} now={now} loadMe={loadMe} top={header} />;
+
   let body;
-  if (q.isPending) {
+  if (quadPending || q.isPending) {
     body = (
       <View accessibilityLabel={copy.loading} style={styles.pad}>
         <SkeletonList rows={4} testID="campus-loading" />
@@ -154,15 +315,13 @@ export function CampusFeedScreen({
   } else {
     const pages = q.data?.pages ?? [];
     const first = pages[0];
-    const rows = campusRows(mergeCampusPages(pages));
-    const founding = foundingState(first?.founding);
+    const items = mergeCampusPages(pages);
     body = (
       <FlashList
-        data={rows}
-        keyExtractor={(r) => r.key}
+        data={items}
+        keyExtractor={(x) => x.id}
         contentContainerStyle={styles.list}
-        refreshing={q.isRefetching && !q.isFetchingNextPage}
-        onRefresh={() => void q.refetch()}
+        refreshControl={<PullToRefresh onRefresh={() => q.refetch()} />}
         onEndReached={() => {
           if (q.hasNextPage && !q.isFetchingNextPage) void q.fetchNextPage();
         }}
@@ -170,55 +329,62 @@ export function CampusFeedScreen({
         ItemSeparatorComponent={Gap}
         ListHeaderComponent={
           <View style={styles.listHeader}>
-            {first?.day_one && kind === 'all' ? (
-              <View style={styles.panel} testID="campus-day-one">
-                <Text variant="heading" accessibilityRole="header">
+            <View style={styles.composer}>
+              <Tappable
+                accessibilityRole="button"
+                accessibilityLabel={copy.composerLabel}
+                onPress={postNews}
+                style={styles.flex}
+                testID="feed-composer"
+              >
+                <View style={styles.composerTap}>
+                  <Avatar name={myName} uri={myAvatar} size="M" />
+                  <Text variant="body" tone="ink3" numberOfLines={1} style={styles.composerText}>
+                    {copy.composer}
+                  </Text>
+                </View>
+              </Tappable>
+              <IconButton
+                icon="plus"
+                accessibilityLabel={copy.newPost}
+                onPress={() => setPostMenu(true)}
+                testID="feed-new-post"
+              />
+            </View>
+            {/* Owner round 2: one empty message per screen. With no posts, the
+                list's empty state already says it, so the day-one note waits. */}
+            {first?.day_one && kind === 'all' && items.length > 0 ? (
+              <View style={styles.dayOne} testID="campus-day-one">
+                <Text variant="bodyStrong" accessibilityRole="header">
                   {copy.dayOneTitle}
                 </Text>
                 <Text variant="body" tone="ink2">
-                  {dayOneBody(first.active_listings)}
+                  {dayOneBody(first.active_listings ?? 0)}
                 </Text>
-                <Button label={copy.dayOneAction} size="M" onPress={sell} />
-              </View>
-            ) : null}
-            {founding && kind === 'all' ? (
-              <View style={styles.panel} testID={`campus-founding-${founding}`}>
-                <Text variant="bodyStrong" accessibilityRole="header">
-                  {founding === 'mine' ? copy.foundingMineTitle : copy.foundingTitle}
-                </Text>
-                <Text variant="meta" tone="ink2">
-                  {founding === 'mine'
-                    ? copy.foundingMineBody
-                    : fill(copy.foundingBody, {
-                        left: first?.founding.left ?? 0,
-                        limit: first?.founding.limit ?? 0,
-                      })}
-                </Text>
-                {founding === 'open' && !first?.day_one ? (
+                <View style={styles.dayOneAction}>
                   <Button
-                    label={copy.foundingAction}
-                    variant="secondary"
-                    size="S"
+                    label={copy.dayOneAction}
+                    variant="text"
+                    size="M"
                     fullWidth={false}
                     onPress={sell}
                   />
-                ) : null}
+                </View>
               </View>
             ) : null}
-            <View style={styles.row}>
-              <PostPill
-                icon="food"
-                label={copy.postFood}
-                onPress={postFood}
-                testID="campus-post-food"
-              />
-              <PostPill icon="plus" label={copy.askFor} onPress={askFor} testID="campus-ask" />
-            </View>
           </View>
         }
         ListEmptyComponent={
           <EmptyState
-            icon={kind === 'food' ? 'food' : kind === 'wanted' ? 'search' : 'gift'}
+            icon={
+              kind === 'food'
+                ? 'food'
+                : kind === 'wanted'
+                  ? 'search'
+                  : kind === 'news'
+                    ? 'users'
+                    : 'gift'
+            }
             title={copy.empty[kind].title}
             body={copy.empty[kind].body}
             action={
@@ -226,7 +392,9 @@ export function CampusFeedScreen({
                 ? { label: copy.postFood, onPress: postFood }
                 : kind === 'wanted'
                   ? { label: copy.askFor, onPress: askFor }
-                  : { label: copy.dayOneAction, onPress: sell }
+                  : kind === 'news'
+                    ? { label: copy.postNews, onPress: postNews }
+                    : { label: copy.dayOneAction, onPress: sell }
             }
             testID={`campus-empty-${kind}`}
           />
@@ -238,7 +406,7 @@ export function CampusFeedScreen({
             </View>
           ) : null
         }
-        renderItem={({ item }) => renderRow(item)}
+        renderItem={({ item }) => renderItem(item)}
         testID="campus-feed"
       />
     );
@@ -250,6 +418,49 @@ export function CampusFeedScreen({
         {header}
         {body}
       </View>
+      <ActionSheet
+        visible={postMenu}
+        onClose={() => setPostMenu(false)}
+        actions={[
+          { label: copy.postNews, onPress: postNews },
+          { label: copy.postFood, onPress: postFood },
+          { label: copy.askFor, onPress: askFor },
+        ]}
+      />
+      <ConfirmDialog
+        visible={deleting !== null}
+        title={copy.deletePostTitle}
+        message={copy.deletePostBody}
+        confirmLabel={copy.deletePostConfirm}
+        destructive
+        onConfirm={() => {
+          if (!deleting) return;
+          // Gone at once (owner device check 2026-10-25: delete felt slow, it
+          // waited for the call and a full Feed reload). A failed call puts the
+          // Feed back from the server and says so.
+          const id = deleting.id;
+          setDeleting(null);
+          qc.setQueriesData<InfiniteData<CampusPage>>({ queryKey: campusKeys.all }, (old) =>
+            old
+              ? {
+                  ...old,
+                  pages: old.pages.map((p) => ({
+                    ...p,
+                    items: p.items.filter((x) => x.id !== id),
+                  })),
+                }
+              : old,
+          );
+          void remove(id)
+            .then(() => qc.invalidateQueries({ queryKey: ['my-listings'] }))
+            .catch((e: unknown) => {
+              useToastStore.getState().show('error', errorText(e));
+              void qc.invalidateQueries({ queryKey: campusKeys.all });
+            });
+        }}
+        onCancel={() => setDeleting(null)}
+        testID="campus-delete-confirm"
+      />
     </View>
   );
 }
@@ -258,42 +469,19 @@ function Gap() {
   return <View style={styles.gap} />;
 }
 
-/** "Post free food" and "Ask for something": quiet white pills, not main actions. */
-function PostPill({
-  icon,
-  label,
-  onPress,
-  testID,
-}: {
-  icon: IconName;
-  label: string;
-  onPress: () => void;
-  testID: string;
-}) {
-  return (
-    <Tappable
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      onPress={onPress}
-      style={styles.flex}
-      testID={testID}
-    >
-      <View style={styles.pill}>
-        <Icon name={icon} size={18} />
-        <Text variant="label" numberOfLines={2} style={styles.pillText}>
-          {label}
-        </Text>
-      </View>
-    </Tappable>
-  );
-}
-
-const styles = StyleSheet.create((theme) => ({
-  // Grey page, white cards (DEC 90 mock screen 5).
-  root: { flex: 1, backgroundColor: theme.colors.bg2 },
-  row: { flexDirection: 'row', gap: theme.space.sm },
+const styles = StyleSheet.create((theme, rt) => ({
+  // One plain page, posts split by thin lines (owner feedback: simpler, like Apple's apps).
+  root: { flex: 1, backgroundColor: theme.colors.bg },
   flex: { flex: 1 },
   pad: { padding: theme.space.screen },
+  top: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.space.sm,
+    paddingTop: rt.insets.top + theme.space.sm,
+    paddingBottom: theme.space.md,
+    paddingHorizontal: theme.space.screen,
+  },
   chipRow: { flexGrow: 0, flexShrink: 0 },
   chips: {
     flexDirection: 'row',
@@ -303,27 +491,31 @@ const styles = StyleSheet.create((theme) => ({
     paddingTop: theme.space.xs,
     paddingBottom: theme.space.md,
   },
-  list: { paddingHorizontal: theme.space.screen, paddingBottom: theme.space['2xl'] },
-  listHeader: { gap: theme.space.md, paddingBottom: theme.space.md },
-  panel: {
-    gap: theme.space.sm,
-    padding: theme.space.lg,
-    borderRadius: theme.radius.card,
-    backgroundColor: theme.colors.card,
-  },
-  pair: { flexDirection: 'row', gap: theme.space.md },
-  pill: {
-    minHeight: theme.size.hit,
+  list: { paddingBottom: theme.space['2xl'] },
+  listHeader: { gap: theme.space.md, paddingHorizontal: theme.space.screen },
+  composer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: theme.space.xs,
-    paddingHorizontal: theme.space.md,
-    paddingVertical: theme.space.xs,
-    borderRadius: theme.radius.chip,
-    backgroundColor: theme.colors.card,
+    gap: theme.space.sm,
+    paddingVertical: theme.space.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.line,
   },
-  pillText: { flexShrink: 1, textAlign: 'center' },
-  gap: { height: theme.space.md },
+  composerTap: { flexDirection: 'row', alignItems: 'center', gap: theme.space.sm },
+  composerText: {
+    flex: 1,
+    minHeight: theme.size.hit,
+    textAlignVertical: 'center',
+    lineHeight: theme.size.hit,
+  },
+  // Day one is one plain row with a line under it, like the posts (no panel).
+  dayOne: {
+    gap: theme.space.xs,
+    paddingBottom: theme.space.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.line,
+  },
+  dayOneAction: { alignItems: 'flex-start' },
+  gap: { height: 1, marginHorizontal: theme.space.screen, backgroundColor: theme.colors.line },
   more: { paddingVertical: theme.space.lg, alignItems: 'center' },
 }));

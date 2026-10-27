@@ -11,12 +11,13 @@ import { Icon } from '@/components/icons/Icon';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { errorCopy, toAppError } from '@/lib/errors';
-import { haptic } from '@/lib/haptics';
 import { rules as copy, states } from '@/strings';
 
 import { authApi, type AuthApi } from './api';
 import { AuthStep } from './AuthStep';
+import { NotYouSignOut } from './NotYouSignOut';
 import { useGateHandoff } from './useAppGate';
+import { a11yState } from '@/lib/a11y';
 
 const deviceTz = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -25,7 +26,7 @@ type LegalPage = 'rules' | 'terms' | 'privacy';
 /**
  * A07 Community rules (P4-AUTH-09, board A11) and the D10 Updated rules
  * variant (P4-AUTH-17, PM-04) at `/rules?updated=1`. Agreeing records the
- * version from get_app_config; the box also confirms the person is 18+.
+ * version from get_app_config; the box also confirms the person is 13 or older (DEC 136).
  */
 export function RulesScreen({
   api = authApi,
@@ -70,7 +71,11 @@ export function RulesScreen({
       </View>
     );
   }
-  if (!config.data) {
+  // The rules are static text: they show at once and only Agree waits for
+  // the config (3.01). The update variant lists what changed, which comes
+  // from the config, so it keeps the spinner.
+  const loading = !config.data;
+  if (loading && isUpdate) {
     return (
       <View
         style={styles.full}
@@ -99,21 +104,22 @@ export function RulesScreen({
     </Tappable>
   );
 
-  const changes = config.data.rulesChanges;
+  const changes = config.data?.rulesChanges ?? [];
 
   return (
     <AuthStep
-      testID={isUpdate ? 'screen-rules-updated' : 'screen-rules'}
+      testID={loading ? 'screen-rules-loading' : isUpdate ? 'screen-rules-updated' : 'screen-rules'}
       title={isUpdate ? copy.updatedTitle : copy.title}
       body={isUpdate ? copy.updatedBody : copy.body}
       leading="none"
+      trailing={<NotYouSignOut api={api} />}
       step={isUpdate ? undefined : 5}
       dock={
         <Button
           label={copy.agree}
           onPress={() => void agree()}
-          disabled={!checked || saving}
-          loading={saving}
+          disabled={!checked || saving || loading}
+          loading={saving || loading}
           testID="rules-agree"
         />
       }
@@ -156,12 +162,10 @@ export function RulesScreen({
       <View style={styles.agreeRow}>
         <Tappable
           accessibilityRole="checkbox"
-          accessibilityState={{ checked }}
+          {...a11yState({ checked })}
           accessibilityLabel={copy.agreeLabel}
-          onPress={() => {
-            haptic('selection');
-            setChecked((c) => !c);
-          }}
+          // No haptic: a checkbox toggle is outside the haptic budget (2.8).
+          onPress={() => setChecked((c) => !c)}
           guard={false}
           testID="rules-checkbox"
         >

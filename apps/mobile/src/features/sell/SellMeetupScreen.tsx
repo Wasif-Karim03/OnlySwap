@@ -11,11 +11,14 @@ import { Button } from '@/components/Button';
 import { ChipGroup } from '@/components/Chip';
 import { ErrorState } from '@/components/ErrorState';
 import { Input } from '@/components/Input';
+import { Icon } from '@/components/icons/Icon';
+import { GroupedList } from '@/components/ListRow';
 import { Checkbox } from '@/components/OptionRow';
 import { Photo } from '@/components/Photo';
 import { SkeletonList } from '@/components/Skeleton';
 import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
+import { useToastStore } from '@/components/Toast';
 import { getEnv } from '@/lib/env';
 import { errorCopy, toAppError } from '@/lib/errors';
 import { fill } from '@/lib/format';
@@ -25,7 +28,6 @@ import { sellApi, type SellApi } from './api';
 import { getDraftStore, useDraft, type DraftState } from './draft';
 import {
   AVAILABILITY,
-  categoryLabel,
   chosenSpots,
   createArgs,
   directionsUrl,
@@ -39,10 +41,18 @@ import {
   type Availability,
   type Spot,
 } from './logic';
-import { usePostedStore } from './posted';
+import { draftCarry, usePostedStore } from './posted';
 import { SellStep } from './SellStep';
+import { a11yState } from '@/lib/a11y';
 
 const deviceTz = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+/** The shared checkbox mark (OptionRow), with its check glyph when on. */
+function CheckMark({ on }: { on: boolean }) {
+  return (
+    <View style={styles.box(on)}>{on ? <Icon name="check" size={16} tone="inverse" /> : null}</View>
+  );
+}
 
 /**
  * D03 Sell · meetup (P5-SELL-04; board D5, DESIGN_SYSTEM D3 delta): a list of
@@ -70,11 +80,6 @@ export function SellMeetupScreen({
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const spotsQuery = useQuery({ queryKey: ['safe_spots'], queryFn: api.spots });
-  const categories = useQuery({
-    queryKey: ['categories'],
-    queryFn: api.categories,
-    staleTime: Infinity,
-  });
   const spots = sortSpots(spotsQuery.data ?? []);
   const chosen = chosenSpots(draft, spots);
 
@@ -100,7 +105,7 @@ export function SellMeetupScreen({
       const listing = await api.createListing(createArgs(draft, chosen));
       devTrace('post: created');
       track('listing_posted', { photos_count: draft.photos.length });
-      usePostedStore.getState().set(listing, draft.photos[0]?.uri ?? null);
+      usePostedStore.getState().set(listing, draft.photos[0]?.uri ?? null, draftCarry(draft));
       devTrace('post: draft reset');
       reset();
       devTrace('post: navigate');
@@ -111,6 +116,8 @@ export function SellMeetupScreen({
         // The reserved id is gone (a draft older than a day, or a reset
         // server): upload the photos again under a new one (step 1 retries).
         update(releaseReservation(store.getState().draft));
+        // Say why the seller is back on step 1 instead of moving them silently (3.03).
+        useToastStore.getState().show('error', copy.reservationExpired);
         router.replace('/sell');
         return;
       }
@@ -127,13 +134,6 @@ export function SellMeetupScreen({
   const cover = draft.photos[0];
   const coverSource =
     cover?.uri || (cover?.thumbPath ? mediaUrl(mediaBase(), cover.thumbPath) : null);
-  const meta = [
-    draft.condition ? copy.conditions[draft.condition] : null,
-    draft.kind === 'sale' ? categoryLabel(categories.data ?? [], draft.categoryId) : null,
-    spots.find((s) => s.id === chosen[0])?.name ?? null,
-  ]
-    .filter(Boolean)
-    .join(' · ');
 
   return (
     <SellStep
@@ -145,10 +145,19 @@ export function SellMeetupScreen({
       body={copy.meetupBody}
       dock={
         <>
-          {/* The confirm hint and post errors sit with the button: the checkbox
-              is below the fold, so a message in the list would go unseen. The
-              wrapper is always mounted (not flattened) so messages appearing
-              and leaving never re-insert views next to the button. */}
+          {/* The banned-items box sits right above Post (3.03), with the confirm
+              hint and post errors. The wrapper is always mounted (not
+              flattened) so messages appearing and leaving never re-insert
+              views next to the button. */}
+          <Checkbox
+            label={copy.notBanned}
+            selected={allowed}
+            testID="sell-allowed"
+            onPress={() => {
+              setAllowed((v) => !v);
+              setConfirmHint(false);
+            }}
+          />
           <View collapsable={false} style={styles.dockMessages}>
             {confirmHint ? (
               <Text
@@ -175,6 +184,21 @@ export function SellMeetupScreen({
         </>
       }
     >
+      {/* What buyers will see, up top (P1, trust): photo, title, price. */}
+      <View style={styles.preview} testID="sell-preview">
+        <View style={styles.thumb}>
+          <Photo source={coverSource} blurhash={cover?.blurhash} rounded="thumb" />
+        </View>
+        <View style={styles.flex}>
+          <Text variant="bodyStrong" numberOfLines={1}>
+            {draft.title.trim()}
+          </Text>
+          <Text variant="body" tone="ink2">
+            {priceLabel(draft.kind, listingPriceCents(draft), copy.free)}
+          </Text>
+        </View>
+      </View>
+
       {spotsQuery.isPending ? (
         <SkeletonList rows={3} />
       ) : spotsQuery.isError ? (
@@ -190,69 +214,75 @@ export function SellMeetupScreen({
               {copy.noSpots}
             </Text>
           ) : null}
-          {spots.map((spot) => {
-            const selected = chosen.includes(spot.id);
-            return (
-              <View key={spot.id} style={styles.spot(selected)}>
-                <Pressable
-                  accessibilityRole="checkbox"
-                  accessibilityState={{ checked: selected }}
-                  accessibilityLabel={[
-                    spot.name,
-                    spot.police ? copy.police : null,
-                    spot.description,
-                    spot.hours,
-                  ]
-                    .filter(Boolean)
-                    .join(', ')}
-                  onPress={() => toggle(spot)}
-                  testID={`sell-spot-${spot.id}`}
-                  style={styles.spotMain}
-                >
-                  <View style={styles.box(selected)} />
-                  <View style={styles.flex}>
-                    <Text variant="bodyStrong">{spot.name}</Text>
-                    {spot.description || spot.hours ? (
-                      <Text variant="meta" tone="ink2">
-                        {[spot.description, spot.hours].filter(Boolean).join(' · ')}
-                      </Text>
-                    ) : null}
-                    {spot.police ? (
-                      <View style={styles.tag}>
-                        <Tag label={copy.police} tone="green" />
+          <GroupedList surface="card">
+            {[
+              ...spots.map((spot) => {
+                const selected = chosen.includes(spot.id);
+                return (
+                  <View key={spot.id} style={styles.spot}>
+                    <Pressable
+                      accessibilityRole="checkbox"
+                      {...a11yState({ checked: selected })}
+                      accessibilityLabel={[
+                        spot.name,
+                        spot.police ? copy.police : null,
+                        spot.description,
+                        spot.hours,
+                      ]
+                        .filter(Boolean)
+                        .join(', ')}
+                      onPress={() => toggle(spot)}
+                      testID={`sell-spot-${spot.id}`}
+                      style={({ pressed }) => [styles.spotMain, pressed && styles.pressed]}
+                    >
+                      <CheckMark on={selected} />
+                      <View style={styles.flex}>
+                        {spot.police ? (
+                          <View style={styles.tag}>
+                            <Tag label={copy.police} tone="green" />
+                          </View>
+                        ) : null}
+                        <Text variant="bodyStrong">{spot.name}</Text>
+                        {spot.description || spot.hours ? (
+                          <Text variant="meta" tone="ink2" numberOfLines={1}>
+                            {[spot.description, spot.hours].filter(Boolean).join(' · ')}
+                          </Text>
+                        ) : null}
                       </View>
-                    ) : null}
+                    </Pressable>
+                    <Button
+                      label={copy.directions}
+                      variant="text"
+                      size="M"
+                      fullWidth={false}
+                      accessibilityHint={fill(copy.directionsLabel, { name: spot.name })}
+                      onPress={() => void openUrl(directionsUrl(spot, Platform.OS))}
+                    />
                   </View>
-                </Pressable>
-                <Button
-                  label={copy.directions}
-                  variant="text"
-                  size="S"
-                  accessibilityHint={fill(copy.directionsLabel, { name: spot.name })}
-                  onPress={() => void openUrl(directionsUrl(spot, Platform.OS))}
-                />
-              </View>
-            );
-          })}
-          <Pressable
-            accessibilityRole="checkbox"
-            accessibilityState={{ checked: chosen.length === 0 }}
-            accessibilityLabel={`${copy.decideInChat}, ${copy.decideInChatBody}`}
-            onPress={() => {
-              setMaxHint(false);
-              update({ spotIds: [] });
-            }}
-            testID="sell-spot-chat"
-            style={[styles.spot(chosen.length === 0), styles.spotMain]}
-          >
-            <View style={styles.box(chosen.length === 0)} />
-            <View style={styles.flex}>
-              <Text variant="bodyStrong">{copy.decideInChat}</Text>
-              <Text variant="meta" tone="ink2">
-                {copy.decideInChatBody}
-              </Text>
-            </View>
-          </Pressable>
+                );
+              }),
+              <Pressable
+                key="chat"
+                accessibilityRole="checkbox"
+                {...a11yState({ checked: chosen.length === 0 })}
+                accessibilityLabel={`${copy.decideInChat}, ${copy.decideInChatBody}`}
+                onPress={() => {
+                  setMaxHint(false);
+                  update({ spotIds: [] });
+                }}
+                testID="sell-spot-chat"
+                style={({ pressed }) => [styles.spotMain, pressed && styles.pressed]}
+              >
+                <CheckMark on={chosen.length === 0} />
+                <View style={styles.flex}>
+                  <Text variant="bodyStrong">{copy.decideInChat}</Text>
+                  <Text variant="meta" tone="ink2">
+                    {copy.decideInChatBody}
+                  </Text>
+                </View>
+              </Pressable>,
+            ]}
+          </GroupedList>
           {maxHint ? (
             <Text variant="meta" tone="red" accessibilityLiveRegion="polite">
               {copy.spotsMax}
@@ -281,39 +311,6 @@ export function SellMeetupScreen({
           onChange={(availability) => update({ availability })}
         />
       </View>
-
-      <View style={styles.field}>
-        <Text variant="label" tone="ink2">
-          {copy.preview}
-        </Text>
-        <View style={styles.preview} testID="sell-preview">
-          <View style={styles.thumb}>
-            <Photo source={coverSource} blurhash={cover?.blurhash} rounded="thumb" />
-          </View>
-          <View style={styles.flex}>
-            <Text variant="bodyStrong" numberOfLines={1}>
-              {draft.title.trim()}
-            </Text>
-            <Text variant="bodyStrong">
-              {priceLabel(draft.kind, listingPriceCents(draft), copy.free)}
-            </Text>
-            {meta ? (
-              <Text variant="meta" tone="ink2" numberOfLines={1}>
-                {meta}
-              </Text>
-            ) : null}
-          </View>
-        </View>
-      </View>
-
-      <Checkbox
-        label={copy.notBanned}
-        selected={allowed}
-        onPress={() => {
-          setAllowed((v) => !v);
-          setConfirmHint(false);
-        }}
-      />
     </SellStep>
   );
 }
@@ -323,35 +320,34 @@ const styles = StyleSheet.create((theme) => ({
   list: { gap: theme.space.sm },
   dockMessages: { gap: theme.space.xs },
   field: { gap: theme.space.xs },
-  spot: (selected: boolean) => ({
-    borderRadius: theme.radius.control,
-    borderWidth: 1.5,
-    borderColor: selected ? theme.colors.ink : theme.colors.line,
-    backgroundColor: theme.colors.card,
-  }),
+  spot: { flexDirection: 'row', alignItems: 'center', paddingRight: theme.space.xs },
   spotMain: {
-    minHeight: theme.size.hit,
+    flex: 1,
+    minHeight: theme.space.rowMin,
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: theme.space.md,
-    padding: theme.space.md,
+    paddingVertical: theme.space.md,
+    paddingHorizontal: theme.space.lg,
   },
+  pressed: { backgroundColor: theme.colors.bg3 },
+  // Same mark as the shared Checkbox (OptionRow).
   box: (selected: boolean) => ({
-    width: 22,
-    height: 22,
-    marginTop: 2,
-    borderRadius: 6,
+    width: theme.space.xl,
+    height: theme.space.xl,
+    borderRadius: theme.space.sm,
     borderWidth: 2,
     borderColor: selected ? theme.colors.ink : theme.colors.line2,
     backgroundColor: selected ? theme.colors.ink : 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
   }),
   tag: { flexDirection: 'row' },
   preview: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: theme.space.md,
-    padding: theme.space.sm,
-    borderRadius: theme.radius.control,
-    backgroundColor: theme.colors.bg2,
   },
-  thumb: { width: 60, height: 60 },
+  // 64 pt, the summary-row thumbnail shared with Posted (3.03).
+  thumb: { width: theme.space['2xl'] * 2, height: theme.space['2xl'] * 2 },
 }));

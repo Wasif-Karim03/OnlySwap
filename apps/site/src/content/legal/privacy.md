@@ -13,8 +13,8 @@ OnlySwap is a campus marketplace for verified students. We collect only what we 
 |---|---|
 | School email address | To verify you're a student and to sign you in with a code. Other students never see it. |
 | Name you choose, class year, optional photo and interests | Your public profile. Others see your first name and last initial. |
-| Age confirmation | To keep OnlySwap 18+. We don't store your date of birth. |
-| Listings, photos, prices, offers | To run the marketplace. Photo location data (EXIF) is removed before upload. |
+| Age range (13 to 17, or 18 and older) | To keep out anyone under 13 and to apply protections for teens. If your phone shares an age range, we use that. If we ask for your birthday, we check it and keep only the range. We don't store your date of birth. |
+| Listings, photos, prices, offers | To run the marketplace. Photo location data (EXIF) is removed before upload. Listing, Quad and profile photos are checked automatically for nudity, violence, weapons, drugs and hate symbols; a flagged photo is held for a person to review. |
 | Messages and meetup plans | To let you arrange deals. Staff read a chat only when someone reports it, and every read is logged. |
 | Photos you send in chat | To show an item's condition. Stored privately, see section 4. |
 | Quad posts, replies, polls, votes, hides and mutes | To run the Quad, your campus board. See section 4. |
@@ -40,7 +40,7 @@ Our team can see your activity in the app (like swipes, saves and offers) to run
 These processors handle data only to provide their service to us:
 
 - Supabase (database, sign-in, server functions)
-- Cloudflare (photo storage, the website)
+- Cloudflare (photo storage, the website, automatic photo checks)
 - Expo, Apple and Google (push notifications)
 - Sentry (crash reports)
 - PostHog (usage events)
@@ -52,12 +52,7 @@ We share information with authorities only when the law requires it or someone's
 
 ### The Quad
 
-The Quad is a board for students at your school. Posts and replies are anonymous to other students: they never see your name, profile or account, and replies show only a letter like "Anon A".
-
-Posts are not anonymous to OnlySwap. We keep the link between each post or reply and the account that wrote it so we can enforce the rules. A person on our team can see who wrote something only when:
-
-- the law requires it, for example a valid request from the police or a court, or
-- someone's safety is at serious risk, for example a threat of violence or harm to a child.
+The Quad is a board for students at your school. Posts and replies show your first name, last initial and profile photo, like the rest of OnlySwap, and are linked to your account.
 
 Only the owner of OnlySwap can do this. Each time, they need a case reference and a fresh two-step sign-in check, the action is written to our audit log, and we email the account that wrote the post to say it happened.
 
@@ -77,7 +72,7 @@ Your invite link includes a short code. When someone joins with it, we record th
 
 ### Download your data
 
-In Settings you can request a copy of your data once every 24 hours. It's a JSON file with your account, profile and settings, your listings, offers, chats and messages, ratings, saves, saved searches, notifications, blocks, reports you made, strikes, appeals, and your own Quad posts, replies and votes. Other people appear only by the name you already see in the app, never by their account id, and never as the author of a Quad post. We email you a private link that works for 7 days; the file is deleted on day 8.
+In Settings you can request a copy of your data once every 24 hours. It's a JSON file with your account, profile and settings, your listings, offers, chats and messages, ratings, saves, saved searches, notifications, your activity in the app (listings you opened and for how long, searches, device type), blocks, reports you made, strikes, appeals, and your own Quad posts, replies and votes. Other people appear only by the name you already see in the app, never by their account id, and never as the author of a Quad post. We email you a private link that works for 7 days; the file is deleted on day 8.
 
 ### Price hints
 
@@ -103,7 +98,7 @@ When you plan a meetup you can create a link to send a friend. Anyone with the l
 | Invite records | Until you delete your account. |
 | Notifications | 60 days |
 | Swipes (other than saves) | 30 days |
-| Activity in the app (listings shown and opened, time on a listing, searches) | 90 days |
+| Activity in the app (listings shown and opened, time on a listing, searches) | 30 days |
 | Account deletion records (date and school only, no name or email) | 365 days |
 | Reports and evidence | 180 days after the report is resolved |
 | Moderation audit log | 2 years |
@@ -122,7 +117,13 @@ When you plan a meetup you can create a link to send a friend. Anyone with the l
 
 ## 7. Age
 
-OnlySwap is only for people 18 and older. If we learn an account belongs to someone under 18, we delete it.
+OnlySwap is for people 13 and older. We don't knowingly collect data from children under 13. If someone says they're under 13, we stop the sign-up and delete the account, keeping only a one-way hash of the email for 365 days so the same address can't try again. If we learn an existing account belongs to someone under 13, we delete it too.
+
+If you're 13 to 17:
+
+- We store only your age range, never your birthday.
+- A parent or guardian can ask to see or delete your data through the [Help page](/help).
+- In some states your app store asks a parent to approve the account. If a parent withdraws that approval, we lock the account. Deal records are kept as described in section 5.
 
 ## 8. Security
 

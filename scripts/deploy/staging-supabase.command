@@ -132,6 +132,9 @@ SQLF=$(mktemp); chmod 600 "$SQLF"
 SB db query --linked -f "$SQLF" >/dev/null 2>>"$LOG"; rc=$?; rm -f "$SQLF"
 [ $rc -eq 0 ] || die "vault setup failed (see $LOG)"
 echo "vault: 6 secrets in place" | tee -a "$LOG"
+# Photo scanning (DEC 152): a random key shared with the media Worker
+# (cloudflare-staging.command puts the same value on the Worker).
+[ -n "$(kc_get onlyswap-vault-scan_key)" ] || kc_set onlyswap-vault-scan_key "$(openssl rand -hex 32)"
 SECF=$(mktemp); chmod 600 "$SECF"
 {
   echo "APP_ENV=staging"
@@ -143,6 +146,7 @@ SECF=$(mktemp); chmod 600 "$SECF"
   if [ -n "$GMAIL_PASS" ]; then
     echo "GMAIL_USER=$GMAIL_USER"; echo "GMAIL_APP_PASSWORD=$GMAIL_PASS"; echo "EMAIL_FROM=OnlySwap <$GMAIL_USER>"
   fi
+  echo "SCAN_KEY=$(kc_get onlyswap-vault-scan_key)"
 } > "$SECF"
 SB secrets set --project-ref "$REF" --env-file "$SECF" >/dev/null 2>>"$LOG"; rc=$?; rm -f "$SECF"
 [ $rc -eq 0 ] || die "function secrets failed (see $LOG)"

@@ -1,9 +1,17 @@
 // Admin UI kit (approved mock: design/admin-redesign-mock.html). Pages build
 // from these pieces and the classes in styles.css; see apps/admin/README.md.
 import { Link } from '@tanstack/react-router';
-import { useCallback, useEffect, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ButtonHTMLAttributes,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type ReactNode,
+} from 'react';
 
-import type { IconName, Labeled, Tone } from './labels';
+import { displayTone, type IconName, type Labeled, type Tone } from './labels';
 import { errorMessage, mediaUrl, moneyLabel, sparkPath } from './logic';
 import { GlobalSearch } from './search';
 import { rpc } from './supabase';
@@ -14,24 +22,38 @@ import { rpc } from './supabase';
 /** Load an RPC result with loading, error and reload. Pass `skip` to wait. */
 export function useRpc<T>(fn: string, args?: Record<string, unknown>, skip = false) {
   const key = JSON.stringify(args ?? {});
-  const [data, setData] = useState<T | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // Results are tagged with the args they answer, so rows for old args never
+  // show (or survive a failed load) after the args change.
+  const [result, setResult] = useState<{ key: string; data: T | null; error: string | null }>({
+    key,
+    data: null,
+    error: null,
+  });
   const [loading, setLoading] = useState(!skip);
   const reload = useCallback(() => {
     if (skip) return;
     setLoading(true);
     rpc<T>(fn, JSON.parse(key) as Record<string, unknown>)
-      .then((d) => {
-        setData(d);
-        setError(null);
-      })
-      .catch((e: unknown) => setError(errorMessage(e)))
+      .then((d) => setResult({ key, data: d, error: null }))
+      .catch((e: unknown) =>
+        setResult((prev) => ({
+          key,
+          data: prev.key === key ? prev.data : null,
+          error: errorMessage(e),
+        })),
+      )
       .finally(() => setLoading(false));
   }, [fn, key, skip]);
   useEffect(() => {
     reload();
   }, [reload]);
-  return { data, error, loading, reload };
+  const current = result.key === key;
+  return {
+    data: current ? result.data : null,
+    error: current ? result.error : null,
+    loading,
+    reload,
+  };
 }
 
 export type RpcState<T> = {
@@ -55,15 +77,37 @@ export function Loadable<T>({
   rows?: number;
   children: (d: T) => ReactNode;
 }) {
-  if (state.error) return <ErrorState message={state.error} onRetry={state.reload} />;
+  // A failed refresh keeps the rows already shown and says so above them.
+  if (state.error && state.data === null)
+    return <ErrorState message={state.error} onRetry={state.reload} />;
   if (state.loading && state.data === null) return <Loading rows={rows} />;
   if (state.data === null) return null;
-  if (empty?.(state.data)) return <EmptyState title={emptyText ?? 'Nothing here right now.'} />;
-  return <>{children(state.data)}</>;
+  const stale = state.error ? <StaleBanner onRetry={state.reload} /> : null;
+  if (empty?.(state.data))
+    return (
+      <>
+        {stale}
+        <EmptyState title={emptyText ?? 'Nothing here right now.'} />
+      </>
+    );
+  return (
+    <>
+      {stale}
+      {children(state.data)}
+    </>
+  );
 }
 
-export function money(cents: number | null | undefined): string {
-  return moneyLabel(cents);
+/** One hairline row over data that is still shown after a reload failed. */
+export function StaleBanner({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="stale" role="alert">
+      <span>Could not refresh.</span>
+      <Button variant="ghost" size="sm" onClick={onRetry}>
+        Try again
+      </Button>
+    </div>
+  );
 }
 
 const MEDIA = (import.meta.env.VITE_MEDIA_URL as string | undefined) ?? '';
@@ -325,7 +369,7 @@ export function Pill({
   title?: string;
 }) {
   return (
-    <span className={`pill t-${tone}${dot ? '' : ' nodot'}`} title={title}>
+    <span className={`pill t-${displayTone(tone)}${dot ? '' : ' nodot'}`} title={title}>
       {label ?? children}
     </span>
   );
@@ -340,7 +384,7 @@ export function StatusPill({ label, tone, dot = true }: Labeled & { dot?: boolea
 /** The colored square with an icon used in activity rows. */
 export function EventIcon({ tone, icon }: { tone: Tone; icon: IconName }) {
   return (
-    <span className={`ico t-${tone}`} aria-hidden="true">
+    <span className={`ico t-${displayTone(tone)}`} aria-hidden="true">
       <Icon name={icon} />
     </span>
   );
@@ -454,9 +498,12 @@ export function ListingCell({
 // ---------------------------------------------------------------------------
 // Controls
 
-export type ButtonVariant = 'secondary' | 'primary' | 'danger' | 'ban' | 'accent' | 'ghost';
+export type ButtonVariant = 'secondary' | 'primary' | 'danger' | 'ban' | 'ghost';
 
-/** 30px button. secondary (white, border), primary (dark), danger (red text), ban (red fill, Ban only). */
+/**
+ * 30px button. secondary (white, border), primary (dark), danger (red text), ban
+ * (red fill, Ban only). `pending` disables it and shows `pendingLabel` ("Saving…").
+ */
 export function Button({
   variant = 'secondary',
   size,
@@ -464,11 +511,16 @@ export function Button({
   children,
   className,
   type = 'button',
+  pending = false,
+  pendingLabel,
+  disabled,
   ...rest
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
   size?: 'sm';
   icon?: IconName;
+  pending?: boolean;
+  pendingLabel?: ReactNode;
 }) {
   return (
     <button
@@ -476,10 +528,12 @@ export function Button({
       className={['btn', variant === 'secondary' ? '' : variant, size ?? '', className ?? '']
         .join(' ')
         .trim()}
+      disabled={disabled || pending}
+      aria-busy={pending || undefined}
       {...rest}
     >
       {icon ? <Icon name={icon} /> : null}
-      {children}
+      {pending && pendingLabel ? pendingLabel : children}
     </button>
   );
 }
@@ -537,23 +591,31 @@ export function FilterChip({
   );
 }
 
-/** Labeled form field with an optional hint under it. */
+/** Labeled form field with an optional hint and an error line under it. */
 export function Field({
   label,
   hint,
+  error,
   children,
   className,
 }: {
   label: string;
   hint?: ReactNode;
+  /** A red line under the control, announced when it appears. */
+  error?: ReactNode;
   children: ReactNode;
   className?: string;
 }) {
   return (
-    <label className={`field ${className ?? ''}`}>
+    <label className={`field${error ? ' has-error' : ''} ${className ?? ''}`}>
       <span>{label}</span>
       {children}
       {hint ? <span className="hint">{hint}</span> : null}
+      {error ? (
+        <span className="field-error" role="alert">
+          {error}
+        </span>
+      ) : null}
     </label>
   );
 }
@@ -718,10 +780,141 @@ export function Loading({ rows = 4 }: { rows?: number }) {
 // ---------------------------------------------------------------------------
 // Actions
 
+/** Shortest reason the audit log accepts. */
+const MIN_REASON = 3;
+/** How long the inline "Done" line stays after an action. */
+const DONE_MS = 6000;
+const REASON_LABEL = 'Reason (required)';
+const REASON_HINT = 'Saved to the audit log.';
+const REASON_SHORT = 'Add a reason, at least 3 characters.';
+
+/** Shows the one-line result for DONE_MS, then hides it. */
+function useDoneNote() {
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    if (!shown) return;
+    const t = setTimeout(() => setShown(false), DONE_MS);
+    return () => clearTimeout(t);
+  }, [shown]);
+  return { shown, show: () => setShown(true), hide: () => setShown(false) };
+}
+
+/** "Done. Logged to the audit log." with a link to the log. */
+function DoneNote() {
+  return (
+    <span className="ok done-note" role="status">
+      Done. Logged to the audit log.{' '}
+      <Link className="link" to="/audit">
+        View
+      </Link>
+    </span>
+  );
+}
+
+/** Live reason count: the minimum until it is met, then the length. */
+function ReasonCount({ reason }: { reason: string }) {
+  const n = reason.trim().length;
+  return (
+    <span className="counter">{n < MIN_REASON ? '3 characters minimum' : `${n} characters`}</span>
+  );
+}
+
 /**
- * An admin action button that asks for a reason (required, 3+ characters,
- * saved to the audit log), runs it, and shows the result next to it. Use
- * ReasonActions when a page has one action row with its own reason box.
+ * The confirmation for a moderation action: the effect line, a required reason
+ * with a live count, an optional extra input, then Cancel and one primary.
+ * Stays open while running and on error (the reason is kept).
+ */
+export function ReasonDialog({
+  title,
+  effect,
+  needsReason = true,
+  hint,
+  extra,
+  danger,
+  initialReason = '',
+  pendingLabel = 'Working…',
+  onCancel,
+  onRun,
+}: {
+  title: string;
+  effect?: string;
+  needsReason?: boolean;
+  hint?: ReactNode;
+  extra?: ReactNode;
+  /** Red fill on the primary (Ban only). */
+  danger?: boolean;
+  initialReason?: string;
+  /** The primary's label while running ("Saving…"). */
+  pendingLabel?: string;
+  onCancel: () => void;
+  onRun: (reason: string) => Promise<void>;
+}) {
+  const [reason, setReason] = useState(initialReason);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const submit = async () => {
+    if (needsReason && reason.trim().length < MIN_REASON) {
+      setError(REASON_SHORT);
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      await onRun(reason.trim());
+    } catch (e) {
+      setError(errorMessage(e));
+      setBusy(false);
+    }
+  };
+  return (
+    <Dialog title={title} onClose={busy ? () => undefined : onCancel}>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          void submit();
+        }}
+      >
+        <div className="cb stack tight">
+          {effect ? <p className="callout red">{effect}</p> : null}
+          {needsReason ? (
+            <Field label={REASON_LABEL} hint={hint ?? REASON_HINT} error={error}>
+              <input
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                autoComplete="off"
+                autoFocus
+                aria-invalid={error ? true : undefined}
+              />
+              <ReasonCount reason={reason} />
+            </Field>
+          ) : error ? (
+            <p className="error" role="alert">
+              {error}
+            </p>
+          ) : null}
+          {extra ? <div className="row end">{extra}</div> : null}
+        </div>
+        <div className="cf end">
+          <Button variant="ghost" onClick={onCancel} disabled={busy}>
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            variant={danger ? 'ban' : 'primary'}
+            pending={busy}
+            pendingLabel={pendingLabel}
+          >
+            {title}
+          </Button>
+        </div>
+      </form>
+    </Dialog>
+  );
+}
+
+/**
+ * An admin action button. When it needs a reason or a confirmation it opens
+ * the reason dialog; the result shows next to it for a few seconds.
  */
 export function ActionButton({
   label,
@@ -731,6 +924,7 @@ export function ActionButton({
   needsReason = true,
   confirm,
   size,
+  reasonPrompt,
 }: {
   label: string;
   run: (reason: string) => Promise<unknown>;
@@ -738,44 +932,69 @@ export function ActionButton({
   /** 'danger' is red text, 'ban' a red fill, 'primary' dark. */
   kind?: ButtonVariant;
   needsReason?: boolean;
-  /** Asked first with OK / Cancel (for removals). */
+  /** The effect line shown first in the dialog (for removals). */
   confirm?: string;
   size?: 'sm';
+  /** Help line under the reason field; defaults to "Saved to the audit log." */
+  reasonPrompt?: string;
 }) {
+  const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const done = useDoneNote();
+  const finish = () => {
+    setOpen(false);
+    done.show();
+    onDone?.();
+  };
+  const runNow = async () => {
+    setBusy(true);
+    setError(null);
+    done.hide();
+    try {
+      await run('');
+      finish();
+    } catch (e) {
+      setError(errorMessage(e));
+    } finally {
+      setBusy(false);
+    }
+  };
   return (
-    <span className="row" style={{ display: 'inline-flex', flexWrap: 'nowrap' }}>
+    <span className="row nowrap">
       <Button
         variant={kind ?? 'secondary'}
         size={size}
-        disabled={busy}
-        onClick={async () => {
-          if (confirm && !window.confirm(confirm)) return;
-          const reason = needsReason
-            ? window.prompt(`${label}: reason (saved to the audit log)`)
-            : '';
-          if (reason === null) return;
-          if (needsReason && reason.trim().length < 3) {
-            setMsg('Add a reason of at least 3 characters.');
-            return;
-          }
-          setBusy(true);
-          setMsg(null);
-          try {
-            await run(reason.trim());
-            setMsg('Done');
-            onDone?.();
-          } catch (e) {
-            setMsg(errorMessage(e));
-          } finally {
-            setBusy(false);
-          }
+        pending={busy}
+        onClick={() => {
+          if (!needsReason && !confirm) return void runNow();
+          setError(null);
+          done.hide();
+          setOpen(true);
         }}
       >
         {label}
       </Button>
-      {msg ? <span className={`toast ${msg === 'Done' ? 'ok' : 'error'}`}>{msg}</span> : null}
+      {done.shown ? <DoneNote /> : null}
+      {error ? (
+        <span className="toast error" role="alert">
+          {error}
+        </span>
+      ) : null}
+      {open ? (
+        <ReasonDialog
+          title={label}
+          effect={confirm}
+          needsReason={needsReason}
+          hint={reasonPrompt}
+          danger={kind === 'ban'}
+          onCancel={() => setOpen(false)}
+          onRun={async (reason) => {
+            await run(reason);
+            finish();
+          }}
+        />
+      ) : null}
     </span>
   );
 }
@@ -785,7 +1004,7 @@ export type ReasonAction = {
   label: string;
   variant?: ButtonVariant;
   run: (reason: string) => Promise<unknown>;
-  /** Asked with OK / Cancel before running. */
+  /** The effect line shown first in the confirmation dialog. */
   confirm?: string;
   /** Shown only while this action is picked (for example a days box for Suspend). */
   extra?: ReactNode;
@@ -793,90 +1012,149 @@ export type ReasonAction = {
   needsExtra?: boolean;
 };
 
+/** Ban, remove and other confirmed or red actions always go through the dialog. */
+const usesDialog = (a: ReasonAction) =>
+  !!a.confirm || a.variant === 'ban' || a.variant === 'danger';
+
 /**
- * One action row with a single required reason box (the Reports and person
- * pages). Buttons run with the typed reason; an action with `needsExtra`
- * first reveals its extra input (Suspend days, Until date).
+ * One action row (the Reports, person and listing pages). Low-risk actions
+ * run with the inline reason box; Ban, Remove and other confirmed or red
+ * actions open the reason dialog. An inline action with `needsExtra` first
+ * reveals its extra input (Pause until).
  */
 export function ReasonActions({
   actions,
+  more = [],
   onDone,
-  placeholder = 'Reason (required, saved to the audit log)',
+  placeholder = REASON_LABEL,
+  hint = REASON_HINT,
 }: {
   actions: ReasonAction[];
+  /** Less common actions, behind a "More" disclosure at the end of the row. */
+  more?: ReasonAction[];
   onDone?: (id: string) => void;
   placeholder?: string;
+  /** Help line under the reason box. */
+  hint?: ReactNode;
 }) {
   const [reason, setReason] = useState('');
   const [picked, setPicked] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
-  const pickedAction = actions.find((a) => a.id === picked);
+  const [dialogFor, setDialogFor] = useState<string | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const done = useDoneNote();
+  const all = [...actions, ...more];
+  const pickedAction = all.find((a) => a.id === picked);
+  const dialogAction = all.find((a) => a.id === dialogFor);
+  const button = (a: ReasonAction) => (
+    <Button
+      key={a.id}
+      variant={a.variant}
+      disabled={busy !== null}
+      pending={busy === a.id}
+      pendingLabel="Working…"
+      className={picked === a.id ? 'on' : ''}
+      onClick={() => void go(a)}
+    >
+      {a.label}
+    </Button>
+  );
+
+  const finish = (a: ReasonAction) => {
+    setReason('');
+    setPicked(null);
+    setDialogFor(null);
+    done.show();
+    onDone?.(a.id);
+  };
 
   const go = async (a: ReasonAction) => {
+    setError(null);
+    done.hide();
+    if (usesDialog(a)) {
+      setPicked(null);
+      setDialogFor(a.id);
+      return;
+    }
     if (a.needsExtra && picked !== a.id) {
       setPicked(a.id);
-      setMsg(null);
       return;
     }
-    if (reason.trim().length < 3) {
-      setMsg({ ok: false, text: 'Add a reason of at least 3 characters.' });
+    if (reason.trim().length < MIN_REASON) {
+      setError(REASON_SHORT);
       return;
     }
-    if (a.confirm && !window.confirm(a.confirm)) return;
-    setBusy(true);
-    setMsg(null);
+    setBusy(a.id);
     try {
       await a.run(reason.trim());
-      setMsg({ ok: true, text: 'Done' });
-      setReason('');
-      setPicked(null);
-      onDone?.(a.id);
+      finish(a);
     } catch (e) {
-      setMsg({ ok: false, text: errorMessage(e) });
+      setError(errorMessage(e));
     } finally {
-      setBusy(false);
+      setBusy(null);
     }
   };
 
   return (
     <div className="stack tight">
       <div className="row">
-        <input
-          className="reason"
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          placeholder={placeholder}
-          aria-label="Reason (required, saved to the audit log)"
-          autoComplete="off"
-        />
-        {actions.map((a) => (
-          <Button
-            key={a.id}
-            variant={a.variant}
-            disabled={busy}
-            className={picked === a.id ? 'on' : ''}
-            onClick={() => void go(a)}
-          >
-            {a.label}
-          </Button>
-        ))}
+        <div className="reason">
+          <input
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder={placeholder}
+            aria-label={REASON_LABEL}
+            aria-invalid={error ? true : undefined}
+            autoComplete="off"
+          />
+        </div>
+        {actions.map(button)}
+        {more.length ? (
+          <details className="more">
+            <summary className="btn ghost">More</summary>
+            <div className="row">{more.map(button)}</div>
+          </details>
+        ) : null}
+      </div>
+      <div className="row reason-meta">
+        <span className="note">{hint}</span>
+        <ReasonCount reason={reason} />
       </div>
       {pickedAction?.extra ? (
-        <div className="row">
+        <div className="row end">
           {pickedAction.extra}
-          <Button variant="primary" disabled={busy} onClick={() => void go(pickedAction)}>
-            Confirm {pickedAction.label.toLowerCase()}
+          <Button
+            variant="primary"
+            pending={busy === pickedAction.id}
+            pendingLabel="Working…"
+            onClick={() => void go(pickedAction)}
+          >
+            {pickedAction.label}
           </Button>
           <Button variant="ghost" onClick={() => setPicked(null)}>
             Cancel
           </Button>
         </div>
       ) : null}
-      {msg ? (
-        <p className={msg.ok ? 'ok' : 'error'} role="status">
-          {msg.text}
+      {error ? (
+        <p className="error" role="alert">
+          {error}
         </p>
+      ) : null}
+      {done.shown ? <DoneNote /> : null}
+      {dialogAction ? (
+        <ReasonDialog
+          title={dialogAction.label}
+          effect={dialogAction.confirm}
+          extra={dialogAction.extra}
+          danger={dialogAction.variant === 'ban'}
+          initialReason={reason}
+          onCancel={() => setDialogFor(null)}
+          onRun={async (r) => {
+            await dialogAction.run(r);
+            finish(dialogAction);
+          }}
+        />
       ) : null}
     </div>
   );
@@ -903,40 +1181,17 @@ export type CampusOption = {
   is_demo: boolean;
 };
 
-/** Campus <select> fed by admin_list_campuses (moderators only get their own campus back). */
-export function CampusSelect({
-  campuses,
-  value,
-  onChange,
-  allLabel,
-  label = 'Campus',
-}: {
-  campuses: CampusOption[];
-  value: string;
-  onChange: (id: string) => void;
-  /** Adds an "all campuses" option with value '' when set. */
-  allLabel?: string;
-  label?: string;
-}) {
-  return (
-    <Field label={label}>
-      <select value={value} onChange={(e) => onChange(e.target.value)}>
-        {allLabel ? <option value="">{allLabel}</option> : null}
-        {campuses.map((c) => (
-          <option key={c.id} value={c.id}>
-            {c.name}
-            {c.is_demo ? ' (demo)' : ''}
-          </option>
-        ))}
-      </select>
-    </Field>
-  );
-}
-
 // ---------------------------------------------------------------------------
 // Dialog and small shared pieces (part B pages)
 
-/** Centered dialog over a dimmed page. Escape and the backdrop close it. */
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/**
+ * Centered dialog over a dimmed page. Escape and the backdrop close it; focus
+ * moves in on open, stays inside while open and returns on close; the page
+ * behind does not scroll.
+ */
 export function Dialog({
   title,
   onClose,
@@ -948,11 +1203,42 @@ export function Dialog({
   children: ReactNode;
   wide?: boolean;
 }) {
+  const box = useRef<HTMLDivElement>(null);
+  // Read during the first render, before autoFocus moves focus into the dialog.
+  const [trigger] = useState(() => document.activeElement as HTMLElement | null);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
+  useEffect(() => {
+    const back = trigger;
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const el = box.current;
+    if (el && !el.contains(document.activeElement)) {
+      const auto = el.querySelector<HTMLElement>('[autofocus]');
+      (auto ?? el).focus();
+    }
+    return () => {
+      document.body.style.overflow = overflow;
+      back?.focus?.();
+    };
+  }, []);
+  const trap = (e: ReactKeyboardEvent) => {
+    if (e.key !== 'Tab' || !box.current) return;
+    const items = Array.from(box.current.querySelectorAll<HTMLElement>(FOCUSABLE));
+    if (!items.length) return;
+    const first = items[0]!;
+    const last = items[items.length - 1]!;
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
   return (
     <div
       className="dialog-back"
@@ -961,10 +1247,13 @@ export function Dialog({
       }}
     >
       <div
+        ref={box}
         className={`dialog${wide ? ' wide' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-label={title}
+        tabIndex={-1}
+        onKeyDown={trap}
       >
         <CardHeader
           title={title}

@@ -65,11 +65,18 @@ export function useAppGate(options: Options = {}): AppGate {
     today: localDate(),
   });
 
+  // Offline on a cold start the profile query pauses instead of failing, so
+  // the splash used to sit forever (UX audit 2026-10-25). After the config
+  // wait it shows the offline error with Retry.
+  const offlinePaused =
+    userId !== null && profile.data === undefined && profile.fetchStatus === 'paused' && waited;
+
   return {
     route,
     userId,
-    failed: userId !== null && profile.isError && profile.data === undefined,
-    error: profile.error,
+    failed: userId !== null && profile.data === undefined && (profile.isError || offlinePaused),
+    error:
+      offlinePaused && !profile.isError ? new TypeError('Network request failed') : profile.error,
     retry: () => void profile.refetch(),
   };
 }

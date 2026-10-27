@@ -7,7 +7,7 @@
 -- listing page writes 'listing.activity_view', lists and search write nothing;
 -- no read ever returns a chat message's text.
 begin;
-select plan(68);
+select plan(69);
 select tests.create_fixtures();
 select tests.set_now('2027-03-10 12:00:00-05');
 
@@ -40,6 +40,10 @@ insert into public.swipes (user_id, listing_id, dir, created_at) values
   (tests.uid('A'), '00000000-0000-4000-8000-0000000b0001', 'left', '2027-03-10 10:41-05'),
   (tests.uid('C'), '00000000-0000-4000-8000-0000000b0002', 'save', '2027-03-10 10:42-05'),
   (tests.uid('A'), '00000000-0000-4000-8000-0000000b0005', 'left', '2027-03-10 10:43-05');
+-- A right swipe is stored as seen (left) with the time on card, then the offer follows (E-03, DEC 100).
+-- Admin counts still treat it as a left swipe (known; separate follow-up).
+insert into public.swipes (user_id, listing_id, dir, created_at, dwell_ms) values
+  (tests.uid('A'), '00000000-0000-4000-8000-0000000b0002', 'left', '2027-03-10 10:34-05', 9000);
 insert into public.saves (user_id, listing_id, price_at_save, created_at) values
   (tests.uid('C'), '00000000-0000-4000-8000-0000000b0002', 12000, '2027-03-10 10:42-05');
 insert into public.offers (id, listing_id, buyer_id, seller_id, amount_cents, status, round, last_actor, created_at, responded_at) values
@@ -61,9 +65,7 @@ insert into public.reports (id, campus_id, reporter_id, target_type, target_id, 
    'harassment', 2, '2027-03-10 07:00-05');
 insert into public.blocks (blocker_id, blocked_id, created_at) values (tests.uid('A'), tests.uid('C'), '2027-03-09 20:00-05');
 insert into public.activity_events (user_id, campus_id, kind, listing_id, source, dwell_ms, query, platform, created_at) values
-  (tests.uid('A'), tests.uid('OSU'), 'deck_shown', '00000000-0000-4000-8000-0000000b0002', 'discover', null, null, 'ios', '2027-03-10 10:20-05'),
   (tests.uid('A'), tests.uid('OSU'), 'listing_viewed', '00000000-0000-4000-8000-0000000b0002', 'search', 41000, null, 'ios', '2027-03-10 10:30-05'),
-  (tests.uid('A'), tests.uid('OSU'), 'offer_made', '00000000-0000-4000-8000-0000000b0002', null, 9000, null, 'ios', '2027-03-10 10:35-05'),
   (tests.uid('A'), tests.uid('OSU'), 'searched', null, null, null, 'bike', 'ios', '2027-03-10 10:25-05'),
   (tests.uid('D'), tests.uid('UMICH'), 'app_open', null, null, null, null, 'android', '2027-03-10 10:00-05');
 update public.profiles set last_active_at = '2027-03-10 11:58-05', last_platform = 'ios', last_app_version = '1.4.0', year = 'junior'
@@ -108,7 +110,7 @@ select is(pg_temp.audits(), 0, 'the overview is not logged');
 select ok(pg_temp.as_admin('OWN', $$select public.admin_activity_feed()::text$$) not like '%SECRET-TEXT%', 'the feed never carries message text');
 select is(pg_temp.as_admin('OWN', $$select string_agg(i ->> 'kind', ',' order by i ->> 'kind') from jsonb_array_elements(public.admin_activity_feed(
                                       since => '2027-03-10 00:00-05') -> 'items') i$$),
-  'app_open,chat_opened,listing_viewed,meetup_checked_in,meetup_confirmed,meetup_set,message_sent,message_sent,offer_accepted,offer_made,saved,searched,swiped_left,swiped_left',
+  'app_open,chat_opened,listing_viewed,meetup_checked_in,meetup_confirmed,meetup_set,message_sent,message_sent,offer_accepted,offer_made,saved,searched,swiped_left,swiped_left,swiped_left',
   'today: every kind from the real tables and the app events, deck cards left out');
 select is(pg_temp.as_admin('OWN', $$select (i -> 'person' ->> 'display_name') || ' saved ' || (i -> 'listing' ->> 'title') || ' for ' || (i -> 'listing' ->> 'price_cents')
                                     from jsonb_array_elements(public.admin_activity_feed(kinds => array['saved']) -> 'items') i$$),
@@ -120,7 +122,7 @@ select is(pg_temp.as_admin('OWN', $$select (i ->> 'platform') || ':' || (i -> 'd
                                     from jsonb_array_elements(public.admin_activity_feed(kinds => array['listing_viewed']) -> 'items') i$$),
   'ios:41000:search', 'views carry time on page, where they came from and the device');
 select is(pg_temp.as_admin('OWN', $$select jsonb_array_length(public.admin_activity_feed(kinds => array['deck_shown']) -> 'items')::text$$),
-  '1', 'deck cards when asked for');
+  '0', 'deck cards are no longer recorded (E-03)');
 select is(pg_temp.as_admin('OWN', $$select (i ->> 'kind') || ':' || (i -> 'person' ->> 'display_name')
                                     from jsonb_array_elements(public.admin_activity_feed(kinds => array['offer_accepted']) -> 'items') i$$),
   'offer_accepted:Aisha A.', 'accepting a counter is the buyer''s action');
@@ -130,7 +132,7 @@ select is(pg_temp.as_admin('OWN', $$
   select jsonb_array_length((select r -> 'items' from p1)) || '+' || jsonb_array_length((select r -> 'items' from p2)) || ':'
          || (select count(*) from jsonb_array_elements((select r -> 'items' from p1)) a join jsonb_array_elements((select r -> 'items' from p2)) b on a ->> 'id' = b ->> 'id')
          || ':' || coalesce((select r ->> 'next_cursor' from p2), 'end')$$),
-  '5+9:0:end', 'cursor paging: no overlap, no gap, then the end');
+  '5+10:0:end', 'cursor paging: no overlap, no gap, then the end');
 select is(pg_temp.as_admin('MOD', $$select count(*)::text from jsonb_array_elements(public.admin_activity_feed() -> 'items') i
                                     where i ->> 'campus_id' <> (select campus_id::text from public.admins where user_id = auth.uid())$$),
   '0', 'a moderator''s feed has only their campus');
@@ -138,7 +140,7 @@ select is(pg_temp.as_admin('MOD', format($$select public.admin_activity_feed(%L)
   'and cannot ask for another');
 select is(pg_temp.audits(), 0, 'the unfiltered feed is not logged');
 select is(pg_temp.as_admin('MOD', format($$select jsonb_array_length(public.admin_activity_feed(user_id => %L) -> 'items')::text$$, tests.uid('A'))),
-  '13', 'the feed for one person (their actions and deals they are in)');
+  '14', 'the feed for one person (their actions and deals they are in)');
 select is((select action || ':' || target_type || ':' || target_id || ':' || reason || ':' || (meta ->> 'tab') from public.audit_log),
   'person.view:user:' || tests.uid('A') || ':view:activity', 'filtering to one person logs a look');
 select is(pg_temp.as_admin('MOD', format($$select public.admin_activity_feed(user_id => %L)::text$$, tests.uid('D'))), 'ERROR: NOT_ADMIN',
@@ -157,10 +159,10 @@ select is(pg_temp.as_admin('MOD', format($$select (x -> 'person' ->> 'last_platf
 select is(pg_temp.as_admin('MOD', format($$select x -> 'counts' ->> 'swipes' || ':' || (x -> 'counts' ->> 'left') || ':' || (x -> 'counts' ->> 'offers_made')
                                            || ':' || (x -> 'counts' ->> 'chats') || ':' || (x -> 'counts' ->> 'meetups') || ':' || (x -> 'counts' ->> 'reports_on_them')
                                            || ':' || (x -> 'counts' ->> 'blocks_made') || ':' || (x -> 'counts' ->> 'blocks_received') from public.admin_person(%L) x$$, tests.uid('A'))),
-  '2:2:1:1:1:1:1:0', 'counts: swipes, left, offers, chats, meetups, reports on them, blocks');
+  '3:3:1:1:1:1:1:0', 'counts: swipes, left, offers, chats, meetups, reports on them, blocks');
 select is(pg_temp.as_admin('MOD', format($$select (x -> 'affinity' -> 0 ->> 'slug') || ':' || (x -> 'affinity' -> 0 ->> 'share') || ':' || jsonb_array_length(x -> 'hourly')
                                            || ':' || (x -> 'hourly' ->> 10) from public.admin_person(%L) x$$, tests.uid('A'))),
-  'bikes-scooters:100:24:8', 'what they like (right swipes by category) and when they''re active (campus hours)');
+  'bikes-scooters:100:24:7', 'what they like (right swipes by category) and when they''re active (campus hours)');
 select is(pg_temp.as_admin('MOD', format($$select (x -> 'blocks' -> 'made' -> 0 ->> 'display_name') || ':' || jsonb_array_length(x -> 'blocks' -> 'received')
                                            from public.admin_person(%L) x$$, tests.uid('A'))),
   'Cam C.:0', 'blocks made and received');
@@ -208,7 +210,7 @@ select is(pg_temp.as_admin('MOD', $$select (x -> 'funnel' ->> 'shown') || ':' ||
                                     || (x -> 'funnel' ->> 'offered') || ':' || (x -> 'funnel' ->> 'sold') || ':' || (x -> 'swipes' ->> 'right') || ':' || (x -> 'swipes' ->> 'left')
                                     || ':' || (x -> 'price_history' -> 0 ->> 'old_cents') || ':' || (x -> 'comparison' ->> 'right_rate')
                                     from public.admin_listing_activity('00000000-0000-4000-8000-0000000b0002') x$$),
-  '1:1:1:1:false:2:0:15000:100.0', 'funnel, right vs left, price history, right-swipe rate');
+  '2:1:1:1:false:2:1:15000:66.7', 'funnel (shown = people who swiped), right vs left, price history, right-swipe rate');
 select is(pg_temp.as_admin('MOD', $$select (x -> 'comparison' ->> 'category_right_rate') || ':' || (x -> 'comparison' ->> 'category_swipes')
                                     from public.admin_listing_activity('00000000-0000-4000-8000-0000000b0002') x$$),
   '0.0:1', 'and the same category on the campus (the road bike: one left swipe)');
@@ -219,7 +221,7 @@ select is(pg_temp.as_admin('MOD', $$select public.admin_listing_activity('000000
 select is(pg_temp.as_admin('MOD', $$select (x ->> 'total') || ':' || (x -> 'items' -> 0 ->> 'display_name') || ':' || (x -> 'items' -> 0 ->> 'email')
                                     || ':' || (x -> 'items' -> 0 -> 'campus' ->> 'short_name') || ':' || (x -> 'items' -> 0 ->> 'swipes') || ':' || (x -> 'items' -> 0 ->> 'reports')
                                     from public.admin_list_users_v2() x$$),
-  '6:Aisha A.:a••••@osu.edu:Ohio State:2:1', 'a moderator''s people list: their campus, last active first, masked emails, counts');
+  '6:Aisha A.:a••••@osu.edu:Ohio State:3:1', 'a moderator''s people list: their campus, last active first, masked emails, counts');
 select is(pg_temp.as_admin('OWN', $$select (x ->> 'total') || ':' || (x -> 'items' -> 0 ->> 'email') from public.admin_list_users_v2('{"q": "C@osu.edu"}') x$$),
   '1:c@osu.edu', 'the owner finds someone by exact email');
 select is(pg_temp.as_admin('MOD', $$select x ->> 'total' from public.admin_list_users_v2('{"q": "c@osu.edu"}') x$$), '0', 'moderators cannot search by email');
@@ -246,5 +248,8 @@ select is(pg_temp.as_admin('OWN', $$select (x -> 'reports' -> 0 ->> 'reason') ||
   'harassment:0', 'a report id prefix finds the report');
 select is(pg_temp.as_admin('OWN', $$select public.admin_search('x')::text$$), 'ERROR: INVALID:q', 'two characters at least');
 
+-- AR-01: the person card shows the age band (last, so the look-log counts above stay the same).
+select is(pg_temp.as_admin('OWN', format($$select x -> 'person' ->> 'age_band' from public.admin_person(%L) x$$, tests.uid('A'))),
+  '18_plus', 'the age band (AR-01)');
 select * from finish();
 rollback;

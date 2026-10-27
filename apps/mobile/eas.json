@@ -39,6 +39,15 @@
       },
       "environment": "preview"
     },
+    "testflight": {
+      "extends": "base",
+      "channel": "preview",
+      "autoIncrement": true,
+      "env": {
+        "APP_VARIANT": "preview"
+      },
+      "environment": "preview"
+    },
     "production": {
       "extends": "base",
       "channel": "production",
@@ -50,6 +59,15 @@
     }
   },
   "submit": {
-    "production": {}
+    "testflight": {
+      "ios": {
+        "ascAppId": "6825936646"
+      }
+    },
+    "production": {
+      "ios": {
+        "ascAppId": "6825936646"
+      }
+    }
   }
 }

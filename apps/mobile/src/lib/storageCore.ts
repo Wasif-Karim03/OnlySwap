@@ -21,12 +21,20 @@ export type StorageSchema = {
   'feed.swipeQueue': unknown;
   /** Activity events not yet sent to track_events, with their owner (lib/activity.ts PersistedQueue). */
   'activity.queue': unknown;
+  /** Listing ids opened recently, newest first, max 20 (features/feed/recent.ts, DEC 128). */
+  'feed.recentlyViewed': unknown;
   /** Recent search text, newest first (features/search/logic.ts). */
   'search.recent': unknown;
   /** Last time we asked for an App Store / Play review (ISO), X26. */
   'review.lastAskedAt': string;
+  /** The one-time "Before you meet" safety reminder was seen (DEC 151). */
+  'meetup.safetySeen': boolean;
   /** Invite code from an /i/{code} link, sent with the sign-up (features/auth/invite.ts). */
   'auth.inviteCode': { code: string; savedAt: string };
+  /** A shared listing opened while signed out, opened after sign-in (features/auth/pendingLink.ts). */
+  'auth.pendingListing': { id: string; savedAt: string };
+  /** Last Inbox, Profile and bell data, shown at once on the next launch (lib/queryPersist.ts). */
+  'query.cache': unknown;
   /** Upcoming meetups the app has seen, for the widget (features/widgets/logic.ts KnownMeetup[]). */
   'widgets.meetups': unknown;
   /** The last widget payload sent to the home screen (Android redraws from it). */

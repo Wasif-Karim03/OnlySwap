@@ -1,16 +1,18 @@
 import { FlashList } from '@shopify/flash-list';
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { Chip } from '@/components/Chip';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { IconButton } from '@/components/IconButton';
 import { Icon } from '@/components/icons/Icon';
 import { NavBar } from '@/components/NavBar';
+import { ActionSheet } from '@/components/Sheet';
 import { SkeletonList } from '@/components/Skeleton';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
@@ -41,6 +43,11 @@ type Deps = {
   now?: () => Date;
   /** Reads the signed-in student (campus name for the header). Tests pass a fake. */
   loadMe?: () => Promise<Me>;
+  /**
+   * DEC 130: the Quad lives inside the Feed. The Feed passes its own header
+   * (title and filter chips) and the Quad draws it in place of its title.
+   */
+  top?: ReactNode;
 };
 
 /** The Quad is off for this campus (or was switched off): say so, point back to Discover. */
@@ -67,6 +74,7 @@ export function QuadScreen({
   mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
   now = () => new Date(),
   loadMe = () => meApi.me(),
+  top,
 }: Deps) {
   const qc = useQueryClient();
   const status = useQuadStatus(api);
@@ -77,35 +85,45 @@ export function QuadScreen({
     body = <ErrorState error={status.error} onRetry={() => status.refetch()} />;
   else if (!status.data.enabled) body = <QuadOff />;
   else if (!status.data.rules_accepted) {
-    return (
+    const welcome = (
       <QuadWelcome
+        embedded={top !== undefined}
         onAccept={async () => {
           await api.acceptRules();
           qc.setQueryData(quadKeys.status, { enabled: true, rules_accepted: true });
         }}
       />
     );
-  } else return <QuadFeed api={api} mediaBase={mediaBase} now={now} loadMe={loadMe} />;
+    if (top === undefined) return welcome;
+    body = welcome;
+  } else return <QuadFeed api={api} mediaBase={mediaBase} now={now} loadMe={loadMe} top={top} />;
 
   return (
     <View style={styles.root} testID="screen-quad">
-      <NavBar title={copy.title} variant="large" />
+      {top === undefined ? <NavBar title={copy.title} variant="large" /> : top}
       {body}
     </View>
   );
 }
 
 /**
- * Q02 Quad feed (DEC 90 mock screen 19): grey page, "Anonymous · campus" over
- * the title, Hot / New / Top as chips, the pinned note as a calm lilac card,
- * white post cards with the votes on the left, and an ink "Post" pill that
- * never covers a post's vote arrows (the list ends with room for it).
+ * Q02 Quad feed: the same plain page as the Feed. "Anonymous · campus" with
+ * one "..." menu (Your Quad, Quad activity, Muted and hidden), Hot / New / Top
+ * as chips, the pinned note as a plain row, posts as flat rows split by
+ * hairlines with the votes on the left, and one docked ink "Post" button.
  */
-function QuadFeed({ api, mediaBase, now, loadMe }: Required<Deps>) {
+function QuadFeed({
+  api,
+  mediaBase,
+  now,
+  loadMe,
+  top,
+}: Required<Omit<Deps, 'top'>> & { top: ReactNode }) {
   const router = useRouter();
   const qc = useQueryClient();
   const params = useLocalSearchParams<{ sort?: string }>();
   const [sort, setSort] = useState<QuadSort>(isSort(params.sort) ? params.sort : 'hot');
+  const [menu, setMenu] = useState(false);
   // Posting jumps to New (/quad?sort=new) so your post is at the top.
   const [lastParam, setLastParam] = useState(params.sort);
   if (params.sort !== lastParam) {
@@ -145,8 +163,7 @@ function QuadFeed({ api, mediaBase, now, loadMe }: Required<Deps>) {
         keyExtractor={(p) => p.id}
         contentContainerStyle={styles.list}
         ItemSeparatorComponent={Gap}
-        refreshing={q.isRefetching && !q.isFetchingNextPage}
-        onRefresh={() => void q.refetch()}
+        refreshControl={<PullToRefresh onRefresh={() => q.refetch()} />}
         onEndReached={() => {
           if (q.hasNextPage && !q.isFetchingNextPage) void q.fetchNextPage();
         }}
@@ -159,9 +176,12 @@ function QuadFeed({ api, mediaBase, now, loadMe }: Required<Deps>) {
               accessibilityLabel={`${copy.pinned}: ${pinned.title}. ${pinned.body}`}
               testID="quad-pinned"
             >
-              <Text variant="label" style={styles.regular}>
-                <Text variant="label">{pinned.title}</Text>
-                {` ${pinned.body}`}
+              <Text variant="label" tone="ink2">
+                {copy.pinned}
+              </Text>
+              <Text variant="bodyStrong">{pinned.title}</Text>
+              <Text variant="body" tone="ink2">
+                {pinned.body}
               </Text>
             </View>
           ) : null
@@ -172,6 +192,7 @@ function QuadFeed({ api, mediaBase, now, loadMe }: Required<Deps>) {
               icon="trend"
               title={copy.topEmptyTitle}
               body={copy.topEmptyBody}
+              action={{ label: copy.topEmptyAction, onPress: () => setSort('hot') }}
               testID="quad-empty-top"
             />
           ) : (
@@ -208,41 +229,26 @@ function QuadFeed({ api, mediaBase, now, loadMe }: Required<Deps>) {
   return (
     <View style={styles.root} testID="screen-quad">
       <View style={feedColumn}>
-        <View style={styles.header}>
+        {top}
+        <View style={[styles.header, top !== undefined && styles.headerEmbedded]}>
           <View style={styles.flex}>
             <View style={styles.anon}>
-              <Icon name="lock" size={12} tone="ink3" />
-              <Text variant="meta" tone="ink3" style={styles.anonText} testID="quad-anon">
+              <Icon name="users" size={16} tone="ink2" />
+              <Text variant="label" tone="ink2" testID="quad-anon">
                 {campus ? fill(copy.anonAt, { campus }) : copy.subtitle}
               </Text>
             </View>
-            <Text variant="title" accessibilityRole="header">
-              {copy.title}
-            </Text>
+            {top === undefined ? (
+              <Text variant="title" accessibilityRole="header">
+                {copy.title}
+              </Text>
+            ) : null}
           </View>
           <IconButton
-            icon="bell"
-            filled
-            surface="card"
-            accessibilityLabel={copy.openActivity}
-            onPress={() => router.push('/quad/activity')}
-            testID="quad-open-activity"
-          />
-          <IconButton
-            icon="eye"
-            filled
-            surface="card"
-            accessibilityLabel={copy.openMuted}
-            onPress={() => router.push('/quad/muted')}
-            testID="quad-open-muted"
-          />
-          <IconButton
-            icon="user"
-            filled
-            surface="card"
-            accessibilityLabel={copy.openMine}
-            onPress={() => router.push('/quad/mine')}
-            testID="quad-open-mine"
+            icon="more"
+            accessibilityLabel={copy.menuTitle}
+            onPress={() => setMenu(true)}
+            testID="quad-menu"
           />
         </View>
         <View style={styles.chips} accessibilityRole="tablist" accessibilityLabel={copy.sortLabel}>
@@ -260,16 +266,16 @@ function QuadFeed({ api, mediaBase, now, loadMe }: Required<Deps>) {
         </View>
         <View style={styles.flex}>{body}</View>
         {!off ? (
-          <View style={styles.fab}>
+          <View style={styles.dock}>
+            {/* Full-width ink button; named "New post" for screen readers (pinned by tests). */}
             <Tappable
               accessibilityRole="button"
               accessibilityLabel={copy.newPost}
               onPress={newPost}
               testID="quad-new-post"
             >
-              <View style={styles.fabFill}>
-                <Icon name="plus" size={18} tone="inverse" strokeWidth={2.2} />
-                <Text variant="label" tone="inverse" overlay>
+              <View style={styles.dockFill}>
+                <Text variant="bodyStrong" tone="inverse" overlay>
                   {copy.post}
                 </Text>
               </View>
@@ -277,21 +283,30 @@ function QuadFeed({ api, mediaBase, now, loadMe }: Required<Deps>) {
           </View>
         ) : null}
       </View>
+      <ActionSheet
+        visible={menu}
+        onClose={() => setMenu(false)}
+        title={copy.menuTitle}
+        actions={[
+          { label: copy.openMine, onPress: () => router.push('/quad/mine') },
+          { label: copy.openActivity, onPress: () => router.push('/quad/activity') },
+          { label: copy.openMuted, onPress: () => router.push('/quad/muted') },
+        ]}
+      />
       {actions.overlays}
     </View>
   );
 }
 
-/** Space between post cards. */
+/** A hairline between post rows, like the Feed. */
 function Gap() {
   return <View style={styles.gap} />;
 }
 
 const styles = StyleSheet.create((theme, rt) => ({
-  root: { flex: 1, backgroundColor: theme.colors.bg2 },
+  root: { flex: 1, backgroundColor: theme.colors.bg },
   center: { flex: 1, justifyContent: 'center' },
   flex: { flex: 1 },
-  regular: { fontWeight: '400' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -299,8 +314,8 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingTop: rt.insets.top + theme.space.sm,
     paddingHorizontal: theme.space.screen,
   },
+  headerEmbedded: { paddingTop: theme.space.xs },
   anon: { flexDirection: 'row', alignItems: 'center', gap: theme.space.xs },
-  anonText: { fontWeight: '600' },
   chips: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -309,27 +324,33 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingTop: theme.space.md,
     paddingBottom: theme.space.md,
   },
-  // The Post pill floats over the end of the list: its height plus its
-  // margin plus a little air, so the last card's vote arrows stay reachable.
+  // Post docks under the list; the end padding (a button's height plus air) is
+  // pinned by youQuadRedesign.test.tsx, so it stays.
   list: {
     paddingHorizontal: theme.space.screen,
-    paddingBottom: theme.size.buttonM + theme.space.lg + theme.space.xl,
+    paddingBottom: theme.size.buttonM + theme.space.lg,
   },
-  gap: { height: theme.space.sm + theme.space.xs / 2 },
+  gap: { height: 1, backgroundColor: theme.colors.line },
+  // Neutral bg2, not lilac (owner decision 2).
   pinned: {
-    marginBottom: theme.space.sm + theme.space.xs / 2,
-    paddingVertical: theme.space.md,
-    paddingHorizontal: theme.space.lg,
-    borderRadius: theme.radius.card,
-    backgroundColor: theme.colors.lilacBg,
-  },
-  fab: { position: 'absolute', right: theme.space.screen, bottom: theme.space.lg },
-  fabFill: {
-    minHeight: theme.size.buttonM,
-    flexDirection: 'row',
-    alignItems: 'center',
     gap: theme.space.xs,
-    paddingHorizontal: theme.space.lg,
+    marginHorizontal: -theme.space.screen,
+    paddingVertical: theme.space.md,
+    paddingHorizontal: theme.space.screen,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.line,
+    backgroundColor: theme.colors.bg2,
+  },
+  dock: {
+    paddingHorizontal: theme.space.screen,
+    paddingVertical: theme.space.sm,
+    backgroundColor: theme.colors.bg,
+  },
+  dockFill: {
+    minHeight: theme.size.buttonL,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: theme.space.xl,
     borderRadius: theme.radius.chip,
     backgroundColor: theme.colors.ink,
   },

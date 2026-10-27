@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { AppState, Platform, ScrollView, Share, View } from 'react-native';
+import { AppState, Linking, Platform, ScrollView, Share, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { track as trackActivity, type ActivitySource } from '@/lib/activity';
@@ -14,6 +14,7 @@ import { ErrorState } from '@/components/ErrorState';
 import { IconButton } from '@/components/IconButton';
 import { GroupedList, ListRow } from '@/components/ListRow';
 import { NavBar } from '@/components/NavBar';
+import { Material } from '@/components/Material';
 import { PhotoCarousel } from '@/components/PhotoCarousel';
 import { ReportSheet } from '@/components/ReportSheet';
 import { Sheet } from '@/components/Sheet';
@@ -30,14 +31,18 @@ import {
   deal as dealCopy,
   feed as copy,
   nav as navCopy,
+  safety as safetyCopy,
   sell as sellCopy,
   system as systemCopy,
 } from '@/strings';
 
 import { FoodTimeTag } from '../campus/CampusCards';
-import { canAnswer } from '../campus/logic';
+import { canAnswer, eventLabel, linkHost } from '../campus/logic';
+import { AppealSheet, type AppealReason } from '../safety/AppealSheet';
+import { safetyApi } from '../safety/api';
 import { sellApi } from '../sell/api';
-import { answerWanted, getDraftStore } from '../sell/draft';
+import type { getDraftStore } from '../sell/draft';
+import { wantedChatApi, type WantedChatApi } from '../campus/api';
 import {
   listingLink,
   mediaUrl,
@@ -46,11 +51,14 @@ import {
   type Availability,
   type Spot,
 } from '../sell/logic';
-import { feedApi, type FeedApi } from './api';
+import { feedApi, moreApi, type FeedApi, type MoreApi } from './api';
+import { ListingStrip } from './ListingStrip';
+import { rememberViewed, viewedStorage, type ViewedStorage } from './recent';
 import {
   isVisible,
   metaLine,
   sellerName,
+  trustLine,
   yearLabel,
   type FeedItem,
   type ListingResult,
@@ -77,8 +85,12 @@ export function ListingScreen({
   mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
   site = () => getEnv().EXPO_PUBLIC_SITE_URL,
   share = (content) => Share.share(content),
+  openUrl = (url) => Linking.openURL(url),
   now = () => new Date(),
-  draftStore = getDraftStore(),
+  wantedChat = wantedChatApi,
+  appeal = (listingId, reason, body) => safetyApi.appeal('listing', listingId, reason, body),
+  more = moreApi,
+  viewedStore = viewedStorage,
 }: {
   id: string;
   /** Where it was opened from (route param `from`), for the activity event (DEC 93). */
@@ -88,27 +100,48 @@ export function ListingScreen({
   mediaBase?: () => string;
   site?: () => string;
   share?: (content: { message: string; url?: string }) => Promise<unknown>;
+  /** Opens a news post's link (DEC 98). */
+  openUrl?: (url: string) => Promise<unknown>;
   now?: () => Date;
+  /** Unused since DEC 149; kept so callers still compile. */
   draftStore?: ReturnType<typeof getDraftStore>;
+  wantedChat?: WantedChatApi;
+  /** Appeals an admin removal (create_appeal 'listing', DEC 99). */
+  appeal?: (listingId: string, reason: AppealReason, body: string) => Promise<void>;
+  /** More like this (DEC 128). */
+  more?: MoreApi;
+  /** Recently viewed ids on this phone (DEC 128). */
+  viewedStore?: ViewedStorage;
 }) {
   const router = useRouter();
+  const [appealOpen, setAppealOpen] = useState(false);
+  const [appealed, setAppealed] = useState(false);
   const qc = useQueryClient();
   // iPad, wide window: photos on the left, details on the right.
   const wide = useLayout().wide;
   const query = useQuery({ queryKey: listingKey(id), queryFn: () => api.getListing(id) });
   const spotsQuery = useQuery({ queryKey: ['spots'], queryFn: spots, staleTime: 3600_000 });
   const [options, setOptions] = useState(false);
+  const [ownerOptions, setOwnerOptions] = useState(false);
   const [reporting, setReporting] = useState(false);
   const viewed = useRef(false);
   const data = query.data;
+  const shoppable = data?.access === 'buyer' && (data.kind === 'sale' || data.kind === 'free');
+  const similar = useQuery({
+    queryKey: ['similar', id],
+    queryFn: () => more.similar(id),
+    enabled: shoppable,
+    staleTime: 60_000,
+  });
 
   useEffect(() => {
     if (data?.access === 'buyer' && !viewed.current) {
       viewed.current = true;
       api.recordView(id).catch(() => {});
+      if (data.kind === 'sale' || data.kind === 'free') rememberViewed(id, viewedStore);
       track('listing_viewed', { source: analyticsSource(from) });
     }
-  }, [data, api, id, from]);
+  }, [data, api, id, from, viewedStore]);
 
   // listing_viewed activity (DEC 93): one event, stamped when the listing
   // opened, with the time on the page, sent when the student leaves it or the
@@ -164,14 +197,18 @@ export function ListingScreen({
   const item = data;
   const owner = item.access === 'owner';
   const base = mediaBase();
-  // Food and Wanted posts (R1.1) never take offers: no price, no offer button.
-  const campusKind = item.kind === 'food' || item.kind === 'wanted';
+  // Food, Wanted (R1.1) and news (DEC 98) never take offers: no price, no offer button.
+  const news = item.kind === 'news';
+  const campusKind = item.kind === 'food' || item.kind === 'wanted' || news;
   const price =
     item.kind === 'food'
       ? campusCopy.listingFood
       : item.kind === 'wanted'
         ? campusCopy.listingWanted
-        : priceLabel(item.kind, item.price_cents, copy.free);
+        : news
+          ? campusCopy.listingNews
+          : priceLabel(item.kind, item.price_cents, copy.free);
+  const link = news ? (item.link_url ?? null) : null;
   const setItem = (patch: Partial<FeedItem>) =>
     qc.setQueryData<ListingResult>(listingKey(id), (old) =>
       old && isVisible(old) ? { ...old, ...patch } : old,
@@ -183,7 +220,7 @@ export function ListingScreen({
     try {
       const n = was ? await api.unsave(id) : await api.save(id);
       setItem({ saved: !was, save_count: n });
-      trackActivity(was ? 'unsaved' : 'saved', { listingId: id, source: from });
+      if (was) trackActivity('unsaved', { listingId: id, source: from });
     } catch {
       setItem({ saved: was });
       useToastStore.getState().show('error', copy.saveFailed);
@@ -201,7 +238,7 @@ export function ListingScreen({
 
   const onShare = async () => {
     const url = listingLink(site(), id);
-    const text = fill(copy.shareMessage, { title: item.title, price });
+    const text = news ? item.title : fill(copy.shareMessage, { title: item.title, price });
     track('share_tapped', { surface: 'listing' });
     await share(Platform.OS === 'ios' ? { message: text, url } : { message: `${text} ${url}` });
   };
@@ -227,12 +264,14 @@ export function ListingScreen({
         ? copy.sold
         : item.status === 'held_review'
           ? copy.inReview
-          : null;
+          : item.status === 'removed'
+            ? copy.removed
+            : null;
 
-  const statusTone = item.status === 'sold' ? 'ink3' : 'amber';
   const sellerAvatar = item.seller.avatar_path ? mediaUrl(base, item.seller.avatar_path) : null;
-  const sellerMeta = yearLabel(item.seller.year) ?? copy.sellerTitle;
-  const meetupNote = chosenSpots.length === 0 && !item.meet_note;
+  const sellerMeta = yearLabel(item.seller.year) ?? (news ? '' : copy.sellerTitle);
+  // A news post's place is in meet_note; it has no meetup to plan.
+  const meetupNote = !news && chosenSpots.length === 0 && !item.meet_note;
 
   let cta: ReactNode = null;
   if (!owner) {
@@ -247,20 +286,39 @@ export function ListingScreen({
         />
       );
     } else if (item.status === 'sold') {
-      cta = <Button label={copy.sold} disabled onPress={() => {}} />;
+      // Sold: no dock; the word beside the price says it (DESIGN_REVIEW 3.02 B02).
+      cta = null;
     } else if (item.kind === 'wanted') {
       cta = canAnswer(item) ? (
         <Button
           label={campusCopy.iHaveThis}
           variant="dark"
           accessibilityHint={fill(campusCopy.iHaveThisLabel, { title: item.title })}
-          onPress={() => {
-            answerWanted(draftStore, item);
-            router.push('/sell');
+          onPress={async () => {
+            // DEC 149: straight into a chat with the asker.
+            try {
+              const { chat_id } = await wantedChat.start(item.id, campusCopy.iHaveThisMessage);
+              router.push({ pathname: '/chat/[id]', params: { id: chat_id } });
+            } catch {
+              useToastStore.getState().show('error', campusCopy.iHaveThisFailed);
+            }
           }}
           testID="listing-i-have-this"
         />
       ) : null;
+    } else if (news) {
+      cta = link ? (
+        <Button
+          label={campusCopy.openLink}
+          variant="dark"
+          accessibilityHint={linkHost(link)}
+          onPress={() => void openUrl(link)}
+          testID="listing-open-link"
+        />
+      ) : null;
+    } else if (item.seller.away && (item.kind === 'sale' || item.kind === 'free')) {
+      // Away: the dock keeps only the heart; the note under the meta explains why.
+      cta = null;
     } else if (item.kind !== 'food') {
       cta = (
         <Button
@@ -272,7 +330,16 @@ export function ListingScreen({
       );
     }
   }
-  const docked = owner || cta !== null;
+  // Buyers keep Save in the thumb zone whenever the listing isn't sold.
+  const buyerDock = !owner && item.status !== 'sold';
+  const ownerDock = owner && !campusKind;
+  const docked = buyerDock || ownerDock;
+  const firm = !item.open_to_offers && item.kind === 'sale';
+  const meta = [metaLine(item, now()), firm ? copy.notOpenToOffers : null]
+    .filter(Boolean)
+    .join(copy.metaSeparator);
+  const commentsRow = !owner && item.comments_enabled === true;
+  const openStats = () => router.push({ pathname: '/listing/[id]/stats', params: { id } });
 
   return (
     <View style={styles.root} testID="screen-listing">
@@ -306,7 +373,7 @@ export function ListingScreen({
               {price}
             </Text>
             {statusTag ? (
-              <Text variant="label" tone={statusTone} testID="listing-status">
+              <Text variant="label" tone="ink2" testID="listing-status">
                 {statusTag}
               </Text>
             ) : null}
@@ -318,9 +385,32 @@ export function ListingScreen({
             {item.title}
           </Text>
           <Text variant="meta" tone="ink2">
-            {metaLine(item, now())}
+            {meta}
           </Text>
-          {campusKind ? (
+          {item.status === 'hold' && !owner ? (
+            <Text variant="body" tone="ink2" testID="listing-hold">
+              {copy.onHoldBody}
+            </Text>
+          ) : null}
+          {!owner && item.seller.away && (item.kind === 'sale' || item.kind === 'free') ? (
+            <Text variant="body" tone="ink2" testID="listing-away-note">
+              {fill(copy.sellerAwayBody, { name: sellerName(item) })}
+            </Text>
+          ) : null}
+          {news && item.event_at ? (
+            <View style={styles.event} testID="listing-event">
+              <Icon name="cal" size={18} tone="sky" />
+              <Text variant="bodyStrong" tone="sky" style={styles.flex}>
+                {eventLabel(item.event_at, now())}
+              </Text>
+            </View>
+          ) : null}
+          {link ? (
+            <Text variant="meta" tone="ink2" numberOfLines={1} testID="listing-link-host">
+              {linkHost(link)}
+            </Text>
+          ) : null}
+          {campusKind && !news ? (
             <Text variant="body" tone="ink2" testID="listing-campus-note">
               {item.kind === 'food'
                 ? campusCopy.listingFoodBody
@@ -329,37 +419,46 @@ export function ListingScreen({
                   : campusCopy.listingWantedBody}
             </Text>
           ) : null}
-          {!item.open_to_offers && item.kind === 'sale' ? (
-            <Text variant="meta" tone="ink2">
-              {copy.notOpenToOffers}
-            </Text>
-          ) : null}
 
           {owner && item.status === 'held_review' ? (
             <Banner kind="info" message={systemCopy.underReview} />
           ) : null}
-          {owner ? (
-            <View style={styles.stats} testID="listing-owner-stats">
-              <Text variant="label" tone="ink2">
-                {fill(copy.statViews, { n: item.view_count })}
-              </Text>
-              <Text variant="label" tone="ink2">
-                {fill(copy.statSaves, { n: item.save_count })}
-              </Text>
-              <Text variant="label" tone="ink2">
-                {fill(copy.statOffers, { n: item.offer_count })}
-              </Text>
-            </View>
+          {owner && item.status === 'removed' ? (
+            <Banner
+              kind="warning"
+              message={
+                item.removed_reason
+                  ? fill(systemCopy.removedByAdmin, { reason: item.removed_reason })
+                  : systemCopy.removedByAdminNoReason
+              }
+            />
           ) : null}
-
-          {item.status === 'hold' && !owner ? (
-            <View style={styles.hold} testID="listing-hold">
-              <Text variant="bodyStrong" tone="amber">
-                {copy.onHold}
+          {owner && item.status === 'removed' ? (
+            appealed ? (
+              <Text variant="meta" tone="ink2" testID="listing-appealed">
+                {safetyCopy.appealed}
               </Text>
-              <Text variant="body" tone="ink2">
-                {copy.onHoldBody}
-              </Text>
+            ) : (
+              <Button
+                label={safetyCopy.appeal}
+                variant="secondary"
+                onPress={() => setAppealOpen(true)}
+                testID="listing-appeal"
+              />
+            )
+          ) : null}
+          {owner ? (
+            <View style={styles.list} testID="listing-owner-stats">
+              <LinkRow
+                label={copy.statsRow}
+                values={[
+                  fill(copy.statViews, { n: item.view_count }),
+                  fill(copy.statSaves, { n: item.save_count }),
+                  fill(copy.statOffers, { n: item.offer_count }),
+                ]}
+                onPress={openStats}
+                testID="listing-stats"
+              />
             </View>
           ) : null}
 
@@ -382,9 +481,17 @@ export function ListingScreen({
                     <Text variant="bodyStrong" numberOfLines={1}>
                       {sellerName(item)}
                     </Text>
-                    <Text variant="meta" tone="ink3">
-                      {sellerMeta}
-                    </Text>
+                    {sellerMeta ? (
+                      <Text variant="meta" tone="ink3">
+                        {sellerMeta}
+                      </Text>
+                    ) : null}
+                    <View style={styles.trust} testID="listing-trust">
+                      <Icon name="shield" size={14} tone="green" />
+                      <Text variant="meta" tone="ink2" style={styles.flex}>
+                        {trustLine(item.seller)}
+                      </Text>
+                    </View>
                   </View>
                   <Icon name="chev" size={18} tone="ink3" />
                 </View>
@@ -430,6 +537,18 @@ export function ListingScreen({
                 </Text>
               </View>
             ) : null}
+            {commentsRow ? (
+              <View style={styles.divider}>
+                <LinkRow
+                  label={copy.comments}
+                  values={[String(item.comment_count ?? 0)]}
+                  onPress={() =>
+                    router.push({ pathname: '/listing/[id]/comments', params: { id } })
+                  }
+                  testID="listing-comments"
+                />
+              </View>
+            ) : null}
           </View>
           {item.availability.length > 0 ? (
             <Text variant="meta" tone="ink2">
@@ -448,27 +567,40 @@ export function ListingScreen({
               {item.description}
             </Text>
           ) : null}
+
+          {shoppable ? (
+            <ListingStrip
+              title={copy.moreLikeThis}
+              items={similar.data ?? []}
+              mediaBase={base}
+              onOpen={(next) => router.push({ pathname: '/listing/[id]', params: { id: next } })}
+              testID="listing-more-like-this"
+            />
+          ) : null}
         </View>
       </ScrollView>
 
-      {/* White circles over the photo (DEC 90 mock screen 7): back, share, save, more. */}
+      {/* Quiet chrome over the photo: back, share and more. Save lives in the dock (thumb zone). */}
       <View style={styles.top(wide)} pointerEvents="box-none">
-        <IconButton
-          icon="back"
-          filled
-          surface="card"
-          accessibilityLabel={navCopy.back}
-          onPress={leave}
-        />
-        <View style={styles.row}>
+        <PhotoButton>
           <IconButton
-            icon="share"
-            filled
-            surface="card"
-            accessibilityLabel={copy.share}
-            onPress={onShare}
+            icon="back"
+            tone="onPhoto"
+            accessibilityLabel={navCopy.back}
+            onPress={leave}
           />
-          {!owner ? (
+        </PhotoButton>
+        <View style={styles.row}>
+          <PhotoButton>
+            <IconButton
+              icon="share"
+              tone="onPhoto"
+              accessibilityLabel={copy.share}
+              onPress={onShare}
+            />
+          </PhotoButton>
+          {/* A sold listing has no dock, so a buyer un-saves it up here. */}
+          {!owner && !buyerDock ? (
             <IconButton
               icon="heart"
               filled
@@ -478,16 +610,15 @@ export function ListingScreen({
               testID="listing-save"
             />
           ) : null}
-          {!owner ? (
+          <PhotoButton>
             <IconButton
               icon="more"
-              filled
-              surface="card"
+              tone="onPhoto"
               accessibilityLabel={copy.more}
-              onPress={() => setOptions(true)}
+              onPress={() => (owner ? setOwnerOptions(true) : setOptions(true))}
               testID="listing-more"
             />
-          ) : null}
+          </PhotoButton>
         </View>
       </View>
 
@@ -495,14 +626,7 @@ export function ListingScreen({
         <View style={styles.dock}>
           {owner ? (
             <>
-              <View style={styles.flex}>
-                <Button
-                  label={copy.edit}
-                  variant="secondary"
-                  onPress={() => router.push({ pathname: '/listing/[id]/edit', params: { id } })}
-                />
-              </View>
-              {!campusKind && (item.status === 'active' || item.status === 'hold') ? (
+              {item.status === 'active' || item.status === 'hold' ? (
                 <View style={styles.flex}>
                   <Button
                     label={dealCopy.markSold}
@@ -512,20 +636,26 @@ export function ListingScreen({
                   />
                 </View>
               ) : null}
-              {campusKind ? null : (
-                <View style={styles.flex}>
-                  <Button
-                    label={copy.seeOffers}
-                    variant="dark"
-                    onPress={() =>
-                      router.push({ pathname: '/listing/[id]/offers', params: { id } })
-                    }
-                  />
-                </View>
-              )}
+              <View style={styles.flex}>
+                <Button
+                  label={copy.seeOffers}
+                  variant="dark"
+                  onPress={() => router.push({ pathname: '/listing/[id]/offers', params: { id } })}
+                />
+              </View>
             </>
           ) : (
-            <View style={styles.flex}>{cta}</View>
+            <>
+              <IconButton
+                icon="heart"
+                filled
+                surface={item.saved ? 'accent' : 'card'}
+                accessibilityLabel={item.saved ? copy.saved : copy.save}
+                onPress={toggleSave}
+                testID="listing-save"
+              />
+              {cta ? <View style={styles.flex}>{cta}</View> : null}
+            </>
           )}
         </View>
       ) : null}
@@ -549,6 +679,31 @@ export function ListingScreen({
           />
         </GroupedList>
       </Sheet>
+      <Sheet
+        visible={ownerOptions}
+        onClose={() => setOwnerOptions(false)}
+        title={copy.optionsTitle}
+        testID="listing-owner-options"
+      >
+        <GroupedList>
+          <ListRow
+            label={copy.edit}
+            icon="edit"
+            onPress={() => {
+              setOwnerOptions(false);
+              router.push({ pathname: '/listing/[id]/edit', params: { id } });
+            }}
+          />
+          <ListRow
+            label={copy.statsRow}
+            icon="chart"
+            onPress={() => {
+              setOwnerOptions(false);
+              openStats();
+            }}
+          />
+        </GroupedList>
+      </Sheet>
       <ReportSheet
         visible={reporting}
         onClose={() => setReporting(false)}
@@ -559,7 +714,65 @@ export function ListingScreen({
         }}
         testID="listing-report"
       />
+      <AppealSheet
+        visible={appealOpen}
+        onClose={() => setAppealOpen(false)}
+        onSend={(reason, body) => appeal(id, reason, body)}
+        onSent={() => {
+          setAppealOpen(false);
+          setAppealed(true);
+          useToastStore.getState().show('success', safetyCopy.appealed);
+        }}
+        testID="listing-appeal-sheet"
+      />
     </View>
+  );
+}
+
+/**
+ * A row in the listing's hairline list that opens another screen: label on
+ * the left, its values in ink2 on the right, then a chevron (Comments, Stats).
+ */
+function LinkRow({
+  label,
+  values,
+  onPress,
+  testID,
+}: {
+  label: string;
+  values: string[];
+  onPress: () => void;
+  testID?: string;
+}) {
+  return (
+    <Tappable
+      accessibilityRole="button"
+      accessibilityLabel={[label, ...values].join(', ')}
+      onPress={onPress}
+      testID={testID}
+    >
+      <View style={styles.listRow}>
+        <Text variant="body" style={styles.flex}>
+          {label}
+        </Text>
+        {/* One Text per value so each wraps whole at large text sizes. */}
+        <View style={styles.values}>
+          {values.map((v, i) => (
+            <View key={`${i}-${v}`} style={styles.valueItem}>
+              {i > 0 ? (
+                <Text variant="body" tone="ink3">
+                  {copy.metaSeparator}
+                </Text>
+              ) : null}
+              <Text variant="body" tone="ink2">
+                {v}
+              </Text>
+            </View>
+          ))}
+        </View>
+        <Icon name="chev" size={18} tone="ink3" />
+      </View>
+    </Tappable>
   );
 }
 
@@ -575,7 +788,13 @@ function Unavailable({ result, onBack }: { result: { access: string }; onBack: (
     <View style={styles.root} testID={`screen-listing-${result.access}`}>
       <NavBar onLeading={onBack} />
       <EmptyState
-        icon={result.access === 'blocked' ? 'ban' : 'tag'}
+        icon={
+          result.access === 'blocked'
+            ? 'ban'
+            : result.access === 'other_campus'
+              ? 'building'
+              : 'tag'
+        }
         title={title}
         body={body}
         action={{ label: copy.backToDiscover, onPress: () => router.replace('/discover') }}
@@ -584,7 +803,17 @@ function Unavailable({ result, onBack }: { result: { access: string }; onBack: (
   );
 }
 
+/** A button over the photo, on the clear material (DEC 143). */
+function PhotoButton({ children }: { children: ReactNode }) {
+  return (
+    <Material variant="clear" style={styles.photoButton}>
+      {children}
+    </Material>
+  );
+}
+
 const styles = StyleSheet.create((theme, rt) => ({
+  photoButton: { borderRadius: theme.radius.chip },
   root: { flex: 1, backgroundColor: theme.colors.bg },
   pad: { flex: 1, padding: theme.space.screen },
   scroll: { paddingBottom: theme.size.buttonL + theme.space['2xl'] * 2 },
@@ -599,6 +828,7 @@ const styles = StyleSheet.create((theme, rt) => ({
   photoPane: { flex: 1, borderRadius: theme.radius.card, overflow: 'hidden' },
   infoPane: { flex: 1, paddingHorizontal: 0, paddingTop: 0 },
   flex: { flex: 1 },
+  trust: { flexDirection: 'row', alignItems: 'center', gap: theme.space.xs },
   row: { flexDirection: 'row', gap: theme.space.sm },
   top: (wide: boolean) => ({
     position: 'absolute',
@@ -617,14 +847,13 @@ const styles = StyleSheet.create((theme, rt) => ({
     gap: theme.space.xs,
   },
   priceRow: { flexDirection: 'row', alignItems: 'center', gap: theme.space.sm },
-  stats: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.lg, marginTop: theme.space.sm },
-  hold: { gap: theme.space.xs, marginTop: theme.space.md },
+  event: { flexDirection: 'row', alignItems: 'center', gap: theme.space.xs },
   list: {
     marginTop: theme.space.lg,
     marginBottom: theme.space.sm,
+    // Round 2: a soft grouped tile instead of a bordered box.
     borderRadius: theme.radius.card,
-    borderWidth: 1,
-    borderColor: theme.colors.line,
+    backgroundColor: theme.colors.bg2,
     overflow: 'hidden',
   },
   listRow: {
@@ -635,7 +864,18 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingHorizontal: theme.space.md + theme.space.xs,
     paddingVertical: theme.space.sm,
   },
-  divider: { borderTopWidth: 1, borderColor: theme.colors.line },
+  divider: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderColor: theme.colors.line2,
+    marginLeft: theme.space.md + theme.space.xs,
+  },
+  values: {
+    flexShrink: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-end',
+  },
+  valueItem: { flexDirection: 'row' },
   glyph: { width: theme.size.avatarM, alignItems: 'center' },
   description: { marginTop: theme.space.md },
   dock: {
@@ -650,7 +890,5 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingTop: theme.space.md,
     paddingBottom: Math.max(rt.insets.bottom, theme.space.md),
     backgroundColor: theme.colors.bg,
-    borderTopWidth: 1,
-    borderColor: theme.colors.line,
   },
 }));

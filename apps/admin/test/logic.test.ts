@@ -55,6 +55,8 @@ test('the guard: sign in, then admin, then MFA', () => {
   assert.equal(gate(false, null), 'login');
   assert.equal(gate(true, { admin: false }), 'denied');
   assert.equal(gate(true, { admin: true, role: 'owner', aal: 'aal1' }), 'mfa');
+  assert.equal(gate(true, { admin: true, role: 'owner', aal: 'aal1', mfa_required: true }), 'mfa');
+  assert.equal(gate(true, { admin: true, role: 'owner', aal: 'aal1', mfa_required: false }), 'ok');
   assert.equal(gate(true, { admin: true, role: 'moderator', aal: 'aal2' }), 'ok');
 });
 

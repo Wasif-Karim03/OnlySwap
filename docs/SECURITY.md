@@ -25,7 +25,7 @@
 | T1 | Spoofing | Non-student signs up | domain allowlist in the `before_user_created` hook; OTP to the school inbox; blocked alumni/forwarding domains; yearly re-verify | T-INT-AUTH-01 |
 | T2 | Spoofing | Password sign-up bypassing OTP | password path allowed only for exact `review_accounts` emails; "Confirm email" on | T-SEC-06 |
 | T3 | Spoofing | OTP brute force | Supabase OTP limits (30 per 5 min per IP), 6 digits, 10-min expiry, client lockout after 5 | T-SEC-07 |
-| T4 | Spoofing | Minor evades the age gate | OS age signal first; date fallback; `age_blocks` hash stops retries with the same email; Terms 18+ | T-INT-AUTH-04, E2E-02 |
+| T4 | Spoofing | Under-13 child evades the age gate (DEC 136) | OS age signal first; date fallback; `age_blocks` hash stops retries with the same email; Terms 13+ with parent agreement under 18 | T-INT-AUTH-04, T-INT-AGE-RETRY, T-INT-AGE-V2, E2E-02 |
 | T5 | Tampering | Direct table writes via PostgREST | no table write grants; RPC-only writes; RLS on every table; `pg_graphql` off | T-SEC-01, T-SEC-19 |
 | T6 | Tampering | JWT claim edits | signature verification by Supabase; writes read live state | T-SEC-02 |
 | T7 | Tampering | Upload of oversized, HTML or SVG files, or path traversal | server-built keys; signed content-length and content-type; Worker serves type by extension + `nosniff` | T-SEC-08, T-SEC-18 |
@@ -37,10 +37,10 @@
 | T13 | Information disclosure | Secrets in the app bundle | only `EXPO_PUBLIC_*` bundled; bundle scan in CI | T-SEC-12 |
 | T14 | Information disclosure | Location leakage via photos | EXIF stripped by re-encode | T-UNIT-MEDIA-03 |
 | T15 | Information disclosure | Meetup share link | 22-char token, expires start + 24 h, first names + spot only, `noindex`, disclosed at share time | T-INT-MEET-01 |
-| T16 | Information disclosure | Email enumeration | `lookup_school` reveals only supported domains (public); uniform OTP and waitlist responses | T-SEC-11 |
+| T16 | Information disclosure | Email enumeration | `lookup_school` reveals only supported domains (public); uniform OTP responses in sign-up mode and uniform waitlist responses. Accepted exception (DEC 140): sign-in mode says when an email has no account, rate limited by Supabase Auth | T-SEC-11 |
 | T17 | Denial of service | Media Worker quota exhaustion (100k/day) | long cache + client disk cache; per-IP limit; the domain (Q2) moves serving to the cache/WAF | Perf-10 |
 | T18 | Denial of service | Spam writes fill the DB (500 MB) | per-action rate limits; new-account limits; pruning; alert at 350 MB | T-SEC-10 |
-| T19 | Denial of service | Gmail sender lockout | drip ≤400/day; codes only when needed; Plan B Resend | Perf-14 |
+| T19 | Denial of service | Gmail sender lockout | outbox drip ≤150/day (codes keep 350), waitlist blasts last; codes only when needed; Plan B Resend (DEC 109) | Perf-14 |
 | T20 | Elevation of privilege | Moderator bans or reveals | `require_admin(min)` role checks | T-INT-ADMIN-01 |
 | T21 | Elevation of privilege | Admin takeover | TOTP on 2 devices; separate admin email; AAL2 on every admin RPC; 8 h session; receipts to a second address; admin `noindex` | T-SEC-03 |
 | T22 | Elevation of privilege | Suspended user keeps acting | writes check live status; `revoke-sessions` global sign-out | T-INT-AUTH-06 |

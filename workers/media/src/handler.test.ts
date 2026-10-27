@@ -4,6 +4,7 @@ import { beforeEach, test } from 'node:test';
 
 import {
   CACHE_CONTROL,
+  EDGE_TTL_S,
   handle,
   publicKey,
   RATE_LIMIT,
@@ -100,6 +101,16 @@ test('publicKey', () => {
   assert.equal(publicKey('/c/osu/quad/P/x_full.webp'), 'c/osu/quad/P/x_full.webp');
   assert.equal(publicKey('/c/osu/chat/C/x_full.webp'), null);
   assert.equal(publicKey('/share/L.JPG'), 'share/L.JPG');
+  // Percent-encoded or non-ASCII paths are never canonical keys.
+  assert.equal(publicKey('/c%2Fosu%2Fl%2FL1%2Fabc_full.webp'), null);
+  assert.equal(publicKey('/c/osu/l/L1/abc%5Ffull.webp'), null);
+  assert.equal(publicKey('/c/osu/l/L1/a b_full.webp'), null);
+});
+
+test('LR-02: public images keep a day at the edge (s-maxage), chat stays private', () => {
+  assert.equal(EDGE_TTL_S, 86400);
+  assert.match(CACHE_CONTROL, /(^|, )s-maxage=86400(,|$)/);
+  assert.match(CACHE_CONTROL, /max-age=31536000/);
 });
 
 test('chat photos: only with a valid, unexpired signature (P8-CHAT-04)', async () => {
@@ -137,4 +148,154 @@ test('chat photos: only with a valid, unexpired signature (P8-CHAT-04)', async (
     ).status,
     404,
   );
+});
+
+// E-07: public images go through the edge cache so repeat GETs skip R2.
+function fakeEdge() {
+  const store = new Map<string, Response>();
+  const pending: Promise<unknown>[] = [];
+  return {
+    store,
+    pending,
+    edge: {
+      cache: {
+        match: async (req: Request) => store.get(req.url)?.clone(),
+        put: async (req: Request, res: Response) => {
+          store.set(req.url, res);
+        },
+        delete: async (req: Request) => store.delete(req.url),
+      },
+      waitUntil: (p: Promise<unknown>) => {
+        pending.push(p);
+      },
+    },
+  };
+}
+
+test('E-07: a public image is cached at the edge and served without R2 next time', async () => {
+  let reads = 0;
+  const counted: Env = {
+    MEDIA: { get: async (k) => (reads++, env.MEDIA.get(k)) },
+  };
+  const { store, pending, edge } = fakeEdge();
+  const url = 'https://m.test/c/osu/l/L1/abc_full.webp';
+  const first = await handle(new Request(url), counted, Date.now(), edge);
+  assert.equal(first.status, 200);
+  assert.equal(await first.text(), 'WEBPDATA');
+  await Promise.all(pending);
+  assert.equal(store.size, 1);
+
+  // A cache-busting query string still hits the same entry.
+  const second = await handle(new Request(`${url}?v=2`), counted, Date.now(), edge);
+  assert.equal(second.status, 200);
+  assert.equal(await second.text(), 'WEBPDATA');
+  assert.equal(second.headers.get('cache-control'), CACHE_CONTROL);
+  assert.equal(reads, 1);
+
+  const etag = second.headers.get('etag') as string;
+  const cond = await handle(
+    new Request(url, { headers: { 'if-none-match': etag } }),
+    counted,
+    Date.now(),
+    edge,
+  );
+  assert.equal(cond.status, 304);
+  const head = await handle(new Request(url, { method: 'HEAD' }), counted, Date.now(), edge);
+  assert.equal(head.status, 200);
+  assert.equal(await head.text(), '');
+  assert.equal(reads, 1);
+});
+
+const LEGACY_HEADERS = {
+  'cache-control': 'public, max-age=31536000, immutable',
+  etag: '"old"',
+  'content-type': 'image/webp',
+};
+
+test('IR4-01: a legacy entry without s-maxage is refetched and rewritten', async () => {
+  let reads = 0;
+  const counted: Env = {
+    MEDIA: { get: async (k) => (reads++, env.MEDIA.get(k)) },
+  };
+  const { store, pending, edge } = fakeEdge();
+  const url = 'https://m.test/c/osu/l/L1/abc_full.webp';
+  store.set(url, new Response('OLD', { headers: LEGACY_HEADERS }));
+  const res = await handle(new Request(url), counted, Date.now(), edge);
+  assert.equal(res.status, 200);
+  assert.equal(await res.text(), 'WEBPDATA');
+  assert.equal(res.headers.get('cache-control'), CACHE_CONTROL);
+  assert.equal(reads, 1);
+  await Promise.all(pending);
+  assert.equal(store.get(url)?.headers.get('cache-control'), CACHE_CONTROL);
+});
+
+test('IR4-01: a legacy entry whose object is gone is deleted and 404', async () => {
+  const { store, pending, edge } = fakeEdge();
+  const url = 'https://m.test/c/osu/l/L1/gone_full.webp';
+  store.set(url, new Response('OLD', { headers: LEGACY_HEADERS }));
+  const res = await handle(new Request(url), env, Date.now(), edge);
+  assert.equal(res.status, 404);
+  await Promise.all(pending);
+  assert.equal(store.size, 0);
+});
+
+test('E-07: 404s, HEAD misses and signed chat photos are never put in the shared cache', async () => {
+  const key = 'c/osu/chat/C1/33333333-3333-4333-8333-333333333333_full.webp';
+  const signed: Env = {
+    MEDIA_SIGNING_KEY: 'k',
+    MEDIA: { get: async (k) => (k === key ? { body: 'CHAT', size: 4, httpEtag: '"c"' } : null) },
+  };
+  const now = Date.UTC(2027, 2, 10, 17, 0, 0);
+  const exp = Math.floor(now / 1000) + 600;
+  const sig = await signChat('k', key, exp);
+  const { store, pending, edge } = fakeEdge();
+  const ok = await handle(
+    new Request(`https://m.test/${key}?exp=${exp}&sig=${sig}`),
+    signed,
+    now,
+    edge,
+  );
+  assert.equal(ok.status, 200);
+  await handle(new Request('https://m.test/c/osu/l/L1/missing_full.webp'), env, now, edge);
+  await handle(new Request('https://m.test/share/L1.jpg', { method: 'HEAD' }), env, now, edge);
+  await Promise.all(pending);
+  assert.equal(store.size, 0);
+});
+
+test('LR-02: a percent-encoded path is 404 and never cached', async () => {
+  let reads = 0;
+  const counted: Env = { MEDIA: { get: async (k) => (reads++, env.MEDIA.get(k)) } };
+  const { store, pending, edge } = fakeEdge();
+  const res = await handle(
+    new Request('https://m.test/c%2Fosu%2Fl%2FL1%2Fabc_full.webp'),
+    counted,
+    Date.now(),
+    edge,
+  );
+  assert.equal(res.status, 404);
+  await Promise.all(pending);
+  assert.equal(store.size, 0);
+  assert.equal(reads, 0);
+});
+
+test('LR-02: the cache key is the canonical URL, shared by ?v=2', async () => {
+  const { store, pending, edge } = fakeEdge();
+  const url = 'https://m.test/c/osu/l/L1/abc_full.webp';
+  await handle(new Request(`${url}?v=2`), env, Date.now(), edge);
+  await Promise.all(pending);
+  assert.deepEqual([...store.keys()], [url]);
+});
+
+test('LR-02: a signed chat photo keeps its private cache-control (no s-maxage)', async () => {
+  const key = 'c/osu/chat/C1/33333333-3333-4333-8333-333333333333_full.webp';
+  const signed: Env = {
+    MEDIA_SIGNING_KEY: 'k',
+    MEDIA: { get: async (k) => (k === key ? { body: 'CHAT', size: 4, httpEtag: '"c"' } : null) },
+  };
+  const now = Date.UTC(2027, 2, 10, 17, 0, 0);
+  const exp = Math.floor(now / 1000) + 600;
+  const sig = await signChat('k', key, exp);
+  const res = await handle(new Request(`https://m.test/${key}?exp=${exp}&sig=${sig}`), signed, now);
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get('cache-control'), 'private, max-age=600');
 });

@@ -127,7 +127,7 @@ export function AuditPage() {
             )
           }
         >
-          CSV
+          Download rows on this page (CSV)
         </Button>
       }
     >

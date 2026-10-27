@@ -1,9 +1,10 @@
 import type { Session } from '@supabase/supabase-js';
 
-import { toAppError } from '@/lib/errors';
+import { toAppError, toFunctionError } from '@/lib/errors';
 import { createRpc, type RpcClient } from '@/lib/rpc';
 import { getSupabase } from '@/lib/supabase';
 
+import type { AgeBand, AgeDeclaration } from './age';
 import {
   emailDomain,
   isPersonalDomain,
@@ -37,6 +38,7 @@ type ProfileRow = {
   status: GateProfile['status'];
   first_name: string | null;
   adult_confirmed_at: string | null;
+  age_band?: AgeBand | null;
   rules_version: string | null;
   verified_until?: string | null;
   created_at?: string | null;
@@ -142,6 +144,22 @@ export function createAuthApi(deps: Deps) {
       if (error) throw authError(error);
     },
 
+    /**
+     * "I already have an account" (DEC 140): emails a code only to an existing
+     * account. Auth answers otp_disabled for an address with no account, which
+     * the screen shows as "no account" instead of creating one.
+     */
+    async signInCode(input: string): Promise<'sent' | 'no_account'> {
+      const email = requireEmail(input);
+      const { error } = await deps.auth().signInWithOtp({
+        email,
+        options: { shouldCreateUser: false },
+      });
+      if (!error) return 'sent';
+      if ((error as { code?: unknown }).code === 'otp_disabled') return 'no_account';
+      throw authError(error);
+    },
+
     async verifyCode(input: string, code: string): Promise<Session> {
       const email = requireEmail(input);
       const token = code.replace(/\D/g, '');
@@ -167,26 +185,53 @@ export function createAuthApi(deps: Deps) {
       if (error) throw toAppError(error);
     },
 
-    /** 18+ check (A05). A birth date is sent once and never stored (T-INT-AUTH-04). */
+    /**
+     * Minimum age check, 13+ (A05, DEC 136). A birth date is sent once and
+     * never stored (T-INT-AUTH-04); the server decides the band.
+     */
     async confirmAge(
       input:
-        { method: 'os_signal'; isAdult: boolean } | { method: 'self_declared'; birthDate: string },
-    ): Promise<{ adult: boolean }> {
-      return rpc<{ adult: boolean }>(
-        'confirm_age',
+        | { method: 'os_signal'; band: AgeBand | 'under_13' }
+        | { method: 'self_declared'; birthDate: string },
+    ): Promise<{ eligible: boolean; ageBand: AgeBand | null }> {
+      const res = await rpc<{ eligible: boolean; age_band: AgeBand | null }>(
+        'confirm_age_v2',
         input.method === 'os_signal'
-          ? { method: 'os_signal', is_adult: input.isAdult }
+          ? { method: 'os_signal', band: input.band }
           : { method: 'self_declared', birth_date: input.birthDate },
       );
+      return { eligible: res.eligible, ageBand: res.age_band ?? null };
     },
 
-    /** After confirm_age said minor: remove the account right away (F02, P4-DEL-01). */
+    /**
+     * Apple age assurance (AR-03): whether the law applied and how the OS
+     * range was declared. Called after confirmAge said eligible.
+     */
+    async recordAgeAssurance(input: {
+      regulated: boolean;
+      declaration: AgeDeclaration | null;
+    }): Promise<void> {
+      await rpc<unknown>('record_age_assurance', {
+        regulated: input.regulated,
+        ...(input.declaration ? { declaration: input.declaration } : {}),
+      });
+    },
+
+    /**
+     * AR-04: links this iPhone's App Store download id to the account, so a
+     * RESCIND_CONSENT notification can find it.
+     */
+    async linkAppTransaction(appTransactionId: string): Promise<void> {
+      await rpc<unknown>('link_app_transaction', { app_transaction_id: appTransactionId });
+    },
+
+    /** After confirm_age_v2 said under 13: remove the account right away (F02, P4-DEL-01). */
     async deleteUnderageAccount(): Promise<void> {
       if (!deps.functions) throw toAppError({ message: 'functions unavailable' });
       const { error } = await deps.functions().invoke('delete-account', {
         body: { mode: 'underage' },
       });
-      if (error) throw toAppError(error);
+      if (error) throw await toFunctionError(error);
     },
 
     /**
@@ -228,7 +273,7 @@ export function createAuthApi(deps: Deps) {
       const { error } = await deps
         .functions()
         .invoke('delete-account', { body: { confirm: 'DELETE' } });
-      if (error) throw toAppError(error);
+      if (error) throw await toFunctionError(error);
     },
 
     /** F20 Help form (P4-AUTH-19). Works signed out: people who lost their inbox can't sign in. */
@@ -236,20 +281,29 @@ export function createAuthApi(deps: Deps) {
       email: string;
       topic: 'general' | 'cant_access_email' | 'safety' | 'bug' | 'other';
       body: string;
+      /** Web only: the Turnstile token (LR-04). Native bodies are unchanged. */
+      turnstileToken?: string;
     }): Promise<void> {
       if (!deps.functions) throw toAppError({ message: 'functions unavailable' });
       const { error } = await deps.functions().invoke('support-request', {
-        body: { email: input.email.trim(), topic: input.topic, body: input.body.trim() },
+        body: {
+          email: input.email.trim(),
+          topic: input.topic,
+          body: input.body.trim(),
+          ...(input.turnstileToken ? { turnstile_token: input.turnstileToken } : {}),
+        },
       });
-      if (error) throw toAppError(error);
+      if (error) throw await toFunctionError(error);
     },
 
     /** A school we don't support yet (A5), via the waitlist-request function (P4-AUTH-11). */
-    async joinWaitlist(input: string): Promise<void> {
+    async joinWaitlist(input: string, turnstileToken?: string): Promise<void> {
       const email = requireEmail(input);
       if (!deps.functions) throw toAppError({ message: 'functions unavailable' });
-      const { error } = await deps.functions().invoke('waitlist-request', { body: { email } });
-      if (error) throw toAppError(error);
+      const { error } = await deps.functions().invoke('waitlist-request', {
+        body: { email, ...(turnstileToken ? { turnstile_token: turnstileToken } : {}) },
+      });
+      if (error) throw await toFunctionError(error);
     },
 
     async getAppConfig(): Promise<AppConfig> {
@@ -265,6 +319,7 @@ export function createAuthApi(deps: Deps) {
         status: data.status,
         firstName: data.first_name,
         adultConfirmed: data.adult_confirmed_at !== null,
+        ageBand: data.age_band ?? null,
         rulesVersion: data.rules_version,
         verifiedUntil: data.verified_until ?? null,
         showUnlocked: shouldShowUnlocked({
@@ -287,7 +342,7 @@ export const authApi: AuthApi = createAuthApi({
     getSupabase()
       .from('profiles')
       .select(
-        'status, first_name, adult_confirmed_at, rules_version, verified_until, created_at, seen_unlock_at, campuses(status, unlocked_at)',
+        'status, first_name, adult_confirmed_at, age_band, rules_version, verified_until, created_at, seen_unlock_at, campuses(status, unlocked_at)',
       )
       .eq('id', userId)
       .maybeSingle<ProfileRow>(),

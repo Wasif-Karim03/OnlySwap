@@ -159,7 +159,10 @@ const styles = StyleSheet.create((theme, rt) => ({
 
 type Action = { label: string; onPress: () => void; destructive?: boolean };
 
-/** List of actions plus Cancel, built on Sheet. */
+/**
+ * List of actions plus Cancel, built on Sheet. Rows are 52 pt with a bg2
+ * pressed fill; Cancel sits apart in its own rounded bg2 block, as on iOS.
+ */
 export function ActionSheet({
   visible,
   onClose,
@@ -173,41 +176,63 @@ export function ActionSheet({
 }) {
   return (
     <Sheet visible={visible} onClose={onClose} title={title}>
-      {actions.map((a) => (
+      <View style={actionStyles.stack}>
+        <View>
+          {actions.map((a, i) => (
+            <Pressable
+              key={a.label}
+              accessibilityRole="button"
+              accessibilityLabel={a.label}
+              onPress={() => {
+                onClose();
+                a.onPress();
+              }}
+              style={({ pressed }) => [
+                actionStyles.row,
+                i < actions.length - 1 && actionStyles.divider,
+                pressed && actionStyles.pressed,
+              ]}
+            >
+              <Text variant="bodyStrong" tone={a.destructive ? 'red' : 'ink'}>
+                {a.label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
         <Pressable
-          key={a.label}
           accessibilityRole="button"
-          accessibilityLabel={a.label}
-          onPress={() => {
-            onClose();
-            a.onPress();
-          }}
-          style={actionStyles.row}
+          accessibilityLabel={sheetCopy.cancel}
+          onPress={onClose}
+          style={({ pressed }) => [actionStyles.cancel, pressed && actionStyles.cancelPressed]}
         >
-          <Text variant="bodyStrong" tone={a.destructive ? 'red' : 'ink'}>
-            {a.label}
+          <Text variant="bodyStrong" tone="ink2">
+            {sheetCopy.cancel}
           </Text>
         </Pressable>
-      ))}
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={sheetCopy.cancel}
-        onPress={onClose}
-        style={actionStyles.row}
-      >
-        <Text variant="bodyStrong" tone="ink2">
-          {sheetCopy.cancel}
-        </Text>
-      </Pressable>
+      </View>
     </Sheet>
   );
 }
 
 const actionStyles = StyleSheet.create((theme) => ({
+  // Cancel sits 8 pt under the list.
+  stack: { gap: theme.space.sm },
   row: {
     minHeight: theme.space.rowMin,
     justifyContent: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.line,
+    // Bleed the pressed fill past the text by the same inset the text keeps.
+    marginHorizontal: -theme.space.md,
+    paddingHorizontal: theme.space.md,
+    borderRadius: theme.radius.thumb,
   },
+  divider: { borderBottomWidth: 1, borderBottomColor: theme.colors.line },
+  pressed: { backgroundColor: theme.colors.bg2 },
+  cancel: {
+    minHeight: theme.space.rowMin,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: theme.radius.control,
+    backgroundColor: theme.colors.bg2,
+  },
+  cancelPressed: { backgroundColor: theme.colors.bg3 },
 }));

@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 import { router, type Href } from 'expo-router';
@@ -29,6 +30,9 @@ export const CHANNELS: { id: string; name: string; importance: Notifications.And
     { id: 'safety', name: 'Safety', importance: Notifications.AndroidImportance.HIGH },
     { id: 'account', name: 'Account', importance: Notifications.AndroidImportance.DEFAULT },
     { id: 'campus', name: 'Campus', importance: Notifications.AndroidImportance.LOW },
+    // send-push uses the group as the channel id, so every group needs one.
+    { id: 'quad', name: 'Quad', importance: Notifications.AndroidImportance.DEFAULT },
+    { id: 'comments', name: 'Comments', importance: Notifications.AndroidImportance.DEFAULT },
   ];
 
 /** Where a tapped notification opens (the push `data` from the server). */
@@ -40,6 +44,15 @@ export function routeForNotification(
   const type = s('type') ?? '';
   if ((type === 'quad_reply' || type === 'quad_milestone') && s('post_id'))
     return { pathname: '/quad/[id]', params: { id: s('post_id')! } };
+  // Feed comments and likes (DEC 121) open the comments on the post.
+  if (
+    (type === 'listing_comment' ||
+      type === 'comment_reply' ||
+      type === 'comment_like' ||
+      type === 'listing_like') &&
+    s('listing_id')
+  )
+    return { pathname: '/listing/[id]/comments', params: { id: s('listing_id')! } };
   // Around campus and waitlist (R1.1): the new listing for a Wanted match (else
   // the Wanted itself), the food post, and the one-time "campus open" screen.
   if (type === 'campus_unlocked') return '/unlocked';
@@ -47,7 +60,7 @@ export function routeForNotification(
     const id = s('listing_id') ?? (type === 'wanted_match' ? s('wanted_id') : null);
     if (id) return { pathname: '/listing/[id]', params: { id, from: 'notification' } };
     return type === 'free_food'
-      ? { pathname: '/discover/campus', params: { kind: 'food' } }
+      ? { pathname: '/feed', params: { kind: 'food' } }
       : '/notifications';
   }
   if (s('meetup_id') && type.startsWith('meetup_'))
@@ -121,6 +134,7 @@ export async function setBadge(unread: number): Promise<void> {
  * the token fresh when the OS rotates it.
  */
 export function usePushHandling(enabled: boolean) {
+  const qc = useQueryClient();
   useEffect(() => {
     if (!enabled || isWebPlatform()) return undefined;
     const subs: { remove: () => void }[] = [];
@@ -146,6 +160,11 @@ export function usePushHandling(enabled: boolean) {
         .catch(() => {});
       const tap = Notifications.addNotificationResponseReceivedListener(open);
       if (typeof tap?.remove === 'function') subs.push(tap);
+      // A push while the app is open: the bell's unread count is stale now.
+      const received = Notifications.addNotificationReceivedListener(() => {
+        void qc.invalidateQueries({ queryKey: ['notifications'] });
+      });
+      if (typeof received?.remove === 'function') subs.push(received);
       const rotate = Notifications.addPushTokenListener(() => {
         void registerForPush().catch(() => {});
       });
@@ -157,5 +176,5 @@ export function usePushHandling(enabled: boolean) {
       // ignore
     }
     return () => subs.forEach((s) => s.remove());
-  }, [enabled]);
+  }, [enabled, qc]);
 }

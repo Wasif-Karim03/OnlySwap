@@ -1,9 +1,11 @@
 import {
   useCallback,
+  useEffect,
   useImperativeHandle,
   useLayoutEffect,
   useRef,
   useState,
+  type ReactNode,
   type Ref,
 } from 'react';
 import {
@@ -18,6 +20,8 @@ import Animated, {
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
+  withDelay,
+  withSequence,
   withSpring,
   withTiming,
   type SharedValue,
@@ -26,27 +30,29 @@ import { StyleSheet } from 'react-native-unistyles';
 
 import { motion } from '@onlyswap/tokens';
 import { Icon } from '@/components/icons/Icon';
+import { Material } from '@/components/Material';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
-import { useScreenReader } from '@/lib/a11y';
+import { useScreenReader, a11yState } from '@/lib/a11y';
 import { haptic } from '@/lib/haptics';
+import { fill } from '@/lib/format';
 import { feed as copy } from '@/strings';
 import { LAYOUT, gridCellWidth, gridColumns } from '@/theme/layout';
 import { useReducedMotion } from '@/theme/reducedMotion';
-import { liftShadow } from '@/theme/shadow';
 
 import {
   FLY_MS,
-  NEXT_SCALE,
   flyTarget,
-  nextScale,
+  PEEK,
   pastThreshold,
+  pileFor,
   releaseDir,
   rotationFor,
   stampOpacity,
+  tapZone,
   type SwipeDir,
 } from './deckMath';
-import { cardLabel, SwipeCard, type DeckCard } from './SwipeCard';
+import { cardLabel, SaveButton, SwipeCard, type DeckCard } from './SwipeCard';
 
 export type SwipeDeckHandle = {
   /** Button presses and tests: fly the top card out as if swiped. */
@@ -58,6 +64,13 @@ type Props = {
   cards: DeckCard[];
   onSwipe: (card: DeckCard, dir: SwipeDir) => void;
   onOpen: (card: DeckCard) => void;
+  /**
+   * The bookmark (DEC 144): saving keeps the card where it is. Without it,
+   * Save falls back to `onSwipe(card, 'save')`.
+   */
+  onToggleSave?: (card: DeckCard) => void;
+  /** First time only: the top card wiggles once to show it moves. */
+  wiggle?: boolean;
   /** Forces list mode; by default it follows the screen reader and reduce motion (X33). */
   listMode?: boolean;
   /**
@@ -65,6 +78,11 @@ type Props = {
    * many points of width. Each tile keeps the list mode's Skip, Save and Offer.
    */
   gridWidth?: number;
+  /**
+   * One quiet line in the thumb zone (DESIGN_REVIEW 3.02): above the action
+   * row in the deck, at the top of the list or grid.
+   */
+  hint?: ReactNode;
   ref?: Ref<SwipeDeckHandle>;
   testID?: string;
 };
@@ -83,8 +101,11 @@ export function SwipeDeck({
   cards,
   onSwipe,
   onOpen,
+  onToggleSave,
+  wiggle = false,
   listMode,
   gridWidth,
+  hint,
   ref,
   testID = 'deck',
 }: Props) {
@@ -115,7 +136,9 @@ export function SwipeDeck({
         cards={cards}
         onSwipe={onSwipe}
         onOpen={onOpen}
+        onToggleSave={onToggleSave}
         gridWidth={gridWidth}
+        hint={hint}
         testID={testID}
       />
     );
@@ -127,10 +150,10 @@ export function SwipeDeck({
   };
 
   const visible = cards.slice(0, MOUNTED);
-  const top = visible[0];
 
   return (
     <View style={styles.wrap} testID={testID}>
+      {hint ? <View style={styles.hint}>{hint}</View> : null}
       <View style={styles.stage} onLayout={onLayout}>
         {visible
           .map((card, i) =>
@@ -140,11 +163,13 @@ export function SwipeDeck({
                 card={card}
                 size={size}
                 drag={drag}
+                wiggle={wiggle}
                 register={(f) => {
                   fly.current = f;
                 }}
                 onDone={onSwipe}
                 onOpen={onOpen}
+                onToggleSave={onToggleSave ?? ((c) => onSwipe(c, 'save'))}
               />
             ) : (
               <UnderCard key={card.id} card={card} depth={i} size={size} drag={drag} />
@@ -152,14 +177,6 @@ export function SwipeDeck({
           )
           .reverse()}
       </View>
-      <DeckActions
-        size="L"
-        disabled={!top}
-        onSkip={() => fly.current?.('left')}
-        onOffer={() => fly.current?.('right')}
-        onSave={() => fly.current?.('save')}
-        testID={testID}
-      />
     </View>
   );
 }
@@ -173,82 +190,155 @@ type ActionsProps = {
   onSkip: () => void;
   onOffer: () => void;
   onSave: () => void;
+  /** Fills the bookmark when the item is already saved (DEC 144: bookmark = save). */
+  saved?: boolean;
   testID: string;
 };
 
 /**
- * Pass, Make an offer, Save (DEC 90 mock screen 4): a white circle, the ink
- * pill and an accent circle. The offer pill is ink because the accent is
- * already the Save button.
+ * Skip, Make an offer, Save (DESIGN_REVIEW 3.02, replacing the DEC 90 mock
+ * screen 4 choice of an ink pill and an accent heart): quiet hairline circles
+ * either side, no shadow, and the wide offer pill as the screen's one accent
+ * fill (P2, P7), with ink words on it.
  */
-function DeckActions({ size, short, disabled, onSkip, onOffer, onSave, testID }: ActionsProps) {
+function DeckActions({
+  size,
+  short,
+  disabled,
+  onSkip,
+  onOffer,
+  onSave,
+  saved = false,
+  testID,
+}: ActionsProps) {
   const icon = size === 'L' ? 26 : 22;
   return (
     <View style={styles.actions(size)}>
       <Tappable
         accessibilityRole="button"
         accessibilityLabel={copy.skip}
-        accessibilityState={{ disabled: !!disabled }}
+        {...a11yState({ disabled: !!disabled })}
         disabled={disabled}
         onPress={onSkip}
         testID={`${testID}-skip`}
       >
-        <View style={[styles.circle(size, !!disabled), styles.passCircle]}>
-          <Icon name="x" size={icon} />
-        </View>
+        <CircleSurface size={size} disabled={!!disabled}>
+          <Icon name="x" size={icon} tone={size === 'L' ? 'onPhoto' : 'ink'} />
+        </CircleSurface>
       </Tappable>
       <Tappable
         accessibilityRole="button"
         accessibilityLabel={copy.offer}
-        accessibilityState={{ disabled: !!disabled }}
+        {...a11yState({ disabled: !!disabled })}
         disabled={disabled}
         onPress={onOffer}
-        style={size === 'M' ? styles.offerFlex : undefined}
+        style={styles.offerFlex}
         testID={`${testID}-offer`}
       >
         <View style={styles.offerPill(size, !!disabled)}>
-          <Text variant={size === 'L' ? 'bodyStrong' : 'label'} tone="inverse" numberOfLines={1}>
+          <Text variant={size === 'L' ? 'bodyStrong' : 'label'} tone="onAccent" numberOfLines={1}>
             {short ? copy.offerShort : copy.offer}
           </Text>
         </View>
       </Tappable>
       <Tappable
         accessibilityRole="button"
-        accessibilityLabel={copy.save}
-        accessibilityState={{ disabled: !!disabled }}
+        accessibilityLabel={saved ? copy.unsaveAction : copy.save}
+        {...a11yState({ disabled: !!disabled, selected: saved })}
         disabled={disabled}
         onPress={onSave}
         testID={`${testID}-save`}
       >
-        <View style={[styles.circle(size, !!disabled), styles.saveCircle]}>
-          <Icon name="heart" size={icon} tone="onAccent" />
-        </View>
+        <CircleSurface size={size} disabled={!!disabled}>
+          <Icon
+            name="bookmark"
+            size={icon}
+            tone={size === 'L' ? 'onPhoto' : 'ink'}
+            filled={saved}
+          />
+        </CircleSurface>
       </Tappable>
     </View>
   );
+}
+
+/**
+ * The side buttons. On the deck they float over the photo, so they use the
+ * clear material (round 2); under list and grid tiles they stay quiet circles.
+ */
+function CircleSurface({
+  size,
+  disabled,
+  children,
+}: {
+  size: 'L' | 'M';
+  disabled: boolean;
+  children: ReactNode;
+}) {
+  if (size === 'L') {
+    return (
+      // Solid: the row floats over the moving card, and glass there redrew every frame.
+      <Material variant="clear" solid style={styles.glassCircle(disabled)}>
+        {children}
+      </Material>
+    );
+  }
+  return <View style={styles.circle(size, disabled)}>{children}</View>;
 }
 
 type TopProps = {
   card: DeckCard;
   size: { width: number; height: number };
   drag: SharedValue<number>;
+  wiggle: boolean;
   register: (fly: (dir: SwipeDir) => void) => void;
   onDone: (card: DeckCard, dir: SwipeDir) => void;
   onOpen: (card: DeckCard) => void;
+  onToggleSave: (card: DeckCard) => void;
 };
 
-function TopCard({ card, size, drag, register, onDone, onOpen }: TopProps) {
+/** The right-swipe sticker: the asking price, or "Ask for it" for free things. */
+export function offerSticker(card: DeckCard): string {
+  return card.free ? copy.stampAsk : fill(copy.stampOfferPrice, { price: card.price });
+}
+
+function deckActions(saved: boolean) {
+  return [
+    { name: 'offer', label: copy.offer },
+    { name: 'skip', label: copy.skip },
+    { name: 'save', label: saved ? copy.unsaveAction : copy.save },
+    { name: 'activate', label: copy.open },
+  ];
+}
+
+function TopCard({ card, size, drag, wiggle, register, onDone, onOpen, onToggleSave }: TopProps) {
   const x = useSharedValue(0);
   const y = useSharedValue(0);
-  const saving = useSharedValue(0);
   const armed = useSharedValue(false);
   const busy = useSharedValue(false);
+  const [photo, setPhoto] = useState(0);
   const { width, height } = size;
 
   // A new top card starts centred, and the card under it starts small, before paint.
   useLayoutEffect(() => {
     drag.set(0);
   }, [drag]);
+
+  // First time only (round 2 frame 5): one small wiggle shows the card moves.
+  useEffect(() => {
+    if (!wiggle || width <= 0) return;
+    const step = { duration: 180, reduceMotion: ReduceMotion.System };
+    x.set(
+      withDelay(
+        500,
+        withSequence(
+          withTiming(-width * 0.08, step),
+          withTiming(width * 0.06, step),
+          withTiming(0, step),
+        ),
+      ),
+    );
+  }, [wiggle, width, x]);
 
   const finish = useCallback((dir: SwipeDir) => onDone(card, dir), [card, onDone]);
 
@@ -257,7 +347,6 @@ function TopCard({ card, size, drag, register, onDone, onOpen }: TopProps) {
       'worklet';
       if (busy.get()) return;
       busy.set(true);
-      if (dir === 'save') saving.set(1);
       const to = flyTarget(dir, width || 400, height || 600);
       const cfg = { duration: FLY_MS, reduceMotion: ReduceMotion.Never };
       y.set(withTiming(to.y, cfg));
@@ -268,12 +357,31 @@ function TopCard({ card, size, drag, register, onDone, onOpen }: TopProps) {
       );
       drag.set(withTiming(dir === 'save' ? width : to.x, cfg));
     },
-    [busy, saving, width, height, x, y, drag, finish],
+    [busy, width, height, x, y, drag, finish],
   );
 
   useLayoutEffect(() => {
     register((dir) => flyOut(dir));
   }, [register, flyOut]);
+
+  const count = card.photos.length;
+  const flip = useCallback(
+    (by: number) => {
+      setPhoto((i) => Math.min(Math.max(i + by, 0), Math.max(count - 1, 0)));
+      haptic('selection');
+    },
+    [count],
+  );
+
+  const onTap = useCallback(
+    (tapX: number) => {
+      const zone = count > 1 ? tapZone(tapX, width) : 'open';
+      if (zone === 'prev') flip(-1);
+      else if (zone === 'next') flip(1);
+      else onOpen(card);
+    },
+    [count, width, flip, onOpen, card],
+  );
 
   const pan = Gesture.Pan()
     .activeOffsetX([-10, 10])
@@ -304,8 +412,8 @@ function TopCard({ card, size, drag, register, onDone, onOpen }: TopProps) {
       armed.set(false);
     });
 
-  const tap = Gesture.Tap().onEnd((_e, ok) => {
-    if (ok && !busy.get()) runOnJS(onOpen)(card);
+  const tap = Gesture.Tap().onEnd((e, ok) => {
+    if (ok && !busy.get()) runOnJS(onTap)(e.x);
   });
 
   const moving = useAnimatedStyle(() => ({
@@ -316,40 +424,52 @@ function TopCard({ card, size, drag, register, onDone, onOpen }: TopProps) {
     ],
   }));
   const offerStamp = useAnimatedStyle(() => ({ opacity: stampOpacity(x.value, width, 'right') }));
-  const skipStamp = useAnimatedStyle(() => ({ opacity: stampOpacity(x.value, width, 'left') }));
-  const saveStamp = useAnimatedStyle(() => ({ opacity: saving.value }));
+  const passStamp = useAnimatedStyle(() => ({ opacity: stampOpacity(x.value, width, 'left') }));
+
+  const onAction = (e: AccessibilityActionEvent) => {
+    const name = e.nativeEvent.actionName;
+    if (name === 'offer') flyOut('right');
+    else if (name === 'skip') flyOut('left');
+    else if (name === 'save') onToggleSave(card);
+    else if (name === 'activate') onOpen(card);
+  };
 
   return (
-    <GestureDetector gesture={Gesture.Race(pan, tap)}>
-      <Animated.View
-        style={[styles.cardSlot, moving]}
-        accessible
-        accessibilityRole="button"
-        accessibilityLabel={cardLabel(card)}
-        accessibilityHint={copy.cardHint}
-        testID={`deck-card-${card.id}`}
-      >
-        <SwipeCard card={card} />
-        <Animated.View style={[styles.stamp, styles.stampLeft, offerStamp]} pointerEvents="none">
-          <Text variant="title" tone="onAccent">
-            {copy.stampOffer}
-          </Text>
-        </Animated.View>
+    <Animated.View style={[styles.cardSlot, moving]}>
+      <GestureDetector gesture={Gesture.Race(pan, tap)}>
         <Animated.View
-          style={[styles.stamp, styles.stampRight, styles.stampDark, skipStamp]}
-          pointerEvents="none"
+          style={styles.fill}
+          accessible
+          accessibilityRole="button"
+          accessibilityLabel={cardLabel(card)}
+          accessibilityHint={copy.cardHint}
+          accessibilityActions={deckActions(!!card.saved)}
+          onAccessibilityAction={onAction}
+          testID={`deck-card-${card.id}`}
         >
-          <Text variant="title" tone="inverse">
-            {copy.stampSkip}
-          </Text>
+          <SwipeCard card={card} overlay photoIndex={photo} />
+          {/* Stickers (round 2): the price on the right swipe, "Pass" on the left. */}
+          <Animated.View
+            style={[styles.sticker, styles.stickerOffer, offerStamp]}
+            pointerEvents="none"
+          >
+            <Text variant="title" tone="onAccent">
+              {offerSticker(card)}
+            </Text>
+          </Animated.View>
+          <Animated.View
+            style={[styles.sticker, styles.stickerPass, passStamp]}
+            pointerEvents="none"
+          >
+            <Text variant="title" style={styles.passText}>
+              {copy.stampSkip}
+            </Text>
+          </Animated.View>
         </Animated.View>
-        <Animated.View style={[styles.stamp, styles.stampCenter, saveStamp]} pointerEvents="none">
-          <Text variant="title" tone="onAccent">
-            {copy.stampSave}
-          </Text>
-        </Animated.View>
-      </Animated.View>
-    </GestureDetector>
+      </GestureDetector>
+      {/* Outside the swipe area, so tapping it never flips a photo or opens the listing. */}
+      <SaveButton saved={!!card.saved} onPress={() => onToggleSave(card)} />
+    </Animated.View>
   );
 }
 
@@ -361,10 +481,10 @@ type UnderProps = {
 };
 
 function UnderCard({ card, depth, size, drag }: UnderProps) {
-  const style = useAnimatedStyle(() => ({
-    transform: [{ scale: depth === 1 ? nextScale(drag.value, size.width) : NEXT_SCALE }],
-    opacity: depth === 1 ? 1 : 0,
-  }));
+  const style = useAnimatedStyle(() => {
+    const pile = pileFor(depth, drag.value, size.width);
+    return { transform: [{ translateY: pile.y }, { scale: pile.scale }] };
+  });
   return (
     <Animated.View
       style={[styles.cardSlot, style]}
@@ -372,7 +492,7 @@ function UnderCard({ card, depth, size, drag }: UnderProps) {
       importantForAccessibility="no-hide-descendants"
       accessibilityElementsHidden
     >
-      <SwipeCard card={card} />
+      <SwipeCard card={card} overlay />
     </Animated.View>
   );
 }
@@ -381,7 +501,9 @@ type ListProps = {
   cards: DeckCard[];
   onSwipe: (card: DeckCard, dir: SwipeDir) => void;
   onOpen: (card: DeckCard) => void;
+  onToggleSave?: (card: DeckCard) => void;
   gridWidth?: number;
+  hint?: ReactNode;
   testID: string;
 };
 
@@ -389,7 +511,7 @@ type ListProps = {
  * Screen reader / reduce motion mode (X33): a list, each card with four
  * actions. With `gridWidth` (iPad N5) the same tiles wrap into columns.
  */
-function DeckList({ cards, onSwipe, onOpen, gridWidth, testID }: ListProps) {
+function DeckList({ cards, onSwipe, onOpen, onToggleSave, gridWidth, hint, testID }: ListProps) {
   const columns = gridWidth !== undefined ? gridColumns(gridWidth) : 1;
   const cellWidth = gridWidth !== undefined ? gridCellWidth(gridWidth, columns) : undefined;
   const actions = LIST_ACTIONS.map((name) => ({
@@ -404,18 +526,22 @@ function DeckList({ cards, onSwipe, onOpen, gridWidth, testID }: ListProps) {
             : copy.open,
   }));
 
+  // Saving keeps the card in the list too (DEC 144).
+  const save = (card: DeckCard) => (onToggleSave ? onToggleSave(card) : onSwipe(card, 'save'));
+
   return (
     <ScrollView
       contentContainerStyle={cellWidth !== undefined ? styles.grid : styles.list}
       testID={`${testID}-list`}
       accessibilityLabel={copy.listTitle}
     >
+      {hint ? <View style={styles.listHint}>{hint}</View> : null}
       {cards.map((card) => {
         const run = (e: AccessibilityActionEvent) => {
           const name = e.nativeEvent.actionName;
           if (name === 'activate') onOpen(card);
           else if (name === 'offer') onSwipe(card, 'right');
-          else if (name === 'save') onSwipe(card, 'save');
+          else if (name === 'save') save(card);
           else if (name === 'skip') onSwipe(card, 'left');
         };
         return (
@@ -442,7 +568,8 @@ function DeckList({ cards, onSwipe, onOpen, gridWidth, testID }: ListProps) {
                 short={cellWidth !== undefined}
                 onSkip={() => onSwipe(card, 'left')}
                 onOffer={() => onSwipe(card, 'right')}
-                onSave={() => onSwipe(card, 'save')}
+                onSave={() => save(card)}
+                saved={!!card.saved}
                 testID={`deck-item-${card.id}`}
               />
             </View>
@@ -455,26 +582,57 @@ function DeckList({ cards, onSwipe, onOpen, gridWidth, testID }: ListProps) {
 
 const styles = StyleSheet.create((theme) => ({
   wrap: { flex: 1 },
-  stage: { flex: 1, marginHorizontal: theme.space.screen, marginTop: theme.space.sm },
+  hint: { paddingHorizontal: theme.space.screen, paddingBottom: theme.space.sm },
+  listHint: { width: '100%' },
+  // Room under the top card for the pile to peek out (round 2 "Depth").
+  stage: {
+    flex: 1,
+    marginHorizontal: theme.space.md,
+    marginTop: theme.space.xs,
+    marginBottom: PEEK + theme.space.md,
+  },
   cardSlot: { ...StyleSheet.absoluteFillObject },
-  stamp: {
+  fill: { flex: 1 },
+  // Round 2 stickers: a tilted label, like a sticker slapped on the photo.
+  sticker: {
     position: 'absolute',
-    top: theme.space['2xl'],
+    // Below the photo bars and the bookmark.
+    top: theme.size.hit + theme.space['2xl'],
     paddingHorizontal: theme.space.md,
     paddingVertical: theme.space.xs,
     borderRadius: theme.radius.thumb,
-    backgroundColor: theme.colors.accent,
   },
-  stampLeft: { left: theme.space.xl, transform: [{ rotate: '-10deg' }] },
-  stampRight: { right: theme.space.xl, transform: [{ rotate: '10deg' }] },
-  stampCenter: { alignSelf: 'center' },
-  stampDark: { backgroundColor: theme.colors.ink },
+  // Each sticker sits on the side the card swings away from, so it stays on screen.
+  stickerOffer: {
+    left: theme.space.xl,
+    backgroundColor: theme.colors.accent,
+    transform: [{ rotate: '-8deg' }],
+  },
+  stickerPass: {
+    right: theme.space.xl,
+    backgroundColor: theme.colors.onPhoto,
+    transform: [{ rotate: '8deg' }],
+  },
+  // White sticker, so its word is the dark on-accent ink in both themes.
+  passText: { color: theme.colors.onAccent },
   actions: (size: 'L' | 'M') => ({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     gap: size === 'L' ? theme.space.lg : theme.space.sm,
     paddingVertical: size === 'L' ? theme.space.lg : 0,
+    // The deck row floats over the card's foot (round 2): it overlaps the
+    // stage by its own height, and the card leaves that room under its text.
+    marginTop: size === 'L' ? -(theme.size.buttonL + theme.space.lg * 2) : 0,
+    paddingHorizontal: size === 'L' ? theme.space.xl + theme.space.sm : 0,
+  }),
+  glassCircle: (disabled: boolean) => ({
+    width: theme.size.buttonL,
+    height: theme.size.buttonL,
+    borderRadius: theme.radius.chip,
+    alignItems: 'center',
+    justifyContent: 'center',
+    opacity: disabled ? 0.35 : 1,
   }),
   circle: (size: 'L' | 'M', disabled: boolean) => ({
     width: size === 'L' ? theme.size.buttonL : theme.size.hit,
@@ -482,24 +640,20 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: theme.radius.chip,
     alignItems: 'center',
     justifyContent: 'center',
-    opacity: disabled ? 0.35 : 1,
-  }),
-  passCircle: {
+    // Quiet: a card fill and the hairline, no shadow (DESIGN_SYSTEM §4).
     backgroundColor: theme.colors.card,
     borderWidth: 1,
     borderColor: theme.colors.line,
-    ...liftShadow(),
-  },
-  saveCircle: { backgroundColor: theme.colors.accent },
+    opacity: disabled ? 0.35 : 1,
+  }),
   offerFlex: { flex: 1 },
   offerPill: (size: 'L' | 'M', disabled: boolean) => ({
     height: size === 'L' ? theme.size.buttonL : theme.size.hit,
-    minWidth: size === 'L' ? theme.size.buttonL * 3 : undefined,
     paddingHorizontal: size === 'L' ? theme.space.xl : theme.space.md,
     borderRadius: theme.radius.chip,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: theme.colors.ink,
+    backgroundColor: theme.colors.accent,
     opacity: disabled ? 0.35 : 1,
   }),
   list: {

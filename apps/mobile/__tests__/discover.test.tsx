@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
-import type { ReactNode } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import { AccessibilityInfo, Text } from 'react-native';
 
 import { useToastStore } from '../src/components/Toast';
@@ -14,6 +14,8 @@ import {
   nextCursor,
   parseQueue,
   QUEUE_CAP,
+  movingOutTag,
+  swapsLabel,
   toDeckCard,
   toServer,
   undoPlan,
@@ -22,7 +24,7 @@ import {
   type QueuedSwipe,
 } from '../src/features/feed/logic';
 import { createSwipeStore } from '../src/features/feed/swipes';
-import { feed } from '../src/strings/en';
+import { feed, safety, system } from '../src/strings/en';
 
 jest.mock('expo-haptics', () => ({
   selectionAsync: jest.fn(async () => {}),
@@ -174,12 +176,34 @@ describe('T-UNIT-FEED-01 useSwipe batching', () => {
     expect(undoPlan([s], null, NOW).kind).toBe('expired');
   });
 
-  it('sends a right swipe as seen (left) and ignores junk in storage', () => {
-    expect(toServer(swipe('a', NOW, 'right')).dir).toBe('left');
+  it('sends a right swipe as right (DEC 106) and ignores junk in storage', () => {
+    expect(toServer(swipe('a', NOW, 'right')).dir).toBe('right');
+    expect(toServer(swipe('a', NOW, 'left')).dir).toBe('left');
+    expect(toServer(swipe('a', NOW, 'save')).dir).toBe('save');
     expect(
       parseQueue([{ listing_id: 'a', dir: 'up', at: 'x' }, swipe('b', NOW), null]),
     ).toHaveLength(1);
     expect(parseQueue('nope')).toEqual([]);
+  });
+
+  it('sends time on card with the swipe, rounded and capped (E-03)', async () => {
+    const api = fakeApi();
+    const store = createSwipeStore(memory(), api, () => NOW);
+    store.getState().swipe('a', 'left', 4200.6);
+    store.getState().swipe('b', 'right', 10 ** 9);
+    store.getState().swipe('c', 'save', -5);
+    store.getState().swipe('d', 'left');
+    await store.getState().flush();
+    const batch = (api.recordSwipes as jest.Mock).mock.calls[0][0];
+    expect(batch.map((b: { dwell_ms?: number }) => b.dwell_ms)).toEqual([
+      4201,
+      600000,
+      undefined,
+      undefined,
+    ]);
+    expect(batch[3]).not.toHaveProperty('dwell_ms');
+    // A stored entry with a bad time on card keeps the swipe, drops the time.
+    expect(parseQueue([{ ...swipe('e', NOW), dwell_ms: 'x' }])).toEqual([swipe('e', NOW)]);
   });
 });
 
@@ -201,6 +225,20 @@ describe('feed logic', () => {
     expect(c.price).toBe(feed.free);
     expect(c.photos[0]!.uri).toBe('http://m/c/x/l/5/a.webp');
     expect(c.meta).toBe('Good · 5 minutes ago');
+    expect(c.free).toBe(true);
+    expect(c.saved).toBe(false);
+  });
+
+  it('round 2 card lines: swaps and the moving-out tag', () => {
+    const seller = item(1).seller;
+    expect(swapsLabel({ ...seller, swaps_count: 0 })).toBeNull();
+    expect(swapsLabel({ ...seller, swaps_count: 1 })).toBe(feed.trustSwapsOne);
+    expect(swapsLabel({ ...seller, swaps_count: 12 })).toBe('12 swaps');
+    // NOW is Wed 2027-03-10: within a week it names the day, later the date, past is gone.
+    expect(movingOutTag('2027-03-12', NOW)).toBe('Moving out Fri');
+    expect(movingOutTag('2027-03-30', NOW)).toBe('Moving out Mar 30');
+    expect(movingOutTag('2027-03-01', NOW)).toBeNull();
+    expect(movingOutTag(null, NOW)).toBeNull();
   });
 });
 
@@ -259,35 +297,41 @@ describe('B01 Discover', () => {
     return swipes;
   };
 
-  it('shows the deck, and skipping offers undo that brings the card back', async () => {
+  it('shows the deck, and a pass just moves on with no toast (owner review 2026-10-24)', async () => {
     const page = Array.from({ length: 20 }, (_, i) => item(i + 1));
     const api = fakeApi({ getFeed: jest.fn(async (c) => (c ? [] : page)) });
     const swipes = discover(api);
     expect(await screen.findByTestId('deck-card-' + page[0]!.id)).toBeTruthy();
-    fireEvent.press(screen.getByTestId('deck-skip'));
+    deckAction(page[0]!.id, 'skip');
     await waitFor(() => expect(screen.getByTestId('deck-card-' + page[1]!.id)).toBeTruthy());
     expect(swipes.getState().queue.map((q) => q.listing_id)).toEqual([page[0]!.id]);
-    expect(useToastStore.getState().current?.message).toBe(feed.undoSkipped);
-    await act(async () => useToastStore.getState().current?.onUndo?.());
-    await waitFor(() => expect(screen.getByTestId('deck-card-' + page[0]!.id)).toBeTruthy());
-    expect(swipes.getState().queue).toHaveLength(0);
+    expect(useToastStore.getState().current).toBeUndefined();
   });
 
-  it('save calls save_listing right away', async () => {
+  it('DEC 144: the bookmark saves right away, the card stays, and undo unsaves', async () => {
     const page = Array.from({ length: 20 }, (_, i) => item(i + 1));
     const api = fakeApi({ getFeed: jest.fn(async (c) => (c ? [] : page)) });
-    discover(api);
+    const swipes = discover(api);
     await screen.findByTestId('deck-card-' + page[0]!.id);
     fireEvent.press(screen.getByTestId('deck-save'));
     await waitFor(() => expect(api.save).toHaveBeenCalledWith(page[0]!.id));
+    expect(screen.getByTestId('deck-card-' + page[0]!.id)).toBeTruthy();
+    expect(swipes.getState().queue).toHaveLength(0);
+    expect(screen.getByTestId('deck-save').props.accessibilityLabel).toBe(feed.unsaveAction);
+    expect(useToastStore.getState().current?.message).toBe(feed.undoSaved);
+    await act(async () => useToastStore.getState().current?.onUndo?.());
+    await waitFor(() => expect(api.unsave).toHaveBeenCalledWith(page[0]!.id));
+    await waitFor(() =>
+      expect(screen.getByTestId('deck-save').props.accessibilityLabel).toBe(feed.save),
+    );
   });
 
-  it('the $ button opens the listing for an offer', async () => {
+  it('a right swipe opens the listing for an offer', async () => {
     const page = Array.from({ length: 20 }, (_, i) => item(i + 1));
     const api = fakeApi({ getFeed: jest.fn(async (c) => (c ? [] : page)) });
     discover(api);
     await screen.findByTestId('deck-card-' + page[0]!.id);
-    fireEvent.press(screen.getByTestId('deck-offer'));
+    deckAction(page[0]!.id, 'offer');
     expect(await screen.findByTestId('screen-offer-stub')).toBeTruthy();
   });
 
@@ -302,19 +346,21 @@ describe('B01 Discover', () => {
     expect(api.getFeed).toHaveBeenCalledTimes(1);
   });
 
-  it('shows the first-swipe coach once', async () => {
-    const api = fakeApi({ getFeed: jest.fn(async () => [item(1)]) });
+  it('shows the first-swipe line once; the first swipe ends it', async () => {
+    const api = fakeApi({ getFeed: jest.fn(async () => [item(1), item(2)]) });
     const coach = { seen: () => false, markSeen: jest.fn() };
     discover(api, coach);
     expect(await screen.findByTestId('discover-coach')).toBeTruthy();
-    fireEvent.press(screen.getByText(feed.coachOk));
-    expect(coach.markSeen).toHaveBeenCalled();
+    expect(screen.getByText(feed.coachBody)).toBeTruthy();
+    deckAction(item(1).id, 'skip');
+    await waitFor(() => expect(coach.markSeen).toHaveBeenCalled());
     expect(screen.queryByTestId('discover-coach')).toBeNull();
   });
 
   it('day one: a nearly empty campus gets the hero', async () => {
     discover(fakeApi({ getFeed: jest.fn(async () => []) }));
     expect(await screen.findByTestId('discover-day-one')).toBeTruthy();
+    expect(screen.getByText(feed.dayOneTitle)).toBeTruthy();
     fireEvent.press(screen.getByText(feed.endSell));
     expect(await screen.findByTestId('screen-sell')).toBeTruthy();
   });
@@ -329,9 +375,10 @@ describe('B01 Discover', () => {
     jest.spyOn(Date, 'now').mockImplementation(() => (t += 1000));
     for (const p of page) {
       await waitFor(() => expect(screen.getByTestId('deck-card-' + p.id)).toBeTruthy());
-      fireEvent.press(screen.getByTestId('deck-skip'));
+      deckAction(p.id, 'skip');
     }
     expect(await screen.findByTestId('discover-end')).toBeTruthy();
+    expect(screen.getByText(feed.endTitle)).toBeTruthy();
   });
 
   it('shows an error with retry', async () => {
@@ -351,7 +398,7 @@ describe('B02 Listing', () => {
   });
   afterEach(() => jest.restoreAllMocks());
 
-  const listing = (api: FeedApi) =>
+  const listing = (api: FeedApi, extra: Partial<ComponentProps<typeof ListingScreen>> = {}) =>
     render(
       {
         'listing/[id]/index': () => (
@@ -363,6 +410,7 @@ describe('B02 Listing', () => {
             site={() => 'https://site'}
             share={jest.fn(async () => {})}
             now={() => NOW}
+            {...extra}
           />
         ),
         'listing/[id]/offer': () => <Stub id="screen-offer" />,
@@ -394,6 +442,74 @@ describe('B02 Listing', () => {
     expect(await screen.findByTestId('listing-owner-stats')).toBeTruthy();
     expect(screen.getByText('7 views')).toBeTruthy();
     expect(api.recordView).not.toHaveBeenCalled();
+  });
+
+  it('owner: an admin removal shows the reason (DEC 96)', async () => {
+    const api = fakeApi({
+      getListing: jest.fn(
+        async () =>
+          ({
+            ...item(1, { status: 'removed', removed_reason: 'Weapons are not allowed' }),
+            access: 'owner',
+          }) as ListingResult,
+      ),
+    });
+    listing(api);
+    expect(
+      await screen.findByText('OnlySwap removed this listing. Reason: Weapons are not allowed'),
+    ).toBeTruthy();
+    expect(screen.getByText(feed.removed)).toBeTruthy();
+  });
+
+  it('owner: an admin removal without a reason still says so', async () => {
+    const api = fakeApi({
+      getListing: jest.fn(
+        async () => ({ ...item(1, { status: 'removed' }), access: 'owner' }) as ListingResult,
+      ),
+    });
+    listing(api);
+    expect(await screen.findByText(system.removedByAdminNoReason)).toBeTruthy();
+  });
+
+  it('owner: appeals an admin removal, and a repeat counts as sent (DEC 99)', async () => {
+    const api = fakeApi({
+      getListing: jest.fn(
+        async () => ({ ...item(1, { status: 'removed' }), access: 'owner' }) as ListingResult,
+      ),
+    });
+    const appeal = jest.fn(async () => {});
+    listing(api, { appeal });
+    fireEvent.press(await screen.findByTestId('listing-appeal'));
+    fireEvent.press(screen.getByText(safety.appealReasons.context));
+    fireEvent.changeText(screen.getByPlaceholderText(safety.appealPlaceholder), 'It was a toy');
+    fireEvent.press(screen.getByTestId('listing-appeal-sheet-send'));
+    await waitFor(() => expect(appeal).toHaveBeenCalledWith('L1', 'context', 'It was a toy'));
+    expect(await screen.findByTestId('listing-appealed')).toBeTruthy();
+    expect(screen.queryByTestId('listing-appeal')).toBeNull();
+  });
+
+  it('owner: ALREADY_APPEALED shows the appeal as sent', async () => {
+    const api = fakeApi({
+      getListing: jest.fn(
+        async () => ({ ...item(1, { status: 'removed' }), access: 'owner' }) as ListingResult,
+      ),
+    });
+    const appeal = jest.fn(async () => {
+      throw { kind: 'app_error', code: 'ALREADY_APPEALED' };
+    });
+    listing(api, { appeal });
+    fireEvent.press(await screen.findByTestId('listing-appeal'));
+    fireEvent.press(screen.getByTestId('listing-appeal-sheet-send'));
+    expect(await screen.findByTestId('listing-appealed')).toBeTruthy();
+  });
+
+  it('a buyer never sees Appeal on a listing', async () => {
+    const api = fakeApi({
+      getListing: jest.fn(async () => ({ ...item(1), access: 'buyer' }) as ListingResult),
+    });
+    listing(api);
+    await screen.findByText(item(1).title);
+    expect(screen.queryByTestId('listing-appeal')).toBeNull();
   });
 
   it('on hold: "Tell me" watches it', async () => {
@@ -428,3 +544,10 @@ describe('B02 Listing', () => {
     await waitFor(() => expect(api.hide).toHaveBeenCalledWith('L1'));
   });
 });
+
+/** The deck has no buttons (DEC 144); tests drive the top card's accessibility actions. */
+function deckAction(id: string, actionName: 'offer' | 'skip' | 'save' | 'activate') {
+  fireEvent(screen.getByTestId('deck-card-' + id), 'accessibilityAction', {
+    nativeEvent: { actionName },
+  });
+}

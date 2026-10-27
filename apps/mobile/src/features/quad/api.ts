@@ -38,7 +38,12 @@ export type QuadPost = {
   is_mine: boolean;
   my_vote: VoteValue;
   poll: QuadPoll | null;
+  /** Missing on servers before migration 0251. */
+  author?: QuadAuthor | null;
 };
+
+/** DEC 150: who wrote a post or reply; null once the account is gone. */
+export type QuadAuthor = { id: string; display_name: string | null; avatar_path: string | null };
 
 export type QuadReply = {
   id: string;
@@ -46,6 +51,7 @@ export type QuadReply = {
   alias_no: number;
   is_op: boolean;
   is_mine: boolean;
+  author?: QuadAuthor | null;
   score: number;
   status: QuadStatus;
   created_at: string;
@@ -56,7 +62,8 @@ export type MyQuadReply = QuadReply & { post_id: string; post_excerpt: string };
 
 export type QuadPinned = { id: string; type: string; title: string; body: string };
 
-export type QuadCursor = { offset: number };
+/** Opaque: pass back the server's next_cursor as is (keyset, E-02). */
+export type QuadCursor = Record<string, string | number>;
 
 export type QuadFeedPage = {
   items: QuadPost[];
@@ -107,6 +114,9 @@ export type QuadApi = {
   ) => Promise<{ score: number; my_vote: VoteValue }>;
   votePoll: (postId: string, optionId: string) => Promise<QuadPoll>;
   hideAuthor: (postId: string) => Promise<void>;
+  hideReplyAuthor: (replyId: string) => Promise<void>;
+  deleteReply: (replyId: string) => Promise<void>;
+  blockUser: (userId: string) => Promise<void>;
   unhide: (sourcePostId: string) => Promise<void>;
   hides: () => Promise<QuadHide[]>;
   mute: (keyword: string) => Promise<void>;
@@ -158,6 +168,15 @@ export const quadApi: QuadApi = {
   votePoll: (postId, optionId) => rpc('vote_poll', { post_id: postId, option_id: optionId }),
   hideAuthor: async (postId) => {
     await rpc('hide_quad_author', { post_id: postId });
+  },
+  hideReplyAuthor: async (replyId) => {
+    await rpc('hide_quad_reply_author', { reply_id: replyId });
+  },
+  deleteReply: async (replyId) => {
+    await rpc('delete_quad_reply', { reply_id: replyId });
+  },
+  blockUser: async (userId) => {
+    await rpc('block_user', { user_id: userId });
   },
   unhide: async (sourcePostId) => {
     await rpc('unhide_quad', { source_post_id: sourcePostId });

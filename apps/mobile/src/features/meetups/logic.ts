@@ -29,6 +29,12 @@ export type Meetup = {
   previous_starts_at: string | null;
   share_token: string | null;
   my_noshow_report: string | null;
+  /** DEC 132: the viewer is the seller (enters the code). */
+  i_am_seller?: boolean;
+  /** The buyer's 4-digit code while confirmed; null for the seller. */
+  handoff_code?: string | null;
+  handoff_at?: string | null;
+  handoff_tries_left?: number;
 };
 
 export const LATE_OPTIONS = [5, 10, 15, 30] as const;
@@ -90,15 +96,18 @@ export function dayOptions(now: Date): { key: string; label: string; date: Date 
   });
 }
 
+/** Last meetup slot (UX audit 2026-10-25): 8 PM, not 10, so swaps stay in busy hours. */
+export const LAST_MEETUP_HOUR = 20;
+
 /**
- * Half-hour slots from 8 AM to 10 PM on `day`, at least 15 minutes from now
+ * Half-hour slots from 8 AM to 8 PM on `day`, at least 15 minutes from now
  * (the server's lower bound for propose_meetup).
  */
 export function timeOptions(day: Date, now: Date): Date[] {
   const out: Date[] = [];
-  for (let h = 8; h <= 22; h += 1) {
+  for (let h = 8; h <= LAST_MEETUP_HOUR; h += 1) {
     for (const m of [0, 30]) {
-      if (h === 22 && m === 30) continue;
+      if (h === LAST_MEETUP_HOUR && m === 30) continue;
       const t = new Date(day.getFullYear(), day.getMonth(), day.getDate(), h, m);
       if (t.getTime() >= now.getTime() + 15 * 60_000) out.push(t);
     }

@@ -24,6 +24,15 @@ export function createQueryClient(): QueryClient {
   });
 }
 
+/**
+ * NetInfo reports `isConnected: null` while it is still checking. Only a
+ * definite `false` is offline: a paused query never resumes until NetInfo
+ * sends another change, so screens would sit on a skeleton.
+ */
+export function isOnline(state: { isConnected: boolean | null }): boolean {
+  return state.isConnected !== false;
+}
+
 let wired = false;
 
 /** Connects TanStack Query to NetInfo and AppState once per process. */
@@ -31,7 +40,7 @@ export function wireQueryManagers(): void {
   if (wired) return;
   wired = true;
   onlineManager.setEventListener((setOnline) =>
-    NetInfo.addEventListener((state) => setOnline(!!state.isConnected)),
+    NetInfo.addEventListener((state) => setOnline(isOnline(state))),
   );
   focusManager.setEventListener((handleFocus) => {
     const sub = AppState.addEventListener('change', (status: AppStateStatus) =>

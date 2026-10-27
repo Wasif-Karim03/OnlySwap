@@ -5,6 +5,7 @@ import { StyleSheet } from 'react-native-unistyles';
 import { nav as navCopy } from '@/strings';
 
 import { IconButton } from './IconButton';
+import { Material } from './Material';
 import { Text } from './Text';
 
 export type NavBarProps = {
@@ -16,6 +17,8 @@ export type NavBarProps = {
   variant?: 'large' | 'inline';
   leading?: 'back' | 'close' | 'none';
   onLeading?: () => void;
+  /** Screen-reader label for the leading button when "Back" or "Close" is too vague. */
+  leadingLabel?: string;
   /** Right side: IconButtons, a step count ("1 of 3") or a text Button. */
   trailing?: ReactNode;
   /** Adds the status bar inset. Off when the screen already pads for it. */
@@ -35,6 +38,7 @@ export function NavBar({
   variant = 'inline',
   leading = variant === 'inline' ? 'back' : 'none',
   onLeading,
+  leadingLabel,
   trailing,
   safeTop = true,
   tone = 'default',
@@ -46,7 +50,7 @@ export function NavBar({
   if (variant === 'large') {
     return (
       <View testID={testID} style={styles.large(safeTop)}>
-        <Text variant="title" accessibilityRole="header" style={styles.flex}>
+        <Text variant="display" accessibilityRole="header" style={styles.flex}>
           {title}
         </Text>
         {trailing ? <View style={styles.trailing}>{trailing}</View> : null}
@@ -58,12 +62,17 @@ export function NavBar({
     <View testID={testID} style={styles.inline(safeTop)}>
       <View style={styles.side}>
         {leading !== 'none' ? (
-          <IconButton
-            icon={leading === 'back' ? 'back' : 'x'}
-            accessibilityLabel={leading === 'back' ? navCopy.back : navCopy.close}
-            onPress={onLeading}
-            tone={textTone}
-          />
+          // DEC 143: the back and close buttons float on the material, clear over photos.
+          <Material variant={tone === 'onPhoto' ? 'clear' : 'regular'} style={styles.round}>
+            <IconButton
+              icon={leading === 'back' ? 'back' : 'x'}
+              accessibilityLabel={
+                leadingLabel ?? (leading === 'back' ? navCopy.back : navCopy.close)
+              }
+              onPress={onLeading}
+              tone={textTone}
+            />
+          </Material>
         ) : null}
       </View>
       <View style={styles.titleWrap} pointerEvents="none">
@@ -101,7 +110,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     alignItems: 'center',
     gap: theme.space.xs,
     paddingTop: safeTop ? rt.insets.top : 0,
-    paddingHorizontal: theme.space.sm,
+    paddingHorizontal: theme.space.md,
     minHeight: theme.size.navBar + (safeTop ? rt.insets.top : 0),
   }),
   side: {
@@ -113,4 +122,5 @@ const styles = StyleSheet.create((theme, rt) => ({
   end: { justifyContent: 'flex-end', paddingRight: theme.space.xs },
   titleWrap: { flex: 1, paddingVertical: theme.space.xs },
   center: { textAlign: 'center' },
+  round: { borderRadius: theme.radius.chip },
 }));

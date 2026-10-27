@@ -1,5 +1,5 @@
 import { fill } from '@/lib/format';
-import { feed as copy, profileView, sell as sellCopy } from '@/strings';
+import { feed as copy, intlLocale, profileView, sell as sellCopy } from '@/strings';
 
 import { ago, mediaUrl, priceLabel, type AnyListingKind, type Condition } from '../sell/logic';
 import type { SwipeDir } from './deckMath';
@@ -23,6 +23,11 @@ export type FeedItem = {
   save_count: number;
   view_count: number;
   offer_count: number;
+  /** Likes and comments (DEC 121, 0233); optional so older cached cards still parse. */
+  like_count?: number;
+  comment_count?: number;
+  comments_enabled?: boolean;
+  liked?: boolean;
   bumped_at: string;
   created_at: string;
   expires_at: string | null;
@@ -35,6 +40,14 @@ export type FeedItem = {
     avatar_path: string | null;
     year: string | null;
     created_at: string | null;
+    /** Seller stats (DEC 124, 0235); optional so older cached cards still parse. */
+    swaps_count?: number;
+    thumbs_up?: number;
+    thumbs_total?: number;
+    /** Away mode (DEC 126, 0237). */
+    away?: boolean;
+    /** DEC 133: "YYYY-MM-DD" while the seller is moving out. */
+    moving_out_by?: string | null;
   };
   photos: {
     path: string;
@@ -43,6 +56,14 @@ export type FeedItem = {
     width: number | null;
     height: number | null;
   }[];
+  /** Only on the seller's own listing when an admin removed it (DEC 96). */
+  removed_reason?: string | null;
+  /** News posts (DEC 98): an optional link and event time. */
+  link_url?: string | null;
+  event_at?: string | null;
+  /** Wanted posts (DEC 127, 0238). */
+  need_by?: string | null;
+  wanted_alerts?: boolean;
 };
 
 export type FeedCursor = { bumped_at: string; id: string };
@@ -88,6 +109,67 @@ export function yearLabel(year: string | null | undefined): string | null {
   return years[year] ?? null;
 }
 
+/** Ratings needed before a percentage shows; one bad rating shouldn't read as "0%". */
+export const TRUST_MIN_RATINGS = 3;
+
+/**
+ * "Verified student · 95% thumbs up" (DEC 124). Every account is a verified
+ * student; the stat is the percentage once rated enough, else the swaps.
+ */
+export function trustLine(seller: FeedItem['seller']): string {
+  const up = seller.thumbs_up ?? 0;
+  const total = seller.thumbs_total ?? 0;
+  const swaps = seller.swaps_count ?? 0;
+  const stat =
+    total >= TRUST_MIN_RATINGS
+      ? fill(copy.trustThumbs, { pct: Math.round((up / total) * 100) })
+      : swaps === 1
+        ? copy.trustSwapsOne
+        : swaps > 1
+          ? fill(copy.trustSwaps, { n: swaps })
+          : null;
+  return [copy.verified, stat, movingOutLine(seller.moving_out_by)]
+    .filter(Boolean)
+    .join(copy.metaSeparator);
+}
+
+/** "Moving out by Mar 30" (DEC 133); null when the seller isn't moving out. */
+export function movingOutLine(date: string | null | undefined): string | null {
+  if (!date) return null;
+  const [y, m, d] = date.split('-').map(Number);
+  const shown = new Date(y ?? 1970, (m ?? 1) - 1, d ?? 1).toLocaleDateString(intlLocale, {
+    month: 'short',
+    day: 'numeric',
+  });
+  return fill(copy.movingOut, { date: shown });
+}
+
+/** "12 swaps", "1 swap", or nothing for a new seller (round 2 card meta line). */
+export function swapsLabel(seller: FeedItem['seller']): string | null {
+  const n = seller.swaps_count ?? 0;
+  if (n <= 0) return null;
+  return n === 1 ? copy.trustSwapsOne : fill(copy.trustSwaps, { n });
+}
+
+/**
+ * The yellow tag on a card while the seller is moving out (DEC 133): the
+ * weekday when it is within the next week ("Moving out Fri"), else the date.
+ * Nothing once the date has passed.
+ */
+export function movingOutTag(date: string | null | undefined, now: Date): string | null {
+  if (!date) return null;
+  const [y, m, d] = date.split('-').map(Number);
+  const day = new Date(y ?? 1970, (m ?? 1) - 1, d ?? 1);
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const diff = Math.round((day.getTime() - today.getTime()) / 86_400_000);
+  if (diff < 0) return null;
+  const shown =
+    diff <= 6
+      ? day.toLocaleDateString(intlLocale, { weekday: 'short' })
+      : day.toLocaleDateString(intlLocale, { month: 'short', day: 'numeric' });
+  return fill(copy.movingOutTag, { day: shown });
+}
+
 export function toDeckCard(item: FeedItem, mediaBase: string, now: Date): DeckCard {
   return {
     id: item.id,
@@ -97,8 +179,13 @@ export function toDeckCard(item: FeedItem, mediaBase: string, now: Date): DeckCa
     sellerName: sellerName(item),
     sellerAvatar: item.seller.avatar_path ? mediaUrl(mediaBase, item.seller.avatar_path) : null,
     sellerYear: yearLabel(item.seller.year),
+    trust: trustLine(item.seller),
     photos: item.photos.map((p) => ({ uri: mediaUrl(mediaBase, p.path), blurhash: p.blurhash })),
     saveCount: item.save_count,
+    free: item.kind === 'free' || item.price_cents === 0,
+    swaps: swapsLabel(item.seller),
+    movingOut: movingOutTag(item.seller.moving_out_by, now),
+    saved: item.saved,
   };
 }
 
@@ -114,17 +201,37 @@ export const DAY_ONE_MAX = 10;
 // ---------------------------------------------------------------------------
 // Swipe queue (T-UNIT-FEED-01)
 
-export type QueuedSwipe = { listing_id: string; dir: SwipeDir; at: string };
-/** The server keeps `left` and `save`; a right swipe opens the offer sheet and is recorded as seen (left). */
-export type ServerSwipe = { listing_id: string; dir: 'left' | 'save'; at: string };
+/** `dwell_ms` is time on card (E-03, DEC 100); the server keeps it on the swipe. */
+export type QueuedSwipe = { listing_id: string; dir: SwipeDir; at: string; dwell_ms?: number };
+/** A right swipe opens the offer sheet and is stored as `right` (DEC 106; it was `left`, which inflated pass counts). */
+export type ServerSwipe = {
+  listing_id: string;
+  dir: SwipeDir;
+  at: string;
+  dwell_ms?: number;
+};
 
 export const FLUSH_AT = 10;
 export const QUEUE_CAP = 200;
 export const BATCH_MAX = 50;
 export const UNDO_MS = 5000;
+/** Same cap as the server (10 minutes). */
+export const DWELL_MAX = 600_000;
+
+/** Time on card as whole ms in 0..10 min, or undefined when unknown. */
+export function cleanDwell(ms: unknown): number | undefined {
+  if (typeof ms !== 'number' || !Number.isFinite(ms) || ms < 0) return undefined;
+  return Math.min(Math.round(ms), DWELL_MAX);
+}
 
 export function toServer(s: QueuedSwipe): ServerSwipe {
-  return { listing_id: s.listing_id, dir: s.dir === 'save' ? 'save' : 'left', at: s.at };
+  const out: ServerSwipe = {
+    listing_id: s.listing_id,
+    dir: s.dir,
+    at: s.at,
+  };
+  if (s.dwell_ms !== undefined) out.dwell_ms = s.dwell_ms;
+  return out;
 }
 
 /** Adds a swipe (replacing an older one for the same listing) and keeps the newest 200. */
@@ -162,5 +269,11 @@ export function parseQueue(raw: unknown): QueuedSwipe[] {
         ['left', 'right', 'save'].includes((q as QueuedSwipe).dir) &&
         typeof (q as QueuedSwipe).at === 'string',
     )
+    .map((q) => {
+      const s: QueuedSwipe = { listing_id: q.listing_id, dir: q.dir, at: q.at };
+      const dwell = cleanDwell(q.dwell_ms);
+      if (dwell !== undefined) s.dwell_ms = dwell;
+      return s;
+    })
     .slice(-QUEUE_CAP);
 }

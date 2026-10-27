@@ -18,7 +18,7 @@ export const PRICE_MIN_CENTS = 100;
 
 export type ListingKind = 'sale' | 'free';
 /** Every listing kind on the server; food and Wanted posts are Around campus (R1.1). */
-export type AnyListingKind = ListingKind | 'food' | 'wanted';
+export type AnyListingKind = ListingKind | 'food' | 'wanted' | 'news';
 export type Condition = 'new' | 'like_new' | 'good' | 'fair';
 export type PickupBy = 'tomorrow' | 'sunday' | 'week';
 export type Availability = 'weekdays' | 'weekends' | 'mornings' | 'afternoons' | 'evenings';
@@ -269,6 +269,16 @@ export function cleanPrice(input: string): string {
 }
 
 /** Cents from the typed dollars; null when empty or not a number. */
+/**
+ * The price box's change: typing a price of 0 makes the item a give-away
+ * (owner, 2026-10-24: "if someone chooses 0 it should be free"), since a sale
+ * needs at least $1.
+ */
+export function priceInput(text: string): Pick<SellDraft, 'price'> & { kind?: ListingKind } {
+  const price = cleanPrice(text);
+  return /^0+(\.0*)?$/.test(price) ? { kind: 'free', price: '' } : { price };
+}
+
 export function priceToCents(price: string): number | null {
   const clean = cleanPrice(price);
   if (clean === '' || clean === '.') return null;

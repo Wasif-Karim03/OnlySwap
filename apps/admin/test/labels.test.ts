@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import {
+  ageBand,
+  ageMethod,
   announcementType,
   appealSubject,
   auditAction,
@@ -125,4 +127,13 @@ test('T-UNIT-ADMIN-LABELS activity events read as a sentence', () => {
   assert.equal(eventKind('meetup_no_show').tone, 'red');
   assert.equal(eventKind('unknown_kind').label, 'Unknown kind');
   assert.equal(FEED_FILTERS[0].kinds, null);
+});
+
+test('T-UNIT-ADMIN-LABELS age check method and age group (AR-01)', () => {
+  assert.equal(ageMethod('self_declared'), 'Gave a birthday');
+  assert.equal(ageMethod('os_signal'), 'Phone age range');
+  assert.equal(ageBand('13_17'), 'Age 13 to 17');
+  assert.equal(ageBand('18_plus'), '18 or older');
+  assert.equal(ageBand(null), '');
+  assert.equal(ageBand(undefined), '');
 });

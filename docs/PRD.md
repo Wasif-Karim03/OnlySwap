@@ -18,7 +18,7 @@ OnlySwap is a marketplace only for verified students at one school. You:
 **Non-goals:**
 - in-app payments or shipping
 - services, housing, tickets
-- users under 18
+- users under 13 (DEC 136; was under 18)
 - people who aren't students
 - nationwide marketplaces
 
@@ -26,7 +26,7 @@ OnlySwap is a marketplace only for verified students at one school. You:
 
 | Role | Who | Can |
 |---|---|---|
-| Student (buyer/seller) | 18+, verified school email, campus `live` | everything in the app |
+| Student (buyer/seller) | 13+ (DEC 136), verified school email, campus `live` | everything in the app |
 | Waitlisted student | school not live yet | join the waitlist (R1.0: request only; R1.1: waitlist screen + invites) |
 | Reviewer | Apple/Google reviewers | password login to Demo University |
 | Moderator | trusted helper (R1.1 invite UI) | reports, appeals, removals, suspensions ≤ 7 d |
@@ -37,7 +37,7 @@ OnlySwap is a marketplace only for verified students at one school. You:
 | ID | Feature | User problem | Release |
 |---|---|---|---|
 | F01 | School-email sign-up/login | prove you're a student without passwords | 1.0 |
-| F02 | 18+ age check | legal/store requirement; safety | 1.0 |
+| F02 | Age check: 13+, under 13 blocked, age band recorded (DEC 136) | legal/store requirement; safety | 1.0 |
 | F03 | Profile setup and edit | show who you are (first name, initial, year) | 1.0 |
 | F04 | Community rules + re-accept | set expectations; Google requires terms before posting | 1.0 |
 | F05 | Notifications (push, in-app list, prefs) | don't miss offers, messages, meetups | 1.0 |
@@ -194,7 +194,7 @@ Screens use DESIGN_SYSTEM §10 IDs. Data uses DATA_MODEL tables. API uses API.md
 | F | Screens | Data | API | Tasks | Tests |
 |---|---|---|---|---|---|
 | F01 | A01–A04, X02 | profiles, campus_domains, review_accounts | `lookup_school`, auth hooks, `on_auth_user_created` | P3-AUTH-01, P3-AUTH-02, P3-AUTH-03, P4-AUTH-01, P4-AUTH-02, P4-AUTH-03, P4-AUTH-04, P4-AUTH-05, P4-AUTH-06 | T-INT-AUTH-01, T-INT-AUTH-02, T-INT-AUTH-03, T-SEC-06, T-SEC-07, E2E-01 |
-| F02 | A05 | age_blocks, profiles.adult_confirmed_at | `confirm_age`, `delete-account` (underage) | P1-SPIKE-03, P4-DEL-01, P4-AUTH-07 | T-INT-AUTH-04, T-UNIT-AUTH-04, E2E-02 |
+| F02 | A05 | age_blocks, profiles.adult_confirmed_at, profiles.age_band | `confirm_age_v2` (`confirm_age` for old builds), `delete-account` (underage) | P1-SPIKE-03, P4-DEL-01, P4-AUTH-07, AR-01 | T-INT-AUTH-04, T-INT-AGE-V2, T-UNIT-AUTH-04, E2E-02 |
 | F03 | A06, F02 | profiles | `update_profile`, `upload-url` | P4-AUTH-08, P11-SET-01 | T-UNIT-AUTH-01 |
 | F04 | A07 | profiles.rules_*, app_config.rules_version | `accept_rules`, `require_active` | P4-AUTH-09, P4-AUTH-17 | T-UNIT-AUTH-06, E2E-22 |
 | F05 | A08, F09, F11, X13 | notifications, notification_prefs, push_tokens, push_tickets | `register_push_token`, `get_notifications`, `update_notification_prefs`, `send-push`, `push-receipts` | P4-AUTH-10, P9-PUSH-01, P9-PUSH-02, P9-PUSH-03, P9-PUSH-04, P9-NOTIF-01, P9-NOTIF-02, P9-FIX-01 | T-FN-01, T-FN-02, T-FN-07, T-INT-NOTIF-DEDUPE, T-UNIT-NOTIF-01, E2E-14 |

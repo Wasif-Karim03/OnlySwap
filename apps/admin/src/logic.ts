@@ -12,6 +12,8 @@ export type Whoami = {
   role?: 'owner' | 'moderator';
   campus_id?: string | null;
   aal?: string;
+  /** False while the owner has the two-step check switched off (DEC 95). */
+  mfa_required?: boolean;
   name?: string;
 };
 
@@ -20,7 +22,7 @@ export function gate(session: boolean, who: Whoami | null): 'login' | 'denied' |
   if (!session) return 'login';
   if (!who) return 'login';
   if (!who.admin) return 'denied';
-  if (who.aal !== 'aal2') return 'mfa';
+  if (who.aal !== 'aal2' && who.mfa_required !== false) return 'mfa';
   return 'ok';
 }
 

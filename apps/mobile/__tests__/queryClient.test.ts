@@ -1,4 +1,4 @@
-import { createQueryClient, shouldRetry } from '../src/lib/queryClient';
+import { createQueryClient, isOnline, shouldRetry } from '../src/lib/queryClient';
 
 describe('lib/queryClient retry policy', () => {
   it('retries offline and unknown errors at most twice', () => {
@@ -14,5 +14,16 @@ describe('lib/queryClient retry policy', () => {
 
   it('does not retry mutations', () => {
     expect(createQueryClient().getDefaultOptions().mutations?.retry).toBe(false);
+  });
+});
+
+describe('lib/queryClient online status', () => {
+  it('counts only a definite "not connected" as offline', () => {
+    expect(isOnline({ isConnected: false })).toBe(false);
+    expect(isOnline({ isConnected: true })).toBe(true);
+  });
+
+  it('treats an unknown connection as online so queries never pause on it', () => {
+    expect(isOnline({ isConnected: null })).toBe(true);
   });
 });

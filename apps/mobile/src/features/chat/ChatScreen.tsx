@@ -23,7 +23,7 @@ import { SkeletonList } from '@/components/Skeleton';
 import { Text } from '@/components/Text';
 import { ZoomableImage } from '@/components/ZoomableImage';
 import { getEnv } from '@/lib/env';
-import { fill } from '@/lib/format';
+import { fill, formatDate, formatTime } from '@/lib/format';
 import { pickPhotos, type PickedPhoto } from '@/lib/media';
 import { osPermissions, primerStep, type OsApi } from '@/lib/permissions';
 import { enterSends } from '@/lib/platform';
@@ -40,10 +40,14 @@ import { mediaUrl } from '../sell/logic';
 import { chatApi, type ChatApi } from './api';
 import {
   bubbleAspect,
+  bubbleSpots,
   chatKey,
   chatPhotoUrl,
+  dealPriceLine,
+  dealStatusLabel,
   newContactFromItems,
   scamHint,
+  type BubbleSpot,
   type ChatItem,
 } from './logic';
 import { useChat, type ChatState } from './useChat';
@@ -117,6 +121,7 @@ export function ChatScreen({
   const [reportId, setReportId] = useState<number | null>(null);
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/inbox'));
   const data = useMemo(() => [...state.items].reverse(), [state.items]);
+  const spots = useMemo(() => bubbleSpots(data, now()), [data, now]);
   const meetupQ = useQuery({ queryKey: ['chat-meetup', id], queryFn: () => meetups.forChat(id) });
   // Every meetup change posts a `meetup` row; refetch the card when one arrives.
   useEffect(() => track('chat_opened'), []);
@@ -202,11 +207,17 @@ export function ChatScreen({
     void state.send(body);
   };
 
+  // No meetup, or the last one ended without a swap: plan (again). Your own
+  // proposal can be changed; a new one replaces it on the server.
+  const lastMeetup = meetupQ.data;
+  const canPlan =
+    !lastMeetup || lastMeetup.status === 'cancelled' || lastMeetup.status === 'no_show';
+  const canChange = !!lastMeetup && lastMeetup.status === 'proposed' && lastMeetup.proposed_by_me;
   const planButton =
-    !readOnly && !meetupQ.data ? (
+    !readOnly && (canPlan || canChange) ? (
       <Button
-        label={copy.planMeetup}
-        size="S"
+        label={canChange ? copy.changeMeetup : copy.planMeetup}
+        size="M"
         variant="dark"
         fullWidth={false}
         onPress={() => router.push({ pathname: '/chat/[id]/meetup', params: { id } })}
@@ -220,33 +231,77 @@ export function ChatScreen({
     !(c.role === 'seller' ? c.seller_outcome : c.buyer_outcome) ? (
       <Button
         label={copy.didItSell}
-        size="S"
+        size="M"
         variant="dark"
         fullWidth={false}
         onPress={() => router.push({ pathname: '/chat/[id]/deal', params: { id } })}
         testID="chat-did-it-sell"
       />
     ) : null;
+  // DEC 97: the seller can mark it sold from the chat any time it's still for
+  // sale, with this chat's buyer picked (Mark sold lets them change it).
+  const markSoldButton =
+    !readOnly &&
+    !soldButton &&
+    c.role === 'seller' &&
+    c.listing_id &&
+    c.other &&
+    (c.listing_status === 'active' || c.listing_status === 'hold') ? (
+      <Button
+        label={copy.markSold}
+        size="M"
+        variant="text"
+        fullWidth={false}
+        onPress={() =>
+          router.push({
+            pathname: '/listing/[id]/sold',
+            params: { id: c.listing_id!, buyer: c.other!.id },
+          })
+        }
+        testID="chat-mark-sold"
+      />
+    ) : null;
   const extra =
     !readOnly && extraActions ? extraActions({ role: c.role, listingId: c.listing_id }) : null;
   const actions =
-    planButton || soldButton || extra ? (
+    planButton || soldButton || markSoldButton || extra ? (
       <>
         {planButton}
         {soldButton}
+        {markSoldButton}
         {extra}
       </>
     ) : null;
 
-  const renderItem = ({ item }: { item: ChatItem }) => {
+  const renderItem = ({ item, index }: { item: ChatItem; index: number }) => {
+    const spot = spots[index] ?? { first: true, last: true, day: null };
+    const day = spot.day ? (
+      <Text
+        variant="meta"
+        tone="ink3"
+        style={styles.day}
+        accessibilityRole="header"
+        testID={`chat-day-${index}`}
+      >
+        {spot.day === 'today'
+          ? copy.dayToday
+          : spot.day === 'yesterday'
+            ? copy.dayYesterday
+            : formatDate(spot.day, { weekday: 'short', month: 'short', day: 'numeric' })}
+      </Text>
+    ) : null;
+    return (
+      <View>
+        {day}
+        {bubbleFor(item, spot)}
+      </View>
+    );
+  };
+
+  const bubbleFor = (item: ChatItem, spot: BubbleSpot) => {
     if (item.kind === 'system' || item.kind === 'meetup') {
       return (
-        <MessageBubble
-          kind="system"
-          body={item.body ?? ''}
-          surface="card"
-          testID={`msg-${String(item.id)}`}
-        />
+        <MessageBubble kind="system" body={item.body ?? ''} testID={`msg-${String(item.id)}`} />
       );
     }
     const mine = item.mine === true;
@@ -292,7 +347,9 @@ export function ChatScreen({
         onRetry={item.state === 'failed' ? () => void state.retry(item.client_id!) : undefined}
         photo={photo}
         onLongPress={!mine && sentId !== null ? () => setReportId(sentId) : undefined}
-        surface="card"
+        first={spot.first}
+        last={spot.last}
+        time={spot.last && item.state === 'sent' ? sentTime(item.created_at) : null}
         testID={`msg-${item.id ?? item.client_id}`}
       />
     );
@@ -327,20 +384,20 @@ export function ChatScreen({
               {c.listing_title}
             </Text>
             <Text variant="meta" tone="ink3">
-              {fill(copy.inPerson, { amount: money(c.agreed_cents) })}
+              {dealPriceLine(c, money)}
             </Text>
+            {c.bundle?.length ? (
+              <Text variant="meta" tone="ink2" numberOfLines={2} testID="chat-bundle">
+                {fill(copy.bundleAlso, { items: c.bundle.map((b) => b.title).join(', ') })}
+              </Text>
+            ) : null}
           </View>
-          {c.status === 'open' && !readOnly ? (
+          {c.status === 'open' && !readOnly && dealStatusLabel(c) ? (
             <Text variant="label" tone="green" testID="chat-deal-status">
-              {copy.accepted}
+              {dealStatusLabel(c)}
             </Text>
           ) : null}
         </View>
-        {actions ? (
-          <View style={styles.dealActions} testID="chat-deal-actions">
-            {actions}
-          </View>
-        ) : null}
       </View>
       {meetupQ.data ? (
         <MeetupCard
@@ -375,6 +432,12 @@ export function ChatScreen({
           }
           testID="chat-list"
         />
+        {/* One contextual action in thumb reach, right above the composer (P7). */}
+        {actions && !readOnly ? (
+          <View style={styles.dealActions} testID="chat-deal-actions">
+            {actions}
+          </View>
+        ) : null}
         {readOnly ? (
           <View style={styles.readOnly} testID="chat-read-only">
             <Banner
@@ -382,9 +445,11 @@ export function ChatScreen({
               message={
                 c.status === 'closed'
                   ? copy.closed
-                  : c.i_blocked
-                    ? fill(copy.youBlocked, { name })
-                    : copy.blocked
+                  : c.other_deleted
+                    ? copy.deletedBanner
+                    : c.i_blocked
+                      ? fill(copy.youBlocked, { name })
+                      : copy.blocked
               }
             />
           </View>
@@ -421,7 +486,7 @@ export function ChatScreen({
               disabled={!text.trim()}
               onPress={send}
               filled
-              surface="accent"
+              surface="ink"
               testID="chat-send"
             />
           </View>
@@ -511,32 +576,47 @@ export function ChatScreen({
   );
 }
 
+/** "4:30 PM" for a sent message; nothing when the time is missing or unreadable. */
+function sentTime(iso: string): string | null {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? null : formatTime(d);
+}
+
 const styles = StyleSheet.create((theme, rt) => ({
-  // White header and composer around a grey message area (DEC 90).
-  root: { flex: 1, backgroundColor: theme.colors.bg2 },
+  // One white surface, iMessage style (owner 2026-10-15; was grey, DEC 90).
+  root: { flex: 1, backgroundColor: theme.colors.bg },
   flex: { flex: 1 },
-  header: {
-    backgroundColor: theme.colors.bg,
-    borderBottomWidth: 1,
-    borderColor: theme.colors.line,
-  },
+  // Round 2: no divider lines; the item rides on a soft inset tile, like a
+  // pinned card, and space does the separating.
+  header: { backgroundColor: theme.colors.bg, paddingBottom: theme.space.sm },
   deal: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.space.md,
-    paddingHorizontal: theme.space.screen,
-    paddingTop: theme.space.xs,
-    paddingBottom: theme.space.md,
+    marginHorizontal: theme.space.lg,
+    padding: theme.space.md,
+    borderRadius: theme.radius.card,
+    backgroundColor: theme.colors.bg2,
   },
   dealActions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    alignItems: 'center',
     gap: theme.space.sm,
-    paddingHorizontal: theme.space.screen,
-    paddingBottom: theme.space.md,
+    paddingHorizontal: theme.space.lg,
+    paddingVertical: theme.space.sm,
+    backgroundColor: theme.colors.bg,
   },
-  thumb: { width: theme.size.hit, height: theme.size.hit },
-  list: { paddingVertical: theme.space.md, gap: theme.space.sm },
+  // Its own fill, so an item with no photo still shows a tile on the bg2 strip.
+  thumb: {
+    width: theme.size.hit,
+    height: theme.size.hit,
+    borderRadius: theme.radius.thumb,
+    overflow: 'hidden',
+    backgroundColor: theme.colors.bg3,
+  },
+  list: { paddingVertical: theme.space.md },
+  day: { textAlign: 'center', marginTop: theme.space.lg, fontWeight: theme.type.label.fontWeight },
   tip: { paddingHorizontal: theme.space['2xl'], paddingVertical: theme.space.md },
   center: { textAlign: 'center' },
   strong: { fontWeight: theme.type.label.fontWeight },
@@ -551,11 +631,9 @@ const styles = StyleSheet.create((theme, rt) => ({
     flexDirection: 'row',
     alignItems: 'flex-end',
     gap: theme.space.sm,
-    paddingHorizontal: theme.space.screen,
+    paddingHorizontal: theme.space.md,
     paddingTop: theme.space.sm,
     paddingBottom: Math.max(rt.insets.bottom, theme.space.sm),
-    borderTopWidth: 1,
-    borderColor: theme.colors.line,
     backgroundColor: theme.colors.bg,
   },
   input: {
@@ -564,7 +642,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     maxHeight: theme.size.hit * 3,
     paddingHorizontal: theme.space.md,
     paddingVertical: theme.space.sm,
-    borderRadius: theme.radius.card,
+    borderRadius: theme.radius.chip,
     backgroundColor: theme.colors.bg2,
     color: theme.colors.ink,
     fontSize: theme.type.body.fontSize,

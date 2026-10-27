@@ -56,6 +56,20 @@ test('listing card: OG tags, image, noindex, escaped title, visitor IP forwarded
   assert.equal(calls[0]!.url, 'https://x.supabase.co/rest/v1/rpc/get_listing_public_card');
 });
 
+test('news post card (DEC 98): no price, no offer wording', async () => {
+  const { f } = fake(200, {
+    title: 'Club fair Friday',
+    price_cents: 0,
+    kind: 'news',
+    campus_name: 'OWU',
+  });
+  const html = await (await renderListing(ID, env, `https://site/l/${ID}`, null, f)).text();
+  assert.match(html, /<meta property="og:title" content="Club fair Friday" \/>/);
+  assert.ok(!html.includes('class="price"'));
+  assert.ok(!html.includes('make an offer'));
+  assert.match(html, /see the whole post/);
+});
+
 test('Safari app banner when the App Store id is set', async () => {
   const card = {
     title: 'Lamp',

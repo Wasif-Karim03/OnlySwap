@@ -3,6 +3,8 @@
  * (P4-AUTH-02; T-UNIT-AUTH-01, 02, 03, 06). No React, no network.
  */
 
+import type { AgeBand } from './age';
+
 /** Consumer email providers. These never reach `lookup_school` (T-UNIT-AUTH-02). */
 export const PERSONAL_DOMAINS: ReadonlySet<string> = new Set([
   'gmail.com',
@@ -99,6 +101,8 @@ export type GateProfile = {
   status: 'active' | 'waitlist' | 'reverify' | 'paused' | 'suspended' | 'banned';
   firstName: string | null;
   adultConfirmed: boolean;
+  /** 13_17 or 18_plus once the age check passed (AR-01). The gate still uses adultConfirmed. */
+  ageBand?: AgeBand | null;
   rulesVersion: string | null;
   /** YYYY-MM-DD; the yearly student check is due after this day (X9). */
   verifiedUntil?: string | null;
@@ -154,6 +158,22 @@ export const GATE_HREF = {
 } as const satisfies Record<GateRoute, string>;
 
 /**
+ * The system states that win over everything else: maintenance, then a
+ * forced update. Shared by the launch gate and the foreground watch.
+ */
+export function systemGate(
+  config: AppConfig,
+  appVersion: string,
+  platform: GateInput['platform'],
+): 'maintenance' | 'update' | null {
+  if (config.maintenance.enabled) return 'maintenance';
+  // The web app is always the latest deploy, so there is nothing to update.
+  if (platform === 'web') return null;
+  const min = platform === 'ios' ? config.minVersionIos : config.minVersionAndroid;
+  return compareVersions(appVersion, min) < 0 ? 'update' : null;
+}
+
+/**
  * The one place that decides where the app opens. Order matters: system
  * states first, then the session, then account status, then onboarding steps.
  * Returns null while something it needs is still loading.
@@ -163,12 +183,8 @@ export function computeGate(input: GateInput): GateRoute | null {
   if (session === 'loading' || config === undefined) return null;
 
   if (config) {
-    if (config.maintenance.enabled) return 'maintenance';
-    // The web app is always the latest deploy, so there is nothing to update.
-    if (input.platform !== 'web') {
-      const min = input.platform === 'ios' ? config.minVersionIos : config.minVersionAndroid;
-      if (compareVersions(input.appVersion, min) < 0) return 'update';
-    }
+    const system = systemGate(config, input.appVersion, input.platform);
+    if (system) return system;
   }
 
   if (session === 'signedOut') return 'welcome';

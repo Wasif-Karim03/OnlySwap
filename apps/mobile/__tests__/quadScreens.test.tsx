@@ -10,7 +10,7 @@ import { Text } from 'react-native';
 import TabsLayout from '../app/(tabs)/_layout';
 import { canBlock, ReportSheet, reportReasons } from '../src/components/ReportSheet';
 import { useToastStore } from '../src/components/Toast';
-import { quadApi, type QuadApi, type QuadPost, type QuadReply } from '../src/features/quad/api';
+import { type QuadApi, type QuadPost, type QuadReply } from '../src/features/quad/api';
 import { NotificationSettingsScreen } from '../src/features/notifications/NotificationSettingsScreen';
 import { QuadScreen } from '../src/features/quad/QuadFeedScreen';
 import {
@@ -80,6 +80,9 @@ function fakeApi(over: Partial<QuadApi> = {}): QuadApi {
     vote: jest.fn(async (_t, _id, value) => ({ score: 10 + value, my_vote: value })),
     votePoll: jest.fn(async () => ({ options: [], total: 0, my_option: null })),
     hideAuthor: jest.fn(async () => {}),
+    hideReplyAuthor: jest.fn(async () => {}),
+    deleteReply: jest.fn(async () => {}),
+    blockUser: jest.fn(async () => {}),
     unhide: jest.fn(async () => {}),
     hides: jest.fn(async () => [
       { source_post_id: 'p5', excerpt: 'best dining hall', created_at: NOW.toISOString() },
@@ -141,15 +144,17 @@ afterEach(() => {
   act(() => useToastStore.getState().dismiss());
 });
 
-describe('P10-QUAD-02 Quad tab', () => {
+describe('P10-QUAD-02 / DEC 130 no Quad tab', () => {
   const routes = {
     '(tabs)/_layout': TabsLayout,
     '(tabs)/discover/_layout': TabStack,
+    '(tabs)/feed/_layout': TabStack,
     '(tabs)/quad/_layout': TabStack,
     '(tabs)/sell/_layout': TabStack,
     '(tabs)/inbox/_layout': TabStack,
     '(tabs)/profile/_layout': TabStack,
     '(tabs)/discover/index': () => <Stub id="tab-discover" />,
+    '(tabs)/feed/index': () => <Stub id="tab-feed" />,
     '(tabs)/quad/index': () => <Stub id="tab-quad" />,
     '(tabs)/sell/index': () => <Stub id="tab-sell" />,
     '(tabs)/inbox/index': () => <Stub id="tab-inbox" />,
@@ -160,23 +165,10 @@ describe('P10-QUAD-02 Quad tab', () => {
 
   afterEach(() => jest.restoreAllMocks());
 
-  it('is hidden when the campus has the Quad off', async () => {
-    jest.spyOn(quadApi, 'status').mockResolvedValue({ enabled: false, rules_accepted: false });
+  it('five tabs whether or not the campus has the Quad on; it is a Feed chip', async () => {
     renderAt(routes, '/discover', {});
     await screen.findByTestId('tab-discover');
-    await waitFor(() => expect(quadApi.status).toHaveBeenCalled());
-    expect(labels()).toEqual([tabs.discover, tabs.sell, tabs.inbox, tabs.profile]);
-  });
-
-  it('is tab 2 when it is on (D1)', async () => {
-    jest.spyOn(quadApi, 'status').mockResolvedValue({ enabled: true, rules_accepted: true });
-    renderAt(routes, '/discover', {});
-    await screen.findByTestId('tab-discover');
-    await waitFor(() =>
-      expect(labels()).toEqual([tabs.discover, tabs.quad, tabs.sell, tabs.inbox, tabs.profile]),
-    );
-    fireEvent.press(screen.getByRole('tab', { name: tabs.quad }));
-    expect(await screen.findByTestId('tab-quad')).toBeTruthy();
+    expect(labels()).toEqual([tabs.discover, tabs.feed, tabs.sell, tabs.inbox, tabs.profile]);
   });
 });
 
@@ -416,7 +408,7 @@ describe('Q05 Thread', () => {
 
 describe('Q07 New post', () => {
   const routes = (api: QuadApi) => ({
-    quad: () => <Stub id="screen-quad" />,
+    feed: () => <Stub id="screen-quad" />,
     'quad/new': () => <QuadNewPostScreen api={api} newId={() => 'new-id'} />,
   });
 
@@ -435,7 +427,8 @@ describe('Q07 New post', () => {
       }),
     );
     expect(await screen.findByTestId('screen-quad')).toBeTruthy();
-    expect(router.getSearchParams()).toMatchObject({ sort: 'new' });
+    // DEC 130: back to the Feed's Quad chip, on New.
+    expect(router.getSearchParams()).toMatchObject({ kind: 'quad', sort: 'new' });
   });
 
   it('held: Sent for review with the reason', async () => {
@@ -515,21 +508,11 @@ describe('Q07 New post', () => {
     );
   });
 
-  it('check-in: place and vibe', async () => {
+  it('check-in is not offered while CHECKINS_ENABLED is off (UX audit 2026-10-25)', async () => {
     const api = fakeApi();
     renderAt(routes(api), '/quad/new');
-    fireEvent.press(await screen.findByRole('tab', { name: quad.modes.checkin }));
-    fireEvent.changeText(screen.getByTestId('quad-place'), 'Library');
-    fireEvent.press(screen.getByRole('checkbox', { name: quad.vibes.quiet }));
-    fireEvent.press(screen.getByRole('button', { name: quad.post }));
-    await waitFor(() =>
-      expect(api.createPost).toHaveBeenCalledWith({
-        kind: 'checkin',
-        body: 'Quiet',
-        place: 'Library',
-        post_id: 'new-id',
-      }),
-    );
+    await screen.findByRole('tab', { name: quad.modes.text });
+    expect(screen.queryByRole('tab', { name: quad.modes.checkin })).toBeNull();
   });
 
   it('photo: uploads under the new post id and posts the key', async () => {
@@ -556,6 +539,7 @@ describe('Q07 New post', () => {
     fireEvent.press(await screen.findByRole('tab', { name: quad.modes.photo }));
     fireEvent.changeText(screen.getByTestId('quad-body'), 'The Oval right now');
     fireEvent.press(screen.getByTestId('quad-add-photo'));
+    fireEvent.press(screen.getByTestId('quad-photo-library'));
     await waitFor(() => expect(api.uploadPhoto).toHaveBeenCalled());
     expect((api.uploadPhoto as jest.Mock).mock.calls[0][0]).toBe('new-id');
     await waitFor(() =>
@@ -684,7 +668,8 @@ describe('Q09 ReportSheet for Quad targets', () => {
         'other',
       ]);
       for (const r of reportReasons(target)) expect(allowed.has(r)).toBe(true);
-      expect(canBlock(target)).toBe(false);
+      // DEC 150: Quad authors have real names, so they can be blocked.
+      expect(canBlock(target)).toBe(true);
     }
   });
 
@@ -692,7 +677,7 @@ describe('Q09 ReportSheet for Quad targets', () => {
     render(<ReportSheet visible onClose={() => {}} target="quad_post" onSubmit={jest.fn()} />);
     expect(screen.getByRole('header', { name: report.titleQuadPost })).toBeTruthy();
     expect(screen.getByText(report.privateQuad)).toBeTruthy();
-    expect(screen.queryByRole('switch')).toBeNull();
+    expect(screen.getByRole('switch')).toBeTruthy();
     expect(screen.queryByTestId('report-crisis')).toBeNull();
     fireEvent.press(screen.getByRole('radio', { name: report.reasons.quad.self_harm }));
     expect(screen.getByTestId('report-crisis')).toBeTruthy();

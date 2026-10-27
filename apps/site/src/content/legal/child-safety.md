@@ -5,11 +5,12 @@ version: '2026-11'
 order: 7
 ---
 
-OnlySwap is only for verified students who are 18 or older. We have zero tolerance for child sexual abuse and exploitation (CSAE) and child sexual abuse material (CSAM).
+OnlySwap is only for verified students who are 13 or older. Some of them are teens, so we hold everyone to these standards. We have zero tolerance for child sexual abuse and exploitation (CSAE) and child sexual abuse material (CSAM).
 
 ## Our standards
 
-- Every account confirms they are 18 or older and verifies a school email. Accounts found to belong to someone under 18 are deleted.
+- Every account confirms their age and verifies a school email. Accounts found to belong to someone under 13 are deleted.
+- We record whether each account is 13 to 17 or 18 and older (never the birthday), so teen protections can apply.
 - Any content or behavior that sexualizes, grooms, exploits or endangers minors is banned.
 - Reports about minor safety get the highest priority and are reviewed by a person as soon as possible.
 
@@ -17,7 +18,8 @@ OnlySwap is only for verified students who are 18 or older. We have zero toleran
 
 - Photos in listings, chats and Quad posts have location data removed and can be reported by anyone who sees them.
 - Photos sent in chat are stored privately and may be checked automatically for known child sexual abuse material. Photos in chat from people you've just started talking to stay blurred until you tap them.
-- Quad posts are anonymous to students, not to OnlySwap. We keep the link to the author so we can act on reports and report to the authorities.
+- Quad posts show the author's name, like the rest of OnlySwap, and stay linked to their account so we can act on reports and report to the authorities.
+- Every listing, Quad and profile photo is checked automatically. A photo flagged for nudity or sexual content, especially anything involving a minor, is held at once for a person to review.
 - Quad photos from accounts newer than 7 days wait for a person to review them before anyone sees them.
 
 ## What we do when we find it
@@ -29,7 +31,7 @@ OnlySwap is only for verified students who are 18 or older. We have zero toleran
 
 ## How to report
 
-- In the app: report the message, chat or profile and choose "Involves someone under 18". You can also report any Quad post, reply or photo.
+- In the app: report the message, chat or profile and choose "Puts a minor at risk". You can also report any Quad post, reply or photo.
 - On the web: use the [Help page](/help) and pick "Safety".
 - If a child is in immediate danger, call 911.
 

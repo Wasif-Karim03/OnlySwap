@@ -15,7 +15,8 @@ import { TextArea } from './TextArea';
 import { Toggle } from './Toggle';
 
 /** DATA_MODEL reports.target_type (Quad targets are R1.1). */
-export type ReportTarget = 'listing' | 'user' | 'chat' | 'message' | 'quad_post' | 'quad_reply';
+export type ReportTarget =
+  'listing' | 'user' | 'chat' | 'message' | 'quad_post' | 'quad_reply' | 'listing_comment';
 
 /** DATA_MODEL reports.reason values offered in the app. */
 export type ReportReason =
@@ -61,6 +62,8 @@ const REASONS: Record<ReportTarget, ReportReason[]> = {
   // Board Q11 (Q09): the Quad rules; threats and self-harm jump the queue.
   quad_post: QUAD_REASONS,
   quad_reply: QUAD_REASONS,
+  // Feed comments (DEC 121) break the same rules as Quad posts, with a name.
+  listing_comment: QUAD_REASONS,
 };
 
 export function reportReasons(target: ReportTarget): ReportReason[] {
@@ -72,15 +75,15 @@ export function isQuadTarget(target: ReportTarget): target is 'quad_post' | 'qua
 }
 
 /**
- * Listings can't be blocked; people, chats and messages can. Quad authors
- * are anonymous, so there is nobody to name in a block (hide them instead).
+ * Listings can't be blocked; people, chats, messages and Quad posts and
+ * replies can (DEC 150: the Quad shows real names, so there is someone to block).
  */
 export function canBlock(target: ReportTarget): boolean {
-  return target !== 'listing' && !isQuadTarget(target);
+  return target !== 'listing';
 }
 
 function reasonGroup(target: ReportTarget): 'listing' | 'person' | 'quad' {
-  if (isQuadTarget(target)) return 'quad';
+  if (isQuadTarget(target) || target === 'listing_comment') return 'quad';
   return target === 'listing' ? 'listing' : 'person';
 }
 
@@ -161,7 +164,9 @@ export function ReportSheet({
           ? reportCopy.titleQuadPost
           : target === 'quad_reply'
             ? reportCopy.titleQuadReply
-            : fill(reportCopy.titlePerson, { name: who });
+            : target === 'listing_comment'
+              ? reportCopy.titleComment
+              : fill(reportCopy.titlePerson, { name: who });
 
   const pickReason = (next: ReportReason) => {
     setReason(next);

@@ -42,6 +42,7 @@ Helpers `tests.authenticate_as(uid, aal)` and `tests.clear_authentication()` com
 |---|---|---|
 | T-UNIT-LIB-01 | `lib/errors.toAppError` | P0001 parse with and without retryAt; network error → ERR_OFFLINE; 401 → SESSION_EXPIRED; unknown |
 | T-UNIT-LIB-02 | `lib/errors.errorCopy` | every code in `ErrorCode` has copy (snapshot); RATE_LIMITED time formatted in campus TZ |
+| T-UNIT-CRASH-01 | root `ErrorBoundary` (F-08, DEC 103) | a screen that throws during render shows the crash screen (title, body, Try again; the error text never shown), the error goes to Sentry once, Try again re-renders the routes; copy in en and es |
 | T-UNIT-LIB-03 | `lib/rpc` | retries once after a token refresh on 401; no args in the breadcrumb |
 | T-UNIT-LIB-04 | `lib/format` | formatPrice 0 → Free, 4000 → $40, 123456 → $1,234.56; formatRelative for minutes, hours, yesterday, dates, future |
 | T-UNIT-LIB-05 | `lib/version.compareVersions` | equal, greater, lesser, build metadata ignored |
@@ -51,7 +52,7 @@ Helpers `tests.authenticate_as(uid, aal)` and `tests.clear_authentication()` com
 | T-UNIT-AUTH-01 | `auth/logic.validateName` | unicode letters, hyphen, apostrophe; digits rejected; length bounds |
 | T-UNIT-AUTH-02 | `auth/api.lookupSchool` | personal domains short-circuit; lowercase; trims spaces |
 | T-UNIT-AUTH-03 | `auth/useAppGate` | every gate combination (maintenance, version, session, statuses, age, rules) → expected route |
-| T-UNIT-AUTH-04 | `auth/age.requestAgeSignal` | adult, minor, unknown, timeout → unknown; never calls track |
+| T-UNIT-AUTH-04 | `auth/age.requestAgeSignal` | adult, teen, under_minimum, unknown (thresholds 13 and 18), timeout → unknown; never calls track |
 | T-UNIT-AUTH-05 | Verify code attempt counter | 5 wrong → 5-min lockout; resend resets the timer only |
 | T-UNIT-MEDIA-01 | `processPhoto` size | output long edge 1080/400; full under 2 MB (re-encode path) |
 | T-UNIT-MEDIA-02 | `processPhoto` formats | HEIC/PNG/JPEG inputs → WebP |
@@ -71,11 +72,21 @@ Helpers `tests.authenticate_as(uid, aal)` and `tests.clear_authentication()` com
 | T-UNIT-MEET-01 | Directions deep link | builds `maps://?daddr=lat,lng` (iOS) / `geo:` + `google.navigation` intent (Android) / web fallback |
 | T-UNIT-MEET-02 | Meetup state derivation | before, T−30, here/late, cancelled, rescheduled, no-show window (≥ +20 min) |
 | T-UNIT-DEAL-01 | `maybeAskForReview` | ≥3 swaps and 14 d and 120 d since last; never after fell-through/no-show |
+| T-UNIT-BELL-01 | Live bell (DEC 122) | `bell` and `inbox` pings refetch the count once per burst; app icon number follows |
+| T-UNIT-COMMENTS-01 | Like sender (DEC 121) | flip never below 0; one call per target in flight; last choice wins; failure reports null |
+| T-UNIT-COMMENTS-02 | Comment text | like/comment/reply counts; blocked reasons to copy |
+| T-UNIT-COMMENTS-03 | Comments cache | patch comment or reply; add comment/reply; delete keeps a thread with replies; replies merge oldest first |
+| T-UNIT-COMMENTS-04 | Push and report | comment and like types open the comments; a channel per group; listing_comment reasons and block |
+| T-UNIT-COMMENTS-05 | Comments screen | threads, more replies, sort, likes, send with client id, reply, blocked, held, delete, report, turn off, read-only, gone |
+| T-UNIT-COMMENTS-06 | Feed like and comment | optimistic like with server count; Comment opens the screen from posts and cards |
 | T-UNIT-QUAD-01 **[R1.1]** | Vote optimistic | toggle same vote removes; debounce last-wins |
 | T-UNIT-QUAD-02 **[R1.1]** | Poll builder | 2–4 options, 1–40 chars each |
 | T-UNIT-NOTIF-01 | `handleNotificationResponse` | each notification type's data.url → correct route |
 | T-UNIT-NOTIF-02 | Android channels | created with the correct importance per group |
 | T-UNIT-TOK-01 | Token contrast | all body text pairs ≥ 4.5:1, large text ≥ 3:1, in light and dark, for every accent option |
+| T-UNIT-TOK-02 | Secondary text contrast | `ink2`, `ink3`, `red`, `green`, `amber` ≥ 4.5:1 on `bg`, `bg2`, `card` and their own tint, light and dark (DEC 108) |
+| T-UNIT-A11Y-44 | Button S and Chip reach 44 pt with hitSlop; Button M has none (DEC 111) |
+| T-UNIT-RT-01 | Realtime hub | one join per topic for many listeners; leave all in the background; rejoin and catch up on resume; chat reads its messages from `user:{me}` (DEC 108) |
 | T-UNIT-CMP-* | Components | Button loading keeps width and blocks double tap; Input error announces; Sheet closes on Android back; PermissionPrimer state machine |
 | T-FN-01 | `_shared/expoPush` | chunks of 100; backoff on 429; DeviceNotRegistered handling |
 | T-FN-02 | `send-push` rules | prefs off → skipped; quiet hours skip non-urgent (campus TZ); time-sensitive bypass; cap 6; message preview off → generic body |
@@ -142,6 +153,9 @@ For every table, `supabase/tests/rls_<table>.test.sql` asserts all of the follow
 | T-INT-OFF-02 | offers rate limit 10/h; new-account 5/day; paused after 2 confirmed no-shows |
 | T-INT-CHAT-01 | send_message idempotent on client_id; blocked → error; closed chat → error; chat photos flag off → error |
 | T-INT-RT-01 | Realtime: C can't receive `chat:{A-B}` (connect with C's JWT, expect no messages); A and B receive |
+| T-INT-CRON-02 | `prune_cron_history` removes cron runs that ended over 7 days ago, keeps newer and unfinished ones; scheduled daily (DEC 110) |
+| T-INT-MAIL-02 | Outbox budget: at most 150 a day counting rows in flight; `priority_report` first, `campus_open` last; the rest waits a day (DEC 109) |
+| T-INT-RT-02 | A chat message is one broadcast, to the other party's `user:{uid}` with the message; a message with no sender reaches both; nothing on `chat:{id}` (DEC 108) |
 | T-INT-MEET-01 | time windows for propose/checkin/no-show; share token expiry; `get_meetup_share` returns no price/phone/email |
 | T-INT-DEAL-01 | ratings reveal only when both sides have rated, or after 7 d; deleted rater anonymized |
 | T-INT-QUAD-ANON **[R1.1]** | for every quad RPC, the JSON response has no `author_id` / `user_id` field, including for own posts |
@@ -168,7 +182,7 @@ Each is a YAML flow in `.maestro/`, run against staging with seeded data. Steps 
    - School row shows "The Ohio State University" → Send code.
    - Read the code from the staging test inbox. Test-only: a Mailpit instance locally, or on staging an allowlisted catch-all domain `e2e.onlyswap.test` in `campus_domains` for the OSU test campus, with the code fetched through the `test-inbox` function that exists only on staging.
    - Enter the code → age signal unknown → Birthday 2000-01-01 → Profile: name "Test", year Junior → Rules check → Agree → Notifications "Not now" → Discover visible.
-2. **E2E-02 Underage**: sign up → Birthday under 18 → Not eligible → Close → sign up again with the same email → blocked message.
+2. **E2E-02 Underage**: sign up → Birthday under 13 → Not eligible → Close → sign up again with the same email → blocked message.
 3. **E2E-03 Unknown school**: type `x@unknown.edu` → School not found card → Join the waitlist → toast.
 4. **E2E-04 Reviewer login**: `appreview@review.onlyswap.test` → password field → Sign in → Discover shows Demo University listings.
 5. **E2E-05 Swipe and offer**
@@ -210,6 +224,20 @@ Each is a YAML flow in `.maestro/`, run against staging with seeded data. Steps 
 - **E2E-A04** A campus safe-spot edit shows up in the app.
 - **E2E-A05** The announcement limit is enforced.
 - **E2E-A06 [R1.1]** Setting the `quad_enabled` flag hides the tab (verify via the API).
+
+**Student web app (Playwright, `e2e/web/tests/webapp.spec.ts`, DEC 138).** Two new students on the staging E2E campus, serial, against a web build. Needs `WEBAPP_URL`, `FUNCTIONS_URL` and `E2E_SECRET`; `WEBAPP_PHONE=1` runs it at 390 x 844 with touch. Each test also fails on page errors; failures attach both URLs and aria snapshots. A local build must be served on port 8081 (the only localhost origin in the staging R2 CORS). Each run sends 3 sign-in emails, so back-to-back runs can hit the project's hourly email limit (the app shows "You're doing that a lot").
+
+- **WEB-E2E-01** Two students sign up (email code, birthday, profile, rules).
+- **WEB-E2E-02** The seller posts a listing with two photos, a category, a price and a meetup spot.
+- **WEB-E2E-03** The buyer finds it on Discover and sends an offer.
+- **WEB-E2E-04** The seller accepts; chat works both ways in real time (Enter sends).
+- **WEB-E2E-05** The seller plans a meetup; the buyer accepts it.
+- **WEB-E2E-06** Did it sell, then both rate; the ratings reveal.
+- **WEB-E2E-07** Search, save the search, find it under Saved > Searches.
+- **WEB-E2E-08** A notification switch saves (`update_notification_prefs` 200) and survives a reload.
+- **WEB-E2E-09** Report with "Also block" from the chat details.
+- **WEB-E2E-10** Sign out, then sign back in with the same school email.
+- **WEB-E2E-11** Delete the account (typed DELETE) and land on Welcome.
 
 ## 4. Manual QA checklist (per screen group, both OSes)
 
@@ -295,7 +323,7 @@ Each is a YAML flow in `.maestro/`, run against staging with seeded data. Steps 
 - [ ] No anonymous chat anywhere; Quad disclosure shown.
 - [ ] Push is not required (the app works with notifications denied); promotional push is opt-in.
 - [ ] Permission strings are specific (camera, photos, notifications only); no location permission in R1.0.
-- [ ] Age rating 18+ override; age check works; underage is blocked.
+- [ ] Age rating answered with no override (calculated 13+, DEC 136); age check works; under 13 is blocked.
 - [ ] Privacy label matches the SDKs (Sentry, PostHog, Expo Notifications).
 - [ ] The privacy manifest is present and the required-reason APIs are declared.
 - [ ] `ITSAppUsesNonExemptEncryption=NO`.
@@ -310,7 +338,7 @@ Each is a YAML flow in `.maestro/`, run against staging with seeded data. Steps 
 - [ ] Target API 36; `compileSdk` 36.
 - [ ] The merged manifest has none of the blocked permissions (`aapt dump permissions` on the AAB via `bundletool`).
 - [ ] Data safety matches plan §19 exactly; "data deleted on request" = yes, with the URL.
-- [ ] Target audience 18+ only; Restrict minor access on; not "appeals to children".
+- [ ] Target audience 13-15, 16-17 and 18+ (no under-13 groups); not "appeals to children" (DEC 136).
 - [ ] Content rating questionnaire done.
 - [ ] Declarations: Ads no; App access credentials; Financial none; Health none; Government no; News no; Advertising ID not used.
 - [ ] Child safety standards URL + contact filled in.
@@ -334,6 +362,22 @@ Each is a YAML flow in `.maestro/`, run against staging with seeded data. Steps 
 | T-INT-MEET-03 | pgTAP | BE-07 | no-show rejected when the reporter didn't check in, when the other checked in, and before +20 min; auto-confirm after 24 h; 2 confirmed → offers paused |
 | T-INT-SAFE-03 | pgTAP | BE-09 | 3 reports from accounts younger than 7 days → no auto-hide; 3 from aged distinct accounts → held + still open |
 | T-INT-OFF-RACE-02 | pgTAP (2 sessions) | BE-10 | `make_offer` concurrent with `mark_sold` → offer rejected `LISTING_UNAVAILABLE` or auto-declined, never pending on a sold listing |
+| T-INT-OFF-RACE-03 | parallel sessions + `scripts/verify/offer-race.mjs` | E-05, DEC 102 | many first offers on one listing at once all land, none fails with a deadlock; `offer_count` equals the offers (`offer_lock.test.sql` pins the lock) |
+| T-INT-AGE-V2 | pgTAP | AR-01, DEC 136 | `confirm_age_v2`: exactly 13 → `13_17`, 12 years 364 days → blocked, 17 years 364 days → `13_17`, exactly 18 → `18_plus` (campus time); OS bands; no v1 or v2 retry passes after an under-13 answer; a confirmed band is never overwritten; v1 still blocks under 18 and its adults get `18_plus`; a reset clears the band; no birth-date column; underage deletion still works (`age_gate_v2.test.sql`) |
+| T-UNIT-AUTH-09 | Jest | AR-01, DEC 136 | `auth/api.confirmAge` calls `confirm_age_v2` with `{method, band}` or `{method, birth_date}` (no `is_adult`) and maps `{eligible, age_band}`; `getGateProfile` reads `age_band` (`authApi.test.ts`) |
+| T-INT-AGE-ASSURE | pgTAP | AR-03, DEC 136 | `record_age_assurance`: grants (no anon), no direct column writes, not in `public_profiles`; `AGE_REQUIRED` before confirm; invalid inputs; regulated teen → `granted` with declaration; regulated adult → no consent; not regulated → nothing; `revoked` never overwritten; a null declaration keeps the stored one |
+| T-UNIT-AGE-ASSURE | Jest | AR-03, DEC 136 | `auth/age` `checkRegulation` (eligible, `declaredAgeRangeRequired`, errors, timeout, iOS 26+ only), `toDeclaration`, `requestAgeAnswer`, `acknowledgeSignificantUpdate` (adult sheet, parental consent held, not needed); `auth/api.recordAgeAssurance`; AgeScreen: a regulated decline shows the share screen with no birthday field and a retry, records consent with the declaration, and a failed record still lets the person through |
+| T-INT-CONSENT | pgTAP | AR-04, DEC 136 | `link_app_transaction` grants (no anon), RLS on, no direct table access, idempotent link, two accounts on one download, invalid and over-long ids; `private.rescind_consent` service only, locks every linked account (`suspended`, `parental_consent`, `revoked`), feed refused after, repeat and unknown ids, listings and offers kept |
+| T-FN-APPSTORE | node --test | AR-04 | `_shared/appStore.ts` on a throwaway test chain: valid chain decodes; rejects an edited payload, unknown root, leaf without the App Store OID, wrong signer, short chain, expired certs, non-JWS; the real Apple root refuses the test chain; `RESCIND_CONSENT` locks the linked id; TEST and other types → 200, nothing locked; bad outer or inner signature → 400; wrong bundle outside or inside → 400; missing appData → 400; 405 and 400 on bad requests; a DB error throws (500, Apple retries) |
+| T-UNIT-CONSENT | Jest | AR-04 | `auth/appTransaction` links once per user per launch, skips Android, a missing module and a null id, a failure is quiet and retried; `startAppTransactionLink` fires on `SIGNED_IN` and `INITIAL_SESSION` outside the auth callback, unsubscribes; `auth/api.linkAppTransaction`; X10 shows the consent copy with no appeal for `parental_consent` |
+| T-INT-AGE-RETRY | pgTAP | A-03, DEC 102 | after `confirm_age` answers minor, a retry (os_signal true or an adult birth date) answers adult:false and the account stays unconfirmed (`age_gate_retry.test.sql`) |
+| T-INT-QUAD-ANON-02 | pgTAP | A-01, A-02, DEC 104 | a Quad report row keeps no author on any path; report queue, report detail, person reports and a direct `reports` read never name the author; a strike still lands on the author with no `report_id`; the reveal audit row has no `author_id`; moderators can't read older audit rows that do, and both audit reads strip it (`quad_author_privacy.test.sql`) |
+| T-INT-VOLATILE | pgTAP | DEC 138 | no STABLE or IMMUTABLE public function calls `private.require_member`/`require_active` (they write `activity_days`; PostgREST runs STABLE read-only, 405); `unread_count` and every `price_hint` are volatile (`volatile_member_reads.test.sql`) |
+| T-UNIT-A11Y-WEB | Jest | DEC 138 | `a11yState()` passes `accessibilityState` through on phones and adds the same `aria-*` props on web (`a11yState.test.ts`) |
+| T-INT-AUTH-ALIAS | pgTAP | G-02, DEC 105 | `email_hash` drops a `+tag` (dots kept, untagged hash unchanged); a ban or age block can't be dodged on a +alias; a second account on an alias gets `EMAIL_ALIAS`; an owner ban by any spelling is one hash (`email_alias.test.sql`) |
+| T-INT-FEED-RIGHT | pgTAP | DEC 106 | a right swipe is stored as `right` with its time on card, stays off the deck, isn't counted as a pass on the person or listing pages, and is purged after 30 days like a left swipe (`right_swipes.test.sql`) |
+| T-UNIT-AUTH-07 | Jest | C-03, DEC 107 | sign-out or a different account clears the query cache and the chat and swipe stores; same-account events keep them; one failing reset doesn't stop the rest (`accountReset.test.ts`) |
+| T-UNIT-AUTH-08 | Jest | DEC 123 | returning to the foreground re-reads `get_app_config`: maintenance or a forced update sends the person to that screen, the end of maintenance sends them back through the gate, the launch screen and a failed fetch are left alone (`systemWatch.test.ts`) |
 | T-INT-SOLD-01 | pgTAP | BE-11 | `mark_sold` closes other chats with a system message and notifies those buyers |
 | T-INT-TZ-01 | pgTAP | BE-12 | DST boundary: meetup reminders fire 30 min before local time on the transition days; quiet hours in the campus TZ |
 | T-UNIT-AUTH-06 | Jest | PM-04 | gate routes to Updated rules when `rules_version` changes |

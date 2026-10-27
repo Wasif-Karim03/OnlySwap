@@ -177,6 +177,21 @@ describe('F07 Mark sold', () => {
     fireEvent.press(screen.getByTestId('mark-sold'));
     await waitFor(() => expect(a.markSold).toHaveBeenCalledWith('l1', 'b1'));
   });
+
+  it('opened from a chat, that buyer is already picked (DEC 97)', async () => {
+    const a = { markSold: jest.fn(async () => undefined) } as unknown as DealsApi;
+    const offers = { listingOffers: jest.fn(async () => [] as Offer[]) };
+    render(
+      {
+        'listing/[id]/sold': () => (
+          <MarkSoldScreen listingId="l1" preselect="b1" api={a} offers={offers} />
+        ),
+      },
+      '/listing/l1/sold',
+    );
+    fireEvent.press(await screen.findByTestId('mark-sold'));
+    await waitFor(() => expect(a.markSold).toHaveBeenCalledWith('l1', 'b1'));
+  });
 });
 
 describe('E08 Rate the swap', () => {

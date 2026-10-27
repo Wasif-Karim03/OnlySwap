@@ -401,4 +401,28 @@ describe('P5-SELL-05 D04 Posted + share card', () => {
     await waitFor(() => expect(router.getPathname()).toBe('/sell'));
     expect(usePostedStore.getState().listing).toBeNull();
   });
+
+  it('T-UNIT-MOVING-03: List another keeps spots, note, times and pick-up-by (DEC 133)', async () => {
+    const store = createDraftStore(
+      { get: () => null, set: () => {}, remove: () => {} },
+      { now: () => NOW },
+    );
+    usePostedStore.getState().set(POSTED, null, {
+      spotIds: ['s1'],
+      meetNote: 'Lobby of Morrill',
+      availability: ['evenings'],
+      pickupBy: 'sunday',
+    });
+    setup('/sell/posted', routes({ api: fakeApi(), store }));
+    expect(await screen.findByText(sell.postedTitle)).toBeTruthy();
+    tap('sell-list-another');
+    expect(await screen.findByTestId('screen-sell-stub')).toBeTruthy();
+    const d = store.getState().draft;
+    expect(d.spotIds).toEqual(['s1']);
+    expect(d.meetNote).toBe('Lobby of Morrill');
+    expect(d.availability).toEqual(['evenings']);
+    expect(d.pickupBy).toBe('sunday');
+    expect(d.title).toBe('');
+    expect(d.photos).toEqual([]);
+  });
 });

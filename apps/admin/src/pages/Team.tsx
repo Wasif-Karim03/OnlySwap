@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 
 import { role } from '../labels';
@@ -38,7 +39,12 @@ export function TeamSection() {
   if (!owner)
     return (
       <div className="card">
-        <EmptyState title="Only an owner can see and change the admin team." />
+        <EmptyState title="Only owners can manage the team.">
+          <p className="muted">Banned words are read-only for moderators.</p>
+          <Link className="btn" to="/settings/words">
+            Open Banned words
+          </Link>
+        </EmptyState>
       </div>
     );
   return <OwnerTeam />;

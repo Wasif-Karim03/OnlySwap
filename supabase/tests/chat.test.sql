@@ -20,8 +20,8 @@ select is(pg_temp.send('B', '00000000-0000-4000-8000-0000000000d1', 'Hi, still f
 select is((select count(*)::int from public.messages where chat_id = '00000000-0000-4000-8000-0000000000d1'), 1, 'stored once');
 select is((select last_message_at from public.chats where id = '00000000-0000-4000-8000-0000000000d1'), '2027-03-10 12:00-05'::timestamptz,
   'last_message_at moves');
-select is((select count(*)::int from realtime.messages where topic = 'chat:00000000-0000-4000-8000-0000000000d1' and event = 'message'), 1,
-  'broadcast on chat:{id}');
+select is((select count(*)::int from realtime.messages where topic = 'chat:00000000-0000-4000-8000-0000000000d1' and event = 'message'), 0,
+  'no broadcast on chat:{id} (one per message on user:{uid}, DEC 108)');
 select is((select count(*)::int from realtime.messages where topic = 'user:' || tests.uid('A') and event = 'inbox'), 1, 'the seller''s inbox is pinged');
 select is((select body from public.notifications where user_id = tests.uid('A') and type = 'message_new'), 'New message from Ben B.',
   'message_new without a preview by default');

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
+import { AccessibilityInfo, Pressable, TextInput, View } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -26,6 +26,11 @@ type Props = {
   onComplete?: (code: string) => void;
   label: string;
   error?: boolean;
+  /**
+   * The caller's existing error line. When `error` turns on it is announced
+   * politely, so the shake is not silent for screen readers (3.08 OTPInput).
+   */
+  errorMessage?: string;
   disabled?: boolean;
   /** Focus on mount (the verify-code screen); off by default. */
   autoFocus?: boolean;
@@ -52,6 +57,7 @@ export function OTPInput({
   onComplete,
   label,
   error = false,
+  errorMessage,
   disabled = false,
   autoFocus = false,
 }: Props) {
@@ -59,10 +65,16 @@ export function OTPInput({
   const reduced = useReducedMotion();
   const shake = useSharedValue(0);
   const shakeStyle = useAnimatedStyle(() => ({ transform: [{ translateX: shake.value }] }));
+  // Latest message without re-running the shake when only the words change.
+  const message = useRef(errorMessage);
+  useEffect(() => {
+    message.current = errorMessage;
+  }, [errorMessage]);
 
   useEffect(() => {
     if (!error) return;
     haptic('warning');
+    if (message.current) AccessibilityInfo.announceForAccessibility(message.current);
     if (reduced) return;
     shake.set(
       withSequence(

@@ -30,6 +30,8 @@ import {
   type CampusPage,
   type FoodForm,
   type WantedForm,
+  needByDate,
+  needByLine,
 } from '../src/features/campus/logic';
 import { PostFoodScreen } from '../src/features/campus/PostFoodScreen';
 import { PostWantedScreen } from '../src/features/campus/PostWantedScreen';
@@ -428,7 +430,12 @@ describe('C01 Around campus', () => {
     category_id: 4,
     wanted_max_cents: 4000,
   });
-  const MINE = campusItem('want2', { kind: 'wanted', title: 'Bike lock', is_own: true });
+  const MINE = campusItem('want2', {
+    kind: 'wanted',
+    title: 'Bike lock',
+    is_own: true,
+    photos: [{ path: 'l/lock_full.webp', thumb_path: 'l/lock_thumb.webp', blurhash: null }],
+  } as Partial<CampusItem>);
   const FREE = campusItem('free1', { kind: 'free', title: 'Floor mirror', price_cents: 0 });
 
   function fakeCampus(over: Partial<CampusApi> = {}): CampusApi {
@@ -438,7 +445,7 @@ describe('C01 Around campus', () => {
   const open = (api: CampusApi, store = newStore()) =>
     renderAt(
       {
-        'discover/campus': () => (
+        feed: () => (
           <CampusFeedScreen api={api} store={store} now={() => NOW} mediaBase={() => 'http://m'} />
         ),
         'listing/[id]': () => <Stub id="screen-listing" />,
@@ -446,7 +453,7 @@ describe('C01 Around campus', () => {
         'sell/wanted': () => <Stub id="screen-wanted" />,
         discover: () => <Stub id="screen-discover" />,
       },
-      '/discover/campus',
+      '/feed',
     );
 
   it('shows food with a live countdown, gone food, Wanted and free stuff', async () => {
@@ -464,8 +471,33 @@ describe('C01 Around campus', () => {
     expect(screen.getByTestId('campus-item-want1-answer')).toBeTruthy();
     // Your own Wanted: no "I have this".
     expect(screen.queryByTestId('campus-item-want2-answer')).toBeNull();
-    expect(screen.getByText(campus.yours)).toBeTruthy();
+    // ...it gets Delete instead (owner review 2026-10-24).
+    expect(screen.getByTestId('campus-item-want2-delete')).toBeTruthy();
+    // A Wanted photo shows full width, like a post (owner review 2026-10-24).
+    expect(screen.getByTestId('campus-item-want2-photo')).toBeTruthy();
     expect(screen.getByText('Floor mirror')).toBeTruthy();
+  });
+
+  it('deletes your own post after confirming', async () => {
+    const api = fakeCampus();
+    const remove = jest.fn(async () => {});
+    renderAt(
+      {
+        feed: () => (
+          <CampusFeedScreen
+            api={api}
+            store={newStore()}
+            now={() => NOW}
+            mediaBase={() => 'http://m'}
+            remove={remove}
+          />
+        ),
+      },
+      '/feed',
+    );
+    fireEvent.press(await screen.findByTestId('campus-item-want2-delete'));
+    fireEvent.press(await screen.findByText(campus.deletePostConfirm));
+    await waitFor(() => expect(remove).toHaveBeenCalledWith('want2'));
   });
 
   it('opens a post', async () => {
@@ -484,43 +516,52 @@ describe('C01 Around campus', () => {
     expect(screen.getByText(campus.empty.wanted.title)).toBeTruthy();
   });
 
-  it('"I have this" opens Sell prefilled with wanted_ref', async () => {
-    const store = newStore();
-    open(fakeCampus(), store);
+  it('"I have this" opens a chat with the asker (DEC 149)', async () => {
+    const start = jest.fn(async () => ({ chat_id: 'c7', existing: false }));
+    renderAt(
+      {
+        feed: () => (
+          <CampusFeedScreen
+            api={fakeCampus()}
+            now={() => NOW}
+            mediaBase={() => 'http://m'}
+            wantedChat={{ start }}
+          />
+        ),
+        'chat/[id]': () => <Stub id="screen-chat" />,
+      },
+      '/feed',
+    );
     fireEvent.press(await screen.findByTestId('campus-item-want1-answer'));
-    expect(await screen.findByTestId('screen-sell')).toBeTruthy();
-    expect(store.getState().draft).toMatchObject({
-      title: 'TI-84 Plus',
-      categoryId: 4,
-      wantedRef: 'want1',
-    });
+    expect(await screen.findByTestId('screen-chat')).toBeTruthy();
+    expect(start).toHaveBeenCalledWith('want1', campus.iHaveThisMessage);
   });
 
-  it('day one hero and founding sellers', async () => {
+  it('day one hero, and no founding sellers banner in the Feed', async () => {
     open(
       fakeCampus({
         feed: jest.fn(async () =>
           page([FREE], {
             day_one: true,
             active_listings: 3,
-            founding: { limit: 50, left: 34, mine: false },
+            founding: { limit: 50, left: 34, mine: true },
           }),
         ),
       }),
     );
     expect(await screen.findByTestId('campus-day-one')).toBeTruthy();
     expect(screen.getByText(/3 listings so far/)).toBeTruthy();
-    expect(screen.getByTestId('campus-founding-open')).toBeTruthy();
-    expect(screen.getByText(/34 of 50 spots left/)).toBeTruthy();
+    expect(screen.queryByTestId('campus-founding-open')).toBeNull();
+    expect(screen.queryByTestId('campus-founding-mine')).toBeNull();
   });
 
-  it('founding seller: your badge instead of the open spots', async () => {
+  it('day one with nothing posted shows one empty state, not two (round 2)', async () => {
     open(
       fakeCampus({
-        feed: jest.fn(async () => page([FREE], { founding: { limit: 50, left: 0, mine: true } })),
+        feed: jest.fn(async () => page([], { day_one: true, active_listings: 0 })),
       }),
     );
-    expect(await screen.findByTestId('campus-founding-mine')).toBeTruthy();
+    expect(await screen.findByTestId('campus-empty-all')).toBeTruthy();
     expect(screen.queryByTestId('campus-day-one')).toBeNull();
   });
 
@@ -550,9 +591,13 @@ describe('C01 Around campus', () => {
     expect(await screen.findByTestId('campus-item-free1')).toBeTruthy();
   });
 
-  it('the post buttons open the forms', async () => {
+  it('the + menu offers the three kinds of post and opens the form', async () => {
     open(fakeCampus());
-    fireEvent.press(await screen.findByTestId('campus-post-food'));
+    expect(screen.queryByTestId('campus-post-food')).toBeNull();
+    fireEvent.press(await screen.findByTestId('feed-new-post'));
+    expect(screen.getByRole('button', { name: campus.postNews })).toBeTruthy();
+    expect(screen.getByRole('button', { name: campus.askFor })).toBeTruthy();
+    fireEvent.press(screen.getByRole('button', { name: campus.postFood }));
     expect(await screen.findByTestId('screen-food')).toBeTruthy();
   });
 });
@@ -618,7 +663,7 @@ describe('C02 Post free food', () => {
         'sell/food': () => (
           <PostFoodScreen api={api} photosOs={granted} mediaBase={() => 'http://m'} {...extra} />
         ),
-        'discover/campus': () => <Stub id="screen-campus" />,
+        feed: () => <Stub id="screen-campus" />,
       },
       '/sell/food',
     );
@@ -695,6 +740,7 @@ describe('C02 Post free food', () => {
     fireEvent.changeText(await screen.findByTestId('food-title'), 'Leftover pizza');
     fireEvent.press(await screen.findByRole('checkbox', { name: 'Ohio Union' }));
     fireEvent.press(screen.getByTestId('food-add-photo'));
+    fireEvent.press(screen.getByTestId('food-photo-library'));
     await waitFor(() => expect(api.uploadPhoto).toHaveBeenCalled());
     expect((api.uploadPhoto as jest.Mock).mock.calls[0][0]).toBe('L9');
     await waitFor(() => expect(screen.getByText(campus.changePhoto)).toBeTruthy());
@@ -725,6 +771,7 @@ describe('C02 Post free food', () => {
     const openSettings = jest.fn(async () => {});
     food(fakeSell(), { photosOs: denied, openSettings });
     fireEvent.press(await screen.findByTestId('food-add-photo'));
+    fireEvent.press(screen.getByTestId('food-photo-library'));
     expect(await screen.findByTestId('food-photos-off')).toBeTruthy();
     fireEvent.press(screen.getByRole('button', { name: campus.openSettings }));
     expect(openSettings).toHaveBeenCalled();
@@ -809,6 +856,7 @@ describe('B02 Listing for food and Wanted posts', () => {
       reportListing: jest.fn(async () => {}),
     };
   }
+  const startChat = jest.fn(async () => ({ chat_id: 'c7', existing: false }));
   const show = (result: ListingResult, store = newStore()) =>
     renderAt(
       {
@@ -822,9 +870,11 @@ describe('B02 Listing for food and Wanted posts', () => {
             share={jest.fn(async () => {})}
             now={() => NOW}
             draftStore={store}
+            wantedChat={{ start: startChat }}
           />
         ),
         'listing/[id]/offer': () => <Stub id="screen-offer" />,
+        'chat/[id]': () => <Stub id="screen-chat" />,
       },
       '/listing/L1',
     );
@@ -841,8 +891,8 @@ describe('B02 Listing for food and Wanted posts', () => {
     expect(await screen.findByText(campus.listingWanted)).toBeTruthy();
     expect(screen.queryByTestId('listing-offer')).toBeNull();
     fireEvent.press(screen.getByTestId('listing-i-have-this'));
-    expect(await screen.findByTestId('screen-sell')).toBeTruthy();
-    expect(store.getState().draft.wantedRef).toBe('L1');
+    expect(await screen.findByTestId('screen-chat')).toBeTruthy();
+    expect(startChat).toHaveBeenCalledWith('L1', campus.iHaveThisMessage);
   });
 
   it('food: a countdown and no offer button', async () => {
@@ -872,7 +922,7 @@ describe('R11-NOTIF-01 Around campus notifications', () => {
       { type: 'free_food', listing_id: 'F1', url: '/listing/F1' },
       { pathname: '/listing/[id]', params: { id: 'F1', from: 'notification' } },
     ],
-    [{ type: 'free_food' }, { pathname: '/discover/campus', params: { kind: 'food' } }],
+    [{ type: 'free_food' }, { pathname: '/feed', params: { kind: 'food' } }],
     [{ type: 'campus_unlocked', url: '/unlocked', campus_id: 'c1' }, '/unlocked'],
   ])('%o', (data, href) => {
     expect(routeForNotification(data)).toEqual(href);
@@ -915,5 +965,41 @@ describe('R11-NOTIF-01 Around campus notifications', () => {
     expect(toggle.props.accessibilityState).toMatchObject({ checked: false });
     fireEvent.press(toggle);
     await waitFor(() => expect(api.updatePrefs).toHaveBeenCalledWith({ free_food: true }));
+  });
+});
+
+describe('T-UNIT-WANTED-02 need it by and alert me (DEC 127)', () => {
+  it('turns a chip into a campus date', () => {
+    const now = new Date(2027, 2, 28, 15, 0);
+    expect(needByDate('none', now)).toBeNull();
+    expect(needByDate('week', now)).toBe('2027-04-04');
+    expect(needByDate('month', now)).toBe('2027-04-27');
+    expect(needByLine(null)).toBeNull();
+    expect(needByLine('2027-04-04')).toBe('Needs it by Apr 4');
+  });
+
+  it('posts, then saves the date and the alert switch', async () => {
+    const setWantedPrefs = jest.fn(async () => {});
+    const api = fakeSell({ createListing: jest.fn(async () => posted({ kind: 'wanted' })) });
+    renderAt(
+      {
+        'sell/wanted': () => (
+          <PostWantedScreen
+            api={api}
+            photosOs={granted}
+            mediaBase={() => 'http://m'}
+            prefs={{ setWantedPrefs }}
+            now={() => new Date(2027, 2, 10, 12, 0)}
+          />
+        ),
+      },
+      '/sell/wanted',
+    );
+    fireEvent.changeText(await screen.findByTestId('wanted-title'), 'Mini fridge');
+    fireEvent.press(screen.getByTestId('wanted-need-by-week'));
+    fireEvent.press(screen.getByLabelText(campus.alertMe));
+    fireEvent.press(screen.getByTestId('wanted-post'));
+    expect(await screen.findByTestId('wanted-posted')).toBeTruthy();
+    expect(setWantedPrefs).toHaveBeenCalledWith(expect.any(String), '2027-03-17', false);
   });
 });

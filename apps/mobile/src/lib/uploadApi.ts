@@ -1,4 +1,4 @@
-import { toAppError } from './errors';
+import { toAppError, toFunctionError } from './errors';
 import type { UploadFile, UploadTarget } from './media';
 import { getSupabase } from './supabase';
 
@@ -32,7 +32,7 @@ export function createUploadApi(invoke: Invoke) {
           })),
         },
       });
-      if (error) throw toAppError(error);
+      if (error) throw await toFunctionError(error);
       const uploads = (data as { uploads?: UploadTarget[] } | null)?.uploads;
       if (!Array.isArray(uploads)) throw toAppError({ message: 'upload-url returned no uploads' });
       return uploads;

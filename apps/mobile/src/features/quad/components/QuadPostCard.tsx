@@ -11,6 +11,7 @@ import { fill } from '@/lib/format';
 import { intlLocale, quad as copy } from '@/strings';
 
 import { agoLabel } from '../../feed/logic';
+import { authorName, QuadAuthorLine } from './QuadAuthor';
 import { shortAgo } from '../../offers/logic';
 import { mediaUrl } from '../../sell/logic';
 import type { QuadPoll, QuadPost } from '../api';
@@ -100,8 +101,9 @@ type Props = {
   /** Thread view: the full photo instead of the thumbnail. */
   full?: boolean;
   /**
-   * `card`: the feed's white card on the grey page (DEC 90): votes on the
-   * left, and the kind, replies and time as one quiet line under the text.
+   * `card`: the feed's flat row (the feed draws the hairlines): votes in one
+   * column on the left, and the kind, replies and time as one quiet line.
+   * No card fill or radius, so the Quad matches the Feed's plain page.
    * `row` (default): the thread's plain row with votes on the right.
    */
   variant?: 'row' | 'card';
@@ -139,6 +141,8 @@ export function QuadPostCard({
     : null;
   const replies = repliesLabel(post.reply_count);
   const label = [
+    // Who is speaking comes first now that names show (DEC 150; UX audit 2026-10-25).
+    post.author !== undefined ? authorName(post.author ?? null, post.is_mine) : null,
     post.status === 'held' ? copy.underReview : null,
     post.place ? fill(copy.checkinAt, { place: post.place }) : null,
     post.body,
@@ -150,6 +154,15 @@ export function QuadPostCard({
 
   const content = (
     <View style={styles.content}>
+      {post.author !== undefined ? (
+        <QuadAuthorLine
+          author={post.author}
+          mine={post.is_mine}
+          mediaBase={mediaBase}
+          meta={card ? time : undefined}
+          testID={testID ? `${testID}-author` : undefined}
+        />
+      ) : null}
       {card ? (
         post.status === 'held' ? (
           <View style={styles.meta}>
@@ -265,11 +278,7 @@ const styles = StyleSheet.create((theme) => ({
   whiteCard: {
     flexDirection: 'row',
     gap: theme.space.xs,
-    paddingTop: theme.space.sm,
-    paddingLeft: theme.space.xs,
-    paddingRight: theme.space.sm,
-    borderRadius: theme.radius.card,
-    backgroundColor: theme.colors.card,
+    paddingVertical: theme.space.sm,
   },
   flex: { flex: 1 },
   content: { gap: theme.space.sm },

@@ -10,26 +10,28 @@ import { Button } from '@/components/Button';
 import { Chip } from '@/components/Chip';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
+import { Input } from '@/components/Input';
 import { NavBar } from '@/components/NavBar';
 import { Photo } from '@/components/Photo';
 import { SkeletonList } from '@/components/Skeleton';
 import { SuccessCheck } from '@/components/SuccessCheck';
 import { Text } from '@/components/Text';
-import { TextArea } from '@/components/TextArea';
 import { getEnv } from '@/lib/env';
 import { errorText, toAppError } from '@/lib/errors';
 import { fill } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
-import { offers as copy } from '@/strings';
+import { feed as feedCopy, offers as copy } from '@/strings';
 import { readableColumn } from '@/theme/layout';
 
 import { feedApi, type FeedApi } from '../feed/api';
 import { listingKey } from '../feed/ListingScreen';
-import { isVisible, sellerName } from '../feed/logic';
+import { isVisible, movingOutLine, sellerName, trustLine } from '../feed/logic';
+import { profileApi, type ProfileApi } from '../profiles/api';
 import { dollarsToCents } from '../search/logic';
 import { centsToPrice, cleanPrice, mediaUrl } from '../sell/logic';
 import { offersApi, type OffersApi } from './api';
 import { isLowOffer, money, quickAmounts } from './logic';
+import { markOfferSent } from './sentOffers';
 
 const QUICK_NOTES = ['today', 'campus', 'available', 'cash'] as const;
 
@@ -42,11 +44,14 @@ export function OfferSheetScreen({
   listingId,
   api = offersApi,
   listings = feedApi,
+  profiles = profileApi,
   mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
 }: {
   listingId: string;
   api?: OffersApi;
   listings?: Pick<FeedApi, 'getListing'>;
+  /** The seller's other items, for a moving-out bundle (DEC 133). */
+  profiles?: Pick<ProfileApi, 'getProfile'>;
   mediaBase?: () => string;
 }) {
   const router = useRouter();
@@ -63,6 +68,16 @@ export function OfferSheetScreen({
   const [error, setError] = useState<string | null>(null);
   const [blocked, setBlocked] = useState<'paused' | 'unavailable' | null>(null);
   const [sent, setSent] = useState(false);
+  // DEC 133: while the seller is moving out, more of their items can join this offer.
+  const shownItem = query.data && isVisible(query.data) ? query.data : null;
+  const sellerId = shownItem?.seller?.id ?? null;
+  const movingBy = shownItem?.seller?.moving_out_by ?? null;
+  const sellerQ = useQuery({
+    queryKey: ['profile', sellerId],
+    queryFn: () => profiles.getProfile(sellerId!),
+    enabled: sellerId !== null && movingBy !== null && shownItem?.access === 'buyer',
+  });
+  const [extra, setExtra] = useState<string[]>([]);
   const close = () => (router.canGoBack() ? router.back() : router.replace('/discover'));
   useEffect(() => track('offer_sheet_opened'), []);
 
@@ -101,9 +116,16 @@ export function OfferSheetScreen({
     );
   }
 
-  const free = item.kind === 'free';
-  const ask = item.price_cents;
-  const firm = !free && !item.open_to_offers;
+  const pool =
+    movingBy && sellerQ.data && sellerQ.data.access === 'ok'
+      ? sellerQ.data.listings.filter((l) => l.id !== item.id && l.status === 'active')
+      : [];
+  const picked = pool.filter((l) => extra.includes(l.id));
+  const bundle = picked.length > 0;
+  // A bundle's amount is for everything: free only when every item is free.
+  const free = item.kind === 'free' && picked.every((l) => l.kind === 'free');
+  const ask = item.price_cents + picked.reduce((sum, l) => sum + l.price_cents, 0);
+  const firm = !free && !bundle && !item.open_to_offers;
   const cents = free ? 0 : firm ? ask : amount === null ? ask : (dollarsToCents(amount) ?? 0);
   const name = sellerName(item);
 
@@ -115,7 +137,7 @@ export function OfferSheetScreen({
           <Text variant="title" accessibilityRole="header">
             {free ? copy.askedTitle : copy.sentTitle}
           </Text>
-          <Text variant="body" tone="ink2" style={styles.center}>
+          <Text variant="body" tone="ink2" style={styles.lead}>
             {fill(copy.sentBody, { name })}
           </Text>
         </View>
@@ -131,12 +153,17 @@ export function OfferSheetScreen({
     setError(null);
     setSending(true);
     try {
-      await api.make(
-        item.id,
-        cents,
-        note,
-        notes.map((n) => copy.quickNotes[n as keyof typeof copy.quickNotes]),
-      );
+      const quick = notes.map((n) => copy.quickNotes[n as keyof typeof copy.quickNotes]);
+      if (bundle)
+        await api.makeBundle(
+          item.id,
+          picked.map((l) => l.id),
+          cents,
+          note,
+          quick,
+        );
+      else await api.make(item.id, cents, note, quick);
+      markOfferSent(listingId);
       haptic('success'); // Budget: "offer sent" (DESIGN_SYSTEM §5).
       track('offer_sent', { pct_of_ask_bucket: pctBucket(cents, ask) });
       void qc.invalidateQueries({ queryKey: ['inbox'] });
@@ -171,26 +198,59 @@ export function OfferSheetScreen({
             <Text variant="meta" tone="ink3" numberOfLines={1}>
               {free ? name : `${fill(copy.asking, { price: money(ask) })} · ${name}`}
             </Text>
+            {/* P5: who you are dealing with, at the moment you decide. */}
+            <Text variant="meta" tone="ink2" numberOfLines={2} testID="offer-trust">
+              {trustLine(item.seller)}
+            </Text>
           </View>
         </View>
+        {pool.length > 0 ? (
+          <View style={styles.bundle} testID="offer-bundle">
+            <Text variant="label">{movingOutLine(movingBy)}</Text>
+            <Text variant="meta" tone="ink2">
+              {copy.bundleBody}
+            </Text>
+            <View style={styles.chips}>
+              {pool.map((l) => (
+                <Chip
+                  key={l.id}
+                  label={`${l.title} · ${l.kind === 'free' ? feedCopy.free : money(l.price_cents)}`}
+                  selected={extra.includes(l.id)}
+                  disabled={!extra.includes(l.id) && extra.length >= 10}
+                  onPress={() =>
+                    setExtra((prev) =>
+                      prev.includes(l.id) ? prev.filter((x) => x !== l.id) : [...prev, l.id],
+                    )
+                  }
+                  testID={`offer-bundle-${l.id}`}
+                />
+              ))}
+            </View>
+            {bundle ? (
+              <Text variant="meta" tone="ink2" testID="offer-bundle-ask">
+                {fill(copy.bundleAsk, { price: money(ask), n: picked.length + 1 })}
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
         {free ? (
-          <Text variant="body" tone="ink2" style={styles.center}>
+          <Text variant="body" tone="ink2" style={styles.lead}>
             {copy.askBody}
           </Text>
         ) : (
           <View style={styles.amountBlock}>
-            <Text variant="label" tone="ink3" style={styles.center}>
+            <Text variant="label" tone="ink3" style={styles.lead}>
               {copy.amountLabel}
             </Text>
             {firm ? (
               <>
                 <Text
-                  style={[styles.center, styles.big]}
+                  style={[styles.lead, styles.big]}
                   accessibilityLabel={`${copy.amountLabel}: ${money(ask)}`}
                 >
                   {money(ask)}
                 </Text>
-                <Text variant="meta" tone="ink2" style={styles.center}>
+                <Text variant="meta" tone="ink2" style={styles.lead}>
                   {copy.firmNote}
                 </Text>
               </>
@@ -226,7 +286,7 @@ export function OfferSheetScreen({
                   <Text
                     variant="meta"
                     tone="amber"
-                    style={styles.center}
+                    style={styles.lead}
                     accessibilityLiveRegion="polite"
                   >
                     {copy.lowWarning}
@@ -236,32 +296,43 @@ export function OfferSheetScreen({
             )}
           </View>
         )}
-        <TextArea
-          label={copy.notesLabel}
-          placeholder={copy.notePlaceholder}
-          value={note}
-          onChangeText={setNote}
-          maxLength={140}
-          testID="offer-note"
-        />
-        <View style={styles.chips}>
-          {QUICK_NOTES.map((n) => (
-            <Chip
-              key={n}
-              label={copy.quickNotes[n]}
-              selected={notes.includes(n)}
-              onPress={() =>
-                setNotes((prev) => (prev.includes(n) ? prev.filter((x) => x !== n) : [...prev, n]))
-              }
-            />
-          ))}
+        {/* The note is one line; the quick notes scroll sideways under it. */}
+        <View style={styles.noteBlock}>
+          <Input
+            label={copy.notesLabel}
+            placeholder={copy.notePlaceholder}
+            value={note}
+            onChangeText={setNote}
+            maxLength={140}
+            testID="offer-note"
+          />
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.noteChips}
+          >
+            {QUICK_NOTES.map((n) => (
+              <Chip
+                key={n}
+                label={copy.quickNotes[n]}
+                selected={notes.includes(n)}
+                onPress={() =>
+                  setNotes((prev) =>
+                    prev.includes(n) ? prev.filter((x) => x !== n) : [...prev, n],
+                  )
+                }
+              />
+            ))}
+          </ScrollView>
         </View>
         {error ? <Banner kind="error" message={error} /> : null}
-        <Text variant="meta" tone="ink2" style={styles.center} testID="offer-pay-in-person">
-          {copy.payInPerson}
-        </Text>
       </ScrollView>
       <View style={styles.dock}>
+        {/* The main trust message sits right above Send, never below the fold. */}
+        <Text variant="meta" tone="ink2" style={styles.lead} testID="offer-pay-in-person">
+          {copy.payInPerson}
+        </Text>
         <Button
           label={free ? copy.sendAsk : copy.send}
           variant="dark"
@@ -280,31 +351,51 @@ const styles = StyleSheet.create((theme, rt) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   body: { ...readableColumn, padding: theme.space.screen, gap: theme.space.lg },
   flex: { flex: 1 },
-  item: { flexDirection: 'row', alignItems: 'center', gap: theme.space.md },
+  // Round 2: the item sits on a soft tile, so it reads as context, not content.
+  item: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.space.md,
+    padding: theme.space.md,
+    borderRadius: theme.radius.card,
+    backgroundColor: theme.colors.bg2,
+  },
   thumb: {
     width: theme.size.avatarM + theme.space.sm,
     height: theme.size.avatarM + theme.space.sm,
   },
   amountBlock: { gap: theme.space.sm, paddingTop: theme.space.md },
-  // The offer number: the display style at almost twice the size (DEC 90).
+  // The offer number is the biggest thing on the sheet (round 2): left-aligned,
+  // bold, tabular, with no tight tracking.
   big: {
-    fontSize: theme.type.display.fontSize * 1.85,
-    lineHeight: theme.type.display.fontSize * 2.2,
-    fontWeight: theme.type.display.fontWeight,
-    letterSpacing: theme.type.display.letterSpacing * 1.85,
+    fontSize: theme.type.display.fontSize * 1.65,
+    lineHeight: theme.type.display.fontSize * 1.9,
+    fontWeight: theme.type.price.fontWeight,
     color: theme.colors.ink,
     fontVariant: ['tabular-nums'],
   },
-  bigInput: { textAlign: 'center', paddingVertical: 0 },
-  quick: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: theme.space.sm },
+  bigInput: { textAlign: 'left', paddingVertical: 0 },
+  bundle: {
+    gap: theme.space.sm,
+    padding: theme.space.lg,
+    borderRadius: theme.radius.card,
+    borderWidth: 1,
+    borderColor: theme.colors.line,
+    backgroundColor: theme.colors.card,
+  },
+  quick: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
-  center: { textAlign: 'center' },
+  noteBlock: { gap: theme.space.sm },
+  noteChips: { gap: theme.space.sm },
+  // Round 2: copy reads left-aligned, like the rest of the sheet.
+  lead: { textAlign: 'left' },
   success: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
     gap: theme.space.md,
     padding: theme.space.screen,
+    paddingBottom: theme.space['2xl'] * 2,
   },
   dock: {
     ...readableColumn,

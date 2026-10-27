@@ -380,3 +380,38 @@ Each session ends runnable and with its tests green. **P0 tasks are yours** (man
 | S54 | iPad + Spanish | P17-FEAT-02, P17-FEAT-03 | iPad layouts, es strings |
 | S55 | Widgets + Live Activity + icons | P17-FEAT-01, R2-ICON-01 | meetup widget, alternate icons |
 | S56 | Quad check-ins + full verify | R2-QUAD-CHECKIN | everything green on the Mac and devices |
+
+## UX pack (DEC 124 to 134, owner approved 2026-10-15): before the first store submission
+
+Branch `feat/ux-pack`. Order keeps every step OTA-able until UX-10 (native camera).
+
+- [x] UX-01 Trust on the swipe card (DEC 124): `feed_item` seller stats; card + listing seller row. Done when: pgTAP + Jest pass.
+- [x] UX-02 Renew (DEC 125): 72 h cooldown; Renew in My listings. Done when: pgTAP + Jest pass.
+- [x] UX-03 Away mode (DEC 126): `set_away`, filters, `SELLER_AWAY`, settings switch, Away tag. Done when: pgTAP + Jest pass.
+- [x] UX-04 Wanted need by + alert me (DEC 127). Done when: pgTAP + Jest pass.
+- [x] UX-05 Recently viewed + More like this (DEC 128). Done when: pgTAP + Jest pass.
+- [x] UX-06 Listing help (DEC 129). Done when: Jest passes.
+- [x] UX-07 Quad inside Feed (DEC 130). Done when: Jest passes.
+- [x] UX-08 Handoff code (DEC 132). Done when: pgTAP + Jest pass.
+- [x] UX-09 Moving out mode + bundle offers (DEC 133). Done when: pgTAP + Jest pass.
+- [x] UX-10 Scan ISBN (DEC 131, needs new builds). Done when: Jest passes (T-UNIT-ISBN-01..05); device check after the build is still open.
+- [x] UX-11 Campus launch playbook (DEC 134). Done when: RELEASE.md §9 written.
+- [x] UX-12 Launch animation (DEC 135). Done when: Jest passes (T-UNIT-LAUNCH-01); checked on the Simulator.
+
+## Apple readiness pack (DEC 136, owner approved 2026-10-16): before the first store submission
+
+Branch `feat/app-store-ready`. From the App Store readiness research (2026-10-16). AR-01 to AR-03 change the native fingerprint only through expo-age-range use (already installed), so they are OTA-able.
+
+- [x] AR-01 Minimum age 13 (DEC 136): `confirm_age_v2` (threshold 13, records `age_band`), client thresholds 13/18, AgeScreen + strings, under-13 block kept, admin labels, rpc-contract. Done when: pgTAP + Jest pass; no "18 or older" eligibility copy left in the app.
+- [x] AR-02 Legal, site and store copy to 13+: terms, rules, privacy (teen section), child-safety, site home, `sync-legal`, `docs/store/listing.md`, RELEASE age rating answers, PRD/DATA_MODEL/API/SECURITY/TESTING rows. Done when: `sync-legal --check` passes; grep finds no 18+ eligibility claim. (2026-10-16: terms add parent or guardian agreement for 13 to 17; privacy has a teen section; Apple rating answered with no override, expected 13+; Play target 13-15, 16-17, 18+. Legal versions stay 2026-11 because nothing has launched. The report reason "Involves someone under 18" is reworded in AR-05.)
+- [x] AR-03 Apple age assurance (TX/UT/LA): ask `getRequiredRegulatoryFeaturesAsync`; where Declared Age Range is required, use the OS answer (no birthday fallback) and store parental-consent state; significant-update acknowledgment helper. Done when: Jest passes with fake signals. (2026-10-16: migration 0243 adds `record_age_assurance` and `profiles.age_regulated/age_declaration/parental_consent`; AgeScreen share screen with a retry when regulated; `acknowledgeSignificantUpdate` helper. Gap: no PermissionKit parental-consent request in expo-age-range, so significant changes are held for regulated teens, see RELEASE §5. Also fixed `es.ts`, which still said 18+.)
+- [x] AR-04 Consent revoked: Edge Function `app-store-notifications` (verifies Apple's signed payload, handles `RESCIND_CONSENT` by locking the account; deal data kept). Done when: Deno tests pass; owner sets the URL in App Store Connect. (Code and tests done 2026-10-16; the owner sets the URL per RELEASE §5 Age assurance.)
+- [x] AR-05 Minor safeguards (owner to confirm the defaults): reword the `minor_safety` report reason, CSAM scanning on before launch (OWNER_TODO 19), plus any limits for 13-17 accounts. Done when: owner signs off; pgTAP + Jest pass. (2026-10-16, DEC 137: owner chose the same rules for everyone; report reason now "Puts a minor at risk"; CSAM scanning required before launch, OWNER_TODO 19.)
+- [x] AR-06 Privacy manifest: every required-reason API the merged `PrivacyInfo.xcprivacy` needs is declared; `check-prebuild.mjs` asserts it. Done when: CI prebuild check passes. (2026-10-16: app adds 1C8F.1 and 35F9.1; widget extension gets its own manifest via a config plugin; prebuild check 33/33 for development and production locally; not yet compiled in Xcode, the next preview build proves it.)
+- [x] AR-07 Review account: `appreview@` signs in on production without an emailed code and is already age-confirmed. Done when: checked against the code and RELEASE.md. (2026-10-16: `seed-review.ts` sets `adult_confirmed_at` and the 0242 trigger fills `18_plus`, so the gate skips the age screen and the AR-03 OS step; password sign-in only for `review_accounts` addresses (T-INT-AUTH-01); RELEASE §5 lists the reviewer credentials and the prod seed run. Owner: run `seed-review.ts` on prod after 0242/0243 are deployed.)
+- [x] AR-08 Owner submission checklist: App Store Connect age rating (13+ answers), App Privacy labels, export compliance, URLs, review notes, iPhone 6.9-inch and iPad 13-inch screenshots, production TestFlight build, legal review of minors meeting in person. Done when: RELEASE.md §5 lists every step.
+
+### Web app (DEC 138, owner: app work on hold)
+
+- [x] WEB-01 The whole student flow works in a browser (desktop and phone sizes) against staging: sign up, sell with photos, discover, offer, accept, chat, meetup, did it sell, rate, search and saved search, notification settings, report and block, sign out and in, delete account. Done when: `e2e/web/tests/webapp.spec.ts` WEB-E2E-01..11 pass at both sizes with no browser errors.
+- [x] WEB-02 Redeploy `onlyswap-web` (Cloudflare Pages, staging backend) from this branch after WEB-01. Done when: the live site serves the new bundle and WEB-E2E passes against it.

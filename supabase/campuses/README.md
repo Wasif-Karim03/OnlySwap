@@ -24,7 +24,7 @@ The command checks that the linked Supabase project is the staging one from `.en
 
 What it adds on the OWU campus:
 
-- 6 mock users on the test domain `mock.onlyswap.test` (never real @owu.edu addresses): Maya R., Jordan T., Priya S. and Eli W. sell; Theo M. and Nora B. are the mock buyers. Onboarding is finished (18+, current rules). Ids start with `b0000000-`.
+- 6 mock users on the test domain `mock.onlyswap.test` (never real @owu.edu addresses): Maya R., Jordan T., Priya S. and Eli W. sell; Theo M. and Nora B. are the mock buyers. Onboarding is finished (age check, current rules). Ids start with `b0000000-`.
 - 24 listings with photos (22 for sale, 2 free) spread over the last 4 days, so Discover, search and Around campus have items. Ids start with `b1000000-`.
 - 2 free food posts that expire after 2 to 3 hours (run the command again to bring them back) and 2 Wanted posts (a mini fridge, a bike lock).
 

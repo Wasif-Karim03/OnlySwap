@@ -32,7 +32,8 @@ jobs:
             select json_build_object(
               'db_bytes', pg_database_size(current_database()),
               'mau', (select count(distinct user_id) from public.activity_days where day > current_date - 30),
-              'emails_24h', (select count(*) from public.email_outbox where sent_at > now() - interval '24 hours'),
+              'emails_24h', (select count(*) from public.email_outbox where sent_at > now() - interval '24 hours')
+                + (select count(*) from auth.users where last_sign_in_at > now() - interval '24 hours'),
               'pushes_7d', (select count(*) from public.notifications where push_state = 'sent' and created_at > now() - interval '7 days'))" > db.json
       - name: R2 figures
         env:

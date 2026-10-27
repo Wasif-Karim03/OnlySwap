@@ -25,7 +25,7 @@ No harassment, threats, hate, sexual messages, or calling out other students. An
 
 ## In the Quad
 
-The Quad is anonymous to other students, not to OnlySwap.
+Quad posts and replies show your name, like everywhere else on OnlySwap.
 
 - Talk about campus, not about people. Don't name, rate or call out another student, even without their full name.
 - No threats, harassment, bullying or hate.
@@ -46,7 +46,7 @@ Posts voted down to -5 are hidden and checked by a person. Posts that break thes
 
 - Be honest about the item and its condition.
 - Show up, or cancel in the app if you can't. Repeated no-shows pause your account.
-- One account per person, and you must be 18 or older.
+- One account per person, and you must be 13 or older.
 
 ## What happens if rules are broken
 

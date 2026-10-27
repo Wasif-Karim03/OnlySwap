@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { errorMessage, knownError, reasonError, timeAgo } from '../logic';
 import { rpc } from '../supabase';
 import type { ReviewAccount } from '../types';
-import { ActionButton, Button, Card, Field, Loadable, Pill, Table, useRpc } from '../ui';
+import { ActionButton, Button, Card, Dialog, Field, Loadable, Pill, Table, useRpc } from '../ui';
 
 /** App Review accounts (owner): reviewer logins for the Demo University campus. */
 export function ReviewAccountsSection() {
@@ -25,15 +25,20 @@ export function ReviewAccountsSection() {
         }
       >
         {edit ? (
-          <ReviewForm
-            key={edit.email || 'new'}
-            initial={edit}
+          <Dialog
+            title={edit.isNew ? 'Add review account' : 'Edit review account'}
             onClose={() => setEdit(null)}
-            onSaved={() => {
-              setEdit(null);
-              state.reload();
-            }}
-          />
+          >
+            <ReviewForm
+              key={edit.email || 'new'}
+              initial={edit}
+              onClose={() => setEdit(null)}
+              onSaved={() => {
+                setEdit(null);
+                state.reload();
+              }}
+            />
+          </Dialog>
         ) : null}
         <Loadable
           state={state}
@@ -118,7 +123,6 @@ function ReviewForm({
   return (
     <form
       className="cb stack tight"
-      style={{ borderBottom: '1px solid var(--color-line)' }}
       aria-label={initial.isNew ? 'Add review account' : 'Edit review account'}
       onSubmit={async (e) => {
         e.preventDefault();
@@ -168,7 +172,7 @@ function ReviewForm({
         <Field label="Reason (saved to the audit log)">
           <input value={reason} onChange={(e) => setReason(e.target.value)} autoComplete="off" />
         </Field>
-        <Button type="submit" variant="primary" disabled={busy}>
+        <Button type="submit" variant="primary" pending={busy} pendingLabel="Saving…">
           {initial.isNew ? 'Add' : 'Save'}
         </Button>
         <Button variant="ghost" onClick={onClose}>

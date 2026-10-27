@@ -2,6 +2,7 @@ import { Link, useParams, useSearch } from '@tanstack/react-router';
 import { useState, type ReactNode } from 'react';
 
 import {
+  ageBand,
   ageMethod,
   appealStatus,
   appealSubject,
@@ -110,7 +111,11 @@ export function PersonPage() {
                       ['listings', 'Listings', d.counts.listings],
                       ['chats', 'Chats', d.counts.chats],
                       ['meetups', 'Meetups', d.counts.meetups],
-                      ['reports', 'Reports', d.counts.reports_on_them + d.counts.reports_by_them],
+                      [
+                        'reports',
+                        'Reports (on and by)',
+                        d.counts.reports_on_them + d.counts.reports_by_them,
+                      ],
                       ['blocks', 'Blocks', d.counts.blocks_made + d.counts.blocks_received],
                       ['access', 'Access log', null],
                     ] as [PersonTab, string, number | null][]
@@ -128,7 +133,7 @@ export function PersonPage() {
                     </Link>
                   ))}
                 </nav>
-                {tab === 'timeline' ? <TimelineTab userId={id} /> : null}
+                {tab === 'timeline' ? <TimelineTab userId={id} counts={d.counts} /> : null}
                 {tab === 'offers' ? <OffersTab userId={id} /> : null}
                 {tab === 'listings' ? <ListingsTab userId={id} /> : null}
                 {tab === 'chats' ? <ChatsTab userId={id} /> : null}
@@ -181,6 +186,7 @@ function Header({ d, owner, reload }: { d: PersonFull; owner: boolean; reload: (
         until: needsUntil(status) ? `${until}T23:59:00Z` : null,
         reason,
       });
+  // Pause, Suspend and Make active stay in view; Ask to re-verify and Ban sit behind More.
   const actions: ReasonAction[] = [
     { id: 'paused', label: 'Pause', needsExtra: true, extra: untilField, run: setStatus('paused') },
     {
@@ -194,6 +200,8 @@ function Header({ d, owner, reload }: { d: PersonFull; owner: boolean; reload: (
     ...(p.status !== 'active'
       ? [{ id: 'active', label: 'Make active', run: setStatus('active') }]
       : []),
+  ];
+  const moreActions: ReasonAction[] = [
     {
       id: 'reverify',
       label: 'Ask to re-verify',
@@ -211,12 +219,20 @@ function Header({ d, owner, reload }: { d: PersonFull; owner: boolean; reload: (
         ]
       : []),
   ];
+  const restricted = p.status === 'paused' || p.status === 'suspended' || p.status === 'banned';
   const lastSeen = p.last_active_at
     ? `last seen ${timeAgo(p.last_active_at)}${p.last_platform ? ` on ${platform(p.last_platform)}` : ''}${p.last_app_version ? ` (v${p.last_app_version})` : ''}`
     : 'not seen yet';
 
   return (
     <section className="card" aria-label="Student">
+      {restricted ? (
+        <div className="status-banner" role="status">
+          <span className="strong">{userStatus(p.status).label}.</span>{' '}
+          {p.paused_until ? `Until ${whenLabel(p.paused_until)}. ` : ''}
+          {p.status_reason ?? ''}
+        </div>
+      ) : null}
       <div className="hero">
         <Avatar
           initial={p.initial ?? name.slice(0, 1)}
@@ -241,7 +257,7 @@ function Header({ d, owner, reload }: { d: PersonFull; owner: boolean; reload: (
               .filter(Boolean)
               .join(' · ')}
           </div>
-          {p.paused_until || p.status_reason ? (
+          {!restricted && (p.paused_until || p.status_reason) ? (
             <div className="muted small" style={{ marginTop: 3 }}>
               {p.paused_until ? `Until ${whenLabel(p.paused_until)}. ` : ''}
               {p.status_reason ?? ''}
@@ -249,8 +265,6 @@ function Header({ d, owner, reload }: { d: PersonFull; owner: boolean; reload: (
           ) : null}
         </div>
         <div className="nums">
-          <Stat label="Swipes" value={d.counts.swipes.toLocaleString('en-US')} />
-          <Stat label="Saves" value={d.counts.saves.toLocaleString('en-US')} />
           <Stat label="Offers" value={d.counts.offers_made.toLocaleString('en-US')} />
           <Stat label="Deals" value={d.counts.deals.toLocaleString('en-US')} />
           <Stat label="Rating" value={ratingLabel(d.counts.rating)} />
@@ -267,8 +281,9 @@ function Header({ d, owner, reload }: { d: PersonFull; owner: boolean; reload: (
         </div>
       </div>
       <div className="cf">
-        <div style={{ flex: 1 }}>
-          <ReasonActions actions={actions} onDone={reload} />
+        <div className="grow-text stack tight">
+          <h3 className="section-label">Moderation</h3>
+          <ReasonActions actions={actions} more={moreActions} onDone={reload} />
         </div>
       </div>
     </section>
@@ -325,6 +340,8 @@ function SideColumn({ d, owner, reload }: { d: PersonFull; owner: boolean; reloa
               ? `${ageMethod(p.age_method)}${p.adult_confirmed_at ? `, ${dateLabel(p.adult_confirmed_at)}` : ''}`
               : 'Not done'}
           </dd>
+          <dt>Age group</dt>
+          <dd>{p.age_band ? ageBand(p.age_band) : 'Not recorded'}</dd>
           <dt>Verified until</dt>
           <dd>{p.verified_until ? dateLabel(p.verified_until) : 'Not set'}</dd>
           <dt>Invited by</dt>
@@ -344,10 +361,6 @@ function SideColumn({ d, owner, reload }: { d: PersonFull; owner: boolean; reloa
           <dt>Push</dt>
           <dd>
             {p.push_on ? 'On' : 'Off'} · tips {p.tips_on ? 'on' : 'off'}
-          </dd>
-          <dt>Blocks</dt>
-          <dd>
-            {d.counts.blocks_made} made · {d.counts.blocks_received} received
           </dd>
         </dl>
       </Card>
@@ -419,7 +432,7 @@ function ChangeEmail({ userId, onDone }: { userId: string; onDone: () => void })
 // ---------------------------------------------------------------------------
 // Tabs
 
-function TimelineTab({ userId }: { userId: string }) {
+function TimelineTab({ userId, counts }: { userId: string; counts: PersonFull['counts'] }) {
   const [seg, setSeg] = useState<TimelineFilter>('all');
   const [picked, setPicked] = useState<string[]>([]);
   const state = useLoadMore<ActivityEvent>('admin_person_timeline', {
@@ -440,9 +453,12 @@ function TimelineTab({ userId }: { userId: string }) {
           }}
         />
         <KindPicker value={picked} onChange={setPicked} />
-        <span className="muted spacer">Left swipes kept 30 days</span>
+        <span className="muted spacer">
+          {counts.swipes.toLocaleString('en-US')} swipes · {counts.saves.toLocaleString('en-US')}{' '}
+          saves · Left swipes kept 30 days
+        </span>
       </div>
-      <MoreList state={state} emptyText="Nothing in this view yet." rows={8}>
+      <MoreList state={state} emptyText="Nothing yet." rows={8}>
         {(items) => (
           <Table label="Timeline" columns={['When', 'Action', 'Listing', 'Other side', 'Details']}>
             {items.map((e) => {
@@ -872,7 +888,7 @@ function AccessTab({ userId }: { userId: string }) {
         Every time staff opened this student or changed their account. Reading this list is not
         logged.
       </p>
-      <MoreList state={state} emptyText="Nobody has looked yet.">
+      <MoreList state={state} emptyText="No one has opened this profile.">
         {(items) => (
           <Table label="Access log" columns={['When', 'Staff', 'What', 'Section', 'Reason']}>
             {items.map((a) => (

@@ -70,3 +70,31 @@ export function flyTarget(dir: SwipeDir, width: number, height: number): { x: nu
   if (dir === 'save') return { x: 0, y: -height * 1.2 };
   return { x: (dir === 'right' ? 1 : -1) * width * 1.5, y: 0 };
 }
+
+/** Round 2 "Depth" pile: each card under the top one peeks out this far below it. */
+export const PEEK = 24;
+/** The card two down starts a little smaller than the next one. */
+export const DEEP_SCALE = 0.91;
+
+/**
+ * Scale and downward offset for a card under the top one. Both ease toward
+ * the slot above as the top card reaches the release line, so the pile
+ * moves up one step as you swipe.
+ */
+export function pileFor(depth: number, x: number, width: number): { scale: number; y: number } {
+  'worklet';
+  const t = width <= 0 ? 0 : clamp(Math.abs(x) / (width * RELEASE_FRACTION), 0, 1);
+  if (depth <= 1) return { scale: NEXT_SCALE + (1 - NEXT_SCALE) * t, y: PEEK * (1 - t) };
+  return { scale: DEEP_SCALE + (NEXT_SCALE - DEEP_SCALE) * t, y: PEEK * (2 - t) };
+}
+
+/** The outer 30% of the photo on each side flips photos; the middle opens the listing. */
+export const EDGE_FRACTION = 0.3;
+
+export function tapZone(x: number, width: number): 'prev' | 'next' | 'open' {
+  'worklet';
+  if (width <= 0) return 'open';
+  if (x < width * EDGE_FRACTION) return 'prev';
+  if (x > width * (1 - EDGE_FRACTION)) return 'next';
+  return 'open';
+}

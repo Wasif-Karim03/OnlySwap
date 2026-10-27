@@ -7,13 +7,13 @@ export type Database = {
           Tables: {
             "account_deletions": {
                   Row: {
-                    "campus_id": string | null,"finished_at": string | null,"id": string,"started_at": string,"status": string,"underage": boolean,"user_id": string | null
+                    "campus_id": string | null,"finished_at": string | null,"id": string,"media_confirmed_at": string | null,"media_confirmed_gen": number | null,"media_gen": number,"media_prefixes": (string)[] | null,"media_sweep_pos": number,"media_swept_gen": number | null,"started_at": string,"status": string,"underage": boolean,"user_id": string | null
                   }
                   Insert: {
-                    "campus_id"?: string | null,"finished_at"?: string | null,"id"?: string,"started_at"?: string,"status"?: string,"underage"?: boolean,"user_id"?: string | null
+                    "campus_id"?: string | null,"finished_at"?: string | null,"id"?: string,"media_confirmed_at"?: string | null,"media_confirmed_gen"?: number | null,"media_gen"?: number,"media_prefixes"?: (string)[] | null,"media_sweep_pos"?: number,"media_swept_gen"?: number | null,"started_at"?: string,"status"?: string,"underage"?: boolean,"user_id"?: string | null
                   }
                   Update: {
-                    "campus_id"?: string | null,"finished_at"?: string | null,"id"?: string,"started_at"?: string,"status"?: string,"underage"?: boolean,"user_id"?: string | null
+                    "campus_id"?: string | null,"finished_at"?: string | null,"id"?: string,"media_confirmed_at"?: string | null,"media_confirmed_gen"?: number | null,"media_gen"?: number,"media_prefixes"?: (string)[] | null,"media_sweep_pos"?: number,"media_swept_gen"?: number | null,"started_at"?: string,"status"?: string,"underage"?: boolean,"user_id"?: string | null
                   }
                   Relationships: [
                     
@@ -109,30 +109,6 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "campuses"
       referencedColumns: ["id"]
-    },{
-      foreignKeyName: "admins_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: true
-      referencedRelation: "profile_stats"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "admins_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: true
-      referencedRelation: "profile_stats_mv"
-      referencedColumns: ["user_id"]
-    },{
-      foreignKeyName: "admins_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: true
-      referencedRelation: "profiles"
-      referencedColumns: ["id"]
-    },{
-      foreignKeyName: "admins_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: true
-      referencedRelation: "public_profiles"
-      referencedColumns: ["id"]
     }
                   ]
                 },"age_blocks": {
@@ -185,6 +161,43 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"app_transactions": {
+                  Row: {
+                    "app_transaction_id": string,"created_at": string,"last_seen_at": string,"user_id": string
+                  }
+                  Insert: {
+                    "app_transaction_id": string,"created_at"?: string,"last_seen_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "app_transaction_id"?: string,"created_at"?: string,"last_seen_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "app_transactions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "app_transactions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "app_transactions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "app_transactions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"appeals": {
                   Row: {
@@ -529,6 +542,141 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"listing_comment_likes": {
+                  Row: {
+                    "comment_id": string,"created_at": string,"user_id": string
+                  }
+                  Insert: {
+                    "comment_id": string,"created_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "comment_id"?: string,"created_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "listing_comment_likes_comment_id_fkey"
+      columns: ["comment_id"]
+isOneToOne: false
+      referencedRelation: "listing_comments"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "listing_comment_likes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "listing_comment_likes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "listing_comment_likes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "listing_comment_likes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"listing_comments": {
+                  Row: {
+                    "author_id": string,"body": string | null,"client_id": string | null,"created_at": string,"hold_reason": string | null,"id": string,"like_count": number,"listing_id": string,"parent_id": string | null,"reply_count": number,"status": string
+                  }
+                  Insert: {
+                    "author_id": string,"body"?: string | null,"client_id"?: string | null,"created_at"?: string,"hold_reason"?: string | null,"id"?: string,"like_count"?: number,"listing_id": string,"parent_id"?: string | null,"reply_count"?: number,"status"?: string
+                  }
+                  Update: {
+                    "author_id"?: string,"body"?: string | null,"client_id"?: string | null,"created_at"?: string,"hold_reason"?: string | null,"id"?: string,"like_count"?: number,"listing_id"?: string,"parent_id"?: string | null,"reply_count"?: number,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "listing_comments_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "listing_comments_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "listing_comments_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "listing_comments_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "listing_comments_listing_id_fkey"
+      columns: ["listing_id"]
+isOneToOne: false
+      referencedRelation: "listings"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "listing_comments_parent_id_fkey"
+      columns: ["parent_id"]
+isOneToOne: false
+      referencedRelation: "listing_comments"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"listing_likes": {
+                  Row: {
+                    "created_at": string,"listing_id": string,"user_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"listing_id": string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"listing_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "listing_likes_listing_id_fkey"
+      columns: ["listing_id"]
+isOneToOne: false
+      referencedRelation: "listings"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "listing_likes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "listing_likes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "listing_likes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "listing_likes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"listing_photos": {
                   Row: {
                     "blurhash": string | null,"height": number | null,"id": string,"idx": number,"listing_id": string,"path": string,"thumb_path": string,"width": number | null
@@ -567,6 +715,25 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"listing_removals": {
+                  Row: {
+                    "listing_id": string,"reason": string,"removed_at": string,"removed_by": string | null
+                  }
+                  Insert: {
+                    "listing_id": string,"reason": string,"removed_at"?: string,"removed_by"?: string | null
+                  }
+                  Update: {
+                    "listing_id"?: string,"reason"?: string,"removed_at"?: string,"removed_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "listing_removals_listing_id_fkey"
+      columns: ["listing_id"]
+isOneToOne: true
+      referencedRelation: "listings"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"listing_reservations": {
                   Row: {
                     "created_at": string | null,"id": string,"used_at": string | null,"user_id": string
@@ -582,13 +749,13 @@ isOneToOne: false
                   ]
                 },"listings": {
                   Row: {
-                    "availability": (string)[],"bumped_at": string,"buyer_id": string | null,"campus_id": string,"category_id": number | null,"condition": Database["public"]['Enums']["item_condition"] | null,"created_at": string,"deleted_at": string | null,"description": string | null,"expires_at": string | null,"hold_offer_id": string | null,"id": string,"kind": Database["public"]['Enums']["listing_kind"],"meet_note": string | null,"meet_spot_ids": (string)[],"offer_count": number,"open_to_offers": boolean,"price_cents": number,"save_count": number,"search": unknown,"seller_id": string | null,"share_image_path": string | null,"sold_at": string | null,"sold_in_app": boolean | null,"status": Database["public"]['Enums']["listing_status"],"title": string,"updated_at": string,"view_count": number,"wanted_max_cents": number | null,"wanted_ref": string | null
+                    "availability": (string)[],"bumped_at": string,"buyer_id": string | null,"campus_id": string,"category_id": number | null,"comment_count": number,"comments_enabled": boolean,"condition": Database["public"]['Enums']["item_condition"] | null,"created_at": string,"deleted_at": string | null,"description": string | null,"event_at": string | null,"expires_at": string | null,"hold_offer_id": string | null,"id": string,"kind": Database["public"]['Enums']["listing_kind"],"like_count": number,"link_url": string | null,"meet_note": string | null,"meet_spot_ids": (string)[],"need_by": string | null,"offer_count": number,"open_to_offers": boolean,"price_cents": number,"save_count": number,"search": unknown,"seller_id": string | null,"share_image_path": string | null,"sold_at": string | null,"sold_in_app": boolean | null,"status": Database["public"]['Enums']["listing_status"],"title": string,"updated_at": string,"view_count": number,"wanted_alerts": boolean,"wanted_max_cents": number | null,"wanted_ref": string | null
                   }
                   Insert: {
-                    "availability"?: (string)[],"bumped_at"?: string,"buyer_id"?: string | null,"campus_id": string,"category_id"?: number | null,"condition"?: Database["public"]['Enums']["item_condition"] | null,"created_at"?: string,"deleted_at"?: string | null,"description"?: string | null,"expires_at"?: string | null,"hold_offer_id"?: string | null,"id": string,"kind"?: Database["public"]['Enums']["listing_kind"],"meet_note"?: string | null,"meet_spot_ids"?: (string)[],"offer_count"?: number,"open_to_offers"?: boolean,"price_cents"?: number,"save_count"?: number,"search"?: never,"seller_id"?: string | null,"share_image_path"?: string | null,"sold_at"?: string | null,"sold_in_app"?: boolean | null,"status"?: Database["public"]['Enums']["listing_status"],"title": string,"updated_at"?: string,"view_count"?: number,"wanted_max_cents"?: number | null,"wanted_ref"?: string | null
+                    "availability"?: (string)[],"bumped_at"?: string,"buyer_id"?: string | null,"campus_id": string,"category_id"?: number | null,"comment_count"?: number,"comments_enabled"?: boolean,"condition"?: Database["public"]['Enums']["item_condition"] | null,"created_at"?: string,"deleted_at"?: string | null,"description"?: string | null,"event_at"?: string | null,"expires_at"?: string | null,"hold_offer_id"?: string | null,"id": string,"kind"?: Database["public"]['Enums']["listing_kind"],"like_count"?: number,"link_url"?: string | null,"meet_note"?: string | null,"meet_spot_ids"?: (string)[],"need_by"?: string | null,"offer_count"?: number,"open_to_offers"?: boolean,"price_cents"?: number,"save_count"?: number,"search"?: never,"seller_id"?: string | null,"share_image_path"?: string | null,"sold_at"?: string | null,"sold_in_app"?: boolean | null,"status"?: Database["public"]['Enums']["listing_status"],"title": string,"updated_at"?: string,"view_count"?: number,"wanted_alerts"?: boolean,"wanted_max_cents"?: number | null,"wanted_ref"?: string | null
                   }
                   Update: {
-                    "availability"?: (string)[],"bumped_at"?: string,"buyer_id"?: string | null,"campus_id"?: string,"category_id"?: number | null,"condition"?: Database["public"]['Enums']["item_condition"] | null,"created_at"?: string,"deleted_at"?: string | null,"description"?: string | null,"expires_at"?: string | null,"hold_offer_id"?: string | null,"id"?: string,"kind"?: Database["public"]['Enums']["listing_kind"],"meet_note"?: string | null,"meet_spot_ids"?: (string)[],"offer_count"?: number,"open_to_offers"?: boolean,"price_cents"?: number,"save_count"?: number,"search"?: never,"seller_id"?: string | null,"share_image_path"?: string | null,"sold_at"?: string | null,"sold_in_app"?: boolean | null,"status"?: Database["public"]['Enums']["listing_status"],"title"?: string,"updated_at"?: string,"view_count"?: number,"wanted_max_cents"?: number | null,"wanted_ref"?: string | null
+                    "availability"?: (string)[],"bumped_at"?: string,"buyer_id"?: string | null,"campus_id"?: string,"category_id"?: number | null,"comment_count"?: number,"comments_enabled"?: boolean,"condition"?: Database["public"]['Enums']["item_condition"] | null,"created_at"?: string,"deleted_at"?: string | null,"description"?: string | null,"event_at"?: string | null,"expires_at"?: string | null,"hold_offer_id"?: string | null,"id"?: string,"kind"?: Database["public"]['Enums']["listing_kind"],"like_count"?: number,"link_url"?: string | null,"meet_note"?: string | null,"meet_spot_ids"?: (string)[],"need_by"?: string | null,"offer_count"?: number,"open_to_offers"?: boolean,"price_cents"?: number,"save_count"?: number,"search"?: never,"seller_id"?: string | null,"share_image_path"?: string | null,"sold_at"?: string | null,"sold_in_app"?: boolean | null,"status"?: Database["public"]['Enums']["listing_status"],"title"?: string,"updated_at"?: string,"view_count"?: number,"wanted_alerts"?: boolean,"wanted_max_cents"?: number | null,"wanted_ref"?: string | null
                   }
                   Relationships: [
                     {
@@ -671,15 +838,28 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"meetups": {
+                },"media_uploads": {
                   Row: {
-                    "buyer_here_at": string | null,"cancel_reason": string | null,"cancelled_by": string | null,"chat_id": string,"confirmed_at": string | null,"created_at": string,"custom_place": string | null,"deal_check_sent_at": string | null,"id": string,"late_minutes": number | null,"late_user": string | null,"previous_starts_at": string | null,"proposed_by": string | null,"reminder_sent_at": string | null,"seller_here_at": string | null,"share_created_by": string | null,"share_expires_at": string | null,"share_token": string | null,"spot_id": string | null,"starts_at": string,"status": Database["public"]['Enums']["meetup_status"]
+                    "attempts": number,"created_at": string,"key": string,"kind": string,"lease_token": string | null,"lease_until": string | null,"size_bytes": number,"state": string,"state_at": string,"target_id": string,"user_id": string
                   }
                   Insert: {
-                    "buyer_here_at"?: string | null,"cancel_reason"?: string | null,"cancelled_by"?: string | null,"chat_id": string,"confirmed_at"?: string | null,"created_at"?: string,"custom_place"?: string | null,"deal_check_sent_at"?: string | null,"id"?: string,"late_minutes"?: number | null,"late_user"?: string | null,"previous_starts_at"?: string | null,"proposed_by"?: string | null,"reminder_sent_at"?: string | null,"seller_here_at"?: string | null,"share_created_by"?: string | null,"share_expires_at"?: string | null,"share_token"?: string | null,"spot_id"?: string | null,"starts_at": string,"status"?: Database["public"]['Enums']["meetup_status"]
+                    "attempts"?: number,"created_at"?: string,"key": string,"kind": string,"lease_token"?: string | null,"lease_until"?: string | null,"size_bytes"?: number,"state"?: string,"state_at"?: string,"target_id": string,"user_id": string
                   }
                   Update: {
-                    "buyer_here_at"?: string | null,"cancel_reason"?: string | null,"cancelled_by"?: string | null,"chat_id"?: string,"confirmed_at"?: string | null,"created_at"?: string,"custom_place"?: string | null,"deal_check_sent_at"?: string | null,"id"?: string,"late_minutes"?: number | null,"late_user"?: string | null,"previous_starts_at"?: string | null,"proposed_by"?: string | null,"reminder_sent_at"?: string | null,"seller_here_at"?: string | null,"share_created_by"?: string | null,"share_expires_at"?: string | null,"share_token"?: string | null,"spot_id"?: string | null,"starts_at"?: string,"status"?: Database["public"]['Enums']["meetup_status"]
+                    "attempts"?: number,"created_at"?: string,"key"?: string,"kind"?: string,"lease_token"?: string | null,"lease_until"?: string | null,"size_bytes"?: number,"state"?: string,"state_at"?: string,"target_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"meetups": {
+                  Row: {
+                    "buyer_here_at": string | null,"cancel_reason": string | null,"cancelled_by": string | null,"chat_id": string,"confirmed_at": string | null,"created_at": string,"custom_place": string | null,"deal_check_sent_at": string | null,"handoff_at": string | null,"handoff_code": string | null,"handoff_tries": number,"id": string,"late_minutes": number | null,"late_user": string | null,"previous_starts_at": string | null,"proposed_by": string | null,"reminder_sent_at": string | null,"seller_here_at": string | null,"share_created_by": string | null,"share_expires_at": string | null,"share_token": string | null,"spot_id": string | null,"starts_at": string,"status": Database["public"]['Enums']["meetup_status"]
+                  }
+                  Insert: {
+                    "buyer_here_at"?: string | null,"cancel_reason"?: string | null,"cancelled_by"?: string | null,"chat_id": string,"confirmed_at"?: string | null,"created_at"?: string,"custom_place"?: string | null,"deal_check_sent_at"?: string | null,"handoff_at"?: string | null,"handoff_code"?: string | null,"handoff_tries"?: number,"id"?: string,"late_minutes"?: number | null,"late_user"?: string | null,"previous_starts_at"?: string | null,"proposed_by"?: string | null,"reminder_sent_at"?: string | null,"seller_here_at"?: string | null,"share_created_by"?: string | null,"share_expires_at"?: string | null,"share_token"?: string | null,"spot_id"?: string | null,"starts_at": string,"status"?: Database["public"]['Enums']["meetup_status"]
+                  }
+                  Update: {
+                    "buyer_here_at"?: string | null,"cancel_reason"?: string | null,"cancelled_by"?: string | null,"chat_id"?: string,"confirmed_at"?: string | null,"created_at"?: string,"custom_place"?: string | null,"deal_check_sent_at"?: string | null,"handoff_at"?: string | null,"handoff_code"?: string | null,"handoff_tries"?: number,"id"?: string,"late_minutes"?: number | null,"late_user"?: string | null,"previous_starts_at"?: string | null,"proposed_by"?: string | null,"reminder_sent_at"?: string | null,"seller_here_at"?: string | null,"share_created_by"?: string | null,"share_expires_at"?: string | null,"share_token"?: string | null,"spot_id"?: string | null,"starts_at"?: string,"status"?: Database["public"]['Enums']["meetup_status"]
                   }
                   Relationships: [
                     {
@@ -832,13 +1012,13 @@ isOneToOne: false
                   ]
                 },"notification_prefs": {
                   Row: {
-                    "free_food": boolean,"meetups": boolean,"message_previews": boolean,"messages": boolean,"offers": boolean,"price_drop": boolean,"quad_replies": boolean,"quiet_end": string,"quiet_start": string,"saved_search": boolean,"tips": boolean,"user_id": string
+                    "comments": boolean,"free_food": boolean,"meetups": boolean,"message_previews": boolean,"messages": boolean,"offers": boolean,"price_drop": boolean,"quad_replies": boolean,"quiet_end": string,"quiet_start": string,"saved_search": boolean,"tips": boolean,"user_id": string
                   }
                   Insert: {
-                    "free_food"?: boolean,"meetups"?: boolean,"message_previews"?: boolean,"messages"?: boolean,"offers"?: boolean,"price_drop"?: boolean,"quad_replies"?: boolean,"quiet_end"?: string,"quiet_start"?: string,"saved_search"?: boolean,"tips"?: boolean,"user_id": string
+                    "comments"?: boolean,"free_food"?: boolean,"meetups"?: boolean,"message_previews"?: boolean,"messages"?: boolean,"offers"?: boolean,"price_drop"?: boolean,"quad_replies"?: boolean,"quiet_end"?: string,"quiet_start"?: string,"saved_search"?: boolean,"tips"?: boolean,"user_id": string
                   }
                   Update: {
-                    "free_food"?: boolean,"meetups"?: boolean,"message_previews"?: boolean,"messages"?: boolean,"offers"?: boolean,"price_drop"?: boolean,"quad_replies"?: boolean,"quiet_end"?: string,"quiet_start"?: string,"saved_search"?: boolean,"tips"?: boolean,"user_id"?: string
+                    "comments"?: boolean,"free_food"?: boolean,"meetups"?: boolean,"message_previews"?: boolean,"messages"?: boolean,"offers"?: boolean,"price_drop"?: boolean,"quad_replies"?: boolean,"quiet_end"?: string,"quiet_start"?: string,"saved_search"?: boolean,"tips"?: boolean,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -906,13 +1086,13 @@ isOneToOne: false
                   ]
                 },"offers": {
                   Row: {
-                    "amount_cents": number,"buyer_id": string | null,"created_at": string,"decline_reason": string | null,"expires_at": string,"id": string,"last_actor": string,"listing_id": string | null,"note": string | null,"quick_notes": (string)[],"responded_at": string | null,"round": number,"seller_id": string | null,"status": Database["public"]['Enums']["offer_status"]
+                    "amount_cents": number,"bundle_ids": (string)[],"buyer_id": string | null,"created_at": string,"decline_reason": string | null,"expires_at": string,"id": string,"last_actor": string,"listing_id": string | null,"note": string | null,"quick_notes": (string)[],"responded_at": string | null,"round": number,"seller_id": string | null,"status": Database["public"]['Enums']["offer_status"]
                   }
                   Insert: {
-                    "amount_cents": number,"buyer_id"?: string | null,"created_at"?: string,"decline_reason"?: string | null,"expires_at"?: string,"id"?: string,"last_actor"?: string,"listing_id"?: string | null,"note"?: string | null,"quick_notes"?: (string)[],"responded_at"?: string | null,"round"?: number,"seller_id"?: string | null,"status"?: Database["public"]['Enums']["offer_status"]
+                    "amount_cents": number,"bundle_ids"?: (string)[],"buyer_id"?: string | null,"created_at"?: string,"decline_reason"?: string | null,"expires_at"?: string,"id"?: string,"last_actor"?: string,"listing_id"?: string | null,"note"?: string | null,"quick_notes"?: (string)[],"responded_at"?: string | null,"round"?: number,"seller_id"?: string | null,"status"?: Database["public"]['Enums']["offer_status"]
                   }
                   Update: {
-                    "amount_cents"?: number,"buyer_id"?: string | null,"created_at"?: string,"decline_reason"?: string | null,"expires_at"?: string,"id"?: string,"last_actor"?: string,"listing_id"?: string | null,"note"?: string | null,"quick_notes"?: (string)[],"responded_at"?: string | null,"round"?: number,"seller_id"?: string | null,"status"?: Database["public"]['Enums']["offer_status"]
+                    "amount_cents"?: number,"bundle_ids"?: (string)[],"buyer_id"?: string | null,"created_at"?: string,"decline_reason"?: string | null,"expires_at"?: string,"id"?: string,"last_actor"?: string,"listing_id"?: string | null,"note"?: string | null,"quick_notes"?: (string)[],"responded_at"?: string | null,"round"?: number,"seller_id"?: string | null,"status"?: Database["public"]['Enums']["offer_status"]
                   }
                   Relationships: [
                     {
@@ -973,13 +1153,13 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "adult_confirmed_at": string | null,"age_method": Database["public"]['Enums']["age_method"] | null,"analytics_opt_in": boolean,"areas": (string)[],"avatar_path": string | null,"bio": string | null,"campus_id": string,"crash_reports_opt_in": boolean,"created_at": string,"display_name": string | null,"email_hash": string,"first_name": string | null,"founding_seller_until": string | null,"id": string,"invite_code": string,"invited_by": string | null,"last_active_at": string | null,"last_app_version": string | null,"last_initial": string | null,"last_platform": string | null,"noshow_count": number,"paused_until": string | null,"quad_rules_accepted_at": string | null,"rules_accepted_at": string | null,"rules_version": string | null,"seen_unlock_at": string | null,"status": Database["public"]['Enums']["user_status"],"status_reason": string | null,"strike_count": number,"theme_mode": string,"verified_until": string,"year": Database["public"]['Enums']["class_year"] | null
+                    "adult_confirmed_at": string | null,"age_band": string | null,"age_declaration": string | null,"age_method": Database["public"]['Enums']["age_method"] | null,"age_regulated": boolean | null,"analytics_opt_in": boolean,"areas": (string)[],"avatar_path": string | null,"away_since": string | null,"bio": string | null,"campus_id": string,"crash_reports_opt_in": boolean,"created_at": string,"display_name": string | null,"email_hash": string,"first_name": string | null,"founding_seller_until": string | null,"id": string,"invite_code": string,"invited_by": string | null,"last_active_at": string | null,"last_app_version": string | null,"last_initial": string | null,"last_platform": string | null,"moving_out_by": string | null,"noshow_count": number,"parental_consent": string | null,"paused_until": string | null,"quad_rules_accepted_at": string | null,"rules_accepted_at": string | null,"rules_version": string | null,"seen_unlock_at": string | null,"status": Database["public"]['Enums']["user_status"],"status_reason": string | null,"strike_count": number,"theme_mode": string,"verified_until": string,"year": Database["public"]['Enums']["class_year"] | null
                   }
                   Insert: {
-                    "adult_confirmed_at"?: string | null,"age_method"?: Database["public"]['Enums']["age_method"] | null,"analytics_opt_in"?: boolean,"areas"?: (string)[],"avatar_path"?: string | null,"bio"?: string | null,"campus_id": string,"crash_reports_opt_in"?: boolean,"created_at"?: string,"display_name"?: never,"email_hash": string,"first_name"?: string | null,"founding_seller_until"?: string | null,"id": string,"invite_code"?: string,"invited_by"?: string | null,"last_active_at"?: string | null,"last_app_version"?: string | null,"last_initial"?: string | null,"last_platform"?: string | null,"noshow_count"?: number,"paused_until"?: string | null,"quad_rules_accepted_at"?: string | null,"rules_accepted_at"?: string | null,"rules_version"?: string | null,"seen_unlock_at"?: string | null,"status"?: Database["public"]['Enums']["user_status"],"status_reason"?: string | null,"strike_count"?: number,"theme_mode"?: string,"verified_until": string,"year"?: Database["public"]['Enums']["class_year"] | null
+                    "adult_confirmed_at"?: string | null,"age_band"?: string | null,"age_declaration"?: string | null,"age_method"?: Database["public"]['Enums']["age_method"] | null,"age_regulated"?: boolean | null,"analytics_opt_in"?: boolean,"areas"?: (string)[],"avatar_path"?: string | null,"away_since"?: string | null,"bio"?: string | null,"campus_id": string,"crash_reports_opt_in"?: boolean,"created_at"?: string,"display_name"?: never,"email_hash": string,"first_name"?: string | null,"founding_seller_until"?: string | null,"id": string,"invite_code"?: string,"invited_by"?: string | null,"last_active_at"?: string | null,"last_app_version"?: string | null,"last_initial"?: string | null,"last_platform"?: string | null,"moving_out_by"?: string | null,"noshow_count"?: number,"parental_consent"?: string | null,"paused_until"?: string | null,"quad_rules_accepted_at"?: string | null,"rules_accepted_at"?: string | null,"rules_version"?: string | null,"seen_unlock_at"?: string | null,"status"?: Database["public"]['Enums']["user_status"],"status_reason"?: string | null,"strike_count"?: number,"theme_mode"?: string,"verified_until": string,"year"?: Database["public"]['Enums']["class_year"] | null
                   }
                   Update: {
-                    "adult_confirmed_at"?: string | null,"age_method"?: Database["public"]['Enums']["age_method"] | null,"analytics_opt_in"?: boolean,"areas"?: (string)[],"avatar_path"?: string | null,"bio"?: string | null,"campus_id"?: string,"crash_reports_opt_in"?: boolean,"created_at"?: string,"display_name"?: never,"email_hash"?: string,"first_name"?: string | null,"founding_seller_until"?: string | null,"id"?: string,"invite_code"?: string,"invited_by"?: string | null,"last_active_at"?: string | null,"last_app_version"?: string | null,"last_initial"?: string | null,"last_platform"?: string | null,"noshow_count"?: number,"paused_until"?: string | null,"quad_rules_accepted_at"?: string | null,"rules_accepted_at"?: string | null,"rules_version"?: string | null,"seen_unlock_at"?: string | null,"status"?: Database["public"]['Enums']["user_status"],"status_reason"?: string | null,"strike_count"?: number,"theme_mode"?: string,"verified_until"?: string,"year"?: Database["public"]['Enums']["class_year"] | null
+                    "adult_confirmed_at"?: string | null,"age_band"?: string | null,"age_declaration"?: string | null,"age_method"?: Database["public"]['Enums']["age_method"] | null,"age_regulated"?: boolean | null,"analytics_opt_in"?: boolean,"areas"?: (string)[],"avatar_path"?: string | null,"away_since"?: string | null,"bio"?: string | null,"campus_id"?: string,"crash_reports_opt_in"?: boolean,"created_at"?: string,"display_name"?: never,"email_hash"?: string,"first_name"?: string | null,"founding_seller_until"?: string | null,"id"?: string,"invite_code"?: string,"invited_by"?: string | null,"last_active_at"?: string | null,"last_app_version"?: string | null,"last_initial"?: string | null,"last_platform"?: string | null,"moving_out_by"?: string | null,"noshow_count"?: number,"parental_consent"?: string | null,"paused_until"?: string | null,"quad_rules_accepted_at"?: string | null,"rules_accepted_at"?: string | null,"rules_version"?: string | null,"seen_unlock_at"?: string | null,"status"?: Database["public"]['Enums']["user_status"],"status_reason"?: string | null,"strike_count"?: number,"theme_mode"?: string,"verified_until"?: string,"year"?: Database["public"]['Enums']["class_year"] | null
                   }
                   Relationships: [
                     {
@@ -1682,13 +1862,13 @@ isOneToOne: false
                   ]
                 },"swipes": {
                   Row: {
-                    "created_at": string | null,"dir": Database["public"]['Enums']["swipe_dir"],"listing_id": string,"user_id": string
+                    "created_at": string | null,"dir": Database["public"]['Enums']["swipe_dir"],"dwell_ms": number | null,"listing_id": string,"user_id": string
                   }
                   Insert: {
-                    "created_at"?: string | null,"dir": Database["public"]['Enums']["swipe_dir"],"listing_id": string,"user_id": string
+                    "created_at"?: string | null,"dir": Database["public"]['Enums']["swipe_dir"],"dwell_ms"?: number | null,"listing_id": string,"user_id": string
                   }
                   Update: {
-                    "created_at"?: string | null,"dir"?: Database["public"]['Enums']["swipe_dir"],"listing_id"?: string,"user_id"?: string
+                    "created_at"?: string | null,"dir"?: Database["public"]['Enums']["swipe_dir"],"dwell_ms"?: number | null,"listing_id"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -2243,8 +2423,14 @@ isOneToOne: false
 "confirm_age":
 { Args: { "birth_date"?: string,"is_adult"?: boolean,"method": string }; Returns: Json
                            },
+"confirm_age_v2":
+{ Args: { "band"?: string,"birth_date"?: string,"method": string }; Returns: Json
+                           },
 "confirm_deal":
 { Args: { "chat_id": string,"outcome": string }; Returns: undefined
+                           },
+"confirm_handoff":
+{ Args: { "code": string,"meetup_id": string }; Returns: Json
                            },
 "confirm_meetup":
 { Args: { "meetup_id": string }; Returns: undefined
@@ -2258,8 +2444,14 @@ isOneToOne: false
 "create_listing":
 { Args: { "availability"?: (string)[],"category_id"?: number,"condition"?: Database["public"]['Enums']["item_condition"],"description"?: string,"food_minutes"?: number,"id": string,"kind"?: Database["public"]['Enums']["listing_kind"],"meet_note"?: string,"meet_spot_ids"?: (string)[],"open_to_offers"?: boolean,"photos"?: Json,"pickup_by"?: string,"price_cents"?: number,"title"?: string,"wanted_max_cents"?: number,"wanted_ref"?: string }; Returns: Json
                            },
+"create_listing_comment":
+{ Args: { "body": string,"client_id"?: string,"listing_id": string,"parent_id"?: string }; Returns: Json
+                           },
 "create_meetup_share":
 { Args: { "meetup_id": string }; Returns: Json
+                           },
+"create_news":
+{ Args: { "description"?: string,"event_at"?: string,"id": string,"link_url"?: string,"photos"?: Json,"place"?: string,"title": string }; Returns: Json
                            },
 "create_quad_post":
 { Args: { "body": string,"kind": string,"photo_path"?: string,"place"?: string,"poll"?: Json,"post_id"?: string }; Returns: Json
@@ -2278,6 +2470,9 @@ isOneToOne: false
                            },
 "delete_listing":
 { Args: { "id": string }; Returns: undefined
+                           },
+"delete_listing_comment":
+{ Args: { "comment_id": string }; Returns: undefined
                            },
 "delete_quad_post":
 { Args: { "post_id": string }; Returns: undefined
@@ -2303,6 +2498,9 @@ isOneToOne: false
 "get_chat_meetup":
 { Args: { "chat_id": string }; Returns: Json
                            },
+"get_comment_replies":
+{ Args: { "comment_id": string,"cursor"?: Json }; Returns: Json
+                           },
 "get_feed":
 { Args: { "cursor"?: Json,"limit"?: number }; Returns: Json
                            },
@@ -2315,8 +2513,14 @@ isOneToOne: false
 "get_listing":
 { Args: { "id": string }; Returns: Json
                            },
+"get_listing_comments":
+{ Args: { "cursor"?: Json,"listing_id": string,"sort"?: string }; Returns: Json
+                           },
 "get_listing_public_card":
 { Args: { "id": string }; Returns: Json
+                           },
+"get_listings_by_ids":
+{ Args: { "ids": (string)[] }; Returns: Json
                            },
 "get_me":
 { Args: Record<PropertyKey, never>; Returns: Json
@@ -2378,6 +2582,15 @@ isOneToOne: false
 "hide_quad_author":
 { Args: { "post_id": string }; Returns: undefined
                            },
+"like_listing":
+{ Args: { "liked": boolean,"listing_id": string }; Returns: Json
+                           },
+"like_listing_comment":
+{ Args: { "comment_id": string,"liked": boolean }; Returns: Json
+                           },
+"link_app_transaction":
+{ Args: { "app_transaction_id": string }; Returns: undefined
+                           },
 "list_blocked":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
@@ -2392,6 +2605,9 @@ isOneToOne: false
                            },
 "lookup_school":
 { Args: { "domain": string }; Returns: Json
+                           },
+"make_bundle_offer":
+{ Args: { "amount_cents": number,"bundle_ids": (string)[],"listing_id": string,"note"?: string,"quick_notes"?: (string)[] }; Returns: Json
                            },
 "make_offer":
 { Args: { "amount_cents": number,"listing_id": string,"note"?: string,"quick_notes"?: (string)[] }; Returns: Json
@@ -2431,6 +2647,9 @@ isOneToOne: false
 "public_safe_spots":
 { Args: { "slug": string }; Returns: Json
                            },
+"record_age_assurance":
+{ Args: { "declaration"?: string,"regulated": boolean }; Returns: Json
+                           },
 "record_swipes":
 { Args: { "items": Json }; Returns: undefined
                            },
@@ -2467,14 +2686,29 @@ isOneToOne: false
 "send_message":
 { Args: { "body": string,"chat_id": string,"client_id": string,"kind"?: string,"photo_path"?: string }; Returns: Json
                            },
+"set_away":
+{ Args: { "away": boolean }; Returns: Json
+                           },
 "set_chat_mute":
 { Args: { "chat_id": string,"muted": boolean }; Returns: undefined
+                           },
+"set_listing_comments":
+{ Args: { "enabled": boolean,"listing_id": string }; Returns: Json
                            },
 "set_listing_share_image":
 { Args: { "id": string }; Returns: Json
                            },
+"set_moving_out":
+{ Args: { "by": string }; Returns: Json
+                           },
 "set_quad_replies":
 { Args: { "enabled": boolean,"post_id": string }; Returns: undefined
+                           },
+"set_wanted_prefs":
+{ Args: { "alerts": boolean,"id": string,"need_by": string }; Returns: Json
+                           },
+"similar_listings":
+{ Args: { "id": string }; Returns: Json
                            },
 "submit_rating":
 { Args: { "chat_id": string,"comment"?: string,"tags"?: (string)[],"thumbs_up": boolean }; Returns: undefined
@@ -2493,6 +2727,9 @@ isOneToOne: false
                            },
 "unmute_keyword":
 { Args: { "keyword": string }; Returns: undefined
+                           },
+"unread_count":
+{ Args: Record<PropertyKey, never>; Returns: number
                            },
 "unsave_listing":
 { Args: { "listing_id": string }; Returns: Json
@@ -2526,7 +2763,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "admin_role": "owner"|"moderator","age_method": "os_signal"|"self_declared"|"review","campus_status": "waitlist"|"live"|"paused","chat_status": "open"|"closed"|"blocked","class_year": "freshman"|"sophomore"|"junior"|"senior"|"grad"|"other","item_condition": "new"|"like_new"|"good"|"fair","listing_kind": "sale"|"free"|"wanted"|"food","listing_status": "active"|"hold"|"sold"|"expired"|"held_review"|"removed"|"deleted","meetup_status": "proposed"|"confirmed"|"cancelled"|"completed"|"no_show","message_kind": "text"|"system"|"meetup"|"photo","offer_status": "pending"|"countered"|"accepted"|"declined"|"expired"|"withdrawn"|"auto_declined","push_state": "pending"|"sending"|"sent"|"skipped"|"failed","report_status": "open"|"actioned"|"dismissed","spot_designation": "public"|"police","swipe_dir": "left"|"save","user_status": "active"|"waitlist"|"reverify"|"paused"|"suspended"|"banned"
+            "admin_role": "owner"|"moderator","age_method": "os_signal"|"self_declared"|"review","campus_status": "waitlist"|"live"|"paused","chat_status": "open"|"closed"|"blocked","class_year": "freshman"|"sophomore"|"junior"|"senior"|"grad"|"other","item_condition": "new"|"like_new"|"good"|"fair","listing_kind": "sale"|"free"|"wanted"|"food"|"news","listing_status": "active"|"hold"|"sold"|"expired"|"held_review"|"removed"|"deleted","meetup_status": "proposed"|"confirmed"|"cancelled"|"completed"|"no_show","message_kind": "text"|"system"|"meetup"|"photo","offer_status": "pending"|"countered"|"accepted"|"declined"|"expired"|"withdrawn"|"auto_declined","push_state": "pending"|"sending"|"sent"|"skipped"|"failed","report_status": "open"|"actioned"|"dismissed","spot_designation": "public"|"police","swipe_dir": "left"|"save"|"right","user_status": "active"|"waitlist"|"reverify"|"paused"|"suspended"|"banned"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -2642,7 +2879,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "admin_role": ["owner", "moderator"],"age_method": ["os_signal", "self_declared", "review"],"campus_status": ["waitlist", "live", "paused"],"chat_status": ["open", "closed", "blocked"],"class_year": ["freshman", "sophomore", "junior", "senior", "grad", "other"],"item_condition": ["new", "like_new", "good", "fair"],"listing_kind": ["sale", "free", "wanted", "food"],"listing_status": ["active", "hold", "sold", "expired", "held_review", "removed", "deleted"],"meetup_status": ["proposed", "confirmed", "cancelled", "completed", "no_show"],"message_kind": ["text", "system", "meetup", "photo"],"offer_status": ["pending", "countered", "accepted", "declined", "expired", "withdrawn", "auto_declined"],"push_state": ["pending", "sending", "sent", "skipped", "failed"],"report_status": ["open", "actioned", "dismissed"],"spot_designation": ["public", "police"],"swipe_dir": ["left", "save"],"user_status": ["active", "waitlist", "reverify", "paused", "suspended", "banned"]
+            "admin_role": ["owner", "moderator"],"age_method": ["os_signal", "self_declared", "review"],"campus_status": ["waitlist", "live", "paused"],"chat_status": ["open", "closed", "blocked"],"class_year": ["freshman", "sophomore", "junior", "senior", "grad", "other"],"item_condition": ["new", "like_new", "good", "fair"],"listing_kind": ["sale", "free", "wanted", "food", "news"],"listing_status": ["active", "hold", "sold", "expired", "held_review", "removed", "deleted"],"meetup_status": ["proposed", "confirmed", "cancelled", "completed", "no_show"],"message_kind": ["text", "system", "meetup", "photo"],"offer_status": ["pending", "countered", "accepted", "declined", "expired", "withdrawn", "auto_declined"],"push_state": ["pending", "sending", "sent", "skipped", "failed"],"report_status": ["open", "actioned", "dismissed"],"spot_designation": ["public", "police"],"swipe_dir": ["left", "save", "right"],"user_status": ["active", "waitlist", "reverify", "paused", "suspended", "banned"]
           }
         }
 } as const

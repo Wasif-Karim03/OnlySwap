@@ -2,26 +2,37 @@ import DateTimePicker, { type DateTimePickerEvent } from '@react-native-communit
 import * as AgeRange from 'expo-age-range';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Platform, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ActivityIndicator, Linking, Platform, View } from 'react-native';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 import { Button } from '@/components/Button';
-import { GlyphTile } from '@/components/EmptyState';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { WebDateInput } from '@/components/WebDateInput';
+import { getEnv } from '@/lib/env';
 import { errorCopy, toAppError } from '@/lib/errors';
+import { fill } from '@/lib/format';
 import { isWebPlatform } from '@/lib/platform';
-import { age as copy } from '@/strings';
+import { age as copy, intlLocale } from '@/strings';
 
-import { requestAgeSignal, toIsoDate, type AgeRangeModule, type Device } from './age';
+import {
+  bandForSignal,
+  checkRegulation,
+  NOT_REGULATED,
+  requestAgeAnswer,
+  toIsoDate,
+  type AgeDeclaration,
+  type AgeRangeModule,
+  type Device,
+  type Regulation,
+} from './age';
 import { authApi, type AuthApi } from './api';
 import { AuthStep } from './AuthStep';
-import { hadLoginIntent } from './loginIntent';
+import { NotYouSignOut } from './NotYouSignOut';
 import { useGateHandoff } from './useAppGate';
 
-type Phase = 'checking' | 'form' | 'saving' | 'blocked';
+type Phase = 'checking' | 'form' | 'saving' | 'blocked' | 'osRequired';
 
 const deviceTz = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -38,8 +49,11 @@ export const PICKER_START_YEARS_AGO = 20;
 /**
  * A05 Age check (P4-AUTH-07; boards A7 Birthday, A8 Not eligible; D4 native
  * date picker). The OS signal goes first; the date field is the fallback.
- * A minor's account is deleted right away (delete-account, underage mode)
+ * Under 13, the account is deleted right away (delete-account, underage mode)
  * and the email stays blocked (age_blocks), so there is no retry.
+ * Where Apple says age assurance law applies (AR-03; Texas, Utah,
+ * Louisiana), only the OS answer counts: no date field, and a declined
+ * answer shows a retry instead.
  */
 export function AgeScreen({
   api = authApi,
@@ -52,7 +66,6 @@ export function AgeScreen({
 }) {
   const router = useRouter();
   const { theme } = useUnistyles();
-  const insets = useSafeAreaInsets();
   // Dev only: `/age?form=1` skips the OS signal so the date path can be tried
   // on a Simulator (which answers "18+" for everyone).
   const { form } = useLocalSearchParams<{ form?: string }>();
@@ -61,11 +74,15 @@ export function AgeScreen({
   const [date, setDate] = useState<Date | null>(null);
   const [pickerOpen, setPickerOpen] = useState(Platform.OS === 'ios');
   const [error, setError] = useState<string | null>(null);
+  // A neutral double-check before the date is sent (UX audit 2026-10-25): an
+  // under-13 answer deletes the account for good, so a wheel slip must not.
+  const [confirming, setConfirming] = useState(false);
   const started = useRef(false);
+  const regulation = useRef<Regulation>(NOT_REGULATED);
 
-  const finishAdult = useGateHandoff();
+  const finishEligible = useGateHandoff();
 
-  const finishMinor = async () => {
+  const finishUnderMinimum = async () => {
     // Delete first, then sign out; either failing still ends on the blocked
     // screen because the email is already in age_blocks.
     try {
@@ -81,13 +98,26 @@ export function AgeScreen({
     setPhase('blocked');
   };
 
-  const submit = async (input: Parameters<AuthApi['confirmAge']>[0]) => {
+  const submit = async (
+    input: Parameters<AuthApi['confirmAge']>[0],
+    declaration: AgeDeclaration | null = null,
+  ) => {
     setPhase('saving');
     setError(null);
     try {
-      const { adult } = await api.confirmAge(input);
-      if (adult) finishAdult();
-      else await finishMinor();
+      const { eligible } = await api.confirmAge(input);
+      if (!eligible) {
+        await finishUnderMinimum();
+        return;
+      }
+      if (regulation.current.required) {
+        try {
+          await api.recordAgeAssurance({ regulated: true, declaration });
+        } catch {
+          // The age is confirmed; a missed record doesn't stop sign-up.
+        }
+      }
+      finishEligible();
     } catch (e) {
       const err = toAppError(e);
       setError(
@@ -97,47 +127,83 @@ export function AgeScreen({
     }
   };
 
+  const askOs = async () => {
+    setPhase('checking');
+    const { signal, declaration } = await requestAgeAnswer(ageModule, device);
+    if (signal !== 'unknown') {
+      void submit({ method: 'os_signal', band: bandForSignal(signal) }, declaration);
+    } else {
+      setPhase(regulation.current.required ? 'osRequired' : 'form');
+    }
+  };
+
   useEffect(() => {
     if (started.current || skipSignal) return;
     started.current = true;
-    void requestAgeSignal(ageModule, device).then((signal) => {
-      if (signal === 'unknown') setPhase('form');
-      else void submit({ method: 'os_signal', isAdult: signal === 'adult' });
-    });
+    void (async () => {
+      regulation.current = await checkRegulation(ageModule, device);
+      await askOs();
+    })();
     // Runs once on mount; the signal is asked a single time.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (phase === 'blocked') {
+    // Left-aligned title and one line in a scrolling column, Close docked (3.01).
     return (
-      <View
-        style={[styles.blocked, { paddingTop: insets.top, paddingBottom: insets.bottom }]}
+      <AuthStep
         testID="screen-age-blocked"
+        title={copy.blockedTitle}
+        body={copy.blockedBody}
+        leading="none"
+        dock={
+          <>
+            <Button
+              label={copy.close}
+              variant="secondary"
+              onPress={() => router.replace('/welcome')}
+              testID="age-close"
+            />
+            <Button
+              label={copy.support}
+              variant="text"
+              onPress={() => void Linking.openURL(`${getEnv().EXPO_PUBLIC_SITE_URL}/help#contact`)}
+              testID="age-support"
+            />
+          </>
+        }
+      />
+    );
+  }
+
+  if (phase === 'osRequired') {
+    return (
+      <AuthStep
+        testID="screen-age-os-required"
+        title={copy.osRequiredTitle}
+        body={copy.osRequiredBody}
+        leading="none"
+        step={3}
+        dock={
+          <>
+            <Button
+              label={copy.osRequiredRetry}
+              onPress={() => void askOs()}
+              testID="age-os-retry"
+            />
+            <Button
+              label={copy.close}
+              variant="text"
+              onPress={() => router.replace('/welcome')}
+              testID="age-os-close"
+            />
+          </>
+        }
       >
-        <View style={styles.blockedBody}>
-          <GlyphTile icon="lock" />
-          <Text variant="heading" accessibilityRole="header" style={styles.center}>
-            {copy.blockedTitle}
-          </Text>
-          <Text variant="body" tone="ink2" style={styles.center}>
-            {copy.blockedBody}
-          </Text>
-          <View style={styles.card}>
-            <Text variant="bodyStrong">{copy.blockedCardTitle}</Text>
-            <Text variant="meta" tone="ink2">
-              {copy.blockedCardBody}
-            </Text>
-          </View>
-        </View>
-        <View style={styles.blockedDock}>
-          <Button
-            label={copy.close}
-            variant="secondary"
-            onPress={() => router.replace('/welcome')}
-            testID="age-close"
-          />
-        </View>
-      </View>
+        <Text variant="meta" tone="ink2">
+          {copy.osRequiredHint}
+        </Text>
+      </AuthStep>
     );
   }
 
@@ -171,17 +237,16 @@ export function AgeScreen({
     <AuthStep
       testID="screen-age"
       title={copy.title}
-      body={hadLoginIntent() ? `${copy.newFromSignIn} ${copy.body}` : copy.body}
+      body={copy.body}
       leading="none"
+      trailing={<NotYouSignOut api={api} />}
       step={3}
       dock={
         <Button
           label={copy.continue}
           disabled={!date || phase === 'saving'}
           loading={phase === 'saving'}
-          onPress={() =>
-            date && void submit({ method: 'self_declared', birthDate: toIsoDate(date) })
-          }
+          onPress={() => date && setConfirming(true)}
           testID="age-continue"
         />
       }
@@ -239,6 +304,7 @@ export function AgeScreen({
           maximumDate={maxDate}
           onChange={onPick}
           textColor={theme.colors.ink}
+          themeVariant={theme.mode}
         />
       ) : null}
 
@@ -251,6 +317,27 @@ export function AgeScreen({
       <Text variant="meta" tone="ink3">
         {copy.privacy}
       </Text>
+      <ConfirmDialog
+        visible={confirming}
+        title={fill(copy.confirmTitle, {
+          date: date
+            ? date.toLocaleDateString(intlLocale, {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+              })
+            : '',
+        })}
+        message={copy.confirmBody}
+        confirmLabel={copy.confirmYes}
+        cancelLabel={copy.confirmChange}
+        onCancel={() => setConfirming(false)}
+        onConfirm={() => {
+          setConfirming(false);
+          if (date) void submit({ method: 'self_declared', birthDate: toIsoDate(date) });
+        }}
+        testID="age-confirm"
+      />
     </AuthStep>
   );
 }
@@ -273,18 +360,4 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: focused ? theme.colors.card : theme.colors.bg2,
   }),
   fieldLabel: { fontWeight: '600' },
-  blocked: { flex: 1, backgroundColor: theme.colors.bg, paddingHorizontal: theme.space.screen },
-  blockedBody: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: theme.space.md },
-  center: { textAlign: 'center' },
-  card: {
-    alignSelf: 'stretch',
-    gap: theme.space.xs,
-    marginTop: theme.space.md,
-    padding: theme.space.lg,
-    borderRadius: theme.radius.card,
-    borderWidth: 1,
-    borderColor: theme.colors.line,
-    backgroundColor: theme.colors.card,
-  },
-  blockedDock: { paddingBottom: theme.space['2xl'] },
 }));

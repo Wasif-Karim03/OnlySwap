@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useWindowDimensions, View } from 'react-native';
 import Animated, {
   cancelAnimation,
@@ -79,6 +79,15 @@ export function WelcomeScreen() {
   const { width, height } = useWindowDimensions();
   const { theme } = useUnistyles();
   const reduced = useReducedMotion();
+  // The collage only moves while Welcome is on screen: under the email and
+  // code screens it would keep the GPU busy for nothing (audit 2026-10-24).
+  const [focused, setFocused] = useState(true);
+  useFocusEffect(
+    useCallback(() => {
+      setFocused(true);
+      return () => setFocused(false);
+    }, []),
+  );
 
   const bleed = Math.round(width * WALL.bleedX);
   const wallWidth = width + bleed * 2;
@@ -113,7 +122,7 @@ export function WelcomeScreen() {
               gap={gap}
               seconds={lane.seconds}
               down={lane.down}
-              still={reduced}
+              still={reduced || !focused}
             />
           ))}
         </View>

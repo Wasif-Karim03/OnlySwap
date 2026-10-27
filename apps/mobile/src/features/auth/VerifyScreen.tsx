@@ -9,7 +9,6 @@ import { OTPInput } from '@/components/OTPInput';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { errorCopy, toAppError } from '@/lib/errors';
-import { haptic } from '@/lib/haptics';
 import { signIn as copy } from '@/strings';
 
 import { authApi, type AuthApi } from './api';
@@ -141,7 +140,7 @@ export function VerifyScreen({
         return;
       }
     }
-    haptic('success');
+    // No haptic here: "signed in" is outside the haptic budget (2.8).
     // The launch gate decides the next step (age, profile, rules or the app).
     handoff();
   };
@@ -151,6 +150,9 @@ export function VerifyScreen({
     : null;
 
   const [sentBefore, sentAfter = ''] = copy.sentTo.split('{email}');
+  // One live line: the lock, the last message, or "Checking the code" while busy.
+  const liveText = lockText ?? message?.text ?? (busy ? copy.verifying : null);
+  const liveTone = lockText ? 'red' : (message?.tone ?? 'ink2');
 
   return (
     <AuthStep
@@ -185,18 +187,20 @@ export function VerifyScreen({
         onComplete={(v) => void submit(v)}
         label={copy.codeLabel}
         error={wrongFlash}
+        errorMessage={message?.tone === 'red' ? message.text : undefined}
         disabled={busy || locked}
         autoFocus
       />
 
-      {lockText || message ? (
+      {liveText ? (
         <Text
           variant="meta"
-          tone={lockText ? 'red' : (message?.tone ?? 'ink2')}
-          accessibilityLiveRegion="polite"
+          tone={liveTone}
+          // OTPInput already announces a wrong code; announce only the rest here.
+          accessibilityLiveRegion={!lockText && message?.tone === 'red' ? 'none' : 'polite'}
           testID="verify-message"
         >
-          {lockText ?? message?.text}
+          {liveText}
         </Text>
       ) : null}
 

@@ -161,7 +161,7 @@ describe('P11-A11Y-01 every control has a role and a name', () => {
       },
       '/discover',
     );
-    await screen.findByTestId('deck-offer');
+    await screen.findByTestId('deck-save');
     expect(audit(screen.toJSON())).toEqual([]);
   });
 

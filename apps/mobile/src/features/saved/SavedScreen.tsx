@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { FlatList, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { IconButton } from '@/components/IconButton';
@@ -63,6 +64,7 @@ export function SavedScreen({
   const router = useRouter();
   const qc = useQueryClient();
   const [tab, setTab] = useState<Tab>('items');
+  const [deleting, setDeleting] = useState<SavedSearch | null>(null);
   const itemsQ = useQuery({ queryKey: ['saved', 'items'], queryFn: items });
   const searchesQ = useQuery({
     queryKey: ['saved', 'searches'],
@@ -245,7 +247,7 @@ export function SavedScreen({
                   <IconButton
                     icon="trash"
                     accessibilityLabel={fill(copy.deleteSearch, { q })}
-                    onPress={() => void remove(s)}
+                    onPress={() => setDeleting(s)}
                     testID={`delete-search-${s.id}`}
                   />
                 </View>
@@ -281,6 +283,20 @@ export function SavedScreen({
         />
       </View>
       {body}
+      <ConfirmDialog
+        visible={!!deleting}
+        title={copy.deleteTitle}
+        message={copy.deleteBody}
+        confirmLabel={copy.deleteAction}
+        destructive
+        onCancel={() => setDeleting(null)}
+        onConfirm={() => {
+          const s = deleting;
+          setDeleting(null);
+          if (s) void remove(s);
+        }}
+        testID="saved-delete-search"
+      />
     </View>
   );
 }

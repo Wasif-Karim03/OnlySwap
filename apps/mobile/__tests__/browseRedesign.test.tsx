@@ -9,7 +9,7 @@ import { imageStyles, Photo } from '../src/components/Photo';
 import type { CampusApi } from '../src/features/campus/api';
 import { CampusFeedScreen } from '../src/features/campus/CampusFeedScreen';
 import { DiscoverHeader } from '../src/features/campus/DiscoverHeader';
-import { campusRows, type CampusItem, type CampusPage } from '../src/features/campus/logic';
+import type { CampusItem, CampusPage } from '../src/features/campus/logic';
 import { yearLabel } from '../src/features/feed/logic';
 import { SwipeDeck } from '../src/features/feed/SwipeDeck';
 import type { DeckCard } from '../src/features/feed/SwipeCard';
@@ -84,7 +84,7 @@ describe('DEC 90 photos render on web (expo-image size fix)', () => {
   });
 });
 
-describe('DEC 90 Discover deck card and buttons', () => {
+describe('Discover deck card (round 2) and list buttons', () => {
   const card: DeckCard = {
     id: 'a',
     title: 'Studio headphones',
@@ -97,19 +97,24 @@ describe('DEC 90 Discover deck card and buttons', () => {
     saveCount: 0,
   };
 
-  it('shows title, price, meta and the seller on the card, and the three buttons', async () => {
-    render(<SwipeDeck cards={[card]} onSwipe={jest.fn()} onOpen={jest.fn()} listMode={false} />);
+  it('round 2 card: price leads, one seller line, a moving-out tag and the bookmark', async () => {
+    render(
+      <SwipeDeck
+        cards={[{ ...card, swaps: '12 swaps', movingOut: 'Moving out Fri' }]}
+        onSwipe={jest.fn()}
+        onOpen={jest.fn()}
+        listMode={false}
+      />,
+    );
     expect(await screen.findByTestId('deck-card-a')).toBeTruthy();
-    expect(screen.getByText('Studio headphones')).toBeTruthy();
     expect(screen.getByText('$45')).toBeTruthy();
-    expect(screen.getByText('Like new · 12 minutes ago')).toBeTruthy();
-    expect(screen.getByText('Maya R.')).toBeTruthy();
-    expect(screen.getByText('Junior')).toBeTruthy();
-    expect(screen.getByTestId('deck-skip').props.accessibilityLabel).toBe(feed.skip);
+    expect(screen.getByText('Studio headphones', { exact: false })).toBeTruthy();
+    expect(screen.getByText('Maya R. · Junior · 12 swaps')).toBeTruthy();
+    expect(screen.getByText('Moving out Fri')).toBeTruthy();
     expect(screen.getByTestId('deck-save').props.accessibilityLabel).toBe(feed.save);
-    // The offer pill says it in words now ("$" before DEC 90).
-    expect(screen.getByTestId('deck-offer').props.accessibilityLabel).toBe(feed.offer);
-    expect(screen.getByText(feed.offer)).toBeTruthy();
+    // No action row on the deck (DEC 144): swiping is the action.
+    expect(screen.queryByTestId('deck-offer')).toBeNull();
+    expect(screen.queryByTestId('deck-skip')).toBeNull();
   });
 
   it('grid tiles keep Skip, Save and a short Offer', () => {
@@ -127,26 +132,21 @@ describe('DEC 90 Discover deck card and buttons', () => {
   });
 });
 
-describe('DEC 90 Discover header', () => {
-  it('shows the campus name, and the bell opens notifications', async () => {
+describe('DEC 145 Discover header', () => {
+  it('is the title and the bell, with no search and no campus line', async () => {
     renderAt(
       {
-        discover: () => <DiscoverHeader value="swipe" loadMe={me('Demo University')} />,
+        discover: () => <DiscoverHeader />,
         notifications: () => <Stub id="screen-notifications" />,
       },
       '/discover',
     );
-    expect(await screen.findByText('Demo University')).toBeTruthy();
-    expect(screen.getByRole('header', { name: feed.title })).toBeTruthy();
-    expect(screen.getByRole('tab', { name: campus.segmentSwipe, selected: true })).toBeTruthy();
+    expect(await screen.findByRole('header', { name: feed.title })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: feed.search })).toBeNull();
+    expect(screen.queryByTestId('discover-campus')).toBeNull();
+    expect(screen.queryByRole('tab')).toBeNull();
     fireEvent.press(screen.getByRole('button', { name: feed.notifications }));
     expect(await screen.findByTestId('screen-notifications')).toBeTruthy();
-  });
-
-  it('leaves the campus line out until it is known', async () => {
-    renderAt({ discover: () => <DiscoverHeader value="swipe" loadMe={me(null)} /> }, '/discover');
-    expect(await screen.findByTestId('discover-header')).toBeTruthy();
-    expect(screen.queryByTestId('discover-campus')).toBeNull();
   });
 });
 
@@ -182,25 +182,7 @@ function campusItem(id: string, over: Partial<CampusItem> = {}): CampusItem {
   };
 }
 
-describe('DEC 90 Around campus', () => {
-  it('pairs listings into grid rows; food and Wanted span the width', () => {
-    const rows = campusRows([
-      campusItem('f', { kind: 'food' }),
-      campusItem('a'),
-      campusItem('b', { kind: 'free' }),
-      campusItem('c'),
-      campusItem('w', { kind: 'wanted' }),
-      campusItem('d'),
-    ]);
-    expect(rows.map((r) => (r.kind === 'wide' ? r.item.id : r.items.map((i) => i.id)))).toEqual([
-      'f',
-      ['a', 'b'],
-      ['c'],
-      'w',
-      ['d'],
-    ]);
-  });
-
+describe('DEC 90 / DEC 98 Feed', () => {
   it('the chip row keeps its own height (no gap above the feed) and Wanted reads like a person', async () => {
     const page: CampusPage = {
       items: [
@@ -215,7 +197,7 @@ describe('DEC 90 Around campus', () => {
     const api: CampusApi = { feed: jest.fn(async () => page) } as unknown as CampusApi;
     renderAt(
       {
-        'discover/campus': () => (
+        feed: () => (
           <CampusFeedScreen
             api={api}
             now={() => NOW}
@@ -224,14 +206,14 @@ describe('DEC 90 Around campus', () => {
           />
         ),
       },
-      '/discover/campus',
+      '/feed',
     );
     expect(await screen.findByTestId('campus-item-w1')).toBeTruthy();
     const chips = StyleSheet.flatten(screen.getByTestId('campus-filters').props.style);
     expect(chips).toMatchObject({ flexGrow: 0 });
     expect(screen.getByText('Sam T. is looking for')).toBeTruthy();
     expect(screen.getByText('Up to $60')).toBeTruthy();
-    expect(screen.getByText('North dorms')).toBeTruthy();
+    expect(screen.getByText(/North dorms/)).toBeTruthy();
     expect(screen.getByRole('checkbox', { name: campus.filters.food })).toBeTruthy();
   });
 });

@@ -2,7 +2,8 @@ import { useNetInfo } from '@react-native-community/netinfo';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { Platform, ScrollView, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { Banner, isOffline } from '@/components/Banner';
@@ -16,14 +17,15 @@ import { Text } from '@/components/Text';
 import { TextArea } from '@/components/TextArea';
 import { Toggle } from '@/components/Toggle';
 import { fill } from '@/lib/format';
-import { haptic } from '@/lib/haptics';
 import { sell as copy } from '@/strings';
 
 import { sellApi, type SellApi } from './api';
 import { getDraftStore, useDraft, type DraftState } from './draft';
+import { addStarter, categoryExample, STARTERS, topCategory } from './help';
+import { TEXTBOOKS_CATEGORY } from './isbn';
 import {
   centsToPrice,
-  cleanPrice,
+  priceInput,
   DESCRIPTION_MAX,
   dollars,
   TITLE_MAX,
@@ -35,7 +37,7 @@ import {
   type PickupBy,
   type PriceHint,
 } from './logic';
-import { SellStep } from './SellStep';
+import { SellStep, useErrorShake } from './SellStep';
 
 const CONDITIONS: Condition[] = ['new', 'like_new', 'good', 'fair'];
 const PICKUPS: PickupBy[] = ['tomorrow', 'sunday', 'week'];
@@ -53,10 +55,10 @@ function useDebounced<T>(value: T, ms: number): T {
 }
 
 /**
- * R11-HINT-01 (D02 variant; DEC 90): what similar items sold for, right next
- * to the price, with a small button that fills the typical price. It never
- * blocks posting: while there are under 5 comparables (null), on any error and
- * offline it simply isn't there.
+ * R11-HINT-01 (D02 variant; DEC 90): what similar items sold for, as one meta
+ * line under the price with a text button at its end that fills the typical
+ * price (3.03). It never blocks posting: while there are under 5 comparables
+ * (null), on any error and offline it simply isn't there.
  */
 function PriceHintLine({ hint, onUse }: { hint: PriceHint; onUse: (price: string) => void }) {
   const typical = dollars(hint.medianCents);
@@ -64,16 +66,21 @@ function PriceHintLine({ hint, onUse }: { hint: PriceHint; onUse: (price: string
   const high = dollars(hint.p75Cents);
   return (
     <View style={styles.hint} testID="sell-price-hint">
-      <View accessible accessibilityLabel={fill(copy.priceHint, { low, high, typical })}>
-        <Text variant="meta" tone="ink3">
+      <View
+        accessible
+        accessibilityLabel={fill(copy.priceHint, { low, high, typical })}
+        style={styles.hintText}
+      >
+        <Text variant="meta" tone="ink2">
           {copy.priceHintLead}
         </Text>
-        <Text variant="bodyStrong">{fill(copy.priceHintRange, { low, high })}</Text>
+        <Text variant="meta" tone="ink" style={styles.strong}>
+          {fill(copy.priceHintRange, { low, high })}
+        </Text>
       </View>
-      {/* A small secondary button (chip-sized) so screen readers hear a button, not a checkbox. */}
       <Button
         label={fill(copy.priceHintUse, { price: typical })}
-        variant="secondary"
+        variant="text"
         size="S"
         fullWidth={false}
         accessibilityHint={fill(copy.priceHintUseHint, { price: typical })}
@@ -170,8 +177,8 @@ export function errorText(e: DetailsError): string {
 
 /**
  * D02 Sell · details (P5-SELL-03; board D2, D3, D4). Next shows every problem
- * at once next to its field, with a count on top, and keeps Next disabled
- * until they're fixed. "Give it away" hides category and price and asks for a
+ * at once next to its field, with a count in the dock above Next (shaken with
+ * the warning haptic, 3.03), and keeps Next disabled until they're fixed. "Give it away" hides category and price and asks for a
  * pickup day instead (DEC 54). The price hint (R11-HINT-01) shows once a
  * category and condition are picked for a sale.
  */
@@ -189,6 +196,7 @@ export function SellDetailsScreen({
   const [banned, setBanned] = useState<Banned>({});
   const [checking, setChecking] = useState(false);
   const [checkFailed, setCheckFailed] = useState(false);
+  const { style: shakeStyle, shake } = useErrorShake();
   const categories = useQuery({
     queryKey: ['categories'],
     queryFn: api.categories,
@@ -261,7 +269,8 @@ export function SellDetailsScreen({
     setBanned(found);
     if (local.length > 0 || found.title || found.description) {
       setSubmitted(true);
-      haptic('warning');
+      // The warning haptic fires with the dock line's error shake (budget, 3.03).
+      shake();
       return;
     }
     router.push('/sell/meetup');
@@ -270,6 +279,9 @@ export function SellDetailsScreen({
   const sale = draft.kind === 'sale';
   const count = errors.length;
   const list = categories.data ?? [];
+  // DEC 131: the scan offer stays until a category other than Textbooks is picked.
+  const top = topCategory(list, draft.categoryId);
+  const canScan = Platform.OS !== 'web' && sale && (top === null || top === TEXTBOOKS_CATEGORY);
 
   return (
     <SellStep
@@ -277,14 +289,29 @@ export function SellDetailsScreen({
       step={2}
       leading="back"
       onLeading={() => (router.canGoBack() ? router.back() : router.replace('/sell'))}
+      title={copy.detailsTitle}
       dock={
-        <Button
-          label={copy.next}
-          onPress={() => void next()}
-          loading={checking}
-          disabled={count > 0}
-          testID="sell-details-next"
-        />
+        <>
+          {/* Messages sit with Next, where the eye is after tapping it. The
+              wrapper stays mounted so the button never jumps on re-insert. */}
+          <View collapsable={false} style={styles.dockMessages}>
+            {count > 0 ? (
+              <Animated.View style={shakeStyle} testID="sell-details-fix-banner">
+                <Text variant="meta" tone="red" accessibilityLiveRegion="polite">
+                  {count === 1 ? copy.fixOne : fill(copy.fixCount, { count })}
+                </Text>
+              </Animated.View>
+            ) : null}
+            {checkFailed ? <Banner kind="warning" message={copy.errors.checkFailed} /> : null}
+          </View>
+          <Button
+            label={copy.next}
+            onPress={() => void next()}
+            loading={checking}
+            disabled={count > 0}
+            testID="sell-details-next"
+          />
+        </>
       }
     >
       <SegmentedControl<ListingKind>
@@ -296,38 +323,48 @@ export function SellDetailsScreen({
         value={draft.kind}
         onChange={(kind) => update({ kind })}
       />
-      {count > 0 ? (
-        <View testID="sell-details-fix-banner">
-          <Banner
-            kind="error"
-            message={count === 1 ? copy.fixOne : fill(copy.fixCount, { count })}
-          />
-        </View>
-      ) : null}
-      {checkFailed ? <Banner kind="warning" message={copy.errors.checkFailed} /> : null}
-
-      <Input
-        label={copy.titleLabel}
-        placeholder={copy.titlePlaceholder}
-        value={draft.title}
-        maxLength={TITLE_MAX}
-        onChangeText={(title) => update({ title })}
-        error={errorFor('title')}
-        testID="sell-title"
-      />
-      {sale ? (
-        <View style={styles.priceRow}>
-          <View style={styles.priceField}>
-            <Input
-              label={copy.priceLabel}
-              kind="price"
-              placeholder="0"
-              value={draft.price}
-              onChangeText={(t) => update({ price: cleanPrice(t) })}
-              error={errorFor('price')}
-              testID="sell-price"
+      <View style={styles.field}>
+        {/* The category's example title is the placeholder (3.03; DEC 129 content). */}
+        <Input
+          label={copy.titleLabel}
+          placeholder={
+            draft.categoryId === null
+              ? copy.titlePlaceholder
+              : fill(copy.titlePlaceholderExample, {
+                  example: categoryExample(list, draft.categoryId),
+                })
+          }
+          value={draft.title}
+          maxLength={TITLE_MAX}
+          onChangeText={(title) => update({ title })}
+          error={errorFor('title')}
+          testID="sell-title"
+        />
+        {/* Scan ISBN (DEC 131): native only, the web has no barcode camera. */}
+        {canScan ? (
+          <View style={styles.start}>
+            <Button
+              label={copy.scanBook}
+              variant="text"
+              size="S"
+              fullWidth={false}
+              onPress={() => router.push('/sell/scan')}
+              testID="sell-scan-book"
             />
           </View>
+        ) : null}
+      </View>
+      {sale ? (
+        <View style={styles.field}>
+          <Input
+            label={copy.priceLabel}
+            kind="price"
+            placeholder="0"
+            value={draft.price}
+            onChangeText={(t) => update(priceInput(t))}
+            error={errorFor('price')}
+            testID="sell-price"
+          />
           {shownHint ? (
             <PriceHintLine hint={shownHint} onUse={(price) => update({ price })} />
           ) : null}
@@ -338,11 +375,13 @@ export function SellDetailsScreen({
         <Text variant="label" tone="ink3">
           {copy.conditionLabel}
         </Text>
-        <SegmentedControl<Condition | ''>
+        {/* Chips wrap at large text sizes, where four segments would crowd (3.03). */}
+        <ChipGroup<Condition>
           label={copy.conditionLabel}
-          segments={CONDITIONS.map((c) => ({ value: c, label: copy.conditions[c] }))}
-          value={draft.condition ?? ''}
-          onChange={(c) => update({ condition: c === '' ? null : c })}
+          mode="single"
+          options={CONDITIONS.map((c) => ({ value: c, label: copy.conditions[c] }))}
+          value={draft.condition ? [draft.condition] : []}
+          onChange={(v) => update({ condition: v[0] ?? null })}
         />
       </View>
 
@@ -401,14 +440,13 @@ export function SellDetailsScreen({
               }}
             />
           </View>
-          <View style={styles.list}>
-            <View style={styles.freeRow}>
-              <Text variant="bodyStrong">{copy.freeTitle}</Text>
-              <Text variant="meta" tone="ink2">
-                {copy.freeBody}
-              </Text>
-            </View>
-          </View>
+          {/* One meta line instead of a tip box (3.03, DEC 90). */}
+          <Text variant="meta" tone="ink2">
+            <Text variant="meta" tone="ink" style={styles.strong}>
+              {copy.freeTitle}
+            </Text>
+            {`. ${copy.freeBody}`}
+          </Text>
         </>
       )}
 
@@ -421,6 +459,24 @@ export function SellDetailsScreen({
         error={errorFor('description')}
         testID="sell-description"
       />
+      {/* Quick details: one scrolling row of chips, no label (3.03). */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.starters}
+        testID="sell-starters"
+      >
+        {STARTERS.map((s) => (
+          <Chip
+            key={s}
+            label={copy.starters[s]}
+            selected={draft.description.includes(copy.starters[s])}
+            onPress={() => update({ description: addStarter(draft.description, s) })}
+            testID={`sell-starter-${s}`}
+          />
+        ))}
+      </ScrollView>
     </SellStep>
   );
 }
@@ -428,14 +484,12 @@ export function SellDetailsScreen({
 const styles = StyleSheet.create((theme) => ({
   field: { gap: theme.space.sm },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
-  priceRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'flex-end',
-    gap: theme.space.md,
-  },
-  priceField: { flexGrow: 1, flexBasis: '40%' },
-  hint: { flexGrow: 1.3, flexBasis: '45%', gap: theme.space.xs, alignItems: 'flex-start' },
+  start: { flexDirection: 'row' },
+  dockMessages: { gap: theme.space.xs },
+  hint: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: theme.space.sm },
+  hintText: { flexDirection: 'row', flexWrap: 'wrap', columnGap: theme.space.xs, flexShrink: 1 },
+  strong: { fontWeight: theme.type.bodyStrong.fontWeight },
+  starters: { flexDirection: 'row', gap: theme.space.sm },
   // A plain grouped list (DEC 90): hairline border, rows inside.
   list: {
     paddingHorizontal: theme.space.lg,
@@ -445,5 +499,4 @@ const styles = StyleSheet.create((theme) => ({
     borderColor: theme.colors.line,
     backgroundColor: theme.colors.card,
   },
-  freeRow: { gap: theme.space.xs, paddingVertical: theme.space.md },
 }));

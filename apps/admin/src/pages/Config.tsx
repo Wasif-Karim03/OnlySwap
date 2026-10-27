@@ -1,21 +1,9 @@
 import { useState } from 'react';
 
 import { configHelp, configKey } from '../labels';
-import { errorMessage } from '../logic';
 import { useIsOwner } from '../session';
 import { rpc } from '../supabase';
-import { Button, Card, Loadable, Switch, useRpc } from '../ui';
-
-/** Ask for the audit reason with a prompt (3+ characters), or null when cancelled. */
-function askReason(what: string): string | null {
-  const r = window.prompt(`${what}: reason (saved to the audit log)`);
-  if (r === null) return null;
-  if (r.trim().length < 3) {
-    window.alert('Add a reason of at least 3 characters.');
-    return null;
-  }
-  return r.trim();
-}
+import { Button, Card, Loadable, ReasonDialog, Switch, useRpc } from '../ui';
 
 /**
  * Settings > App switches and limits (admin_get_config / admin_set_config):
@@ -75,6 +63,7 @@ function ToggleRow({
   reload: () => void;
 }) {
   const [error, setError] = useState<string | null>(null);
+  const [asking, setAsking] = useState<boolean | null>(null);
   const on = typeof v === 'boolean' ? v : !!(v as { enabled: boolean }).enabled;
   return (
     <div className="ev">
@@ -87,20 +76,23 @@ function ToggleRow({
       <Switch
         checked={on}
         label={configKey(k)}
-        disabled={!owner}
-        onChange={async (next) => {
-          const reason = askReason(`Turn ${configKey(k)} ${next ? 'on' : 'off'}`);
-          if (!reason) return;
-          const value = typeof v === 'boolean' ? next : { ...(v as object), enabled: next };
-          try {
+        disabled={!owner || asking !== null}
+        onChange={(next) => setAsking(next)}
+      />
+      {asking !== null ? (
+        <ReasonDialog
+          title={`Turn ${configKey(k)} ${asking ? 'on' : 'off'}`}
+          pendingLabel="Saving…"
+          onCancel={() => setAsking(null)}
+          onRun={async (reason) => {
+            const value = typeof v === 'boolean' ? asking : { ...(v as object), enabled: asking };
             await rpc('admin_set_config', { key: k, value, reason });
             setError(null);
+            setAsking(null);
             reload();
-          } catch (e) {
-            setError(errorMessage(e));
-          }
-        }}
-      />
+          }}
+        />
+      ) : null}
     </div>
   );
 }
@@ -133,6 +125,7 @@ function ValueRow({
     }
   }
   const dirty = text !== initial;
+  const [asking, setAsking] = useState(false);
   return (
     <div className="ev col" style={{ gap: 6 }}>
       <div className="row">
@@ -166,23 +159,22 @@ function ValueRow({
             />
           )}
           {owner && dirty ? (
-            <Button
-              variant="primary"
-              disabled={!valid}
-              onClick={async () => {
-                const reason = askReason(`Change ${configKey(k)}`);
-                if (!reason) return;
-                try {
-                  await rpc('admin_set_config', { key: k, value: parsed, reason });
-                  setError(null);
-                  reload();
-                } catch (e) {
-                  setError(errorMessage(e));
-                }
-              }}
-            >
+            <Button variant="primary" disabled={!valid || asking} onClick={() => setAsking(true)}>
               Save
             </Button>
+          ) : null}
+          {asking ? (
+            <ReasonDialog
+              title={`Change ${configKey(k)}`}
+              pendingLabel="Saving…"
+              onCancel={() => setAsking(false)}
+              onRun={async (reason) => {
+                await rpc('admin_set_config', { key: k, value: parsed, reason });
+                setError(null);
+                setAsking(false);
+                reload();
+              }}
+            />
           ) : null}
         </div>
       ) : null}

@@ -13,11 +13,17 @@ function deps(over: Partial<UploadDeps> = {}) {
   let n = 0;
   const d: UploadDeps = {
     userIdFromToken: async (t) => (t === 'good' ? USER : null),
-    authorize: async (u, kind, target) => {
-      calls.push(`authorize:${u}:${kind}:${target}`);
+    authorize: async (u, kind, target, count) => {
+      calls.push(`authorize:${u}:${kind}:${target}:${count}`);
       return CAMPUS;
     },
-    presignPut: async (key, type, size) => `https://r2.test/${key}?type=${type}&size=${size}`,
+    recordUploads: async (u, kind, target, items) => {
+      calls.push(`record:${u}:${kind}:${target}:${JSON.stringify(items)}`);
+    },
+    presignPut: async (key, type, size) => {
+      calls.push(`presign:${key}`);
+      return `https://r2.test/${key}?type=${type}&size=${size}`;
+    },
     uuid: () => `uuid${++n}`,
     ...over,
   };
@@ -63,7 +69,65 @@ test('listing photos: one uuid per photo, full and thumb keys, signed size and t
   );
   assert.deepEqual(uploads[1]?.headers, { 'content-type': 'image/webp', 'content-length': '50' });
   assert.match(uploads[0]?.url ?? '', /size=1000$/);
-  assert.deepEqual(calls, [`authorize:${USER}:listing:${LISTING}`]);
+  // LR-03: recorded (with sizes) before anything is signed; authorize gets the file count.
+  assert.deepEqual(calls, [
+    `authorize:${USER}:listing:${LISTING}:3`,
+    `record:${USER}:listing:${LISTING}:${JSON.stringify([
+      { key: `c/${CAMPUS}/l/${LISTING}/uuid1_full.webp`, size: 1000 },
+      { key: `c/${CAMPUS}/l/${LISTING}/uuid1_thumb.webp`, size: 50 },
+      { key: `c/${CAMPUS}/l/${LISTING}/uuid2_full.webp`, size: 1000 },
+    ])}`,
+    `presign:c/${CAMPUS}/l/${LISTING}/uuid1_full.webp`,
+    `presign:c/${CAMPUS}/l/${LISTING}/uuid1_thumb.webp`,
+    `presign:c/${CAMPUS}/l/${LISTING}/uuid2_full.webp`,
+  ]);
+});
+
+test('LR-03 share cards are not recorded (one fixed key, overwritten in place)', async () => {
+  const { d, calls } = deps();
+  const res = await handleUploadUrl(
+    req({
+      kind: 'share',
+      target_id: LISTING,
+      files: [{ idx: 0, variant: 'full', type: 'image/jpeg', size: 1000 }],
+    }),
+    d,
+  );
+  assert.equal(res.status, 200);
+  assert.deepEqual(calls, [`authorize:${USER}:share:${LISTING}:1`, `presign:share/${LISTING}.jpg`]);
+});
+
+test('LR-03 a refused batch (quota, deletion gate) gets no URLs', async () => {
+  for (const [message, status] of [
+    ['RATE_LIMITED:upload_pending:2027-03-11T17:00:00Z', 429],
+    ['FORBIDDEN:deleting', 403],
+  ] as const) {
+    const { d, calls } = deps({
+      recordUploads: async () => {
+        throw { message };
+      },
+    });
+    const res = await handleUploadUrl(
+      req({ kind: 'chat', target_id: LISTING, files: [photo(0, 'full')] }),
+      d,
+    );
+    assert.deepEqual(res, { status, body: { error: message } });
+    assert.ok(!calls.some((c) => c.startsWith('presign')));
+  }
+});
+
+test('LR-03 an unexpected record failure is a plain 500 with no URLs', async () => {
+  const { d, calls } = deps({
+    recordUploads: async () => {
+      throw new Error('db down at 10.0.0.1');
+    },
+  });
+  const res = await handleUploadUrl(
+    req({ kind: 'quad', target_id: LISTING, files: [photo(0, 'full'), photo(0, 'thumb', 50)] }),
+    d,
+  );
+  assert.deepEqual(res, { status: 500, body: { error: 'UNKNOWN' } });
+  assert.ok(!calls.some((c) => c.startsWith('presign')));
 });
 
 test('avatar and share keys', () => {

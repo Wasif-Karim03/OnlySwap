@@ -108,6 +108,8 @@ export function createChatStore(chatId: string, deps: Deps): StoreApi<ChatState>
           patchLocal(clientId, { state: 'pending', progress: undefined });
           return false;
         }
+        // The upload was collected before the send (0246): the retry uploads again.
+        if (toAppError(e).code === 'UPLOAD_EXPIRED') patchLocal(clientId, { photo_path: null });
         setLocal(clientId, 'failed');
         return true;
       }
@@ -227,10 +229,45 @@ export function createChatStore(chatId: string, deps: Deps): StoreApi<ChatState>
   });
 }
 
+/** Chats kept in memory; the oldest idle one is dropped past this (C-04). */
+export const MAX_CHAT_STORES = 20;
+
+// Keyed by `${me}:${chatId}` so a store never outlives the user its `mine`
+// flags were computed for. Map order is recency: oldest first.
 const stores = new Map<string, StoreApi<ChatState>>();
 
+/** Drops every cached chat (sign-out or account switch, C-03). */
+export function resetChatStores(): void {
+  stores.clear();
+}
+
+const busy = (s: StoreApi<ChatState>) => s.getState().items.some((m) => m.state !== 'sent');
+
 /**
- * useChat: subscribes to `chat:{id}` while focused, catches up on reconnect,
+ * The store for one chat as one user. Before the session loads (`me` null) the
+ * store is not cached, so it cannot leak into the signed-in screen (C-04).
+ */
+export function chatStoreFor(
+  chatId: string,
+  me: string | null,
+  api: Deps['api'],
+): StoreApi<ChatState> {
+  if (!me) return createChatStore(chatId, { api, me: () => null });
+  const key = `${me}:${chatId}`;
+  let s = stores.get(key);
+  if (s) stores.delete(key);
+  else s = createChatStore(chatId, { api, me: () => me });
+  stores.set(key, s);
+  for (const [k, old] of stores) {
+    if (stores.size <= MAX_CHAT_STORES) break;
+    // Unsent messages stay queued until they go out.
+    if (k !== key && !busy(old)) stores.delete(k);
+  }
+  return s;
+}
+
+/**
+ * useChat: listens on `user:{me}` while focused, catches up on reconnect or resume,
  * sends queued messages when the network comes back, marks the chat read.
  */
 export function useChat(
@@ -249,12 +286,7 @@ export function useChat(
 ) {
   const store = useMemo(() => {
     if (injected) return injected;
-    let s = stores.get(chatId);
-    if (!s) {
-      s = createChatStore(chatId, { api, me: () => me });
-      stores.set(chatId, s);
-    }
-    return s;
+    return chatStoreFor(chatId, me, api);
   }, [injected, chatId, api, me]);
   const state = useStore(store);
 
@@ -264,12 +296,31 @@ export function useChat(
 
   useFocusEffect(
     useCallback(() => {
-      const stop = realtime.subscribe(`chat:${chatId}`, 'message', (payload) => {
-        store.getState().receive(payload as Message);
-        void api.markRead(chatId).catch(() => {});
-      });
+      let stop: (() => void) | null = null;
+      let alive = true;
+      const catchUp = () => {
+        if (store.getState().items.length) void store.getState().catchUp();
+      };
+      // The other party's messages arrive on our own user channel (one
+      // broadcast per message, E-09); anything else on it is for the inbox.
+      const listen = (uid: string | null) => {
+        if (!alive || !uid) return;
+        stop = realtime.subscribe(
+          `user:${uid}`,
+          'inbox',
+          (payload) => {
+            const p = payload as { chat_id?: string; message?: Message } | null;
+            if (p?.chat_id !== chatId || !p.message) return;
+            store.getState().receive(p.message);
+            void api.markRead(chatId).catch(() => {});
+          },
+          catchUp,
+        );
+      };
+      if (me) listen(me);
+      else void realtime.userId().then(listen);
       // Coming back to the screen: anything missed while away.
-      if (store.getState().items.length) void store.getState().catchUp();
+      catchUp();
       void api.markRead(chatId).catch(() => {});
       const net = NetInfo.addEventListener((s) => {
         if (s.isConnected) {
@@ -278,10 +329,11 @@ export function useChat(
         }
       });
       return () => {
-        stop();
+        alive = false;
+        stop?.();
         net();
       };
-    }, [chatId, realtime, store, api]),
+    }, [chatId, me, realtime, store, api]),
   );
 
   return state;

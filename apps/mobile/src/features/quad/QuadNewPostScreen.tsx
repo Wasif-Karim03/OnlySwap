@@ -8,6 +8,7 @@ import { StyleSheet } from 'react-native-unistyles';
 import { Banner } from '@/components/Banner';
 import { Button } from '@/components/Button';
 import { ChipGroup } from '@/components/Chip';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { IconButton } from '@/components/IconButton';
 import { Icon } from '@/components/icons/Icon';
 import { Input } from '@/components/Input';
@@ -27,6 +28,8 @@ import { quad as copy } from '@/strings';
 import { readableColumn } from '@/theme/layout';
 
 import { mediaUrl } from '../sell/logic';
+import { PhotoSourceSheet, type PhotoSource } from '../campus/PostShared';
+
 import { quadApi, type NewQuadPost, type QuadApi } from './api';
 import { quadKeys } from './cache';
 import { OutcomeSheet, type Outcome } from './components/OutcomeSheet';
@@ -43,12 +46,22 @@ import {
   type Vibe,
 } from './logic';
 
-const MODES: PostMode[] = ['text', 'photo', 'poll', 'checkin'];
+// Check-ins are off (UX audit 2026-10-25): with real names (DEC 150) a
+// check-in told strangers where a named student, maybe under 18, is right
+// now. The mode and its rendering stay so turning it back on is one line.
+export const CHECKINS_ENABLED = false;
+const MODES: PostMode[] = CHECKINS_ENABLED
+  ? ['text', 'photo', 'poll', 'checkin']
+  : ['text', 'photo', 'poll'];
+// DEC 130: the Quad is the Feed's Quad chip; after posting it opens on New.
+const QUAD_HOME = { pathname: '/feed', params: { kind: 'quad' } } as const;
+const QUAD_NEW = { pathname: '/feed', params: { kind: 'quad', sort: 'new' } } as const;
 
 type Deps = {
   api?: QuadApi;
-  pick?: () => Promise<PickedPhoto[]>;
+  pick?: (source: PhotoSource) => Promise<PickedPhoto[]>;
   photosOs?: OsApi;
+  cameraOs?: OsApi;
   openSettings?: () => Promise<unknown>;
   newId?: () => string;
   mediaBase?: () => string;
@@ -61,8 +74,9 @@ type Deps = {
  */
 export function QuadNewPostScreen({
   api = quadApi,
-  pick = () => pickPhotos('library', 1),
+  pick = (source) => pickPhotos(source, 1),
   photosOs = osPermissions.photos,
+  cameraOs = osPermissions.camera,
   openSettings = () => Linking.openSettings(),
   newId = uuid,
   mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
@@ -79,28 +93,40 @@ export function QuadNewPostScreen({
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [photoPath, setPhotoPath] = useState<string | null>(null);
   const [photoBusy, setPhotoBusy] = useState(false);
-  const [photosOff, setPhotosOff] = useState(false);
+  const [photosOff, setPhotosOff] = useState<PhotoSource | null>(null);
+  const [photoSheet, setPhotoSheet] = useState(false);
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
 
-  const leave = () => (router.canGoBack() ? router.back() : router.replace('/quad'));
+  const leave = () => (router.canGoBack() ? router.back() : router.replace(QUAD_HOME));
+  // Closing with anything typed or picked asks first (local form state only).
+  const dirty =
+    body.trim() !== '' ||
+    place.trim() !== '' ||
+    vibes.length > 0 ||
+    options.some((o) => o.trim() !== '') ||
+    photoUri !== null;
+  const close = () => (dirty ? setConfirmDiscard(true) : leave());
   const valid = canPost({ mode, body, photoPath, photoBusy, options, place });
 
-  const addPhoto = async () => {
+  const addPhoto = async (source: PhotoSource) => {
+    setPhotoSheet(false);
     setError(null);
-    let step = primerStep(await photosOs.get());
-    if (step === 'primer') step = primerStep(await photosOs.request());
+    const os = source === 'camera' ? cameraOs : photosOs;
+    let step = primerStep(await os.get());
+    if (step === 'primer') step = primerStep(await os.request());
     if (step !== 'granted') {
-      setPhotosOff(true);
+      setPhotosOff(source);
       return;
     }
-    setPhotosOff(false);
+    setPhotosOff(null);
     let picked: PickedPhoto | undefined;
     try {
-      picked = (await pick())[0];
+      picked = (await pick(source))[0];
     } catch {
-      setPhotosOff(true);
+      setPhotosOff(source);
       return;
     }
     if (!picked) return;
@@ -150,8 +176,8 @@ export function QuadNewPostScreen({
       if (res.status === 'live') {
         void qc.invalidateQueries({ queryKey: quadKeys.feeds });
         useToastStore.getState().show('success', copy.posted);
-        if (router.canDismiss()) router.dismissTo({ pathname: '/quad', params: { sort: 'new' } });
-        else router.replace({ pathname: '/quad', params: { sort: 'new' } });
+        if (router.canDismiss()) router.dismissTo(QUAD_NEW);
+        else router.replace(QUAD_NEW);
         return;
       }
       setOutcome({ status: res.status, reason: res.reason });
@@ -159,10 +185,12 @@ export function QuadNewPostScreen({
       const err = toAppError(e);
       if (err.code === 'RULES_REQUIRED' || err.code === 'FEATURE_OFF') {
         await qc.invalidateQueries({ queryKey: quadKeys.status });
-        router.replace('/quad');
+        router.replace(QUAD_HOME);
         return;
       }
       setError(errorText(e));
+      // The note sits at the end of the form, often under the keyboard.
+      useToastStore.getState().show('error', errorText(e));
     } finally {
       setPosting(false);
     }
@@ -177,24 +205,16 @@ export function QuadNewPostScreen({
 
   return (
     <View style={styles.root} testID="screen-quad-new">
-      <NavBar
-        title={copy.newTitle}
-        leading="close"
-        onLeading={leave}
-        trailing={
-          <Button
-            label={copy.post}
-            size="S"
-            variant="dark"
-            disabled={!valid}
-            loading={posting}
-            onPress={() => void submit()}
-            testID="quad-post-submit"
-          />
-        }
-      />
+      <NavBar title={copy.newTitle} leading="close" onLeading={close} />
       <KeyboardAvoidingView behavior="padding" style={styles.flex}>
         <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
+          {/* Who sees your name, first, above the keyboard (DEC 150: not anonymous). */}
+          <View style={styles.anon}>
+            <Icon name="user" size={16} tone="ink2" />
+            <Text variant="label" tone="ink2" style={styles.flex}>
+              {copy.anonNote}
+            </Text>
+          </View>
           <SegmentedControl
             label={copy.modeLabel}
             segments={MODES.map((m) => ({ value: m, label: copy.modes[m] }))}
@@ -217,6 +237,9 @@ export function QuadNewPostScreen({
                 value={vibes}
                 onChange={setVibes}
               />
+              <Text variant="meta" tone="ink2">
+                {copy.checkinHint}
+              </Text>
             </>
           ) : null}
           <TextArea
@@ -248,7 +271,7 @@ export function QuadNewPostScreen({
                   variant="secondary"
                   size="M"
                   disabled={photoBusy}
-                  onPress={() => void addPhoto()}
+                  onPress={() => setPhotoSheet(true)}
                   testID="quad-add-photo"
                 />
                 {photoUri && !photoBusy ? (
@@ -264,8 +287,14 @@ export function QuadNewPostScreen({
                 ) : null}
               </View>
               {photosOff ? (
-                <View style={styles.gap} testID="quad-photos-off">
-                  <Banner kind="warning" message={copy.photosOff} />
+                <View
+                  style={styles.gap}
+                  testID={photosOff === 'camera' ? 'quad-camera-off' : 'quad-photos-off'}
+                >
+                  <Banner
+                    kind="warning"
+                    message={photosOff === 'camera' ? copy.cameraOff : copy.photosOff}
+                  />
                   <Button
                     label={copy.openSettings}
                     variant="secondary"
@@ -314,24 +343,44 @@ export function QuadNewPostScreen({
               </Text>
             </View>
           ) : null}
-          {mode === 'checkin' ? (
-            <Text variant="meta" tone="ink2">
-              {copy.checkinHint}
-            </Text>
-          ) : null}
-          <View style={styles.anon}>
-            <Icon name="lock" size={16} tone="ink2" />
-            <Text variant="meta" tone="ink2">
-              {copy.anonNote}
-            </Text>
-          </View>
           {error ? (
             <View accessibilityLiveRegion="polite" testID="quad-post-error">
               <Banner kind="error" message={error} />
             </View>
           ) : null}
         </ScrollView>
+        {/* The one primary action, docked where the thumb is; it rides the keyboard. */}
+        <View style={styles.dock}>
+          <Button
+            label={copy.post}
+            variant="dark"
+            disabled={!valid}
+            loading={posting}
+            onPress={() => void submit()}
+            testID="quad-post-submit"
+          />
+        </View>
       </KeyboardAvoidingView>
+      <ConfirmDialog
+        visible={confirmDiscard}
+        title={copy.discardTitle}
+        message={copy.discardBody}
+        confirmLabel={copy.discardConfirm}
+        cancelLabel={copy.discardKeep}
+        destructive
+        onConfirm={() => {
+          setConfirmDiscard(false);
+          leave();
+        }}
+        onCancel={() => setConfirmDiscard(false)}
+        testID="quad-discard"
+      />
+      <PhotoSourceSheet
+        visible={photoSheet}
+        onClose={() => setPhotoSheet(false)}
+        onChoose={(source) => void addPhoto(source)}
+        testID="quad"
+      />
       <OutcomeSheet
         outcome={outcome}
         onClose={() => setOutcome(null)}
@@ -350,7 +399,7 @@ export function QuadNewPostScreen({
   );
 }
 
-const styles = StyleSheet.create((theme) => ({
+const styles = StyleSheet.create((theme, rt) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   flex: { flex: 1 },
   body: { ...readableColumn, gap: theme.space.lg, padding: theme.space.screen },
@@ -358,4 +407,12 @@ const styles = StyleSheet.create((theme) => ({
   row: { flexDirection: 'row', gap: theme.space.sm, flexWrap: 'wrap' },
   optionRow: { flexDirection: 'row', alignItems: 'flex-end', gap: theme.space.xs },
   anon: { flexDirection: 'row', alignItems: 'center', gap: theme.space.xs },
+  dock: {
+    ...readableColumn,
+    paddingHorizontal: theme.space.screen,
+    paddingTop: theme.space.sm,
+    paddingBottom: Math.max(rt.insets.bottom, theme.space.sm),
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.line,
+  },
 }));

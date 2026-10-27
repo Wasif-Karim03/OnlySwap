@@ -35,12 +35,15 @@ export function parseIsoDay(value: string): Date | null {
  */
 export function WebDateInput({
   value,
+  min,
   max,
   onChange,
   label,
   testID,
 }: {
   value: Date | null;
+  /** Earliest pickable day (news events); none for the age check. */
+  min?: Date;
   max: Date;
   onChange: (date: Date | null) => void;
   label: string;
@@ -51,6 +54,7 @@ export function WebDateInput({
   return createElement('input', {
     type: 'date',
     value: value ? isoDay(value) : '',
+    min: min ? isoDay(min) : undefined,
     max: isoDay(max),
     'aria-label': label,
     'data-testid': testID,

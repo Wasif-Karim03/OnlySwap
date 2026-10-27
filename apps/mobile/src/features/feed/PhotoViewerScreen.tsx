@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { FlatList, View, useWindowDimensions } from 'react-native';
-import { StyleSheet } from 'react-native-unistyles';
+import { ActivityIndicator, FlatList, View, useWindowDimensions } from 'react-native';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 import { NavBar } from '@/components/NavBar';
 import { Text } from '@/components/Text';
@@ -29,6 +29,7 @@ export function PhotoViewerScreen({
   mediaBase?: () => string;
 }) {
   const router = useRouter();
+  const { theme } = useUnistyles();
   const { width } = useWindowDimensions();
   const query = useQuery({ queryKey: listingKey(id), queryFn: () => api.getListing(id) });
   const [index, setIndex] = useState(start);
@@ -38,6 +39,8 @@ export function PhotoViewerScreen({
       : router.replace({ pathname: '/listing/[id]', params: { id } });
   const item = query.data && isVisible(query.data) ? query.data : null;
   const photos = item?.photos ?? [];
+  // A deep link can ask for a photo past the end; the count never shows more than exist.
+  const shown = Math.min(index, Math.max(photos.length - 1, 0));
 
   return (
     <View style={styles.root} testID="screen-photos">
@@ -67,15 +70,27 @@ export function PhotoViewerScreen({
           </View>
         )}
       />
+      {query.isPending ? (
+        <View style={styles.center} pointerEvents="none" testID="photos-loading">
+          <ActivityIndicator color={theme.colors.onPhoto} accessibilityLabel={copy.loading} />
+        </View>
+      ) : photos.length === 0 ? (
+        <View style={styles.center} pointerEvents="none" testID="photos-empty">
+          <Text variant="body" tone="onPhoto">
+            {copy.noPhotos}
+          </Text>
+        </View>
+      ) : null}
       <View style={styles.top} pointerEvents="box-none">
         <NavBar
           tone="onPhoto"
           leading="close"
+          leadingLabel={copy.closePhotos}
           onLeading={close}
           trailing={
             photos.length > 1 ? (
               <Text variant="label" tone="onPhoto">
-                {fill(copy.photoCount, { n: index + 1, total: photos.length })}
+                {fill(copy.photoCount, { n: shown + 1, total: photos.length })}
               </Text>
             ) : undefined
           }
@@ -88,4 +103,10 @@ export function PhotoViewerScreen({
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.photoBg },
   top: { position: 'absolute', top: 0, left: 0, right: 0 },
+  center: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: theme.space.screen,
+  },
 }));

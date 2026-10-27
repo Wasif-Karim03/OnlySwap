@@ -186,6 +186,30 @@ describe('T-UNIT-CHAT-02 photo messages in the send queue', () => {
     expect(store.getState().items[0]).toMatchObject({ state: 'sent', id: 31 });
   });
 
+  it('UPLOAD_EXPIRED drops the stale upload, so the retry uploads again (0246)', async () => {
+    const uploadPhoto = jest
+      .fn()
+      .mockResolvedValueOnce('c/x/chat/c1/old_full.webp')
+      .mockResolvedValue('c/x/chat/c1/k_full.webp');
+    const sendPhoto = jest
+      .fn()
+      .mockRejectedValueOnce({ code: 'P0001', message: 'UPLOAD_EXPIRED' })
+      .mockImplementation(async (_c: string, caption: string, clientId: string) =>
+        photoMsg(33, clientId, caption || null),
+      );
+    const store = createChatStore('c1', {
+      api: { messages: jest.fn(async () => []), send: jest.fn(), uploadPhoto, sendPhoto },
+      me: () => 'me',
+      uuid,
+    });
+    await store.getState().sendPhoto(LOCAL, '');
+    expect(store.getState().items[0]).toMatchObject({ state: 'failed', photo_path: null });
+    await store.getState().retry('k1');
+    expect(uploadPhoto).toHaveBeenCalledTimes(2);
+    expect(sendPhoto).toHaveBeenLastCalledWith('c1', '', 'k1', 'c/x/chat/c1/k_full.webp');
+    expect(store.getState().items[0]).toMatchObject({ state: 'sent', id: 33 });
+  });
+
   it('a failed upload is marked failed and retry uploads again', async () => {
     const uploadPhoto = jest
       .fn()
@@ -332,6 +356,7 @@ const noMeetups = {
   get: jest.fn(),
   forChat: jest.fn(async () => null),
   share: jest.fn(),
+  confirmHandoff: jest.fn(),
   noShow: jest.fn(),
 };
 

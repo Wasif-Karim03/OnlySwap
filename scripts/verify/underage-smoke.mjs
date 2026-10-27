@@ -2,7 +2,7 @@
 //   SUPABASE_URL=... ANON_KEY=... node scripts/verify/underage-smoke.mjs
 // Needs `supabase start` and `supabase functions serve`.
 // 1. A new osu.edu student signs in with a code (Mailpit).
-// 2. confirm_age with a birthday under 18 answers { adult: false }.
+// 2. confirm_age_v2 with a birthday under 13 answers { eligible: false } (DEC 136).
 // 3. delete-account in underage mode removes the account.
 // 4. Signing up again with the same email is refused with AGE_BLOCKED.
 const url = process.env.SUPABASE_URL ?? 'http://127.0.0.1:54321';
@@ -57,18 +57,18 @@ const token = await signIn(email);
 check(Boolean(token), 'new student signed in with an emailed code');
 if (!token) process.exit(1);
 
-// Today minus 17 years: under 18 in any time zone.
+// Today minus 12 years: under 13 in any time zone.
 const d = new Date();
-const birth = `${d.getFullYear() - 17}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const birth = `${d.getFullYear() - 12}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const age = await post(
-  '/rest/v1/rpc/confirm_age',
+  '/rest/v1/rpc/confirm_age_v2',
   { method: 'self_declared', birth_date: birth },
   token,
 );
 const ageBody = await json(age);
 check(
-  age.status === 200 && ageBody.adult === false,
-  'confirm_age says not adult',
+  age.status === 200 && ageBody.eligible === false,
+  'confirm_age_v2 says not eligible',
   `HTTP ${age.status}`,
 );
 

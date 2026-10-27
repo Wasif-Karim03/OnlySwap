@@ -1,4 +1,4 @@
-# E2E-02 Underage: a birthday under 18 ends at Not eligible; the same email is
+# E2E-02 Underage: a birthday under 13 ends at Not eligible; the same email is
 # then blocked at sign-up.
 appId: app.onlyswap
 tags: [auth]
@@ -29,7 +29,7 @@ tags: [auth]
     timeout: 10000
 - tapOn:
     id: age-field
-# Nudge the picker one day back from today: still under 18.
+# Nudge the picker one day back from today: still under 13.
 - runFlow:
     when:
       platform: iOS

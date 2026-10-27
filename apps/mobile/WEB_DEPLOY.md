@@ -29,9 +29,15 @@ static single-page app on the Cloudflare Pages free plan (project
 pnpm i
 cd apps/mobile
 # EXPO_PUBLIC_* come from .env.local locally, or the Pages build env.
-pnpm export:web            # = expo export -p web → apps/mobile/dist
+pnpm export:web            # env preflight, then expo export -p web → apps/mobile/dist
 npx serve dist --single    # local check (any static server with SPA fallback)
 ```
+
+`export:web` first runs `scripts/verify/check-web-env.ts`, which loads
+`.env.production.local`, `.env.local`, `.env.production`, `.env` exactly as
+`expo export` does (the process env wins, `EXPO_NO_DOTENV=1` skips files) and
+fails without `EXPO_PUBLIC_TURNSTILE_SITE_KEY` (IR4-04, IR5-02). So
+`.env.local` needs the key for a local export.
 
 `public/` is copied into `dist/`: `index.html` (page template with the focus
 ring), `_headers` (CSP and security headers) and `_redirects`.
@@ -48,6 +54,7 @@ Same as the phone app (`.env.example`); they are inlined into the bundle.
 | `EXPO_PUBLIC_MEDIA_URL` | the media Worker URL |
 | `EXPO_PUBLIC_SITE_URL` | `https://onlyswap.pages.dev` |
 | `EXPO_PUBLIC_SENTRY_DSN`, `EXPO_PUBLIC_POSTHOG_KEY`, `EXPO_PUBLIC_POSTHOG_HOST` | optional |
+| `EXPO_PUBLIC_TURNSTILE_SITE_KEY` | the Turnstile widget's site key (LR-04). **Required on web.** Production: the owner's real widget site key; the widget's hostnames must include the production web origin and `onlyswap-web.pages.dev` (and `localhost` for local runs). Staging and local use Cloudflare's test key `1x00000000000000000000AA` (the staging script passes it; the matching test secret is already on the staging functions). The matching secret is `TURNSTILE_SECRET_KEY` on support-request and waitlist-request. Unset: `pnpm export:web` stops at its preflight before bundling, and a bundle built another way stops at launch with an EnvError naming it (P1-ENV-01). |
 
 ## Cloudflare Pages (`onlyswap-web`)
 
@@ -56,6 +63,8 @@ Either connect the GitHub repo in the Pages dashboard:
 - Build command: `pnpm i --frozen-lockfile && pnpm --filter mobile export:web`
 - Build output directory: `apps/mobile/dist`
 - Environment variables: the table above, plus `NODE_VERSION=22`
+  (the build command runs the `export:web` preflight too; Node 22 has
+  `--experimental-strip-types`)
 
 or deploy a local build:
 
@@ -70,7 +79,9 @@ screen). `/l/<id>` redirects to `/listing/<id>`.
 
 ## Security headers (`public/_headers`)
 
-- CSP: `script-src 'self'` (no inline scripts, no eval); `connect-src` allows
+- CSP: `script-src 'self' https://challenges.cloudflare.com` (no inline
+  scripts, no eval; Turnstile is the only outside script) and `frame-src
+  https://challenges.cloudflare.com` (its widget frame); `connect-src` allows
   `*.supabase.co` (https + wss for Realtime), `*.r2.cloudflarestorage.com`
   (presigned photo uploads), `*.workers.dev`, Sentry ingest and PostHog;
   `img-src https: data: blob:`; `frame-ancestors 'none'`.

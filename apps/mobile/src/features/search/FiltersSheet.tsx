@@ -22,6 +22,12 @@ import {
 
 const CONDITIONS: Condition[] = ['new', 'like_new', 'good', 'fair'];
 
+/**
+ * Share of the window the filter groups may take, so the Reset and Show
+ * results row stays docked under them inside the sheet (DESIGN_REVIEW 3.02 B08).
+ */
+const SCROLL_MAX_SHARE = 0.6;
+
 /** B08 Filters sheet (P6-SRCH-04; board B17). */
 export function FiltersSheet({
   visible,
@@ -64,7 +70,11 @@ export function FiltersSheet({
 
   return (
     <Sheet visible={visible} onClose={onClose} title={copy.filters} testID="filters-sheet">
-      <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.body}
+        keyboardShouldPersistTaps="handled"
+      >
         <ChipGroup
           label={copy.category}
           mode="multi"
@@ -118,29 +128,30 @@ export function FiltersSheet({
           value={draft.sort && sorts.includes(draft.sort) ? draft.sort : sorts[0]!}
           onChange={(s) => setDraft({ ...draft, sort: s })}
         />
-        <View style={styles.row}>
-          <View style={styles.flex}>
-            <Button
-              label={copy.reset}
-              variant="secondary"
-              onPress={() => {
-                setDraft({});
-                setMin('');
-                setMax('');
-              }}
-            />
-          </View>
-          <View style={styles.flex}>
-            <Button label={copy.apply} onPress={apply} testID="filters-apply" />
-          </View>
-        </View>
       </ScrollView>
+      <View style={styles.row}>
+        <View style={styles.flex}>
+          <Button
+            label={copy.reset}
+            variant="secondary"
+            onPress={() => {
+              setDraft({});
+              setMin('');
+              setMax('');
+            }}
+          />
+        </View>
+        <View style={styles.flex}>
+          <Button label={copy.apply} onPress={apply} testID="filters-apply" />
+        </View>
+      </View>
     </Sheet>
   );
 }
 
-const styles = StyleSheet.create((theme) => ({
-  body: { gap: theme.space.lg, paddingBottom: theme.space.xl },
+const styles = StyleSheet.create((theme, rt) => ({
+  scroll: { flexShrink: 1, maxHeight: rt.screen.height * SCROLL_MAX_SHARE },
+  body: { gap: theme.space.lg, paddingBottom: theme.space.md },
   section: { gap: theme.space.sm },
   row: { flexDirection: 'row', gap: theme.space.md },
   flex: { flex: 1 },

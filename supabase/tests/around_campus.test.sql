@@ -27,6 +27,12 @@ begin
   return r;
 end $$;
 create function pg_temp.photos(lid uuid, n int default 1) returns jsonb language sql as $$
+  -- Recorded uploads of the listing's owner (0246).
+  select tests.register_upload(
+           coalesce((select r.user_id from public.listing_reservations r where r.id = lid),
+                    (select l.seller_id from public.listings l where l.id = lid), tests.uid('A')),
+           'listing', lid, 'c/' || tests.uid('OSU') || '/l/' || lid || '/p' || g || '_full.webp')
+  from generate_series(1, n) g;
   select coalesce(jsonb_agg(jsonb_build_object(
     'path', 'c/' || tests.uid('OSU') || '/l/' || lid || '/p' || g || '_full.webp',
     'thumb_path', 'c/' || tests.uid('OSU') || '/l/' || lid || '/p' || g || '_thumb.webp')), '[]')
@@ -182,7 +188,7 @@ select is(tests.try_text_as(tests.uid('B'), $$select count(*)::text from jsonb_a
   'search does not find food posts');
 
 -- get_campus_feed -------------------------------------------------------------------------------
-select is(pg_temp.kinds(pg_temp.feed('B')), 'food,sale,wanted', 'all: food, Wanted and new listings (free stuff below)');
+select is(pg_temp.kinds(pg_temp.feed('B')), 'food,wanted', 'all: Feed posts only, no listings for sale (DEC 148)');
 select is(pg_temp.kinds(pg_temp.feed('B', 'food')), 'food', 'food filter');
 select is(pg_temp.kinds(pg_temp.feed('B', 'wanted')), 'wanted', 'wanted filter');
 select is(pg_temp.kinds(pg_temp.feed('B', 'new')), 'sale', 'new listings filter');
@@ -216,7 +222,7 @@ select is(jsonb_array_length(pg_temp.feed('B', 'free', pg_temp.feed('B', 'free')
   'the cursor brings the rest');
 select is((pg_temp.feed('B') ->> 'day_one')::bool, false, 'no longer day one');
 select is(pg_temp.kinds(pg_temp.feed('B', 'free')), 'free', 'free stuff filter');
-select ok(pg_temp.kinds(pg_temp.feed('B')) like '%free%', 'free stuff is in all');
+select ok(pg_temp.kinds(pg_temp.feed('B')) not like '%free%', 'give-aways stay on Discover, not in all (DEC 148)');
 
 -- Expiry: the countdown hits zero and the post is gone
 select tests.set_now('2027-03-10 12:45:00-05');

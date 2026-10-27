@@ -17,5 +17,5 @@ keywords = ["eyj"]
 
 [allowlist]
 description = "Test fixtures that are not real keys"
-paths = ['''pnpm-lock\.yaml''']
+paths = ['''pnpm-lock\.yaml''', '''supabase/functions/_shared/appStore\.fixtures\.ts''']  # AR-04: JWS signed by a throwaway test chain
 regexes = ['''sb_(publishable|secret)_test_only_not_a_real_key''']

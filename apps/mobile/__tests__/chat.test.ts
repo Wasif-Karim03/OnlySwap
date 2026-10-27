@@ -1,4 +1,5 @@
 import {
+  bubbleSpots,
   firstSentId,
   lastSentId,
   mergeMessages,
@@ -6,7 +7,7 @@ import {
   type ChatItem,
   type Message,
 } from '../src/features/chat/logic';
-import { createChatStore } from '../src/features/chat/useChat';
+import { chatStoreFor, createChatStore, resetChatStores } from '../src/features/chat/useChat';
 
 const msg = (id: number, patch: Partial<Message> = {}): Message => ({
   id,
@@ -149,5 +150,97 @@ describe('T-UNIT-CHAT-04 scam hint', () => {
     ['', null],
   ])('%s → %s', (body, hint) => {
     expect(scamHint(body)).toBe(hint);
+  });
+});
+
+describe('T-UNIT-CHAT-05 chat store cache (C-04)', () => {
+  const api = { messages: jest.fn(async () => [msg(1, { sender_id: 'me' })]), send: jest.fn() };
+  beforeEach(() => resetChatStores());
+
+  it('a store made before the session loads is not reused once we know who we are', async () => {
+    const early = chatStoreFor('c1', null, api);
+    const later = chatStoreFor('c1', 'me', api);
+    expect(later).not.toBe(early);
+    await later.getState().load();
+    expect(later.getState().items[0]!.mine).toBe(true);
+    expect(chatStoreFor('c1', 'me', api)).toBe(later);
+  });
+
+  it('two accounts never share a store for the same chat', () => {
+    expect(chatStoreFor('c1', 'a', api)).not.toBe(chatStoreFor('c1', 'b', api));
+  });
+
+  it('keeps at most 20 chats, dropping the least recently opened', () => {
+    const first = chatStoreFor('c0', 'me', api);
+    const second = chatStoreFor('c1', 'me', api);
+    for (let i = 2; i < 20; i += 1) chatStoreFor(`c${i}`, 'me', api);
+    // c0 was opened again, so c1 is now the oldest.
+    expect(chatStoreFor('c0', 'me', api)).toBe(first);
+    chatStoreFor('c20', 'me', api);
+    expect(chatStoreFor('c0', 'me', api)).toBe(first);
+    expect(chatStoreFor('c1', 'me', api)).not.toBe(second);
+  });
+
+  it('never drops a chat with unsent messages', async () => {
+    const send = jest.fn(() => new Promise<never>(() => {}));
+    const busy = chatStoreFor('busy', 'me', { messages: jest.fn(async () => []), send });
+    await busy.getState().load();
+    void busy.getState().send('hold on');
+    for (let i = 0; i < 25; i += 1) chatStoreFor(`c${i}`, 'me', api);
+    expect(chatStoreFor('busy', 'me', api)).toBe(busy);
+  });
+});
+
+describe('T-UNIT-CHAT-06 bubble grouping (owner 2026-10-15)', () => {
+  // Local times; the list hands bubbleSpots newest first.
+  const at = (d: number, h: number, m: number) => new Date(2027, 2, d, h, m).toISOString();
+  const item = (id: number, mine: boolean, created: string, kind: Message['kind'] = 'text') =>
+    ({ ...msg(id, { kind, created_at: created }), state: 'sent', mine }) as ChatItem;
+  const NOW = new Date(2027, 2, 10, 18, 0);
+
+  it('same person within 3 minutes is one group; time under the last', () => {
+    const oldestFirst = [
+      item(1, false, at(10, 16, 0)),
+      item(2, false, at(10, 16, 2)),
+      item(3, true, at(10, 16, 3)),
+      item(4, true, at(10, 16, 10)),
+    ];
+    const spots = bubbleSpots([...oldestFirst].reverse(), NOW).reverse();
+    expect(spots.map((x) => [x.first, x.last])).toEqual([
+      [true, false],
+      [false, true],
+      [true, true],
+      [true, true],
+    ]);
+  });
+
+  it('a day separator on the oldest message of each day: Today, Yesterday, then a date', () => {
+    const oldestFirst = [
+      item(1, false, at(7, 9, 0)),
+      item(2, true, at(9, 9, 0)),
+      item(3, true, at(9, 9, 1)),
+      item(4, false, at(10, 9, 0)),
+    ];
+    const days = bubbleSpots([...oldestFirst].reverse(), NOW)
+      .reverse()
+      .map((x) => x.day);
+    expect(days[0]).toBeInstanceOf(Date);
+    expect(days.slice(1)).toEqual(['yesterday', null, 'today']);
+  });
+
+  it('a message with no server time yet counts as now (no crash)', () => {
+    const spots = bubbleSpots([pending('p1'), item(1, true, at(10, 17, 59))], NOW);
+    expect(spots[0]).toEqual({ first: false, last: true, day: null });
+  });
+
+  it('system rows never group, and a group breaks across midnight', () => {
+    const oldestFirst = [
+      item(1, true, at(9, 23, 59)),
+      item(2, true, at(10, 0, 0)),
+      item(3, false, at(10, 0, 1), 'system'),
+      item(4, false, at(10, 0, 1), 'system'),
+    ];
+    const spots = bubbleSpots([...oldestFirst].reverse(), NOW).reverse();
+    expect(spots.every((x) => x.first && x.last)).toBe(true);
   });
 });

@@ -24,6 +24,12 @@ begin
   return r;
 end $$;
 create function pg_temp.photos(lid uuid, n int default 1) returns jsonb language sql as $$
+  -- Recorded uploads of the listing's owner (0246).
+  select tests.register_upload(
+           coalesce((select r.user_id from public.listing_reservations r where r.id = lid),
+                    (select l.seller_id from public.listings l where l.id = lid), tests.uid('A')),
+           'listing', lid, 'c/' || tests.uid('OSU') || '/l/' || lid || '/p' || g || '_full.webp')
+  from generate_series(1, n) g;
   select jsonb_agg(jsonb_build_object(
     'path', 'c/' || tests.uid('OSU') || '/l/' || lid || '/p' || g || '_full.webp',
     'thumb_path', 'c/' || tests.uid('OSU') || '/l/' || lid || '/p' || g || '_thumb.webp',
@@ -188,15 +194,15 @@ select ok(tests.try_ok_as(tests.uid('A'), format($$select public.delete_listing(
   'the seller deletes a listing');
 select is((select status::text || '|' || (deleted_at is not null)::text from public.listings where id = (select id from ids where name = 'free')),
   'deleted|true', 'soft delete: the row stays, marked deleted');
-select is(tests.try_text_as(tests.uid('B'), format($$select count(*)::text from public.listings where id = %L$$, (select id from ids where name = 'free'))),
-  '0', 'others no longer see it');
+select is(tests.try_text_as(tests.uid('B'), format($$select public.get_listing(%L) ->> 'access'$$, (select id from ids where name = 'free'))),
+  'gone', 'others no longer see it');
 
 -- relist ----------------------------------------------------------------------------------------
 update public.listings set status = 'expired', bumped_at = '2027-01-01' where id = (select id from ids where name = 'v');
 select is(tests.try_text_as(tests.uid('A'), format($$select public.relist_listing(%L, 1000) ->> 'status'$$, (select id from ids where name = 'v'))),
   'active', 'an expired listing comes back');
 select is(tests.try_text_as(tests.uid('A'), format($$select public.relist_listing(%L)::text$$, (select id from ids where name = 'v'))),
-  'ERROR: RATE_LIMITED:relist_listing:2027-03-17T17:00:00Z', 'bumping again within 7 days is refused');
+  'ERROR: RATE_LIMITED:relist_listing:2027-03-13T17:00:00Z', 'bumping again within 3 days is refused (DEC 125)');
 
 select * from finish();
 rollback;

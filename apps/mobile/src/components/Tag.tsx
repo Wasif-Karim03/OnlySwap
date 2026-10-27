@@ -13,7 +13,11 @@ const TEXT: Record<TagTone, TextTone> = {
   red: 'red',
 };
 
-/** Small status label. Accent tag is an accent fill with onAccent text (never accent text). */
+/**
+ * Small label. Accent tag is an accent fill with onAccent text (never accent text).
+ * Use it for proper labels (category, Verified); ordinary statuses (Sold, On hold)
+ * read better as plain `meta` words, and suggestions are never Tags (P3).
+ */
 export function Tag({ label, tone = 'neutral' }: { label: string; tone?: TagTone }) {
   return (
     <View style={styles.tag(tone)}>

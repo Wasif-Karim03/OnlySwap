@@ -2,8 +2,10 @@
 // Edge Function (Deno) and Node tests (T-FN-04) run the same code.
 //
 // The phone asks for presigned PUT URLs; the server checks ownership with
-// private.can_upload, picks the object keys itself, and signs the exact
-// content-type and content-length so R2 refuses anything else (SEC-02).
+// private.can_upload, picks the object keys itself, records them for the
+// uploader before any URL exists (0246: the attach proof, the 160-object
+// quota and the upload GC), and signs the exact content-type and
+// content-length so R2 refuses anything else (SEC-02).
 
 export type UploadKind = 'listing' | 'avatar' | 'share' | 'quad' | 'chat';
 export type Variant = 'full' | 'thumb';
@@ -42,8 +44,15 @@ export const URL_TTL_S = 600;
 
 export type UploadDeps = {
   userIdFromToken: (token: string) => Promise<string | null>;
-  /** Rate limit (60/h) + private.can_upload; returns the campus id or throws P0001. */
-  authorize: (userId: string, kind: UploadKind, targetId: string) => Promise<string>;
+  /** private.authorize_upload: deletion gate, 60/h and 120/day, can_upload; returns the campus id or throws P0001. */
+  authorize: (userId: string, kind: UploadKind, targetId: string, count: number) => Promise<string>;
+  /** private.record_uploads: the quota and one pending row per key (not for share cards); throws P0001. */
+  recordUploads: (
+    userId: string,
+    kind: UploadKind,
+    targetId: string,
+    items: { key: string; size: number }[],
+  ) => Promise<unknown>;
   presignPut: (key: string, type: string, size: number) => Promise<string>;
   uuid: () => string;
 };
@@ -106,6 +115,13 @@ function serverCode(error: unknown): string | null {
   return /^[A-Z_]+(:|$)/.test(message) ? message : null;
 }
 
+/** A P0001 code becomes its HTTP status; anything else is a plain 500. */
+function sqlFailure(error: unknown): Response {
+  const code = serverCode(error);
+  if (code) return fail(STATUS_BY_CODE[code.split(':')[0] ?? ''] ?? 400, code);
+  return fail(500, 'UNKNOWN');
+}
+
 export async function handleUploadUrl(
   req: { method: string; authorization: string | null; body: unknown },
   deps: UploadDeps,
@@ -131,19 +147,35 @@ export async function handleUploadUrl(
 
   let campus: string;
   try {
-    campus = await deps.authorize(userId, kind, targetId);
+    campus = await deps.authorize(userId, kind, targetId, files.length);
   } catch (error) {
-    const code = serverCode(error);
-    if (code) return fail(STATUS_BY_CODE[code.split(':')[0] ?? ''] ?? 400, code);
-    return fail(500, 'UNKNOWN');
+    return sqlFailure(error);
   }
 
   // One uuid per photo so the full image and its thumbnail share a name.
   const ids = new Map<number, string>();
-  const uploads: Upload[] = [];
-  for (const f of files) {
+  const keys = files.map((f) => {
     if (!ids.has(f.idx)) ids.set(f.idx, deps.uuid());
-    const key = objectKey(kind, campus, userId, targetId, f.variant, ids.get(f.idx) as string);
+    return objectKey(kind, campus, userId, targetId, f.variant, ids.get(f.idx) as string);
+  });
+
+  // Recorded before any URL is signed: a refused batch never gets URLs.
+  if (kind !== 'share') {
+    try {
+      await deps.recordUploads(
+        userId,
+        kind,
+        targetId,
+        files.map((f, i) => ({ key: keys[i] as string, size: f.size })),
+      );
+    } catch (error) {
+      return sqlFailure(error);
+    }
+  }
+
+  const uploads: Upload[] = [];
+  for (const [i, f] of files.entries()) {
+    const key = keys[i] as string;
     uploads.push({
       idx: f.idx,
       variant: f.variant,

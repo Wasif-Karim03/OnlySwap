@@ -33,6 +33,8 @@ The client maps these to copy in `apps/mobile/src/strings/en.ts` → `errors.*`.
 | `BANNED_TERM:<term>` | text blocked by banned words |
 | `RATE_LIMITED:<action>:<retry_at>` | limit hit |
 | `OFFERS_PAUSED` | no-show pause |
+| `SELLER_AWAY` | the seller paused their listings (DEC 126) |
+| `HANDOFF_LOCKED` | 5 wrong handoff codes on this meetup (DEC 132) |
 | `LISTING_UNAVAILABLE` | not active / not open to offers |
 | `OFFER_NOT_PENDING` | state changed |
 | `ALREADY_REPORTED` | duplicate open report |
@@ -40,8 +42,9 @@ The client maps these to copy in `apps/mobile/src/strings/en.ts` → `errors.*`.
 | `MEETUP_WINDOW` | action outside allowed time |
 | `CHAT_CLOSED` / `CHAT_BLOCKED` | cannot send |
 | `NOT_ADMIN` | admin check failed (role or AAL) |
-| `SCHOOL_UNKNOWN` / `DOMAIN_BLOCKED` / `AGE_BLOCKED` / `BANNED` | auth hook rejections (surface via Auth error message) |
+| `SCHOOL_UNKNOWN` / `DOMAIN_BLOCKED` / `AGE_BLOCKED` / `BANNED` / `EMAIL_ALIAS` | auth hook rejections (surface via Auth error message); `EMAIL_ALIAS`: the address is a +tag alias of an existing account (DEC 105) |
 | `FEATURE_OFF` | flag disabled (R1.1 features) |
+| `UPLOAD_EXPIRED` | the photo key's upload was collected (24 h unattached GC, 0246); the client uploads it again |
 
 ## 1. Private helpers (`0007_helpers.sql`)
 
@@ -53,7 +56,7 @@ The client maps these to copy in `apps/mobile/src/strings/en.ts` → `errors.*`.
 | `private.hit(action, lim int, win interval)` | increments `rate_counters` bucket; raises `RATE_LIMITED` |
 | `private.hit_ip(action, lim, win)` | same, keyed by `x-forwarded-for` hash |
 | `private.check_text(txt, scope) → text` | `ok`, `block:<term>` or `review:<term>`. Normalizes (lowercase, unaccent, leetspeak, repeats); bumps `fired_count` |
-| `private.email_hash(email) → text` | sha256(lower(email) ‖ pepper from Vault) |
+| `private.email_hash(email) → text` | sha256(lower(trim(email)) with any `+tag` dropped from the name part ‖ pepper from Vault) (DEC 105) |
 | `private.is_blocked(a, b) → bool` | either direction |
 | `private.queue_notification(user, type, grp, title, body, data, time_sensitive, dedupe_key, push_after)` | insert … on conflict do nothing (BE-04) |
 | `private.queue_email(to, template, vars, dedupe_key)` | insert into `email_outbox` on conflict do nothing |
@@ -61,13 +64,14 @@ The client maps these to copy in `apps/mobile/src/strings/en.ts` → `errors.*`.
 | `private.unaccent_immutable(text)` | immutable wrapper |
 | `private.unlock_campus(campus_id)` | idempotent: set live, queue `campus_unlocked` + emails |
 | `private.can_upload(uid, kind, target_id) → campus_id` | Called by `upload-url` with the service role. It checks ownership: the listing is the caller's or was reserved by them, or it's their own avatar or their own listing's share card |
-| `private.snapshot_evidence(target_type, target_id) → jsonb` | text, excerpts (last 20 messages for chat/message targets), photo keys |
+| `private.snapshot_evidence(target_type, target_id) → jsonb` | text, excerpts (last 20 messages for chat/message targets), photo keys. Since 0246 it takes the per-user media lock of every uploader whose keys it would store (uuid order) and leaves out the keys of anyone being deleted (`media_withheld: 'deleting'`); the text is kept. For chat and message targets a key stays only when its `media_uploads` row belongs to someone with a profile who is not being deleted (the uploader, not whoever resent it); this check runs on every chat or message report, so a report filed after a deletion completed (the participant is null) still drops that person's keys and sets `media_withheld` (RV-04). The locks are taken by `private.lock_report_media`, which `create_report` calls first, before its rate counter (RV-03) |
+| `private.authorize_upload` / `record_uploads` / `claim_upload` / `detach_uploads` (0246) | uploader inventory `media_uploads`: `upload-url` authorizes (`can_upload`, 60/h and 120/day) and records each issued key as `pending`; every photo writer claims the caller's own recorded key (`FORBIDDEN:upload` when missing or someone else's, `UPLOAD_EXPIRED` when collected) and detaches keys it drops. All take the per-user media lock and raise `FORBIDDEN:deleting` once account deletion started |
 
 ## 2. Auth hooks and triggers (`0010_hooks_triggers.sql`)
 
 | Name | Type | Logic |
 |---|---|---|
-| `private.hook_before_user_created(event jsonb)` | Auth hook | 1. `email_hash` in `age_blocks` → `AGE_BLOCKED`. 2. In `banned_hashes` → `BANNED`. 3. Email in `review_accounts` → allow. 4. `campus_domains` lookup: missing → `SCHOOL_UNKNOWN`; `blocked` → `DOMAIN_BLOCKED`. 5. Allow. |
+| `private.hook_before_user_created(event jsonb)` | Auth hook | 1. `email_hash` in `age_blocks` → `AGE_BLOCKED`. 2. In `banned_hashes` → `BANNED`. 2b. A profile already has that hash (a `+tag` alias) → `EMAIL_ALIAS`. 3. Email in `review_accounts` → allow. 4. `campus_domains` lookup: missing → `SCHOOL_UNKNOWN`; `blocked` → `DOMAIN_BLOCKED`. 5. Allow. |
 | `private.hook_custom_access_token(event jsonb)` | Auth hook | claims `campus_id`, `status`, `adult`, `admin_role` |
 | `on_auth_user_created` | after insert `auth.users` | create profile (campus, status waitlist if campus not live, `verified_until`, `invited_by` from metadata `invite_code`), `notification_prefs` row |
 | `on_auth_user_email_changed` | after update of email | re-resolve campus by domain (Change school, email-access recovery) |
@@ -76,7 +80,8 @@ The client maps these to copy in `apps/mobile/src/strings/en.ts` → `errors.*`.
 | `trg_listings_price` | after update of `price_cents` | log change; drop ≥5% → `price_drop` to savers (dedupe `price_drop:{listing}:{new_cents}`) |
 | `trg_listings_status` | after update of status | hold→active: `watch_available`; sold/deleted/removed: auto-decline open offers, close other chats with a system message (BE-11) |
 | `trg_offers_notify` | after insert/update offers | `offer_new` / `offer_countered` / `offer_accepted` / `offer_declined` / `offer_expired` with `dedupe_key = type:{offer}:{round}` |
-| `trg_messages_ai` | after insert messages | update chat `last_message_at`; `realtime.broadcast_changes('chat:'‖id)`; `realtime.send('user:'‖other, 'inbox')`; queue `message_new` (preview only if the recipient's `message_previews`; collapse via `dedupe_key = message_new:{chat}:{minute}`) |
+| `trg_notifications_ping` | after insert or update of title, body, created_at on notifications | unread and `grp` not messages/offers: `realtime.send('user:'‖user_id, 'bell', {})` so the bell refetches `unread_count` (0234, DEC 122) |
+| `trg_messages_ai` | after insert messages | update chat `last_message_at`; one `realtime.send('user:'‖other, 'inbox', {chat_id, message})` (both parties for a message with no sender; nothing on `chat:{id}`, DEC 108); queue `message_new` (preview only if the recipient's `message_previews`; collapse via `dedupe_key = message_new:{chat}:{minute}`) |
 | `trg_meetups_notify` | after insert/update | `meetup_proposed` / `meetup_confirmed` / `meetup_status` / `meetup_changed` |
 | `trg_reports_ai` | after insert | priority-1 → `queue_email(priority_report)`; ≥3 distinct reporters aged >7 d within 24 h → auto-hide target (BE-09) |
 | `trg_audit_immutable` | before update/delete audit_log | raise |
@@ -103,8 +108,11 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 
 | RPC | Args | Returns | Errors / rules | Limit |
 |---|---|---|---|---|
-| `confirm_age` | `method, is_adult?, birth_date?` | `{adult}` | computes in campus TZ; minor → `age_blocks` + returns false; never stores DOB | 3/day |
-| `update_profile` | `first_name, last_initial, year, areas, bio, avatar_path` | profile | name regex; bio `check_text(profile)`; avatar path prefix `c/{campus}/u/{uid}/` | 20/day |
+| `confirm_age` | `method, is_adult?, birth_date?` | `{adult}` | old builds only (DEC 136); computes in campus TZ; minor → `age_blocks` + returns false; never stores DOB | 3/day |
+| `confirm_age_v2` | `method, band?, birth_date?` | `{eligible, age_band}` | AR-01, DEC 136: minimum age 13. `band` is `under_13`, `13_17` or `18_plus` for `os_signal`; a birth date is banded in campus TZ. Under 13 → `age_blocks` + `{eligible:false, age_band:null}`; a blocked email never passes; a confirmed band is never overwritten; never stores DOB | 3/day (shared with `confirm_age`) |
+| `record_age_assurance` | `regulated, declaration?` | `{regulated, parental_consent}` | AR-03, DEC 136: called after `confirm_age_v2` says eligible when Apple says age assurance applies (Texas, Utah, Louisiana). `declaration` is `self_declared`, `guardian_declared` or `confirmed` (Declared Age Range). Sets `parental_consent = 'granted'` for a `13_17` account; never overwrites `revoked` (AR-04). `require_onboarding` like `confirm_age_v2`; `AGE_REQUIRED` before the age is confirmed; `INVALID:regulated`, `INVALID:declaration`; rate 10/day. |
+| `link_app_transaction` | `app_transaction_id` | — | AR-04, DEC 136: the iOS app sends StoreKit `AppTransaction.appTransactionID` after each sign-in (once per launch, best effort) so `RESCIND_CONSENT` can find the account. Upserts `app_transactions` (`last_seen_at`). `require_onboarding`; `INVALID:app_transaction_id` unless `^[0-9A-Za-z_-]{1,64}$`; rate 20/day. |
+| `update_profile` | `first_name, last_initial, year, areas, bio, avatar_path` | profile | name regex; bio `check_text(profile)`; avatar path prefix `c/{campus}/u/{uid}/`; a new avatar must be the caller's recorded upload (`FORBIDDEN`/`UPLOAD_EXPIRED`), the old one is detached (0246) | 20/day |
 | `update_profile_flags` | `analytics_opt_in?, crash_reports_opt_in?, theme_mode?` | void | — | — |
 | `accept_rules` | `version` | void | must equal `app_config.rules_version` | — |
 | `my_waitlist_position` | — | `{position, members, threshold}` | — | — |
@@ -115,17 +123,20 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 
 | RPC | Args | Returns | Errors / rules | Limit |
 |---|---|---|---|---|
-| `get_feed` | `cursor jsonb, limit int=20` | `FeedItem[]` | excludes own, swiped 30 d, blocked, deleted; <5 results → `daily_counters.feed_exhausted++` | 120/h |
-| `record_swipes` | `items jsonb` (≤50: `{listing_id, dir, at}`) | void | upsert; unknown ids ignored | 60/h |
+| `get_feed` | `cursor jsonb, limit int=20` | `FeedItem[]` (`seller` has `swaps_count, thumbs_up, thumbs_total`, DEC 124) | excludes own, swiped 30 d, blocked, deleted; <5 results → `daily_counters.feed_exhausted++` | 120/h |
+| `record_swipes` | `items jsonb` (≤50: `{listing_id, dir: left\|right\|save, at, dwell_ms?}`) | void | upsert; unknown ids and dirs ignored; `right` since DEC 106 (older apps send a right swipe as `left`); `dwell_ms` is time on card, capped at 600000, anything else stored as null (DEC 100) | 60/h |
 | `undo_swipe` | `listing_id` | void | within 60 s | — |
 | `save_listing` / `unsave_listing` | `listing_id` | `{save_count}` | not own; same campus | 200/day |
 | `hide_listing` | `listing_id` | void | = permanent left | — |
 | `watch_listing` | `listing_id` | void | listing on hold | — |
 | `record_view` | `listing_id` | void | once/user/day | — |
-| `track_events` | `events jsonb` (≤50: `{kind, listing_id?, source?, dwell_ms?, query?, at?}`), `platform text?` (`ios`\|`android`\|`web`), `app_version text?` | `{accepted}` | admin v2 activity (DEC 93): kinds `app_open`, `deck_shown`, `listing_viewed`, `swiped_left`, `saved`, `unsaved`, `offer_made`, `searched`, `opened_from`; sources `discover`, `search`, `campus`, `profile`, `saved`, `link`, `notification` (else null); unknown kinds, listings not on the caller's campus or deleted, and `searched` without text are dropped; dwell capped at 600000 ms; query cut to 80; `at` kept within the last 24 h; a deck card counts once per 24 h; stamps `last_active_at`, `last_platform`, `last_app_version`; `INVALID:events` when not an array or > 50 | 120/h |
+| `track_events` | `events jsonb` (≤50: `{kind, listing_id?, source?, dwell_ms?, query?, at?}`), `platform text?` (`ios`\|`android`\|`web`), `app_version text?` | `{accepted}` | admin v2 activity (DEC 93): kinds `app_open`, `listing_viewed`, `unsaved`, `searched`, `opened_from` (DEC 100: `deck_shown`, `swiped_left`, `saved` and `offer_made` from older builds are dropped without an error); sources `discover`, `search`, `campus`, `profile`, `saved`, `link`, `notification` (else null); unknown kinds, listings not on the caller's campus or deleted, and `searched` without text are dropped; dwell capped at 600000 ms; query cut to 80; `at` kept within the last 24 h; stamps `last_active_at`, `last_platform`, `last_app_version`; `INVALID:events` when not an array or > 50 | 120/h |
 | `get_listing` | `id` | `FeedItem & {access}`; `{id, access}` when not visible | access: buyer, owner, gone, blocked, other_campus (DEC 57) | 600/h |
-| `get_campus_feed` | `kind text?, cursor` | items (free, wanted, food, new) | — | 120/h |
-| `search_listings` | `q, filters, cursor` | listings | `websearch_to_tsquery`; trigram fallback; unknown filter keys → `INVALID:filters` | 120/h |
+| `similar_listings` | `id` | `FeedItem[]` | More like this (DEC 128): same campus + category, active sale/free, not own, not blocked, not away; nearest price first; 10 | 600/h |
+| `get_listings_by_ids` | `ids uuid[]` (≤ 20) | `FeedItem[]` | Recently viewed (DEC 128; ids kept on the phone): active/hold sale/free on my campus, not blocked, in the given order | 300/h |
+| `get_campus_feed` | `kind text?, cursor` | items (all, news, free, wanted, food, new); `all` = food, free, wanted, news and sale from the last 7 days; items carry `link_url`, `event_at` (DEC 98); `day_one`, `active_listings`, `founding` on page one only, null after (0229) | — | 120/h |
+| `create_news` | `id` (reserved), `title`, `description?`, `photos jsonb` (≤4), `link_url?`, `event_at?`, `place?` | listing | DEC 98: kind `news`, price 0, no offers; title 3–80, description ≤1000, place ≤60 (stored in `meet_note`), link `^https?://` with a dot, ≤300; `event_at` future and ≤90 days; expires at the end of the event's day in campus time, else now + 14 days; banned words and review holds as `create_listing`; `FORBIDDEN` without a reservation; idempotent on the id; photo keys must be the caller's recorded uploads (`FORBIDDEN`/`UPLOAD_EXPIRED`, 0246) | create_listing 20/day + 3/day news |
+| `search_listings` | `q, filters, cursor` | listings | `websearch_to_tsquery`; trigram fallback (both indexed, DEC 101); `cursor` `{offset}`; unknown filter keys → `INVALID:filters` | 120/h |
 | `search_suggest` | `q` (≥2) | `[{type, label, count}]` | — | 600/h |
 | `create_saved_search` / `update_saved_search` / `delete_saved_search` | … | row | max 20 | 30/day |
 | `saved_search_new_counts` | — | `[{id, new_count}]` | — | — |
@@ -136,10 +147,13 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 | `price_hint` **[R1.1]** | `category_id, condition` | `{median_cents, p25_cents, p75_cents, n, scope}` or null | n≥5 for that condition, else the whole category (DEC 81) | — |
 | `check_text` | `text, scope` | `{result, term}` | inline UX only | 600/h |
 | `reserve_listing_id` | — | `uuid` | — | 30/day |
-| `create_listing` | `id, kind, title, description, category_id, condition, price_cents, open_to_offers, photos jsonb, meet_spot_ids, meet_note, availability, wanted_max_cents, wanted_ref, food_minutes, pickup_by` | listing | id must be reserved by the caller; **idempotent** (`on conflict (id) do nothing`, returns existing); photos 1–8 (sale/free), 0–1 (wanted/food); path prefix check; `BANNED_TERM`; review → `held_review`; price ≤ 200000; food ≤ 180 min; `pickup_by` (free only, today…+14 d) sets the expiry (DEC 54) | 20/day (3 in first 24 h); wanted 5/day; food 3/day |
-| `update_listing` | `id, …` | listing | seller; not sold/deleted; price change logged | 50/day |
+| `create_listing` | `id, kind, title, description, category_id, condition, price_cents, open_to_offers, photos jsonb, meet_spot_ids, meet_note, availability, wanted_max_cents, wanted_ref, food_minutes, pickup_by` | listing | id must be reserved by the caller; **idempotent** (`on conflict (id) do nothing`, returns existing); photos 1–8 (sale/free), 0–1 (wanted/food); path prefix check; `BANNED_TERM`; review → `held_review`; price ≤ 200000; food ≤ 180 min; `pickup_by` (free only, today…+14 d) sets the expiry (DEC 54); each `path` and `thumb_path` must be the caller's recorded upload (`FORBIDDEN`/`UPLOAD_EXPIRED`, 0246) | 20/day (3 in first 24 h); wanted 5/day; food 3/day |
+| `update_listing` | `id, …` | listing | seller; not sold/deleted; price change logged; new photo keys must be the caller's recorded uploads, dropped keys are detached (0246); takes the caller's media lock before the listing row lock (RV-03) | 50/day |
 | `delete_listing` | `id` | void | **soft**: status `deleted`, `deleted_at`; auto-declines, closes chats | — |
-| `relist_listing` | `id, price_cents` | listing | expired or fell-through; bump once / 7 d | — |
+| `relist_listing` | `id, price_cents` | listing | expired, or Renew an active sale/free listing; once / 3 d (DEC 125); `my_listings` adds `renew_at` | — |
+| `set_moving_out` | `by date` (null clears) | `{moving_out_by}` | Moving out (DEC 133): campus today to +60 days, else `INVALID:by`. `get_me.moving_out_by`, `get_profile.moving_out_by`, `FeedItem.seller.moving_out_by` (null once the date passes) | — |
+| `set_away` | `away bool` | `{away_since}` | Away mode (DEC 126): hides own sale/free listings from deck, search, campus feed; new offers → `SELLER_AWAY` (trigger); off adds the time away to active listings' `expires_at`. `get_me.away_since`, `get_profile.away`, `FeedItem.seller.away` | — |
+| `set_wanted_prefs` | `id, need_by date, alerts bool` | `{need_by, wanted_alerts}` | own Wanted post (DEC 127): need_by today..+60 campus days, the post ends that day; alerts off → no `wanted_match`; with alerts on a title match also alerts. `FeedItem.need_by`, `wanted_alerts` | — |
 | `set_listing_share_image` | `id` | `{share_image_path}` | seller; not deleted; records `share/{id}.jpg` after the app uploads the share card (DEC 55) | 30/day |
 | `mark_sold` | `id, buyer_id?` | void | buyer must be a chat participant; closes other chats | — |
 | `listing_stats` / `listing_offers` | `id` | stats / offers | seller only | — |
@@ -149,7 +163,9 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 | RPC | Args | Returns | Errors / rules | Limit |
 |---|---|---|---|---|
 | `make_offer` | `listing_id, amount_cents, note, quick_notes` | offer | not own; `FOR SHARE` lock; active + open; not blocked; `check_text(note)`; existing open offer → updates amount; `OFFERS_PAUSED` | campus `offers_per_hour` (10)/h; 5/day in first 24 h |
-| `accept_offer` | `offer_id` | `{chat_id}` | correct party; `FOR UPDATE` listing; creates chat with snapshot; auto-declines others | — |
+| `make_bundle_offer` | `listing_id, bundle_ids, amount_cents, note?, quick_notes?` | offer (with `bundle`) | DEC 133: seller moving out; 1 to 10 other active sale/free items of the same seller (`INVALID:bundle_ids`, `LISTING_UNAVAILABLE`); amount is for everything: 0 if all free, else $1 to $2,000, no firm-price rule; an open offer on the main item is replaced | shares `make_offer`'s limit |
+| `accept_offer` | `offer_id` | `{chat_id}` | correct party; `FOR UPDATE` listing; creates chat with snapshot; auto-declines others. Bundle (DEC 133): holds every item or fails `LISTING_UNAVAILABLE`, chat title "X + N more", declines open offers on all items; a trigger carries the main item's sold / back-to-active onto the bundle | — |
+| `start_wanted_chat` | `wanted_id`, `body?`, `client_id?` | `{chat_id, existing}` | DEC 149: "I have this" on an ask. Active Wanted post on my campus, not mine, not blocked; opens (or reuses) a chat with no offer: asker = buyer, me = seller, the post's photo and title as the snapshot; posts a system line, then `body` (default "I have this") through `send_message`. 30/hour | `FORBIDDEN` own post, `NOT_FOUND`, `INVALID:status` |
 | `counter_offer` | `offer_id, amount_cents, note` | offer | round < 4; alternating | 30/day |
 | `decline_offer` | `offer_id, reason` | void | — | — |
 | `withdraw_offer` | `offer_id` | void | buyer | — |
@@ -161,16 +177,17 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 | RPC | Args | Returns | Errors / rules | Limit |
 |---|---|---|---|---|
 | `get_messages` | `chat_id, before bigint?, limit=50, after bigint?` | messages | participant; `after` for reconnect (DEC 61) | — |
-| `get_chat` | `chat_id` | chat summary + state | participant (DEC 61) | — |
-| `send_message` | `chat_id, kind='text', body, client_id` | message | participant; open; not blocked; **idempotent on client_id**; `kind='photo'` → `FEATURE_OFF` in R1.0 | 60/min, 1000/day |
+| `get_chat` | `chat_id` | chat summary + state; `bundle` (other items, DEC 133) | participant (DEC 61) | — |
+| `send_message` | `chat_id, kind='text', body, client_id` | message | participant; open; not blocked; **idempotent on client_id**; `kind='photo'` → `FEATURE_OFF` in R1.0; a photo key must be the sender's recorded chat upload (`FORBIDDEN`/`UPLOAD_EXPIRED`, 0246); since 0247 it takes the sender's media lock before re-checking `client_id`; a key whose message lost the race is detached unless another message in the chat still references it (IR4-03, IR5-01) | 60/min, 1000/day |
 | `mark_chat_read` / `set_chat_mute` / `hide_chat` | `chat_id, …` | void | — | — |
 | `propose_meetup` | `chat_id, spot_id?, custom_place?, starts_at` | meetup | now+15 min ≤ starts_at ≤ now+14 d; cancels previous active in the same tx | 20/day |
 | `confirm_meetup` | `meetup_id` | void | other party | — |
 | `checkin_meetup` | `meetup_id` | void | start −60 … +60 min | — |
+| `confirm_handoff` | `meetup_id, code` | `{ok, tries_left}` | seller only, confirmed meetup; a wrong code counts a try (5, then HANDOFF_LOCKED); the right one completes the meetup, sets both outcomes done, sells to this buyer, sends both rate prompts (DEC 132) | FORBIDDEN, MEETUP_WINDOW, INVALID:code, HANDOFF_LOCKED |
 | `running_late` | `meetup_id, minutes` | void | 5/10/15/30 | — |
 | `cancel_meetup` | `meetup_id, reason` | void | — | — |
 | `create_meetup_share` | `meetup_id` | `{url}` | 22-char token; expires start + 24 h | 10/day |
-| `get_meetup` / `get_chat_meetup` | `meetup_id` / `chat_id` | meetup (or null) | participants (DEC 62) | — |
+| `get_meetup` / `get_chat_meetup` | `meetup_id` / `chat_id` | meetup (or null); adds `i_am_seller`, `handoff_code` (buyer only, while confirmed), `handoff_at`, `handoff_tries_left` (DEC 132) | participants (DEC 62) | — |
 | `report_noshow` | `meetup_id, note` | void | reporter checked in; ≥ start+20 min; other not checked in → else `MEETUP_WINDOW` | — |
 | `confirm_deal` | `chat_id, outcome` | void | `done` / `not_yet` / `fell_through` (listing back to active) | — |
 | `get_my_rating` | `chat_id` | `{mine, theirs, theirs_waiting}` | theirs only once revealed (DEC 63) | — |
@@ -180,7 +197,7 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 
 | RPC | Args | Returns | Errors / rules | Limit |
 |---|---|---|---|---|
-| `create_report` | `target_type, target_id, reason, details` | `{id}` | resolves `target_user_id` + `evidence` snapshot; `ALREADY_REPORTED` | 20/day |
+| `create_report` | `target_type, target_id, reason, details` | `{id}` | resolves `target_user_id` + `evidence` snapshot; `ALREADY_REPORTED`; 3 open reports from distinct reporters aged >7 d hold a Quad post or reply (0227). Since 0246 it first takes the media locks of the uploaders it snapshots, before its rate counter and the listing update of its trigger (one lock order with photo edits and deletion, RV-03) | 20/day |
 | `get_my_report` | `id` | `{status, timeline[]}` (generic outcome only) | reporter | — |
 | `block_user` / `unblock_user` | `user_id` | void | not self; blocks chats | 50/day |
 | `create_appeal` | `subject_type, subject_id, reason_choice, body` | `{id}` | own subject; `ALREADY_APPEALED` | 5/day |
@@ -191,15 +208,30 @@ Every write calls `require_active()` (reads that need `status='active'` do too).
 |---|---|---|---|---|
 | `get_notifications` | `cursor` | list | — | — |
 | `mark_notifications_read` | `ids bigint[]?` | void | null = all | — |
-| `unread_count` | — | int | — | — |
+| `unread_count` | — | int (the caller's unread notifications; the bell badge, DEC 120). VOLATILE: it calls `require_active()`, which writes, so it can't be STABLE (0245, DEC 138) | — | — |
 | `update_notification_prefs` | `prefs jsonb` | prefs | known keys only | — |
 | `register_push_token` | `token, platform, app_version` | void | `ExponentPushToken[…]` format; upsert `last_seen_at` | 20/day |
 | `disable_push_token` | `token` | void | — | — |
 
-**[R1.1] Quad RPCs:** `get_quad_status`, `get_my_quad_mutes` (DEC 77), `get_quad_feed`, `get_quad_thread`, `create_quad_post`, `create_quad_reply`, `vote_quad`, `vote_poll`, `hide_quad_author`, `unhide_quad`, `get_my_quad_hides`, `set_quad_replies`, `delete_quad_post`, `get_my_quad`, `mute_keyword`, `unmute_keyword`, `accept_quad_rules`.
+**Feed likes and comments (`0233`, DEC 121):** every write calls `require_active` and the post must be on the caller's campus (else `NOT_FOUND`).
+
+| RPC | Args | Returns | Rules | Rate |
+|---|---|---|---|---|
+| `like_listing` | `listing_id, liked` | `{like_count, liked}` | idempotent; likes notify the owner in the bell only (grouped, no push) | `listing_like` 300/h |
+| `get_listing_comments` | `listing_id, sort 'top'\|'new', cursor` | `{items[] (each with first 2 replies), next_cursor, comment_count, like_count, liked, comments_enabled, can_comment, is_owner, title, kind}` | hides blocked people both ways; held shows only to its author | 600/h |
+| `get_comment_replies` | `comment_id, cursor` | `{items[], next_cursor}` | oldest first, 50 a page, keyset `{created_at,id}` | shares 600/h |
+| `create_listing_comment` | `listing_id, body ≤500, parent_id?, client_id` | `{status live\|held\|blocked, reason, comment}` | idempotent on `client_id`; a reply to a reply joins the top comment; `FORBIDDEN:closed` / `FORBIDDEN:comments_off`; contact details block, review words hold (system report) | `listing_comment` 30/h |
+| `like_listing_comment` | `comment_id, liked` | `{like_count, liked}` | live comments only; bell only | `listing_like` 300/h |
+| `delete_listing_comment` | `comment_id` | void | the author or the post's author; keeps the row (`deleted`, body cleared) | — |
+| `set_listing_comments` | `listing_id, enabled` | bool | the post's author only | — |
+
+`create_report` takes `target_type 'listing_comment'` (Quad reasons); 3 settled reporters hold the comment. `admin_resolve_report` on a comment: dismiss puts a held comment back, any other action removes it.
+
+**[R1.1] Quad RPCs:** `get_quad_status`, `get_my_quad_mutes` (DEC 77), `get_quad_feed`, `get_quad_thread`, `create_quad_post`, `create_quad_reply`, `vote_quad`, `vote_poll`, `hide_quad_author`, `unhide_quad`, `get_my_quad_hides`, `set_quad_replies`, `delete_quad_post`, `get_my_quad`, `mute_keyword`, `unmute_keyword`, `accept_quad_rules`. `get_quad_feed(sort, cursor)` pages by keyset: pass back `next_cursor` as is (opaque; an old `{offset}` still works; DEC 101). `vote_quad` takes the post author's media lock first (0247, RV-03).
 - Contracts are as in `docs/archive/blueprint-v0/backend.md` §4.
 - The feed rank is computed at read (BE-08).
 - They return `FEATURE_OFF` unless `campuses.quad_enabled`.
+- `create_quad_post` with a photo claims the author's recorded Quad upload (full and thumb) before the insert (`FORBIDDEN`/`UPLOAD_EXPIRED`, 0246).
 - They **never return author ids** (T-INT-QUAD-ANON).
 
 ## 4. Admin RPCs (`public.admin_*`, ADR-012)
@@ -283,17 +315,18 @@ Same rules as above: `require_admin` (AAL2), moderators scoped to their campus (
 
 | Name | Trigger / auth | Input → Output | Rules |
 |---|---|---|---|
-| `upload-url` | POST, user JWT | `{kind:'listing'\|'avatar'\|'share', target_id, files:[{idx, variant, type, size}]}` → `[{key, url, headers}]` | `can_upload` check; sizes and types per DATA_MODEL §6; **signs content-length + content-type** (SEC-02); ≤16 files; 60/h. `chat`/`quad` kinds in R1.1 |
+| `upload-url` | POST, user JWT | `{kind:'listing'\|'avatar'\|'share', target_id, files:[{idx, variant, type, size}]}` → `[{key, url, headers}]` | `private.authorize_upload` (`can_upload`, deletion gate) then `private.record_uploads` (inventory rows, not for `share`) before any URL is signed; sizes and types per DATA_MODEL §6; **signs content-length + content-type** (SEC-02); ≤16 files; 60/h and 120/day; quota: at most 160 objects not attached per user, checked with the batch (`RATE_LIMITED:upload_pending:<iso>`). `chat`/`quad` kinds in R1.1 |
 | `send-push` | cron (service) | — → `{sent, skipped}` | claims ≤500 due rows with `for update skip locked` → `sending`; prefs, quiet hours (campus TZ), cap 6/day non-urgent, time-sensitive bypass; batches of 100 to Expo; tickets; `DeviceNotRegistered` → disable token; resets stuck `sending` > 10 min |
 | `push-receipts` | cron | — | check tickets > 15 min old; disable bad tokens |
-| `send-email` | cron | — | claims ≤50 outbox rows (skip locked); global 400/day; templates; provider by `EMAIL_PROVIDER` (`gmail_smtp` port 465 \| `resend`) |
-| `delete-account` | POST, user JWT (or internal `mode=underage`) | `{confirm:'DELETE'}` → `{ok}` | 1) move photo keys referenced by open reports to `onlyswap-private/evidence/` (BE-02); 2) delete R2 prefixes `c/*/u/{uid}/`, listing folders of own listings; 3) close own open chats with a system message; 4) if banned → `banned_hashes`; 5) `auth.admin.deleteUser`; 6) queue `account_deleted` (not underage); 7) PostHog person delete via API; 3/day |
-| `export-data` | POST, user JWT | → `{status:'queued'}` | JSON of profile, listings, offers, messages, ratings, saved, prefs → private bucket → 7-day presigned link by email; 1/day |
+| `send-email` | cron | — | claims ≤50 outbox rows (skip locked); global 150/day counting rows in flight, `priority_report` first, `campus_open` last (DEC 109); templates; provider by `EMAIL_PROVIDER` (`gmail_smtp` port 465 \| `resend`) |
+| `delete-account` | POST, user JWT (or internal `mode=underage`) | `{confirm:'DELETE'}` → `{ok}` | 1) move photo keys referenced by open reports to `onlyswap-private/evidence/` (BE-02); 2) delete R2 prefixes `c/*/u/{uid}/`, listing folders of own listings, and the person's archived chats `onlyswap-private/archive/chats/{chat}/{token}.json` (one key per archive job since 0248, plus the legacy `archive/chats/{chat}.json` of chats archived before 0246) (B-03, DEC 119); 3) close own open chats with a system message; 4) if banned → `banned_hashes`; 5) `auth.admin.deleteUser`. Since 0246: `prepare_account_deletion` takes the per-user media lock and opens the deletion gate (`FORBIDDEN:deleting` for uploads and claims); the R2 prefix list is a versioned manifest on `account_deletions` (listing, share, reservation and Quad folders plus inventory keys, merged with earlier tries); evidence is found by prefix intersection; each prefix's deleted keys are purged from the edge cache when `CF_ZONE_ID`/`CF_CACHE_PURGE_TOKEN` are set (non-fatal); `confirm_media_deletion` runs before `deleteUser`, only after the evidence copy and every prefix and archive delete succeeded, and `cleanup-drafts` sweeps the manifest again 15 min later. R2 is required: without its config the request is a 500 before anything is prepared. `record_evidence_moves` locks each report and merges: a report already moved by another deletion keeps its private set and only grows; a source already gone is kept when its private copy exists (HEAD), else listed in `evidence.photo_keys_missing`. A prefix that fails part way still purges the keys it deleted before failing; 6) queue `account_deleted` (not underage); 7) PostHog person delete via API; 3/day |
+| `export-data` | POST, user JWT | → `{status:'queued'}` | JSON of profile, listings, offers, messages, ratings, saved, prefs, activity events (DEC 119) → private bucket → 7-day presigned link by email; 1/day |
 | `revoke-sessions` | internal (service) | `{user_id}` | `auth.admin.signOut(user_id, 'global')` (ARC-01) |
 | `admin-change-email` | internal (service, called by the admin RPC via pg_net) | `{user_id, new_email}` | `auth.admin.updateUserById(email, email_confirm:false)` → user confirms with a code |
+| `app-store-notifications` | POST, Apple (no JWT; `verify_jwt = false`) | `{signedPayload}` → `{ok}` | AR-04, DEC 136. App Store Server Notifications V2. Verifies the JWS x5c chain itself (WebCrypto): root pinned to Apple Root CA G3 by SHA-256, Apple marker OIDs on intermediate and leaf, each cert signs the next, valid at `signedDate`, ES256 signature. Bundle must be `app.onlyswap`. `RESCIND_CONSENT` verifies `appData.signedAppTransactionInfo` too, then `private.rescind_consent(appTransactionId)` locks every linked account. Other types (TEST included) → 200 and a log line. Bad signature or wrong app → 400; a DB error → 500 so Apple retries (idempotent). Logic in `_shared/appStore.ts` |
 | `waitlist-request` | POST, anon | `{email, turnstile_token?}` → `{ok}` | Turnstile on web; IP limit 5/h; uniform response (SEC-12) |
 | `support-request` | POST, anon | `{email, topic, body, turnstile_token}` → `{ok}` | Turnstile; 3/h/IP; emails owner |
-| `cleanup-drafts` | internal (service, called by the `prune` cron job via pg_net) | `{}` → `{ok, drafts, objects, failed}` | orphan reservations (never posted, > 24 h): delete `c/{campus}/l/{id}/` in R2, then `forget_reservations`; a failed delete keeps the row for the next run (P5-SELL-07) |
+| `cleanup-drafts` | internal (service, called by the `gc_uploads` cron job via pg_net) | `{}` → `{ok, collected, failed, sweeps, archives, more}` | 0246: (1) upload GC: `claim_stale_uploads` leases batches of 200 keys never attached or dropped for 24 h (10-minute lease), deletes each object (404 counts), `ack_collected` only the deleted ones (live token); repeats until none are left or the 40 s budget ends (`more: true`); (2) manifest sweeps: deletion manifests confirmed 15 min ago are deleted prefix by prefix, purged (including the keys a failing prefix deleted before it failed), and `finish_media_sweeps` only when every prefix went; (3) withheld chat archives (`archive_cleanups_due`) are deleted from the private bucket and confirmed with `finish_archive_cleanups` (a failed delete stays due, RV-01). Sweeps run first, then archives, then the GC; the budget is checked before every object and prefix and inside a prefix (before every list page and object, with the request in flight cancelled when the budget ends, RV-02); the keys done so far are acked or purged, the rest keep their lease, unswept manifests stay due, and one object delete and each purge are bounded at 10 s. Since 0248 (IR3-02): a sweep resumes at its saved `pos` and saves progress every 25 prefixes and at every stop (`save_media_sweep_progress`, skip locked); prefix deletes are page-streamed (each listing page deleted before the next is listed); the phases have work/tail deadlines at 40/50 % (sweeps), 70/80 % (archives) and 90/100 % (drain) of the budget, each with its own abort signal that cancels R2 requests at its work deadline, and tail calls share the phase's tail deadline; database queries are never cancelled, so a database timeout ends all database work for that invocation (500); a database call is only issued with at least 2.5 s left before its deadline (the RPCs' 2 s `lock_timeout` plus a 0.5 s margin), else it is skipped and its work stays due (`more: true`); the cleanup RPCs never wait on a row lock (they skip locked rows, which stay due for the next run), so `lock_timeout` is only a backstop for other locks; the pool is per request. Archive keys are `archive/chats/{chat}/{token}.json`. No folder deletes (P5-SELL-07) |
 | `campus-unlock` | internal | `{campus_id}` | queue pushes + `campus_open` emails (drip) |
 | `health` | GET, anon | → `{db:'ok'}` | UptimeRobot |
 | `test-inbox` | **staging only** | `?email=` → `{code}` | secret header; CI asserts absent in prod |
@@ -318,13 +351,15 @@ Every job that calls a function has an exists-guard (ARC-05).
 | `pause_lift` | `*/10 * * * *` | `paused_until` passed → active |
 | `refresh_stats` | `*/10 * * * *` | profile_stats (concurrently) |
 | `refresh_hints` | `0 * * * *` / `0 9 * * *` | trending terms hourly; price hints daily |
-| `prune` | `30 9 * * *` | retention table in DATA_MODEL §5; draft R2 cleanup (via function) |
-| `archive_chats` | `0 10 * * *` | closed > 90 d → archive JSON to R2 → delete messages |
+| `prune` | `30 9 * * *` | retention table in DATA_MODEL §5; reservations only (used ones, and orphans > 24 h); photos are collected by `gc_uploads` (0246) |
+| `gc_uploads` | `20 */6 * * *` | collected inventory tombstones > 30 d deleted; calls `cleanup-drafts` when a stale upload, a due manifest sweep or a withheld chat archive to delete exists (0246) |
+| `archive_chats` | `0 10 * * *` | closed > 90 d → archive JSON to R2 → delete messages. Since 0246 `archive-chats` claims chats with `private.claim_chat_archives` (a token and a 30-minute lease per chat, so overlapping runs never write the same chat; a finished or refused job is never handed out again) and finishes through `private.finish_chat_archive_checked(chat, people, token)`: under the media lock of everyone in the JSON and the chat, it marks the chat archived only if the token is still the run's and none of them is deleting or deleted (`archived`); a lost token leaves the object alone (`lost`); otherwise (`withheld`) the job goes on a durable cleanup list, `archive-chats` deletes the object and confirms it, and a failed delete is retried by `cleanup-drafts` until confirmed; only then is the chat archived again by a later run from the data left after the deletion. `prepare_account_deletion` also lists the archive of a job in flight or waiting for cleanup (RV-01) (`{ok, archived, failed, withheld}`) |
 | `strike_expiry` | `0 11 * * *` | expired strikes → count-- |
 | `reset_stuck_sends` | `*/5 * * * *` | `sending` > 10 min → `pending` (push + email) |
 | `demo_autoplay` | `* * * * *` | Demo University bot (reviewers) |
 | `rating_reveal` | `0 * * * *` | one-sided ratings reaching 7 days (0205) |
 | `prune_activity` | `45 9 * * *` | `activity_events` > 90 d, `account_deletions` > 365 d (DEC 93) |
+| `prune_cron_history` | `50 9 * * *` | `cron.job_run_details` > 7 d (unfinished runs kept; DEC 110) |
 | `report_queue_check` | `*/30 * * * *` | oldest open report > 4 h → `report_queue` email to owners, at most once per 4 h (DEC 93) |
 
 ## 7. Notification catalog — R1.0 (21 types)
@@ -334,7 +369,7 @@ Every job that calls a function has an exists-guard (ARC-05).
 | offer_new | offers | ✓ | offers | "Maya offered $35 on your mini fridge" | `offer_new:{offer}:{round}` |
 | offer_accepted | offers | ✓ | offers | "Devin accepted your offer. Say hi and plan the pickup." | `offer_accepted:{offer}` |
 | offer_countered | offers | ✓ | offers | "Devin countered at $38 on the mini fridge" | `offer_countered:{offer}:{round}` |
-| offer_declined | offers | | offers | "Your offer on the desk chair wasn't accepted" / "This sold to someone else" | `offer_declined:{offer}` |
+| offer_declined | offers | | offers | "Your offer on the desk chair wasn't accepted" / the wind-down reason: "This item sold to someone else", "This listing was removed" or "The seller removed this listing" (DEC 99) | `offer_declined:{offer}` |
 | offer_expired | offers | | offers | "Your $30 offer on the desk chair expired" | `offer_expired:{offer}` |
 | message_new | messages | | messages | previews on: "Aisha: can we do 4:30?"; off: "New message from Aisha" | `message_new:{chat}:{minute}` |
 | meetup_proposed | meetups | ✓ | meetups | "Aisha suggested 4:30 PM at the Rec Center" | `meetup_proposed:{meetup}` |
@@ -348,6 +383,8 @@ Every job that calls a function has an exists-guard (ARC-05).
 | price_drop | alerts | | price_drop | "Desk chair you saved is now $30" | `price_drop:{listing}:{cents}` |
 | watch_available | alerts | | saved_search | "The lamp is available again" | `watch:{listing}:{date}` |
 | listing_stale | selling | | **tips (opt-in)** | "No offers on your lamp yet. Drop the price?" | `stale:{listing}` |
+| listing_removed | selling | | always (moderation) | "OnlySwap removed Desk lamp. Reason: {admin reason}" (DEC 96; from admin_set_listing_status, admin_bulk_set_listing_status, admin_resolve_report remove_content; `data.listing_id`) | `listing_removed:{listing}:{txid}` |
+| listing_restored | selling | | always | "Desk lamp is live again." (an admin put a removed listing back) | `listing_restored:{listing}:{txid}` |
 | report_update | safety | | always | "We reviewed your report" | `report:{id}:{status}` |
 | appeal_decided | account | | always | "Your appeal was reviewed" | `appeal:{id}` |
 | account_notice | account | | always | "Your account is paused until Oct 2" | `acct:{user}:{event}:{date}` |
@@ -362,6 +399,8 @@ Every job that calls a function has an exists-guard (ARC-05).
 - Tap routes come from `data.url`.
 
 **[R1.1] additions:** `wanted_match`, `campus_unlocked` (with the waitlist and Around campus, DEC-13), `quad_reply`, `quad_milestone`, `announcement_safety`, `announcement_news` (tips), `free_food` (pref `free_food`), `rating_revealed`.
+
+**Feed comments (DEC 121), group `comments`, pref `comments` (on by default):** `listing_comment` (to the post's author) and `comment_reply` (to the comment's author) push, deduped per post per hour; `listing_like` and `comment_like` are bell only (`push_state 'skipped'`), one unread row per target updated in place. All four open `/listing/[id]/comments`.
 
 ## 8. Workers and Pages Functions
 

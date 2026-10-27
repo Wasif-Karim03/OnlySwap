@@ -76,7 +76,7 @@ test('P2-TOK-01 space, radius and motion match DESIGN_SYSTEM §4-5', () => {
   );
   assert.equal(tokens.radius.control, 15);
   assert.equal(tokens.radius.card, 18);
-  assert.equal(tokens.radius.sheet, 28);
+  assert.equal(tokens.radius.sheet, 34); // DEC 143
   assert.equal(tokens.radius.thumb, 12);
   assert.equal(tokens.size.hit, 44);
   assert.deepEqual([tokens.size.buttonL, tokens.size.buttonM, tokens.size.buttonS], [54, 44, 36]);
@@ -105,6 +105,19 @@ test('T-UNIT-TOK-01 required contrast pairs pass in light and dark for every acc
         contrast(on, a.accent) >= 4.5,
         `${mode} onAccent/${name} = ${contrast(on, a.accent).toFixed(2)}`,
       );
+    }
+  }
+});
+
+test('T-UNIT-TOK-02 secondary and status text meets 4.5:1 on every surface (I-05, I-06)', () => {
+  for (const mode of ['light', 'dark']) {
+    const c = tokens.color[mode];
+    for (const fg of ['ink2', 'ink3', 'red', 'green', 'amber']) {
+      const surfaces = ['bg', 'bg2', 'card', ...(c[`${fg}Bg`] ? [`${fg}Bg`] : [])];
+      for (const bg of surfaces) {
+        const r = contrast(c[fg], c[bg]);
+        assert.ok(r >= 4.5, `${mode} ${fg}/${bg} = ${r.toFixed(2)}`);
+      }
     }
   }
 });

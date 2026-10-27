@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { useLocalSearchParams } from 'expo-router';
 import { renderRouter } from 'expo-router/testing-library';
 import type { ReactNode } from 'react';
 import { Text } from 'react-native';
@@ -70,11 +71,16 @@ function fakeApi(over: Partial<ChatApi> = {}): ChatApi {
   };
 }
 
+// Messages arrive on user:{me} as an inbox event carrying the message (E-09).
 let push: (m: Message) => void = () => {};
+let resume: () => void = () => {};
+const joined: string[] = [];
 const realtime: RealtimeSource = {
   userId: async () => 'me',
-  subscribe: (_t, _e, cb) => {
-    push = (m) => cb(m);
+  subscribe: (topic, event, cb, onJoin) => {
+    joined.push(`${topic} ${event}`);
+    push = (m) => cb({ chat_id: m.chat_id, message: m });
+    resume = () => onJoin?.();
     return () => {};
   },
 };
@@ -110,6 +116,7 @@ const noMeetups = {
   get: jest.fn(),
   forChat: jest.fn(async () => null),
   share: jest.fn(),
+  confirmHandoff: jest.fn(),
   noShow: jest.fn(),
 };
 
@@ -140,6 +147,18 @@ describe('E03 Chat', () => {
     await act(async () => push(msg(4, { body: 'Sure, see you' })));
     expect(await screen.findByText('Sure, see you')).toBeTruthy();
     expect(api.markRead).toHaveBeenCalledWith('c1');
+    expect(joined).toContain('user:me inbox');
+  });
+
+  it('T-UNIT-RT-01 ignores other chats and catches up when the channel rejoins', async () => {
+    const api = fakeApi();
+    render(chatRoute(api), '/chat/c1');
+    expect(await screen.findByTestId('chat-deal-bar')).toBeTruthy();
+    await act(async () => push(msg(9, { chat_id: 'c2', body: 'Wrong chat' })));
+    expect(screen.queryByText('Wrong chat')).toBeNull();
+    const before = (api.messages as jest.Mock).mock.calls.length;
+    await act(async () => resume());
+    await waitFor(() => expect((api.messages as jest.Mock).mock.calls.length).toBe(before + 1));
   });
 
   it('a failed message offers retry', async () => {
@@ -175,6 +194,43 @@ describe('E03 Chat', () => {
       '/chat/c1',
     );
     expect(await screen.findByText(chat.deletedUser)).toBeTruthy();
+  });
+});
+
+describe('Mark sold from the chat (DEC 97)', () => {
+  it('the seller sees Mark sold and it opens with this buyer picked', async () => {
+    const seen = jest.fn();
+    function SoldStub() {
+      seen(useLocalSearchParams<Record<string, string>>());
+      return <Stub id="screen-mark-sold" />;
+    }
+    render(
+      {
+        ...chatRoute(
+          fakeApi({
+            chat: jest.fn(async () => info({ role: 'seller', listing_status: 'active' })),
+          }),
+        ),
+        'listing/[id]/sold': () => <SoldStub />,
+      },
+      '/chat/c1',
+    );
+    fireEvent.press(await screen.findByTestId('chat-mark-sold'));
+    expect(await screen.findByTestId('screen-mark-sold')).toBeTruthy();
+    expect(seen).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'l1', buyer: 'u1' }));
+  });
+
+  it.each([
+    ['the buyer', { role: 'buyer' as const, listing_status: 'active' }],
+    ['an item already sold', { role: 'seller' as const, listing_status: 'sold' }],
+    [
+      'a closed chat',
+      { role: 'seller' as const, listing_status: 'active', status: 'closed' as const },
+    ],
+  ])('no Mark sold for %s', async (_name, patch) => {
+    render(chatRoute(fakeApi({ chat: jest.fn(async () => info(patch)) })), '/chat/c1');
+    expect(await screen.findByText('Mini fridge')).toBeTruthy();
+    expect(screen.queryByTestId('chat-mark-sold')).toBeNull();
   });
 });
 

@@ -16,6 +16,7 @@ import { Sheet } from '@/components/Sheet';
 import { SkeletonList } from '@/components/Skeleton';
 import { Text } from '@/components/Text';
 import { TextArea } from '@/components/TextArea';
+import { useToastStore } from '@/components/Toast';
 import { getEnv } from '@/lib/env';
 import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
@@ -25,6 +26,7 @@ import { readableColumn } from '@/theme/layout';
 import { authApi, type AuthApi } from '../auth/api';
 import { useSession } from '../auth/useSession';
 import { mediaUrl } from '../sell/logic';
+import { DockedScroll } from '../sell/SellStep';
 import { appealTarget, safetyApi, type SafetyApi } from './api';
 
 const statusKey = ['account-status'] as const;
@@ -67,7 +69,9 @@ export function AccountStatusScreen({
       </View>
     );
   }
-  const target = kind === 'banned' ? null : appealTarget(s, me);
+  // AR-04: a parent withdrew consent in the App Store. Nothing to appeal.
+  const consent = kind === 'suspended' && s.reason === 'parental_consent';
+  const target = kind === 'banned' || consent ? null : appealTarget(s, me);
   const latestAppeal = s.appeals[0];
   const until = s.paused_until
     ? new Date(s.paused_until).toLocaleDateString(intlLocale, { month: 'short', day: 'numeric' })
@@ -99,7 +103,9 @@ export function AccountStatusScreen({
             ? until
               ? fill(copy.statusBody.paused, { until })
               : copy.statusBody.pausedNoDate
-            : copy.statusBody[kind]}
+            : consent
+              ? copy.statusBody.consent
+              : copy.statusBody[kind]}
         </Text>
         {s.reason && s.reason in copy.reasons ? (
           <Text variant="bodyStrong">{copy.reasons[s.reason as keyof typeof copy.reasons]}</Text>
@@ -239,6 +245,7 @@ export function BlockedScreen({
                     await api.unblock(p.id);
                   } catch {
                     void q.refetch();
+                    useToastStore.getState().show('error', copy.unblockFailed);
                   }
                 }}
               />
@@ -284,26 +291,34 @@ export function DeleteAccountScreen({
   return (
     <View style={styles.root} testID="screen-delete-account">
       <NavBar title={copy.deleteTitle} onLeading={leave} />
-      <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-        <Text variant="body">{copy.deleteBody}</Text>
-        <Input
-          label={copy.deleteType}
-          value={typed}
-          onChangeText={setTyped}
-          autoCapitalize="characters"
-          autoCorrect={false}
-          testID="delete-confirm"
-        />
-        {error ? <Banner kind="error" message={error} /> : null}
-        <Button
-          label={copy.deleteButton}
-          variant="destructive"
-          disabled={typed.trim() !== 'DELETE'}
-          loading={busy}
-          onPress={remove}
-          testID="delete-button"
-        />
-      </ScrollView>
+      <DockedScroll
+        standalone
+        dock={
+          <>
+            {error ? <Banner kind="error" message={error} /> : null}
+            <Button
+              label={copy.deleteButton}
+              variant="destructive"
+              disabled={typed.trim() !== 'DELETE'}
+              loading={busy}
+              onPress={remove}
+              testID="delete-button"
+            />
+          </>
+        }
+      >
+        <View style={styles.deleteBody}>
+          <Text variant="body">{copy.deleteBody}</Text>
+          <Input
+            label={copy.deleteType}
+            value={typed}
+            onChangeText={setTyped}
+            autoCapitalize="characters"
+            autoCorrect={false}
+            testID="delete-confirm"
+          />
+        </View>
+      </DockedScroll>
     </View>
   );
 }
@@ -322,4 +337,5 @@ const styles = StyleSheet.create((theme, rt) => ({
     minHeight: theme.space.rowMin,
   },
   flex: { flex: 1 },
+  deleteBody: { gap: theme.space.md },
 }));

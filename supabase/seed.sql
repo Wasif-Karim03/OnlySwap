@@ -43,7 +43,7 @@ insert into public.safe_spots (campus_id, name, description, hours, lat, lng, is
   ('10000000-0000-4000-8000-000000000002', 'Demo Student Center', 'Next to the cafe', '8am to 10pm', 40.0010, -83.0010, false, 2);
 
 -- Users. The on_auth_user_created trigger makes each profile; the update below
--- finishes onboarding (name, 18+ check, rules) so the app opens straight to the feed.
+-- finishes onboarding (name, age check, rules) so the app opens straight to the feed.
 insert into auth.users
   (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
    raw_app_meta_data, raw_user_meta_data, created_at, updated_at,

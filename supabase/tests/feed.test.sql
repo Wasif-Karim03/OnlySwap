@@ -1,6 +1,6 @@
 -- S18: T-INT-FEED-01 get_feed exclusions + the swipe, save, hide, watch and view RPCs (P6-FEED-01).
 begin;
-select plan(34);
+select plan(37);
 select tests.create_fixtures();
 select tests.set_now('2027-03-10 12:00:00-05');
 
@@ -46,13 +46,20 @@ delete from public.blocks;
 
 -- record_swipes -------------------------------------------------------------------------------------
 select ok(tests.try_ok_as(tests.uid('B'), $$select public.record_swipes('[
-  {"listing_id":"00000000-0000-4000-8000-000000000f02","dir":"left","at":"2027-03-10 11:59-05"},
-  {"listing_id":"00000000-0000-4000-8000-000000000f03","dir":"save","at":"2027-03-10 11:59:30-05"},
+  {"listing_id":"00000000-0000-4000-8000-000000000f02","dir":"left","at":"2027-03-10 11:59-05","dwell_ms":4200.4},
+  {"listing_id":"00000000-0000-4000-8000-000000000f03","dir":"save","at":"2027-03-10 11:59:30-05","dwell_ms":999999},
   {"listing_id":"00000000-0000-4000-8000-00000000ffff","dir":"left"},
   {"listing_id":"00000000-0000-4000-8000-000000000f04","dir":"left"},
   {"listing_id":"00000000-0000-4000-8000-000000000f01","dir":"sideways"}]')$$), 'a batch is recorded');
 select is((select count(*)::int from public.swipes where user_id = tests.uid('B')), 2, 'unknown, own and malformed items are skipped');
 select is((select save_count from public.listings where id = '00000000-0000-4000-8000-000000000f03'), 1, 'a save swipe saves');
+select is((select string_agg(dwell_ms::text, ',' order by listing_id) from public.swipes where user_id = tests.uid('B')), '4200,600000',
+  'time on card is kept with the swipe, capped at 10 minutes (E-03)');
+select ok(tests.try_ok_as(tests.uid('C'), $$select public.record_swipes('[
+  {"listing_id":"00000000-0000-4000-8000-000000000f02","dir":"left","dwell_ms":-3},
+  {"listing_id":"00000000-0000-4000-8000-000000000f01","dir":"left","dwell_ms":"soon"}]')$$), 'a bad time on card does not fail the batch');
+select is((select count(*)::int from public.swipes where user_id = tests.uid('C') and dwell_ms is null), 2,
+  'a negative or malformed time on card is stored as unknown, the swipe still counts');
 select is(pg_temp.feed_ids('B'), 'Desk lamp,Lamp shade', 'swiped cards leave the feed');
 select tests.set_now('2027-04-10 12:00:00-05');
 update public.listings set expires_at = '2027-06-01' where id <> '00000000-0000-4000-8000-000000000f08';

@@ -103,6 +103,7 @@ export function SearchPicker({
           </div>
           {error ? <div className="empty error">{error}</div> : null}
           {q.trim().length < 2 ? <div className="empty">Type 2 or more letters.</div> : null}
+          {q.trim().length >= 2 && !res && !error ? <div className="empty">Searching…</div> : null}
           {res && list.length === 0 ? <div className="empty">No matches.</div> : null}
           {kind === 'people'
             ? res?.people.map((p) => (

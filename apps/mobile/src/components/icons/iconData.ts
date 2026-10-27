@@ -59,6 +59,8 @@ export type IconName =
   | 'sliders'
   | 'swap'
   | 'tag'
+  | 'thumbsDown'
+  | 'thumbsUp'
   | 'tool'
   | 'trash'
   | 'trend'
@@ -66,6 +68,7 @@ export type IconName =
   | 'up'
   | 'user'
   | 'users'
+  | 'verified'
   | 'wifi'
   | 'x';
 
@@ -607,6 +610,34 @@ export const iconData: Record<IconName, IconShape[]> = {
       "r": 1.4
     }
   ],
+  "thumbsDown": [
+    {
+      "tag": "rect",
+      "x": 3.5,
+      "y": 4.5,
+      "width": 3.5,
+      "height": 9,
+      "rx": 1
+    },
+    {
+      "tag": "path",
+      "d": "M7 13.5 10.6 20a1.9 1.9 0 0 0 3.5-1.3L13.4 14.5h4.9a1.9 1.9 0 0 0 1.85-2.3l-1.5-6.2a2 2 0 0 0-1.95-1.5H7"
+    }
+  ],
+  "thumbsUp": [
+    {
+      "tag": "rect",
+      "x": 3.5,
+      "y": 10.5,
+      "width": 3.5,
+      "height": 9,
+      "rx": 1
+    },
+    {
+      "tag": "path",
+      "d": "M7 10.5 10.6 4a1.9 1.9 0 0 1 3.5 1.3L13.4 9.5h4.9a1.9 1.9 0 0 1 1.85 2.3l-1.5 6.2a2 2 0 0 1-1.95 1.5H7"
+    }
+  ],
   "tool": [
     {
       "tag": "path",
@@ -663,6 +694,16 @@ export const iconData: Record<IconName, IconShape[]> = {
     {
       "tag": "path",
       "d": "M2.5 19.5c.8-3 3.3-4.8 6.5-4.8s5.7 1.8 6.5 4.8M16 4.7a3.5 3.5 0 0 1 0 6.6M17.8 14.9c1.9.6 3.2 2.1 3.7 4.6"
+    }
+  ],
+  "verified": [
+    {
+      "tag": "path",
+      "d": "M12 3 14.8 5.3 18.4 5.6 18.7 9.2 21 12 18.7 14.8 18.4 18.4 14.8 18.7 12 21 9.2 18.7 5.6 18.4 5.3 14.8 3 12 5.3 9.2 5.6 5.6 9.2 5.3z"
+    },
+    {
+      "tag": "path",
+      "d": "M8.8 12.2l2.2 2.2 4.2-4.4"
     }
   ],
   "wifi": [

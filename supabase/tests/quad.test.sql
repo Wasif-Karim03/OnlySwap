@@ -71,6 +71,11 @@ select is(pg_temp.q('B', format('select public.vote_poll(%L, %L)::text', pg_temp
 select is(
   pg_temp.q('A', format('select public.create_quad_post(%L, %L, %L)::text', 'photo', 'sunset', 'c/elsewhere/x.webp')),
   'ERROR: INVALID:photo_path', 'a photo must live in this post''s folder');
+-- Recorded uploads (0246).
+select tests.register_upload(tests.uid('A'), 'quad', '00000000-0000-4000-8000-00000000a9a1',
+  'c/' || tests.uid('OSU') || '/quad/00000000-0000-4000-8000-00000000a9a1/11111111-1111-4111-8111-111111111111_full.webp');
+select tests.register_upload(tests.uid('C'), 'quad', '00000000-0000-4000-8000-00000000a9a2',
+  'c/' || tests.uid('OSU') || '/quad/00000000-0000-4000-8000-00000000a9a2/22222222-2222-4222-8222-222222222222_full.webp');
 select is(
   pg_temp.q('A', format('select public.create_quad_post(%L, %L, %L, null, null, %L) ->> %L', 'photo', 'sunset from the oval',
     'c/' || tests.uid('OSU') || '/quad/00000000-0000-4000-8000-00000000a9a1/11111111-1111-4111-8111-111111111111_full.webp',
@@ -111,15 +116,13 @@ select is((select count(*)::int from public.notifications where user_id = tests.
 select is(pg_temp.q('B', format('select public.create_quad_reply(%L, %L) ->> %L', pg_temp.pid('best study spot?'), 'call 614 555 0182', 'reason')),
   'pii:phone', 'replies get the same checks');
 
--- T-INT-QUAD-ANON / T-SEC-04 (database half): no author ids anywhere ----------------------------
+-- DEC 150: the Quad shows who wrote each post and reply (no longer anonymous) ----------------
 select is(
   concat_ws('|',
     pg_temp.q('B', format($f$select (public.get_quad_feed('new')::text like '%%%s%%')::text$f$, tests.uid('A'))),
-    pg_temp.q('B', format($f$select (public.get_quad_thread(%L)::text like '%%%s%%')::text$f$, pg_temp.pid('best study spot?'), tests.uid('A'))),
-    pg_temp.q('A', format($f$select (public.get_quad_feed('new')::text like '%%%s%%')::text$f$, tests.uid('A'))),
-    pg_temp.q('A', format($f$select (public.get_my_quad()::text like '%%%s%%')::text$f$, tests.uid('A'))),
-    pg_temp.q('B', format($f$select (public.get_quad_thread(%L)::text ~ 'author|user_id')::text$f$, pg_temp.pid('best study spot?')))),
-  'false|false|false|false|false', 'no Quad response carries an author id or field, even for your own posts');
+    pg_temp.q('B', format($f$select (public.get_quad_thread(%L) -> 'post' -> 'author' ->> 'display_name') is not null$f$, pg_temp.pid('best study spot?'))),
+    pg_temp.q('A', format($f$select (public.get_my_quad()::text like '%%%s%%')::text$f$, tests.uid('A')))),
+  'true|true|true', 'Quad responses name the author (id, display name, photo), like the rest of the app');
 select is(pg_temp.q('B', $$select count(*)::text from public.quad_posts$$),
   'ERROR: permission denied for table quad_posts', 'no direct reads of posts');
 select is(pg_temp.q('B', $$select count(*)::text from public.quad_replies$$),
@@ -180,7 +183,7 @@ select is(
 select matches(pg_temp.q('B', format('select public.create_report(%L, %L, %L)::text', 'quad_post', pg_temp.pid('best study spot?'), 'harassment')),
   '^\{"id"', 'a Quad post can be reported');
 select is((select target_user_id from public.reports where reporter_id = tests.uid('B') and target_type = 'quad_post'),
-  tests.uid('A'), 'the author is resolved on the server (and never returned)');
+  null, 'the report row keeps no author (A-01, quad_author_privacy.test.sql)');
 select matches(pg_temp.q('A', format('select public.create_appeal(%L, %L, %L)::text', 'quad_post', pg_temp.pid('sunset from the oval'), 'mistake')),
   '^\{"id"', 'the author can appeal a hidden post');
 

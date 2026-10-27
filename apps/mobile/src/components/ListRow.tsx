@@ -75,7 +75,7 @@ export function ListRow({
 
 /**
  * Grouped list (F10): bg2 block, hairlines between rows, optional header and
- * footer. `surface="card"`: white groups on a grey (bg2) page, the inset
+ * footer. The header is sentence case `meta` in ink2, as written (no forced caps). `surface="card"`: white groups on a grey (bg2) page, the inset
  * settings look (DEC 90).
  */
 export function GroupedList({
@@ -94,7 +94,7 @@ export function GroupedList({
     <View style={styles.section}>
       {header ? (
         <Text variant="meta" tone="ink2" accessibilityRole="header" style={styles.header}>
-          {header.toUpperCase()}
+          {header}
         </Text>
       ) : null}
       <View style={styles.group(surface)}>

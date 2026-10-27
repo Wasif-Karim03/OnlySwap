@@ -54,7 +54,7 @@ export function rows(m: Metrics): Row[] {
       unit: 'count',
     },
     {
-      name: 'Emails in the last 24 h (Gmail ~500/day)',
+      name: 'Emails in the last 24 h: outbox plus sign-in codes (Gmail ~500/day)',
       value: m.emails_24h,
       limit: 500,
       alertAt: 350,

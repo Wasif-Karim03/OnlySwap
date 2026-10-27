@@ -51,18 +51,22 @@ export function AuthStep({
   testID,
 }: Props) {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  // With no history (opened by replace or a link) back still leaves for welcome.
+  const back =
+    onBack ?? (() => (router.canGoBack() ? router.back() : router.replace('/welcome')));
   return (
     <View style={styles.root} testID={testID}>
       {step ? (
         <StepNav
           step={step}
           leading={leading}
-          onBack={onBack}
+          onBack={back}
           trailing={trailing}
           top={insets.top}
         />
       ) : (
-        <NavBar leading={leading} onLeading={onBack} trailing={trailing} />
+        <NavBar leading={leading} onLeading={back} trailing={trailing} />
       )}
       <KeyboardAwareScrollView
         bottomOffset={96}
@@ -102,12 +106,10 @@ function StepNav({
 }: {
   step: number;
   leading: 'back' | 'none';
-  onBack?: () => void;
+  onBack: () => void;
   trailing?: ReactNode;
   top: number;
 }) {
-  const router = useRouter();
-  const back = onBack ?? (() => router.canGoBack() && router.back());
   const current = Math.min(Math.max(Math.round(step), 1), SIGNUP_STEPS);
   const label = stepLabel(current, SIGNUP_STEPS);
   return (
@@ -119,7 +121,7 @@ function StepNav({
               icon="back"
               filled
               accessibilityLabel={navCopy.back}
-              onPress={back}
+              onPress={onBack}
               testID="auth-back"
             />
           ) : null}

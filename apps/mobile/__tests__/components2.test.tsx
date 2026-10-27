@@ -6,6 +6,7 @@ import { AppState, Linking } from 'react-native';
 import { ConfirmDialog } from '../src/components/ConfirmDialog';
 import { EmptyState } from '../src/components/EmptyState';
 import { ErrorState, errorTitle } from '../src/components/ErrorState';
+import { IconButton } from '../src/components/IconButton';
 import { NavBar } from '../src/components/NavBar';
 import { PermissionPrimer, PermissionPrimerView } from '../src/components/PermissionPrimer';
 import { Photo, photoState } from '../src/components/Photo';
@@ -210,7 +211,7 @@ describe('P2-CMP-08 EmptyState, ErrorState, Skeleton', () => {
       expect(el.props.accessibilityLabel).toBe(states.loading);
       expect(el.props.accessibilityState).toEqual({ busy: true });
     }
-    expect(lineHeight('body')).toBe(16);
+    expect(lineHeight('body')).toBe(17); // body text size (DEC 143 type scale)
   });
 });
 
@@ -475,5 +476,26 @@ describe('P2-CMP-11 ConfirmDialog and ReportSheet', () => {
     });
     expect(screen.getByRole('header', { name: report.duplicateTitle })).toBeTruthy();
     now.mockRestore();
+  });
+});
+
+describe('IconButton badge (bell, DEC 120)', () => {
+  it('shows the unread count, says it, and hides at 0', () => {
+    const { rerender } = render(
+      <IconButton icon="bell" accessibilityLabel="Notifications" badge={3} testID="bell" />,
+    );
+    // Decorative for screen readers: the button says the count.
+    expect(screen.getByTestId('bell-badge', { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.getByText('3', { includeHiddenElements: true })).toBeTruthy();
+    expect(
+      screen.getByLabelText(fill(nav.tabWithBadge, { label: 'Notifications', count: '3' })),
+    ).toBeTruthy();
+    rerender(
+      <IconButton icon="bell" accessibilityLabel="Notifications" badge={120} testID="bell" />,
+    );
+    expect(screen.getByText('99+', { includeHiddenElements: true })).toBeTruthy();
+    rerender(<IconButton icon="bell" accessibilityLabel="Notifications" badge={0} testID="bell" />);
+    expect(screen.queryByTestId('bell-badge', { includeHiddenElements: true })).toBeNull();
+    expect(screen.getByLabelText('Notifications')).toBeTruthy();
   });
 });

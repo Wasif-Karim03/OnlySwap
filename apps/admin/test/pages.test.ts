@@ -90,7 +90,7 @@ test('T-UNIT-ADMIN-ACT type filter to kinds', () => {
   // every kind in a group is one the server knows
   const all = ACTIVITY_GROUPS.flatMap((g) => g.kinds);
   assert.equal(new Set(all).size, all.length, 'no kind in two groups');
-  assert.equal(all.length, 21);
+  assert.equal(all.length, 20, 'deck cards are no longer recorded (DEC 100)');
 });
 
 test('T-UNIT-ADMIN-ACT filters to RPC args', () => {

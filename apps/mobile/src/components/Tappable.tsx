@@ -1,3 +1,4 @@
+import { size } from '@onlyswap/tokens';
 import { useRef, type ReactNode } from 'react';
 import { Pressable, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -5,6 +6,14 @@ import Animated from 'react-native-reanimated';
 import { usePressFeedback } from '@/theme/motion';
 
 export const DOUBLE_TAP_GUARD_MS = 500;
+
+/** Grows a 36 pt control (Button S, Chip) to the 44 pt target without changing its look (I-04). */
+export const SMALL_SLOP = {
+  top: (size.hit - size.buttonS) / 2,
+  bottom: (size.hit - size.buttonS) / 2,
+  left: 0,
+  right: 0,
+};
 
 /** Returns a press handler that ignores repeats within `ms` (DESIGN_SYSTEM §6). */
 export function useGuardedPress(onPress: (() => void) | undefined, ms = DOUBLE_TAP_GUARD_MS) {

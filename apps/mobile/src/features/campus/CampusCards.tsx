@@ -3,16 +3,19 @@ import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { Button } from '@/components/Button';
+import { IconButton } from '@/components/IconButton';
 import { Photo } from '@/components/Photo';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { fill } from '@/lib/format';
 import { campus as copy, feed as feedCopy } from '@/strings';
 
+import { SocialBar } from '../comments/components/SocialBar';
 import { agoLabel, sellerName } from '../feed/logic';
 import { mediaUrl, priceLabel } from '../sell/logic';
 import {
   budgetLabel,
+  needByLine,
   canAnswer,
   countdown,
   countdownLabel,
@@ -20,6 +23,7 @@ import {
   type CampusItem,
   type Countdown,
 } from './logic';
+import { a11yState } from '@/lib/a11y';
 
 /**
  * Live countdown for a free food post. Re-renders every 15 s (every second in
@@ -60,8 +64,27 @@ type CardProps = {
   onOpen: () => void;
   /** "I have this" on someone else's Wanted post. */
   onAnswer: () => void;
+  /** Like and Comment (DEC 121): food and wanted cards on the Feed show them when set. */
+  onLike?: () => void;
+  onComments?: () => void;
+  /** Your own post: Delete (owner review 2026-10-24). */
+  onDelete?: () => void;
   testID?: string;
 };
+
+function Social({ item, onLike, onComments, testID }: CardProps) {
+  if (!onLike || !onComments) return null;
+  return (
+    <SocialBar
+      liked={item.liked === true}
+      likeCount={item.like_count ?? 0}
+      commentCount={item.comment_count ?? 0}
+      onLike={onLike}
+      onComments={onComments}
+      testID={testID ? `${testID}-social` : undefined}
+    />
+  );
+}
 
 /**
  * One Around campus post (C01, DEC 90 mock screen 5): free food on a peach
@@ -79,7 +102,8 @@ function thumbOf(item: CampusItem, base: string) {
   return p ? { uri: mediaUrl(base, p.thumb_path || p.path), blurhash: p.blurhash } : null;
 }
 
-function FoodCard({ item, now, mediaBase, onOpen, testID }: CardProps) {
+function FoodCard(props: CardProps) {
+  const { item, now, mediaBase, onOpen, testID } = props;
   const c = useCountdown(item.expires_at, now);
   const gone = c?.kind === 'gone';
   const time = c ? countdownLabel(c) : '';
@@ -90,12 +114,12 @@ function FoodCard({ item, now, mediaBase, onOpen, testID }: CardProps) {
       <Tappable
         accessibilityRole="button"
         accessibilityLabel={fill(copy.foodLabel, { title: item.title, place, time })}
-        accessibilityState={{ disabled: gone }}
+        {...a11yState({ disabled: gone })}
         disabled={gone}
         onPress={onOpen}
       >
         <View style={styles.body}>
-          <View style={styles.row}>
+          <View style={[styles.row, item.is_own && props.onDelete ? styles.cornerRoom : null]}>
             <Text variant="label" tone={gone ? 'ink3' : 'peach'} style={styles.flex}>
               {copy.foodTag}
             </Text>
@@ -128,49 +152,86 @@ function FoodCard({ item, now, mediaBase, onOpen, testID }: CardProps) {
           ) : null}
         </View>
       </Tappable>
+      {item.is_own && props.onDelete ? (
+        <View style={styles.foodCorner}>
+          <IconButton
+            icon="trash"
+            accessibilityLabel={copy.deleteOwnPost}
+            onPress={props.onDelete}
+            testID={testID ? `${testID}-delete` : undefined}
+          />
+        </View>
+      ) : null}
+      <Social {...props} />
     </View>
   );
 }
 
-function WantedCard({ item, now, onOpen, onAnswer, testID }: CardProps) {
+function WantedCard(props: CardProps) {
+  const { item, now, mediaBase, onOpen, onAnswer, testID } = props;
+  // The full photo, shown big under the words like a social post (owner
+  // review 2026-10-24: the small thumbnail on the left was hard to see).
+  const first = item.photos[0];
+  const photo = first ? { uri: mediaUrl(mediaBase, first.path), blurhash: first.blurhash } : null;
   const name = sellerName(item);
   const who = fill(copy.byLine, { name, ago: agoLabel(new Date(item.created_at), now()) });
   const budget = budgetLabel(item.wanted_max_cents);
   const answer = canAnswer(item);
   return (
-    <View style={[styles.card, styles.wanted]} testID={testID}>
-      <View style={styles.flex}>
+    <View style={styles.card} testID={testID}>
+      <View style={styles.wanted}>
+        <View style={styles.flex}>
+          <Tappable
+            accessibilityRole="button"
+            accessibilityLabel={fill(copy.wantedLabel, { title: item.title, budget, who })}
+            onPress={onOpen}
+          >
+            <View style={styles.text}>
+              <Text variant="meta" tone="ink2" numberOfLines={1}>
+                {name ? fill(copy.lookingFor, { name }) : copy.someoneLookingFor}
+              </Text>
+              <Text variant="bodyStrong">{item.title}</Text>
+              <Text variant="meta" tone="ink2">
+                {[budget, needByLine(item.need_by)].filter(Boolean).join(feedCopy.metaSeparator)}
+              </Text>
+            </View>
+          </Tappable>
+        </View>
+        {answer ? (
+          <Button
+            label={copy.iHaveThis}
+            variant="secondary"
+            size="S"
+            fullWidth={false}
+            accessibilityHint={fill(copy.iHaveThisLabel, { title: item.title })}
+            onPress={onAnswer}
+            testID={testID ? `${testID}-answer` : undefined}
+          />
+        ) : item.is_own && props.onDelete ? (
+          <IconButton
+            icon="trash"
+            accessibilityLabel={copy.deleteOwnPost}
+            onPress={props.onDelete}
+            testID={testID ? `${testID}-delete` : undefined}
+          />
+        ) : item.is_own ? (
+          <Text variant="label" tone="ink3">
+            {copy.yours}
+          </Text>
+        ) : null}
+      </View>
+      {photo ? (
         <Tappable
           accessibilityRole="button"
           accessibilityLabel={fill(copy.wantedLabel, { title: item.title, budget, who })}
           onPress={onOpen}
+          style={styles.wantedPhoto}
+          testID={testID ? `${testID}-photo` : undefined}
         >
-          <View style={styles.text}>
-            <Text variant="meta" tone="ink2" numberOfLines={1}>
-              {name ? fill(copy.lookingFor, { name }) : copy.someoneLookingFor}
-            </Text>
-            <Text variant="bodyStrong">{item.title}</Text>
-            <Text variant="meta" tone="ink2">
-              {budget}
-            </Text>
-          </View>
+          <Photo source={photo.uri} blurhash={photo.blurhash} aspectRatio={4 / 3} rounded="thumb" />
         </Tappable>
-      </View>
-      {answer ? (
-        <Button
-          label={copy.iHaveThis}
-          variant="secondary"
-          size="S"
-          fullWidth={false}
-          accessibilityHint={fill(copy.iHaveThisLabel, { title: item.title })}
-          onPress={onAnswer}
-          testID={testID ? `${testID}-answer` : undefined}
-        />
-      ) : item.is_own ? (
-        <Text variant="label" tone="ink3">
-          {copy.yours}
-        </Text>
       ) : null}
+      <Social {...props} />
     </View>
   );
 }
@@ -209,16 +270,19 @@ function ListingCard({ item, now, mediaBase, onOpen, testID }: CardProps) {
 }
 
 const styles = StyleSheet.create((theme) => ({
-  card: {
-    borderRadius: theme.radius.card,
-    overflow: 'hidden',
-    backgroundColor: theme.colors.card,
-  },
+  // Flat rows on the page; the Feed draws the lines between them.
+  card: { overflow: 'hidden' },
+  // Free food keeps its warm tile so it still stands out among flat rows.
   food: (dim: boolean) => ({
+    marginHorizontal: theme.space.screen,
+    marginVertical: theme.space.sm,
     borderRadius: theme.radius.card,
     backgroundColor: dim ? theme.colors.card : theme.colors.peachBg,
     opacity: dim ? 0.6 : 1,
   }),
+  cornerRoom: { paddingRight: theme.size.hit },
+  foodCorner: { position: 'absolute', top: theme.space.xs, right: theme.space.xs },
+  wantedPhoto: { paddingHorizontal: theme.space.lg, paddingBottom: theme.space.sm },
   wanted: {
     flexDirection: 'row',
     alignItems: 'center',

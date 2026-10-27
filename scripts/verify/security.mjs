@@ -176,6 +176,7 @@ for (const fn of [
   'archive-chats',
   'push-receipts',
   'cleanup-drafts',
+  'scan-photos',
 ]) {
   const res = await fetch(`${url}/functions/v1/${fn}`, {
     method: 'POST',

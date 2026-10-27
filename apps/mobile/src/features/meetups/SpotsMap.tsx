@@ -10,6 +10,7 @@ import { useReducedMotion } from '@/theme/reducedMotion';
 
 import type { Spot } from '../sell/logic';
 import { mapStyleFor, spotsBounds, validCoord } from './logic';
+import { a11yState } from '@/lib/a11y';
 
 export type MapSpot = Pick<Spot, 'id' | 'name' | 'lat' | 'lng' | 'police'>;
 
@@ -51,7 +52,7 @@ export function SpotsMap({
       <Tappable
         accessibilityRole="button"
         accessibilityLabel={label}
-        accessibilityState={{ expanded: open }}
+        {...a11yState({ expanded: open })}
         onPress={() => setOpen((o) => !o)}
         style={styles.toggleHit}
         testID={`${testID}-toggle`}

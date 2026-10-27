@@ -239,7 +239,9 @@ enable_confirmations = true
 # If enabled, users will need to reauthenticate or have logged in recently to change their password.
 secure_password_change = false
 # Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
-max_frequency = "1s"
+# 60 s per address, same as the app's resend timer (audit G-01, DEC 105): a stranger can't
+# flood a student's inbox or burn the shared Gmail SMTP quota. Hosted must match.
+max_frequency = "60s"
 # Number of characters used in the email OTP.
 otp_length = 6
 # Number of seconds before the email OTP expires (defaults to 1 hour).
@@ -441,7 +443,15 @@ verify_jwt = false
 [functions.send-email]
 verify_jwt = false
 
+# DEC 152: internal; the scan_photos cron calls it with the service key.
+[functions.scan-photos]
+verify_jwt = false
+
 [functions.archive-chats]
+verify_jwt = false
+
+# AR-04: Apple's App Store Server Notifications; Apple's JWS signature is the check.
+[functions.app-store-notifications]
 verify_jwt = false
 
 # P11-ACC-02: the signed-in user's own export; the gateway checks the JWT and

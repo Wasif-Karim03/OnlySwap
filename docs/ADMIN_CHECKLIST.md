@@ -60,7 +60,7 @@ Today the app stores saves, offers (a right swipe is an offer), chats, meetups, 
 - [x] Activity events table: who, what (shown in deck, viewed, swiped, saved, searched, opened from), which listing, when, device and app version; one server function the app calls in batches (backend: `activity_events`, `track_events`; the app sends them in step 2)
 - [x] Time on card and where the listing was opened from (Discover, search, Around campus, profile, link) (backend: `dwell_ms`, `source`)
 - [x] Last active time and device per student (backend: `last_active_at`, `last_platform`, `last_app_version`)
-- [x] Keep events 90 days, then delete (left swipes stay at 30 days); add both to the privacy policy retention table (`prune_activity` job)
+- [x] Keep events 90 days, then delete (left swipes stay at 30 days). DEC 100: now 30 days; deck cards, swipes, saves and offers no longer stored as events; add both to the privacy policy retention table (`prune_activity` job)
 - [x] Admin functions for: activity feed, a student's timeline, a listing's swipe list and funnel, live numbers with trends; each one that shows a named student writes an access row to the audit log (backend, API §4.1)
 - [x] Privacy policy and in-app privacy text: "Our team can see your activity in the app (swipes, saves, offers) to run and protect the service. Every look is logged."
 - [x] PostHog stays as it is (18 events, no personal data); the new events live only in our database
@@ -94,6 +94,7 @@ Today the app stores saves, offers (a right swipe is an offer), chats, meetups, 
   - Every page was rendered here only against sample data (`design/admin-screens-now.html`). Owner, after the deploy below: sign in at the staging console, open every sidebar page and every Settings section once (owner), check nothing shows an error box, and that Activity shows your own phone's events after you browse in the staging app.
 - [x] Tests for every new admin function (pgTAP) and the new pages
   - Checked 2026-10-11 on a clean clone: every public function added in 0206 to 0209 is called in a pgTAP file (the private helpers are covered through them); full suite 1452 passed, 1 known failure (`smoke.test.sql` test 1 wants Postgres 17, the sandbox has 14). Staging tools: `supabase/campuses/tests/mock_status.test.sql` 17/17. Pages: 48 admin unit tests on the pure helpers behind every page, plus all 66 screens rendered (`design/admin-screens-now.html`). There is no browser E2E for the console in CI.
+- [ ] Two-step check switched back on before launch (DEC 95): in the Supabase SQL editor for the project, `update private.admin_settings set mfa_required = true;`, then sign in to the console again and scan the QR code with your authenticator
 - [ ] Owner two-step check is set up on your account, with a second authenticator (or a written recovery plan) in case you lose your phone
   - Owner: the console enrolls one authenticator at your first sign-in, so either (a) when it shows the QR code, scan it with two apps at once (for example your phone's Passwords app and a second device), or (b) write a recovery plan: if the phone is lost, open the Supabase dashboard for the project, Authentication > Users > your user, delete the TOTP factor, then sign in to the console again and enroll a new authenticator. Keep the Supabase account itself on its own two-step login.
 

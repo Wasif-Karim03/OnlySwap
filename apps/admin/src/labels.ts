@@ -2,8 +2,24 @@
 // console shows goes through here so staff never read `no_show` or
 // `unlock_threshold`. Pure and tested (test/labels.test.ts).
 
-/** Pill colors from the approved mock: green good, red bad, amber waiting, sky info, lilac Quad or demo. */
+/**
+ * Meaning tags on each value: green good, red bad, amber waiting, sky info,
+ * lilac Quad or demo, peach new. Only three colors render (DESIGN_REVIEW 2.10):
+ * see displayTone.
+ */
 export type Tone = 'green' | 'red' | 'amber' | 'sky' | 'lilac' | 'peach' | 'neutral';
+
+/** The tones that get a color on screen; everything else is neutral. */
+export type DisplayTone = 'green' | 'red' | 'amber' | 'neutral';
+
+/**
+ * Pill and icon color for a tone: green done or good, red needs action, amber
+ * waiting; sky, lilac and peach add no meaning in plain words, so they render
+ * neutral (no purple in the console).
+ */
+export function displayTone(tone: Tone): DisplayTone {
+  return tone === 'green' || tone === 'red' || tone === 'amber' ? tone : 'neutral';
+}
 
 export type Labeled = { label: string; tone: Tone };
 
@@ -124,11 +140,14 @@ export const role = (v: string | null | undefined) =>
 
 const AGE_METHODS: Record<string, string> = {
   os_signal: 'Phone age range',
-  self_declared: 'Said they are 18+',
+  self_declared: 'Gave a birthday',
   review: 'Checked by staff',
 };
 export const ageMethod = (v: string | null | undefined) =>
   v ? (AGE_METHODS[v] ?? humanize(v)) : '';
+
+export const ageBand = (v: string | null | undefined) =>
+  v === '13_17' ? 'Age 13 to 17' : v === '18_plus' ? '18 or older' : '';
 
 // ---------------------------------------------------------------------------
 // Listings
@@ -488,7 +507,7 @@ export const ACTIVITY_GROUPS = [
   {
     id: 'browsing',
     label: 'Browsing',
-    kinds: ['listing_viewed', 'searched', 'opened_from', 'app_open', 'deck_shown'],
+    kinds: ['listing_viewed', 'searched', 'opened_from', 'app_open'],
   },
   { id: 'swipes', label: 'Swipes', kinds: ['swiped_left', 'saved', 'unsaved'] },
   {

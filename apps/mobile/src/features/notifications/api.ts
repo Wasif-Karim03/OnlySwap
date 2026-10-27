@@ -25,6 +25,8 @@ export type NotificationPrefs = {
   quad_replies?: boolean;
   /** Free food posts on your campus (R1.1). Off by default; present once the server returns it. */
   free_food?: boolean;
+  /** Comments and replies on your Feed posts (DEC 121). On by default; present once the server returns it. */
+  comments?: boolean;
   quiet_start: string;
   quiet_end: string;
 };
@@ -47,6 +49,9 @@ export const notificationsApi: NotificationsApi = {
   prefs: () => rpc<NotificationPrefs>('get_notification_prefs'),
   updatePrefs: (patch) => rpc<NotificationPrefs>('update_notification_prefs', { prefs: patch }),
 };
+
+/** Unread notifications for the bell badge (`unread_count`, DEC 120). */
+export const unreadCount = () => rpc<number>('unread_count');
 
 /** "Today" / "Yesterday" / "Earlier" sections for the list (F09). */
 export function daySection(iso: string, now: Date): 'today' | 'yesterday' | 'earlier' {

@@ -14,6 +14,7 @@ export const permissions: Readonly<{ camera: string; photos: string }> = permiss
 
 export const tabs = {
   discover: 'Discover',
+  feed: 'Feed',
   sell: 'Sell',
   inbox: 'Inbox',
   profile: 'Profile',
@@ -25,14 +26,13 @@ export const shell = {
   sellTitle: 'Sell',
   inboxTitle: 'Inbox',
   profileTitle: 'Profile',
-  comingSoon: 'This screen is being built.',
 } as const;
 
 /** Error copy keyed by ErrorCode (API §0 + client codes). */
 export const errors = {
   NOT_AUTHENTICATED: 'Sign in to keep going.',
   NOT_ACTIVE: "Your account can't do that right now. Check your profile for details.",
-  AGE_REQUIRED: 'Confirm you are 18 or older to keep going.',
+  AGE_REQUIRED: 'Confirm you are 13 or older to keep going.',
   RULES_REQUIRED: 'Read and accept the community rules to keep going.',
   FORBIDDEN: "You don't have access to that.",
   NOT_FOUND: "We couldn't find that. It may have been removed.",
@@ -41,6 +41,8 @@ export const errors = {
   RATE_LIMITED: "You're doing that a lot. Try again in a little while.",
   RATE_LIMITED_UNTIL: "You're doing that a lot. Try again after {time}.",
   OFFERS_PAUSED: 'Offers are paused on your account after a missed meetup.',
+  SELLER_AWAY: 'This seller paused their listings. Save it and check back later.',
+  HANDOFF_LOCKED: 'Too many wrong codes. Use Did it sell? in the chat instead.',
   LISTING_UNAVAILABLE: "This item isn't taking offers right now.",
   OFFER_NOT_PENDING: 'This offer changed. Pull to refresh.',
   ALREADY_REPORTED: "You've already reported this. We're on it.",
@@ -51,9 +53,11 @@ export const errors = {
   NOT_ADMIN: 'Admins only.',
   SCHOOL_UNKNOWN: "We don't support that school email yet.",
   DOMAIN_BLOCKED: "That email domain can't be used. Use your school email.",
-  AGE_BLOCKED: 'OnlySwap is for people 18 and older.',
+  AGE_BLOCKED: 'OnlySwap is for people 13 and older.',
   BANNED: 'This account has been removed from OnlySwap.',
+  EMAIL_ALIAS: 'That school email already has an account. Sign in with the address you used first.',
   FEATURE_OFF: "That isn't available yet.",
+  UPLOAD_EXPIRED: 'That photo expired. Add it again.',
   ERR_OFFLINE: "You're offline. Check your connection and try again.",
   SESSION_EXPIRED: 'Your session ended. Sign in again.',
   UNKNOWN: 'Something went wrong. Try again.',
@@ -69,7 +73,12 @@ export const toast = {
 } as const;
 
 export const banner = {
-  offline: "You're offline. Some things won't update until you reconnect.",
+  offline: "You're offline",
+  /** Round 2: the offline pill, bottom center on every page. Screens can swap the second half. */
+  offlinePill: 'Offline · showing what you last saw',
+  // Web forms: Cloudflare Turnstile (LR-04).
+  botCheckLabel: 'Bot check',
+  botCheckFailed: "We couldn't verify you. Reload the page and try again.",
 } as const;
 
 export const photo = {
@@ -85,6 +94,15 @@ export const states = {
   offlineTitle: "You're offline",
   offlineBody: 'Check your connection and try again.',
   retry: 'Try again',
+  /** EmptyState: lead-in for the quick ideas, shown as one line ("Try: Lamps, Chairs"). */
+  suggestionsLead: 'Try:',
+} as const;
+
+/** Render crash fallback (F-08, DEC 103): the root ErrorBoundary. */
+export const crash = {
+  title: 'Something went wrong',
+  body: 'Something broke on our end. Try again, or close and reopen the app.',
+  retry: 'Try again',
 } as const;
 
 export const nav = {
@@ -92,6 +110,7 @@ export const nav = {
   close: 'Close',
   tabWithBadge: '{label}, {count} new',
   step: 'Step {step} of {total}',
+  notYou: 'Not you? Sign out',
 } as const;
 
 /** Permission primers (P2-CMP-10, board X18, X21, A12). Buttons say Continue, not Allow. */
@@ -99,7 +118,7 @@ export const primer = {
   openSettings: 'Open Settings',
   camera: {
     title: 'Take photos of your stuff',
-    body: 'OnlySwap uses the camera only when you add photos to a listing, your profile or a chat. Nothing is recorded in the background.',
+    body: 'OnlySwap uses the camera only when you add photos or scan a book barcode. Nothing is recorded in the background.',
     cta: 'Continue',
     alternative: 'Choose from library instead',
     deniedTitle: 'Camera is turned off',
@@ -116,7 +135,7 @@ export const primer = {
   },
   notifications: {
     title: "Don't miss an offer",
-    body: 'Most things sell within a few hours. We only notify you about offers, messages and stuff you saved.',
+    body: 'Get notified about offers, messages, meetups and other updates on your swaps and campus. You can change which ones anytime.',
     cta: 'Turn on notifications',
     alternative: 'Not now',
     deniedTitle: 'Notifications are off',
@@ -129,6 +148,7 @@ export const primer = {
 export const report = {
   titleListing: 'Report this listing',
   titleMessage: 'Report this message',
+  titleComment: 'Report this comment',
   titlePerson: 'Report {name}',
   them: 'They',
   seller: 'The seller',
@@ -146,7 +166,7 @@ export const report = {
       hate: 'Hate or slurs',
       sexual: 'Sexual content',
       no_show: "Didn't show up",
-      minor_safety: 'Involves someone under 18',
+      minor_safety: 'Puts a minor at risk',
       calls_out_student: 'Calls out a student',
       spam: 'Spam',
       self_harm: 'Someone might hurt themselves',
@@ -163,7 +183,7 @@ export const report = {
       hate: 'Hate or slurs',
       sexual: 'Sexual content',
       no_show: "Didn't show up",
-      minor_safety: 'Involves someone under 18',
+      minor_safety: 'Puts a minor at risk',
       calls_out_student: 'Calls out a student',
       spam: 'Spam or scam',
       self_harm: 'Someone might hurt themselves',
@@ -181,7 +201,7 @@ export const report = {
       hate: 'Hate speech',
       sexual: 'Sexual content',
       no_show: "Didn't show up",
-      minor_safety: 'Involves someone under 18',
+      minor_safety: 'Puts a minor at risk',
       calls_out_student: 'Calls out a student',
       spam: 'Spam or scam',
       self_harm: 'Someone might hurt themselves',
@@ -190,7 +210,7 @@ export const report = {
   },
   titleQuadPost: 'Report this post',
   titleQuadReply: 'Report this reply',
-  privateQuad: 'Reports are anonymous too.',
+  privateQuad: "Reports are private. They won't know it was you.",
   crisisTitle: 'If someone is in danger right now',
   crisisBody:
     'Call or text 988, the Suicide and Crisis Lifeline, any time. It is free. Your report still goes to a person here.',
@@ -509,16 +529,19 @@ export const signIn = {
   sendCode: 'Send code',
   signInReviewer: 'Sign in',
   passwordLabel: 'Password',
-  personal: "That's a personal email. Use the one your school gave you, ending in .edu.",
+  personal: "That's a personal email. Use your school email, ending in .edu.",
   invalid: 'Check the email. It should look like you@school.edu.',
   alumniTitle: 'Graduated, or work at the school?',
-  alumniBody: "OnlySwap is only for current students, so alumni and staff emails can't join.",
+  alumniBody: "Current students only. Alumni and staff emails can't join.",
   unknownTitle: "We're not at {domain} yet",
-  unknownBody: "Join the waitlist and we'll email you when your school opens.",
+  unknownBody: "Join the waitlist and we'll email you when it opens.",
   joinWaitlist: 'Join the waitlist',
   waitlistJoined: "You're on the list. We'll email you when your school opens.",
   wrongPassword: "That email and password don't match.",
-  legal: 'By continuing you agree to the Terms and Privacy Policy. Students 18 and older only.',
+  noAccountTitle: 'No OnlySwap account uses {email}',
+  noAccountBody: 'Check for a typo, or create an account with this email.',
+  createAccount: 'Create an account',
+  legal: 'By continuing you agree to the Terms and Privacy Policy. Students 13 and older only.',
   // Verify code
   verifyTitle: 'Check your email',
   sentTo: 'We sent a code to {email}',
@@ -531,7 +554,7 @@ export const signIn = {
   resendIn: 'Resend in {time}',
   resend: 'Resend code',
   resent: 'New code sent.',
-  spamHint: 'Not there? School email can take a minute. Check spam too.',
+  spamHint: 'Not there yet? Check spam, or wait a minute.',
   differentEmail: 'Change email',
   cantAccessEmail: "Can't get into your school email?",
 } as const;
@@ -541,24 +564,29 @@ export const age = {
   checking: 'Checking your age',
   title: "When's your birthday?",
   body: "We ask everyone. It's never shown on your profile.",
-  newFromSignIn: "That email didn't have an account yet, so we're setting one up.",
   fieldLabel: 'Birthday',
   fieldPlaceholder: 'Choose a date',
   privacy: 'Used only to confirm you can use OnlySwap. Details in the Privacy Policy.',
   continue: 'Continue',
   invalidDate: 'Check the date and try again.',
-  step: '3 of 5',
   blockedTitle: "OnlySwap isn't available to you yet",
   blockedBody:
-    "You need to be 18 or older to use OnlySwap. We haven't kept your email or any details.",
-  blockedCardTitle: 'Selling something before then?',
-  blockedCardBody: "Ask a friend who's 18 or older to post it for you and meet together.",
+    'You need to be 13 or older to use OnlySwap. We deleted your account and details. If you think this is a mistake, contact support.',
   close: 'Close',
+  support: 'Contact support',
+  confirmTitle: 'Is {date} right?',
+  confirmBody: "Check it before you go on. You can't change it later.",
+  confirmYes: "Yes, that's right",
+  confirmChange: 'Change it',
+  osRequiredTitle: 'Share your age range to continue',
+  osRequiredBody:
+    'Where you live, the law asks Apple to share your age range with apps. We learn only 13 to 17 or 18 and older, never your birthday.',
+  osRequiredHint: 'If a parent manages your Apple Account, they may need to approve it first.',
+  osRequiredRetry: 'Share age range',
 } as const;
 
 /** A06 Profile setup (board A10). */
 export const profileSetup = {
-  step: '4 of 5',
   title: 'Set up your profile',
   body: 'This is what buyers and sellers see.',
   addPhoto: 'Add a photo',
@@ -567,13 +595,14 @@ export const profileSetup = {
   photoLabel: 'Profile photo',
   uploading: 'Uploading your photo',
   uploaded: 'Photo added',
-  uploadFailed: "Your photo didn't upload. Try again, or continue without it.",
+  uploadFailed: "Photo didn't upload. Try again, or continue without it.",
   removePhoto: 'Remove photo',
   firstName: 'First name',
   lastName: 'Last name',
   lastNameHint: 'Only the first letter is shown.',
   shownAs: 'Shown as {name}',
   year: 'Year',
+  optional: 'Optional',
   years: {
     freshman: 'Freshman',
     sophomore: 'Sophomore',
@@ -592,7 +621,7 @@ export const profileSetup = {
 export const rules = {
   step: '5 of 5',
   title: 'Four rules',
-  body: 'Everyone here agrees to these. Break them and your account comes down.',
+  body: 'Everyone here agrees to these.',
   updatedTitle: 'We updated the rules',
   updatedBody: 'Read what changed, then agree to keep using OnlySwap.',
   whatChanged: 'What changed',
@@ -601,12 +630,12 @@ export const rules = {
     {
       icon: 'pin',
       title: 'Meet in public',
-      body: 'Use a Meetup spot or a busy place on campus. Not a dorm room, not an empty parking lot.',
+      body: 'Use a Meetup spot or a busy place on campus.',
     },
     {
       icon: 'tag',
       title: 'Pay in person',
-      body: 'Cash, Venmo, whatever you both agree on. OnlySwap never touches the money.',
+      body: 'Cash, Venmo, whatever you agree on. OnlySwap never touches the money.',
     },
     {
       icon: 'ban',
@@ -616,10 +645,10 @@ export const rules = {
     {
       icon: 'chat',
       title: 'Keep chats about the deal',
-      body: 'Anything creepy gets reported and looked at by a real person.',
+      body: 'Anything creepy gets reported and reviewed by a person.',
     },
   ],
-  agreeLabel: "I'm 18 or older and agree to the Community Rules, Terms and Privacy Policy",
+  agreeLabel: "I'm 13 or older and agree to the Community Rules, Terms and Privacy Policy",
   communityRules: 'Community Rules',
   terms: 'Terms',
   privacy: 'Privacy Policy',
@@ -650,7 +679,7 @@ export const notifyPrimer = {
 /** X7 Session expired (board X7). */
 export const sessionExpired = {
   title: "Quick check it's you",
-  body: "It's been a while. We sent a code to {email}.",
+  body: 'We sent a code to {email}.',
   wrongCode: "That code isn't right. Check the latest email and try again.",
   continue: 'Continue',
   logOut: 'Log out instead',
@@ -660,13 +689,13 @@ export const sessionExpired = {
 export const reverify = {
   title: 'Still at {school}?',
   titleNoSchool: 'Still a student?',
-  body: 'Once a year we check that everyone is a current student. It takes 20 seconds, same code as when you signed up.',
+  body: "Once a year we check you're still a student. We'll email a code.",
   emailLabel: 'School email',
   dueLabel: 'Due by',
   sendCode: 'Send code',
   logOut: 'Log out',
-  graduated:
-    'Graduated or no longer a student? OnlySwap is only for current students, so you can close your account from Settings.',
+  graduated: 'Graduated? You can close your account.',
+  closeAccount: 'Close my account',
 } as const;
 
 /** F20 "I can't get into my school email" (D11). */
@@ -676,7 +705,7 @@ export const emailAccess = {
   contactLabel: 'Email we can reach you at',
   contactPlaceholder: 'you@example.com',
   contactInvalid: 'Check the email. We need it to reply.',
-  schoolLabel: 'School email on your account',
+  schoolLabel: 'School email on your account (optional)',
   schoolPlaceholder: 'you@school.edu',
   messageLabel: 'What happened',
   messagePlaceholder: 'For example, your school moved you to a new address.',
@@ -713,10 +742,10 @@ export const sell = {
   makeCover: 'Make cover',
   reorderHint: 'Hold and drag to reorder.',
   tip: 'Shoot near a window on a plain surface. Show any scratches or dents, it saves a lot of back and forth.',
-  full: 'That is 8 photos, the most a listing can have.',
+  full: '8 photos is the most.',
   needPhoto: 'Add at least one photo to keep going.',
   waitUploads: 'Photos are still uploading.',
-  fixUploads: "Retry or remove the photos that didn't upload.",
+  fixUploads: 'Tap a photo to retry, or remove it.',
   reserveFailed: "We couldn't start your listing. Check your connection and try again.",
   // Restore sheet (board X15)
   restoreTitle: 'Pick up where you left off?',
@@ -724,12 +753,42 @@ export const sell = {
   restoreBody: 'You started a listing {when}.',
   startOver: 'Start over',
   continue: 'Continue',
+  /** The one quiet row at the end of step 1 that opens the campus post kinds. */
+  postMore: 'Post something else',
   // Step 2: details
+  detailsTitle: 'About the item',
   sellIt: 'Sell it',
   giveAway: 'Give it away',
   modeLabel: 'Sell or give away',
   titleLabel: 'Title',
   titlePlaceholder: 'What is it?',
+  /** The category's example in the empty title box; "e.g." so it never reads as typed text. */
+  titlePlaceholderExample: 'e.g. {example}',
+  /** Scan ISBN (DEC 131). */
+  scanBook: 'Scan a book barcode',
+  scanTitle: 'Scan the barcode',
+  scanBody: 'Point the camera at the barcode on the back cover.',
+  scanLooking: 'Looking up the book',
+  scanNotBook: "That barcode isn't a book. Try the one that starts with 978 or 979.",
+  scanNotFound: "We couldn't find that book. Type the title instead.",
+  scanOffline: "You're offline. Type the title, or scan again once you're back online.",
+  scanAgain: 'Scan again',
+  scanType: 'Type it instead',
+  scanFound: 'Title filled in from the barcode',
+  /** Listing help (DEC 129): an example title for the chosen top-level category. */
+  titleExample: 'Example: {example}',
+  titleExamples: {
+    any: 'Brand, item, then size or model',
+    '1': 'IKEA Malm desk, white',
+    '2': 'Calculus: Early Transcendentals, 8th edition',
+    '3': 'Dell 27 inch monitor, 1440p',
+    '4': 'North Face puffer jacket, size M',
+    '5': 'Keurig K-Mini coffee maker',
+    '6': 'Trek city bike, 54 cm frame',
+    '7': 'Yamaha acoustic guitar with case',
+    '8': 'Yoga mat and two blocks',
+    '9': 'String lights, 33 ft, warm white',
+  },
   categoryLabel: 'Category',
   categoryPlaceholder: 'Pick a category',
   categoriesTitle: 'Pick a category',
@@ -750,9 +809,19 @@ export const sell = {
   pickupLabel: 'Pick up by',
   pickup: { tomorrow: 'Tomorrow', sunday: 'Sunday', week: 'This week' },
   freeTitle: 'Goes on the Free shelf',
-  freeBody: 'Free things usually go within a day. You pick who gets it from the people who ask.',
+  freeBody: 'You choose who gets it.',
   descriptionLabel: 'Description',
   descriptionPlaceholder: 'Brand, size, what is included, any flaws.',
+  /** Tap to add a line to the description (DEC 129). */
+  startersLabel: 'Quick details',
+  starters: {
+    barely: 'Barely used.',
+    works: 'Works perfectly.',
+    charger: 'Comes with the charger.',
+    smoke: 'Smoke-free home.',
+    pets: 'Pet-free home.',
+    pickup: 'Pickup only.',
+  },
   fixCount: '{count} things to fix before you can post',
   fixOne: '1 thing to fix before you can post',
   errors: {
@@ -777,9 +846,9 @@ export const sell = {
   decideInChatBody: 'You and the buyer pick a spot',
   spotsMax: 'Pick up to 5 spots.',
   spotsFailed: "Meetup spots didn't load.",
-  noSpots: 'No meetup spots here yet. You and the buyer can pick one in chat.',
-  noteLabel: 'Somewhere else? (optional)',
-  notePlaceholder: 'For example, the lobby of your building',
+  noSpots: 'No Meetup spots here yet. Ask us to add one from Help.',
+  noteLabel: 'Anything buyers should know? (optional)',
+  notePlaceholder: 'For example, free after 3pm on weekdays',
   availabilityLabel: 'Usually free',
   availability: {
     weekdays: 'Weekdays',
@@ -794,17 +863,19 @@ export const sell = {
   confirmBanned: 'Tick the box at the bottom to confirm it is allowed.',
   post: 'Post listing',
   postFailed: "We couldn't post it. Your draft is saved, try again in a moment.",
+  reservationExpired: 'Your photos need to upload again.',
   // Step 4: posted (board D6)
   postedTitle: 'Your listing is up',
-  postedBody:
-    "It's in your campus feed now. We'll tell you when someone saves it or makes an offer.",
+  postedBody: "It's live on your campus. We'll tell you about saves and offers.",
   reviewTitle: 'Your listing is in review',
   reviewBody: "Most reviews take under 2 hours. We'll tell you when it's up.",
   postedCheck: 'Listing posted',
   share: 'Share listing',
   shareMessage: '{title} · {price} on OnlySwap',
-  cardPreparing: 'Making the share preview',
-  cardFailed: "The preview image didn't upload. Sharing still works with the link.",
+  cardPreparing: 'Preparing the preview',
+  cardFailed: 'Preview unavailable. The link still works.',
+  postedEmptyTitle: 'Nothing to show here',
+  postedEmptyAction: 'Start a listing',
   listAnother: 'List another',
   cardCampus: '{campus} only',
   cardCondition: '{condition} condition',
@@ -822,9 +893,13 @@ export const sell = {
 
 export const feed = {
   stampOffer: 'Offer',
-  stampSkip: 'Skip',
+  /** Round 2 Discover sticker on a right swipe: the asking price. */
+  stampOfferPrice: 'Offer {price}',
+  /** A free item's right-swipe sticker. */
+  stampAsk: 'Ask for it',
+  stampSkip: 'Pass',
   stampSave: 'Saved',
-  skip: 'Skip',
+  skip: 'Pass',
   save: 'Save',
   saved: 'Saved',
   offer: 'Make an offer',
@@ -834,6 +909,12 @@ export const feed = {
   cardHint: 'Swipe right to make an offer, left to skip. Actions menu has more.',
   savedBy: '{n} people saved this',
   savedByOne: '1 person saved this',
+  /** Trust line on the card and the listing seller row (DEC 124). */
+  verified: 'Verified student',
+  trustThumbs: '{pct}% thumbs up',
+  trustSwaps: '{n} swaps',
+  trustSwapsOne: '1 swap',
+  movingOut: 'Moving out by {date}',
   photoCount: 'Photo {n} of {total}',
   listTitle: 'Listings',
   metaSeparator: ' · ',
@@ -841,22 +922,39 @@ export const feed = {
   // Discover (B01)
   title: 'Discover',
   search: 'Search',
-  undoSkipped: 'Skipped',
+  undoSkipped: 'Passed',
   undoSaved: 'Saved',
   undoOffer: 'Opened the offer',
   saveFailed: "Couldn't save that. Try again.",
-  coachTitle: 'Swipe to shop',
-  coachBody: 'Swipe right or tap Make an offer. Left skips. Tap a card to see more.',
+  /** First-launch hint line above the action row; it ends on the first swipe or tap. */
+  coachBody: 'Swipe right to make an offer. Left to pass.',
   offerShort: 'Offer',
   notifications: 'Notifications',
   meetupSpot: 'Meetup spot',
   coachOk: 'Got it',
-  endTitle: "You've seen everything for now",
-  endBody: 'New stuff usually shows up in the evening.',
-  endSell: 'List something',
-  endRefresh: 'Check again',
-  dayOneTitle: "It's early days here",
-  dayOneBody: 'Only a few things are listed so far. Post yours and be one of the first.',
+  endTitle: "That's everything for now",
+  endTitleCampus: "That's everything at {campus} for now",
+  endSavedOne: 'You saved 1 thing along the way.',
+  endSaved: 'You saved {n} things along the way.',
+  seeSaved: 'See saved',
+  endBody: 'New listings land here as soon as someone posts.',
+  endSell: 'Sell something',
+  endRefresh: 'Refresh',
+  dayOneTitle: 'Your campus is just getting started',
+  dayOneTitleCampus: '{campus} is just getting started',
+  dayOneCount: '{n} listings so far',
+  dayOneCountOne: '1 listing so far',
+  dayOneBody:
+    "The first things posted get seen by everyone. Got a lamp, a fridge, last year's textbooks?",
+  /** Shown with the global offline banner; it never repeats "You're offline". */
+  offlineQueued: "Your swipes will be sent when you're back online.",
+  /** Round 2: the one status pill, bottom center (design/round2 consistency rules). */
+  offlinePill: "Offline · swipes send when you're back",
+  /** Yellow tag on a card while the seller is moving out (DEC 133). */
+  movingOutTag: 'Moving out {day}',
+  unsaveAction: 'Remove from saved',
+  photoPrev: 'Previous photo',
+  photoNext: 'Next photo',
   loading: 'Loading listings',
   // Listing (B02)
   back: 'Back',
@@ -864,6 +962,8 @@ export const feed = {
   more: 'More options',
   shareMessage: '{title}, {price} on OnlySwap',
   descriptionTitle: 'About this item',
+  /** DEC 128. */
+  moreLikeThis: 'More like this',
   meetupTitle: 'Meetup',
   meetupDecide: 'You and the seller pick a spot in chat.',
   availabilityTitle: 'Usually free',
@@ -874,12 +974,18 @@ export const feed = {
   statOffers: '{n} offers',
   edit: 'Edit',
   seeOffers: 'See offers',
+  comments: 'Comments',
+  statsRow: 'Stats',
   onHold: 'On hold',
   onHoldBody: 'Someone is meeting up for this. It may come back.',
-  tellMe: 'Tell me if it comes back',
-  watching: "We'll tell you",
+  tellMe: 'Notify me',
+  /** Away mode (DEC 126). */
+  sellerAway: 'Seller is away',
+  sellerAwayBody: '{name} paused their listings for now. Save it and check back later.',
+  watching: "We'll notify you",
   sold: 'Sold',
   inReview: 'In review',
+  removed: 'Removed',
   notOpenToOffers: 'Price is firm',
   askForIt: 'Ask for it',
   goneTitle: 'This listing is gone',
@@ -892,12 +998,13 @@ export const feed = {
   // Options (B03)
   optionsTitle: 'Options',
   notInterested: 'Not interested',
-  notInterestedDone: "We won't show it again",
+  notInterestedDone: "Got it. We won't show this again.",
   reportListing: 'Report listing',
   hideFailed: "Couldn't hide it. Try again.",
   // Photos (B04)
   photoOf: 'Photo {n} of {total}, {title}',
   closePhotos: 'Close photos',
+  noPhotos: 'No photos to show.',
 } as const;
 
 export const search = {
@@ -905,21 +1012,23 @@ export const search = {
   placeholder: 'Search your campus',
   inputLabel: 'Search',
   cancel: 'Cancel',
+  /** DEC 128: kept on the phone only. */
+  recentlyViewed: 'Recently viewed',
   recent: 'Recent',
   clearRecent: 'Clear',
   removeRecent: 'Remove {q}',
-  trending: 'Popular right now',
+  trending: 'Suggested',
   searchFor: 'Search for "{q}"',
   suggestionsLabel: 'Suggestions',
   savedLabel: 'Saved search',
   categoryLabel: 'Category',
   countLabel: '{n} listed',
-  resultsTitle: 'Results for "{q}"',
+  resultsTitle: '{q}',
   allTitle: 'All listings',
   filters: 'Filters',
   filtersActive: 'Filters, {n} on',
   saveSearch: 'Save search',
-  searchSaved: "Search saved. We'll tell you about new matches.",
+  searchSaved: "Search saved. You'll get alerts for new matches.",
   saveFailed: "Couldn't save the search. Try again.",
   noResultsTitle: 'Nothing matches yet',
   noResultsBody: 'Save this search and we will tell you when something shows up.',
@@ -936,8 +1045,8 @@ export const search = {
   sorts: {
     relevance: 'Best match',
     new: 'Newest',
-    price_asc: 'Lowest price',
-    price_desc: 'Highest price',
+    price_asc: 'Price: low',
+    price_desc: 'Price: high',
   },
   apply: 'Show results',
   reset: 'Reset',
@@ -956,7 +1065,7 @@ export const saved = {
   unsave: 'Remove {title} from saved',
   unsaveAction: 'Remove from saved',
   emptyItemsTitle: 'Nothing saved yet',
-  emptyItemsBody: 'Tap the heart on anything you like and it shows up here.',
+  emptyItemsBody: 'Tap the bookmark on anything you want to keep and it shows up here.',
   emptySearchesTitle: 'No saved searches',
   emptySearchesBody: 'Save a search and we will tell you when something new matches.',
   goDiscover: 'Start swiping',
@@ -967,6 +1076,8 @@ export const saved = {
   alertsFor: 'Alerts for {q}',
   deleteSearch: 'Delete {q}',
   deleteAction: 'Delete',
+  deleteTitle: 'Delete this saved search?',
+  deleteBody: "You'll stop getting alerts for it.",
   filtersOnly: 'Filtered search',
 } as const;
 
@@ -980,11 +1091,11 @@ export const profileView = {
   minutes: '{n} min',
   hours: '{n} h',
   newSeller: 'New seller',
-  newSellerBody:
-    "They haven't finished a swap here yet. Meet at a Meetup spot and check the item first.",
+  away: 'Away',
+  newSellerBody: 'No finished swaps yet. Meet at a Meetup spot and check the item first.',
   founding: 'Founding seller',
   listings: 'Listings',
-  noListings: 'Nothing listed right now.',
+  noListings: 'No listings right now.',
   reviews: 'Reviews',
   noReviews: 'No reviews yet.',
   deletedUser: 'Deleted user',
@@ -998,8 +1109,8 @@ export const profileView = {
   blocked: 'You blocked {name}',
   blockedBody: "You won't see each other's listings or messages.",
   unblock: 'Unblock',
-  goneTitle: "This profile isn't available",
-  goneBody: 'The account may be gone or not on your campus.',
+  goneTitle: 'Profile not available',
+  goneBody: 'This account may be deleted or not on your campus.',
   more: 'More options',
   years: {
     freshman: 'Freshman',
@@ -1012,6 +1123,11 @@ export const profileView = {
 } as const;
 
 export const offers = {
+  // Moving out bundles (DEC 133)
+  bundleBody: 'Add more of their items to this offer. Your amount is for everything.',
+  bundleAsk: 'Asking {price} for {n} items',
+  bundleMore: '{title} + {n} more',
+  bundleAlso: 'Also in this deal: {items}',
   // Offer sheet (B05)
   sheetTitle: 'Make an offer',
   askTitle: 'Ask for it',
@@ -1019,7 +1135,7 @@ export const offers = {
   amountLabel: 'Your offer',
   quickAsk: 'Asking',
   quickLess: '{pct}% less',
-  lowWarning: "That's under half the asking price. Low offers are usually declined.",
+  lowWarning: 'Under half the asking price. The seller may say no.',
   firmNote: 'The price is firm, so offers are at the asking price.',
   notesLabel: 'Add a note (optional)',
   notePlaceholder: 'Example: I can pick it up tonight',
@@ -1031,7 +1147,7 @@ export const offers = {
   },
   send: 'Send offer',
   sendAsk: 'Ask for it',
-  payInPerson: 'You pay in person when you meet. No payment in the app.',
+  payInPerson: 'You pay in person at a public Meetup spot. No payment in the app.',
   askBody: "It's free. Ask the giver and they'll pick who gets it.",
   sentTitle: 'Offer sent',
   askedTitle: 'Request sent',
@@ -1059,10 +1175,10 @@ export const offers = {
   needsYou: 'Needs you',
   earlier: 'Earlier',
   needsYouCount: '{n} need you',
-  emptyBuyingTitle: 'Nothing you are buying yet',
-  emptyBuyingBody: 'Offers you make show up here. A chat starts when the seller accepts.',
-  emptySellingTitle: 'Nothing you are selling yet',
-  emptySellingBody: 'Offers on your listings show up here, with the newest first.',
+  emptyBuyingTitle: 'No offers yet',
+  emptyBuyingBody: 'Offers you make show up here.',
+  emptySellingTitle: 'No offers yet',
+  emptySellingBody: 'Offers on your listings show up here.',
   sellSomething: 'Sell something',
   inboxStatus: {
     offered: 'Offered {amount}',
@@ -1074,6 +1190,17 @@ export const offers = {
   timeNow: 'now',
   timeMinutes: '{n}m',
   timeHours: '{n}h',
+  // Time left on an open offer (static, computed on render)
+  timeLeft: '{time} left',
+  muted: 'Muted',
+  span: {
+    minutes: '{n} min',
+    hours: '{n} h',
+    minuteLong: '1 minute',
+    minutesLong: '{n} minutes',
+    hourLong: '1 hour',
+    hoursLong: '{n} hours',
+  },
   startSwiping: 'Start swiping',
   unread: 'Unread',
   you: 'You: ',
@@ -1092,9 +1219,19 @@ export const offers = {
     expired: 'Expired',
     withdrawn: 'Withdrawn',
     auto_declined: 'This sold to someone else',
+    listing_closed: 'This listing closed',
     hold_other: 'On hold with someone else',
   },
-  expiresIn: 'Expires {when}',
+  // Visible line on the Offer screen; the amount is the big number above it (labels keep `status`).
+  statusShort: {
+    pending_seller: '{name} offered',
+    pending_buyer: 'You offered. Waiting for {name}.',
+    countered_mine: '{name} countered',
+    countered_theirs: 'You countered. Waiting for {name}.',
+    accepted: 'Accepted',
+  },
+  declinedReason: 'Declined: {reason}',
+  expiresIn: 'Expires in {when}',
   round: 'Round {n} of 4',
   accept: 'Accept {amount}',
   counter: 'Counter',
@@ -1110,14 +1247,15 @@ export const offers = {
   withdrawTitle: 'Withdraw your offer?',
   withdrawBody: 'The seller will no longer see it.',
   withdrawConfirm: 'Withdraw',
-  lastRound: 'This is the last round. They can accept or decline.',
+  lastRound: 'Last round. They can accept or decline.',
   // Offers on a listing (F05)
   listingOffersTitle: 'Offers',
   noOffers: 'No offers yet',
-  noOffersBody: 'Offers show up here in the order they came in.',
+  noOffersBody: 'Offers show up here.',
 } as const;
 
 export const chat = {
+  bundleAlso: 'Also in this deal: {items}',
   composerLabel: 'Message',
   composerPlaceholder: 'Message',
   send: 'Send',
@@ -1134,13 +1272,20 @@ export const chat = {
   },
   agreed: 'Agreed {amount}',
   inPerson: '{amount} in person',
+  /** A chat started from "I have this" on an ask (DEC 149): no price agreed yet. */
+  wantedUpTo: 'Asked for, up to {amount}',
+  wantedAsk: 'Asked for in the Feed',
   accepted: 'Accepted',
+  /** Header label once the listing sold through this chat. */
+  soldStatus: 'Sold',
   planMeetup: 'Plan meetup',
+  changeMeetup: 'Change time',
   markSold: 'Mark sold',
   didItSell: 'Did it sell?',
   details: 'Chat details',
   closed: 'This chat is closed.',
   blocked: "You can't message each other.",
+  deletedBanner: 'This account was deleted.',
   youBlocked: 'You blocked {name}.',
   deletedUser: 'Deleted user',
   loadOlder: 'Load earlier messages',
@@ -1157,6 +1302,8 @@ export const chat = {
   // Photos in chat (P8-CHAT-04, R11-PHOTO-GATE)
   addPhoto: 'Add a photo',
   photoSheetTitle: 'Send a photo',
+  dayToday: 'Today',
+  dayYesterday: 'Yesterday',
   photoLibrary: 'Choose from library',
   photoCamera: 'Take a photo',
   photoCaptionHint: 'Anything you typed goes with the photo as a caption.',
@@ -1177,16 +1324,33 @@ export const chat = {
 } as const;
 
 export const meetup = {
+  // Handoff code (DEC 132)
+  handoffTitle: 'Handoff code',
+  handoffBuyer: 'Show this to the seller when you have the item. Never send it in chat.',
+  handoffLater: 'Your code shows up 30 minutes before the meetup.',
+  handoffSellerTitle: 'Swap done?',
+  handoffSellerBody: 'Ask the buyer for their 4-digit code and type it here.',
+  handoffLabel: 'Buyer code',
+  handoffConfirm: 'Finish swap',
+  handoffWrong: 'That code does not match. {n} tries left.',
+  handoffDone: 'Swap done.',
   // Plan the pickup (E05)
   planTitle: 'Plan the pickup',
   spotsTitle: 'Meetup spots',
+  whereTitle: 'Where',
   police: 'Police-designated',
   directions: 'Directions to {name}',
   directionsShort: 'Directions',
   somewhereElse: 'Somewhere else',
   customLabel: 'Place',
   customPlaceholder: 'For example, the lobby of Morrill Tower',
-  dayTitle: 'Day',
+  /** DEC 151: meetups only at campus Meetup spots, for everyone. */
+  spotsOnlyNote: 'Meetups happen at your campus Meetup spots: public, staffed places.',
+  safetyTitle: 'Before you meet',
+  safetyBody:
+    'Meet at the spot you picked, ideally in daylight. Tell a friend where you are going. Check the item before you pay, and never pay ahead. You can report or block anyone from the chat.',
+  safetyConfirm: 'Got it',
+  dayTitle: 'When',
   timeTitle: 'Time',
   today: 'Today',
   tomorrow: 'Tomorrow',
@@ -1195,7 +1359,7 @@ export const meetup = {
   suggestAnother: 'Suggest another',
   theySuggested: '{name} suggested {when} at {place}',
   youSuggested: 'You suggested {when} at {place}. Waiting for {name}.',
-  noSpots: 'No Meetup spots here yet. Type a public place.',
+  noSpots: 'No Meetup spots here yet. Ask us to add one from Help.',
   // Card in chat (P8-MEET-04)
   cardProposed: 'Suggested: {when}',
   cardConfirmed: 'Meetup set: {when}',
@@ -1238,6 +1402,7 @@ export const meetup = {
   noShowConfirm: 'Report no-show',
   noShowSent: "Thanks. We'll look into it.",
   emergency: 'Call 911',
+  safetyTips: 'Meetup safety',
   emergencyHint: 'If you ever feel unsafe, leave and call 911.',
   cancelled: 'This meetup was cancelled.',
   rescheduledFrom: 'Moved from {when}',
@@ -1269,6 +1434,7 @@ export const deal = {
   markSoldBody: 'Pick the buyer so you can rate each other. Other chats close.',
   someoneElse: 'Someone not on OnlySwap',
   markSold: 'Mark sold',
+  markSoldDone: 'Marked as sold',
   // Rate (E08)
   rateTitle: 'Rate the swap',
   rateQuestion: 'How was swapping with {name}?',
@@ -1286,11 +1452,13 @@ export const deal = {
     no_show: "Didn't show",
   },
   commentLabel: 'Add a comment (optional)',
+  addComment: 'Add a comment',
   commentPlaceholder: 'Example: quick and easy pickup',
   submit: 'Send rating',
   waitingTitle: 'Thanks for rating',
-  waitingBody: 'Their rating shows up when they rate too, or after 7 days.',
-  revealedTitle: 'Your ratings',
+  waitingBody:
+    "You'll see their rating if they rate you. They'll see yours once they rate, or in 7 days.",
+  revealedTitle: 'Ratings',
   theirRating: '{name} said',
   youSaid: 'You said',
   done_: 'Done',
@@ -1305,7 +1473,8 @@ export const notificationsScreen = {
   yesterday: 'Yesterday',
   earlier: 'Earlier',
   emptyTitle: 'No notifications yet',
-  emptyBody: 'Offers, messages and meetup updates show up here.',
+  emptyBody: 'Offers, messages and meetup updates appear here.',
+  emptyAction: 'Notification settings',
   unread: 'Unread',
   // Settings (F11)
   settingsTitle: 'Notifications',
@@ -1322,10 +1491,12 @@ export const notificationsScreen = {
   priceDrop: 'Price drops',
   priceDropBody: 'When something you saved gets cheaper',
   tips: 'Selling tips',
-  tipsBody:
-    'Occasional nudges, like when a listing gets no offers. These are promotional and off unless you turn them on.',
+  tipsBody: 'Occasional nudges, like when a listing gets no offers. Off unless you turn it on.',
   quadReplies: 'Quad replies',
   quadRepliesBody: 'Replies and milestones on your Quad posts. Off unless you turn it on.',
+  comments: 'Comments and replies',
+  commentsBody:
+    'When someone comments on your post or replies to your comment. Likes only show here in the app.',
   freeFood: 'Free food nearby',
   freeFoodBody:
     'When someone posts free food on your campus, up to 3 a day. Off unless you turn it on.',
@@ -1353,6 +1524,8 @@ export const safety = {
     suspended:
       'A moderator suspended your account after a report. You can appeal once and a person reviews it.',
     banned: 'This account broke the rules in a way that ends access to OnlySwap.',
+    consent:
+      'A parent or guardian turned off OnlySwap for you in the App Store. Once they allow it again, contact us to turn your account back on.',
   },
   reasons: {
     noshow: 'Missed meetups',
@@ -1385,28 +1558,22 @@ export const safety = {
   reportReceived: 'Received',
   reportReviewed: 'Reviewed',
   reportReceivedBody: 'We got your report. A person looks at it, usually within a day.',
-  reportReviewedBody:
-    "We reviewed your report and took the action we thought was right. We don't share details to protect everyone's privacy.",
+  reportReviewedBody: 'We reviewed your report. We keep details private to protect everyone.',
   // F13 blocked
   blockedTitle: 'Blocked accounts',
-  blockedEmptyTitle: "You haven't blocked anyone",
-  blockedEmptyBody: 'People you block show up here. You can unblock them anytime.',
+  blockedEmptyTitle: 'No blocked accounts',
+  blockedEmptyBody: 'People you block show up here.',
   unblock: 'Unblock',
   unblockName: 'Unblock {name}',
+  unblockFailed: "Couldn't unblock. Try again.",
   // F19 safety center
   centerTitle: 'Safety',
   spotsTitle: 'Meetup spots',
   spotsBody: 'Public places on campus. Police-designated spots are marked.',
   police: 'Police-designated',
   directions: 'Directions to {name}',
+  spotsEmpty: 'No meetup spots listed for your campus yet.',
   tipsTitle: 'Before you meet',
-  tips: [
-    'Meet at a Meetup spot in daylight.',
-    'Tell a friend where you are going. You can share your meetup from the app.',
-    'Check the item before you pay.',
-    'Pay in person. Never pay before you meet, and never send a deposit.',
-    'If something feels off, leave. You can cancel anytime.',
-  ],
   tipItems: [
     { title: 'Use a Meetup spot', body: 'Busy, public places on campus.' },
     { title: 'Meet in daylight', body: 'Pick a time when people are around.' },
@@ -1419,8 +1586,8 @@ export const safety = {
   ],
   emergency: 'Call 911',
   emergencyTitle: 'In danger right now?',
-  emergencyBody: 'Call 911 and stay somewhere public with people around.',
-  bannedTitle: 'Banned items',
+  emergencyBody: 'Call 911 and stay where people are.',
+  bannedTitle: "What can't be listed",
   bannedIntro: "These can't be listed on OnlySwap:",
   banned: [
     'Alcohol, vapes, nicotine and weed',
@@ -1473,10 +1640,10 @@ export const safety = {
   // F16 delete account
   deleteTitle: 'Delete account',
   deleteBody:
-    'This removes your profile, listings and saved items for good. People you chatted with will see a deleted user. This cannot be undone.',
+    'This deletes your profile, listings and saved items. People you chatted with will see Deleted user. This cannot be undone.',
   deleteType: 'Type DELETE to confirm',
   deleteButton: 'Delete my account',
-  deleteFailed: "We couldn't delete your account. Try again or contact support.",
+  deleteFailed: "Couldn't delete your account. Try again or contact support.",
 } as const;
 
 export const me = {
@@ -1487,11 +1654,14 @@ export const me = {
   soldEmpty: 'Nothing sold yet.',
   statsActive: '{n} listed',
   statsSold: '{n} sold',
+  statsSoldOne: '1 sold',
   statsSwaps: '{n} swaps',
-  sellNudgeTitle: 'Got something to sell?',
-  sellNudgeBody: 'It takes a minute. Most things get an offer the same week.',
+  statsSwapsOne: '1 swap',
+  activeEmpty: 'Nothing listed yet.',
+  postsEmpty: 'What you post in Feed shows up here.',
+  postKinds: { wanted: 'Asking for', food: 'Free food', news: 'News' },
   sellNudge: 'List something',
-  viewProfile: 'View my public profile',
+  viewProfile: 'See how others see you',
   myListings: 'My listings',
   saved: 'Saved',
   notifications: 'Notifications',
@@ -1504,26 +1674,51 @@ export const me = {
   firstName: 'First name',
   lastInitial: 'Last initial',
   year: 'Year',
-  bio: 'About you (optional)',
-  bioPlaceholder: 'Example: junior, lives on north campus',
+  bio: 'About you',
+  bioPlaceholder: 'Example: Junior, lives on north campus',
   changePhoto: 'Change photo',
   uploading: 'Uploading photo',
   save: 'Save',
   saved_: 'Saved',
+  profileSaved: 'Profile saved',
   // F03 My listings
   listingsTitle: 'My listings',
-  tabs: { active: 'Active', sold: 'Sold', other: 'Other' },
+  tabs: { active: 'Active', sold: 'Sold', other: 'Other', posts: 'Posts' },
   listingsEmptyTitle: 'Nothing listed yet',
   listingsEmptyBody: 'Your listings show up here.',
+  listingsEmptyOther: 'Nothing here yet',
+  listingsEmptySold: 'Nothing sold yet',
+  listingsEmptySoldBody: 'Items you mark as sold show up here.',
+  listingsEmptyOtherBody: 'Expired, in-review or removed listings show up here.',
   statusLabels: {
     active: 'Active',
     hold: 'On hold',
     sold: 'Sold',
     expired: 'Expired',
     held_review: 'In review',
-    removed: 'Removed',
+    removed: 'Removed by OnlySwap',
   },
   relist: 'Relist',
+  /** Away mode (DEC 126). */
+  away: 'Pause my listings',
+  awayBody: 'Your items leave Discover and search. Chats stay open.',
+  awayOn: 'Listings paused',
+  awayOff: 'Listings back',
+  sellingOptions: 'Selling options',
+  movingOut: 'Moving out',
+  movingOutBody: 'Buyers see your date and can bundle your items.',
+  movingOutChoices: {
+    none: 'Not moving',
+    week: 'In a week',
+    twoWeeks: 'In 2 weeks',
+    month: 'In a month',
+  },
+  movingOutSet: 'Buyers can now bundle your items',
+  movingOutCleared: 'Moving out is off',
+  /** Renew an active listing (DEC 125). */
+  renew: 'Renew',
+  renewAt: 'Renew {date}',
+  renewed: 'Moved to the top of Discover',
   stats: 'Stats',
   // F04 Listing stats
   statsTitle: 'Listing stats',
@@ -1549,10 +1744,14 @@ export const me = {
   deleteConfirm: 'Delete listing',
   // F08 Relist
   relistTitle: 'Relist',
-  relistBody: 'Your listing goes back to the top of the deck for 60 days.',
+  relistBody: 'Your listing goes back to the top of Discover for 60 days.',
   relistPrice: 'New price (optional)',
   relistButton: 'Relist',
   relisted: 'Relisted',
+  // F06 unsaved edits on back
+  discardTitle: 'Discard changes?',
+  discardBody: 'Your edits will be lost.',
+  discardConfirm: 'Discard',
 } as const;
 
 /** Bundled legal pages (P14-LEGAL-01). */
@@ -1580,6 +1779,8 @@ export const settings = {
   signOutAllTitle: 'Sign out everywhere?',
   signOutAllBody: 'Every phone signed in to this account signs out, including this one.',
   signOutAllConfirm: 'Sign out everywhere',
+  signOutTitle: 'Sign out?',
+  signOutFailed: "Couldn't sign out. Try again.",
   deleteAccount: 'Delete account',
   // F12 privacy
   privacyTitle: 'Privacy',
@@ -1600,7 +1801,7 @@ export const settings = {
   lockScreenTitle: 'Lock Screen',
   liveActivities: 'Show meetups on the Lock Screen',
   liveActivitiesBody:
-    'A countdown starts 2 hours before a confirmed meetup and ends after it. It shows the spot, the time and a first name.',
+    'A countdown starts 2 hours before a confirmed meetup. It shows the spot, the time and a first name.',
   // P17-FEAT-03 language (each language is named in its own language)
   languageTitle: 'Language',
   languages: { system: 'Match phone', en: 'English', es: 'Español' },
@@ -1609,11 +1810,10 @@ export const settings = {
   languageRestartConfirm: 'Restart',
   // F15 change school
   schoolTitle: 'Change school email',
-  schoolBody:
-    "Moving to a new school email? We'll send a code to the new address. Your account and listings stay.",
+  schoolBody: "We'll send a link or code to your new school email. Your account and listings stay.",
   schoolEmail: 'New school email',
   schoolSend: 'Send code',
-  schoolSent: 'Check {email} for a link or code to confirm the change.',
+  schoolSent: 'Check {email} for a link or code.',
   // F18 about
   aboutTitle: 'About',
   version: 'Version {version}',
@@ -1626,8 +1826,7 @@ export const settings = {
   contact: 'Contact us',
   // F17 Download your data (P11-ACC-02)
   dataTitle: 'Download your data',
-  dataIntro:
-    'We put a copy of your account data in one file and email you a link to it. The link works for 7 days.',
+  dataIntro: 'We email you a link to a file with your data. The link works for 7 days.',
   dataIncludesTitle: "What's in it",
   dataIncludes: [
     'Your profile and settings',
@@ -1644,13 +1843,13 @@ export const settings = {
   dataSentTitle: 'On its way',
   dataSent: 'Check your school email in a few minutes. The link works for 7 days.',
   dataRateLimited: 'You already asked in the last day. You can ask again after {time}.',
-  dataOffline: "You're offline. Connect to ask for your data.",
+  dataOffline: 'Connect to ask for your data.',
 } as const;
 
 export const system = {
   // X11 update required
   updateTitle: 'Time to update',
-  updateBody: 'This version of OnlySwap is too old to keep working. Update to keep swapping.',
+  updateBody: 'This version is too old to keep working. Update to keep swapping.',
   updateButton: 'Update OnlySwap',
   // X12 maintenance
   maintenanceTitle: "We'll be right back",
@@ -1659,32 +1858,37 @@ export const system = {
   tryAgain: 'Try again',
   // X31 link errors
   linkErrorTitle: "That link didn't work",
-  linkErrorBody: 'It may be old or copied wrong. The listing might also be gone.',
+  linkErrorBody: 'It may be old, or the listing is gone.',
   notFoundTitle: 'Nothing here',
   notFoundBody: "We couldn't find that page in the app.",
   goHome: 'Go to Discover',
   // X14 under review
   underReview:
     'Your listing is being checked by a moderator. It shows to others once it is approved.',
+  // Admin removed the seller's listing (DEC 96)
+  removedByAdmin: 'OnlySwap removed this listing. Reason: {reason}',
+  removedByAdminNoReason: 'OnlySwap removed this listing. Other students can no longer see it.',
 } as const;
 
 /** The Quad (R1.1, DESIGN_SYSTEM Q01 to Q14 with D7; check-in is R2). */
 export const quad = {
   title: 'The Quad',
-  subtitle: 'Anonymous to students',
-  anonAt: 'Anonymous · {campus}',
+  // DEC 150: the Quad shows names (no longer anonymous; Apple 1.2).
+  subtitle: 'Your campus, talking',
+  anonAt: '{campus} students',
   sortLabel: 'Sort posts',
   sorts: { hot: 'Hot', new: 'New', top: 'Top' },
   newPost: 'New post',
   openActivity: 'Quad activity',
   openMine: 'Your Quad',
   openMuted: 'Muted and hidden',
+  menuTitle: 'Your Quad',
   // Q01 Welcome
-  welcomeTitle: 'Say it without your name on it',
-  welcomeIntro: "The Quad is your campus's anonymous board. Four things to know first.",
-  ruleAnonTitle: 'Anonymous to students, not to us',
+  welcomeTitle: 'Your campus, out loud',
+  welcomeIntro: 'Four things to know first.',
+  ruleAnonTitle: 'Your name is on what you post',
   ruleAnonBody:
-    'Nobody here sees who you are. We keep your account on file and only share it if the law requires it or someone is in danger.',
+    'Posts and replies show your first name and last initial, like everywhere else on OnlySwap.',
   ruleNamesTitle: "Don't call out students",
   ruleNamesBody:
     'No names, initials, photos or dorm rooms of students in a negative way. Professors are fair game.',
@@ -1696,7 +1900,7 @@ export const quad = {
   enter: 'Enter the Quad',
   // Q02 Feed
   emptyTitle: 'Nobody has posted yet',
-  emptyBody: 'Get it started. A few ideas:',
+  emptyBody: 'Start it off. A few ideas:',
   prompts: [
     "What's the best study spot?",
     'Best late night food near campus?',
@@ -1704,9 +1908,10 @@ export const quad = {
   ],
   emptyAction: 'Write the first post',
   topEmptyTitle: 'No top posts this week',
-  topEmptyBody: 'Vote on posts in Hot and New and the best ones land here.',
-  offTitle: "The Quad isn't on at your school yet",
-  offBody: 'It opens campus by campus. Everything else in OnlySwap works as usual.',
+  topEmptyBody: 'Vote in Hot and New and the best ones land here.',
+  topEmptyAction: 'Go to Hot',
+  offTitle: "The Quad isn't open at your school yet",
+  offBody: 'It opens campus by campus.',
   offAction: 'Go to Discover',
   pinned: 'Pinned',
   // Post card
@@ -1731,7 +1936,7 @@ export const quad = {
   pollOption: '{label}, {pct} percent',
   pollMine: 'Your vote',
   pollVoteHint: 'Votes for this option',
-  voteFailed: "Your vote didn't go through. Try again.",
+  voteFailed: "Couldn't save your vote. Try again.",
   // Post options (Q7)
   hideAuthor: 'Hide posts from this person',
   repliesOff: 'Turn off replies',
@@ -1742,6 +1947,11 @@ export const quad = {
   reportReply: 'Report reply',
   copied: 'Copied',
   hiddenToast: "Hidden. You won't see their posts or replies.",
+  deleteReply: 'Delete reply',
+  deleteReplyTitle: 'Delete this reply?',
+  deleteReplyBody: "It comes off the thread for everyone. This can't be undone.",
+  replyDeleted: 'Reply deleted',
+  blockedToast: "Blocked. You won't see each other's posts or messages.",
   deleteTitle: 'Delete this post?',
   deleteBody: "It comes off the Quad for everyone. This can't be undone.",
   deleted: 'Post deleted',
@@ -1758,8 +1968,8 @@ export const quad = {
   opLabel: 'Original poster',
   you: 'You',
   repliesOffNote: 'The poster turned off replies.',
-  noReplies: 'No replies yet.',
-  replyLabel: 'Reply anonymously',
+  noReplies: 'No replies yet. Add one below.',
+  replyLabel: 'Write a reply',
   replyPlaceholder: 'Add a reply',
   sendReply: 'Send reply',
   replyHeld: 'Your reply is waiting for a quick review.',
@@ -1770,13 +1980,20 @@ export const quad = {
   modes: { text: 'Text', photo: 'Photo', poll: 'Poll', checkin: 'Check-in' },
   bodyLabel: "What's on your mind?",
   bodyPlaceholder: 'Keep names of students out of it',
-  anonNote: 'Posting anonymously',
+  anonNote: 'Your first name and last initial show on this post.',
+  /** A post or reply whose author deleted their account. */
+  deletedAuthor: 'Deleted user',
+  discardTitle: 'Discard this post?',
+  discardBody: "What you wrote won't be saved.",
+  discardKeep: 'Keep writing',
+  discardConfirm: 'Discard',
   addPhoto: 'Add a photo',
   changePhoto: 'Change photo',
   removePhoto: 'Remove photo',
   photoUploading: 'Uploading photo',
   photoFailed: "The photo didn't upload. Try again.",
   photosOff: 'Photos are turned off for OnlySwap. Turn them on in Settings to add one.',
+  cameraOff: 'The camera is turned off for OnlySwap. Turn it on in Settings to take a photo.',
   openSettings: 'Open Settings',
   pollQuestionLabel: 'Your question',
   pollOptionLabel: 'Option {n}',
@@ -1793,14 +2010,13 @@ export const quad = {
   // Q9 blocked
   blockedTitle: "This can't go on the Quad",
   blocked: {
-    phone:
-      'It has a phone number in it. Numbers, emails and room numbers stay off the Quad so nobody can be tracked down.',
+    phone: 'It has a phone number in it. Phone numbers, emails and room numbers stay off the Quad.',
     email:
-      'It has an email address in it. Numbers, emails and room numbers stay off the Quad so nobody can be tracked down.',
+      'It has an email address in it. Phone numbers, emails and room numbers stay off the Quad.',
     url: 'It has a link in it. Links to other apps and sites stay off the Quad.',
     handle:
       'It has a social media handle in it. Handles stay off the Quad so nobody can be tracked down.',
-    room: 'It has a room number in it. Numbers, emails and room numbers stay off the Quad so nobody can be tracked down.',
+    room: 'It has a room number in it. Phone numbers, emails and room numbers stay off the Quad.',
     term: 'It uses "{term}", which isn\'t allowed on the Quad.',
     other: "Something in it isn't allowed on the Quad.",
   },
@@ -1824,8 +2040,8 @@ export const quad = {
   onlyYou: 'Only you can see this.',
   minePosts: 'Posts',
   mineReplies: 'Replies',
-  mineEmptyPosts: "You haven't posted yet",
-  mineEmptyReplies: "You haven't replied to anything yet",
+  mineEmptyPosts: "You haven't posted yet. Your posts show up here.",
+  mineEmptyReplies: "You haven't replied yet. Your replies show up here.",
   status: {
     live: 'Live',
     held: 'Under review',
@@ -1837,15 +2053,15 @@ export const quad = {
   appealed: 'Appeal sent. A person will review it.',
   // Q13 Activity
   activityTitle: 'Quad activity',
-  activityEmptyTitle: 'Nothing yet',
-  activityEmptyBody: 'Replies and milestones on your posts show up here.',
+  activityEmptyTitle: 'No activity yet',
+  activityEmptyBody: 'Replies on your posts show up here.',
   // Q14 Muted
   mutedTitle: 'Muted and hidden',
   hiddenPeople: 'People you hid',
   hiddenFrom: 'Someone you hid, from: "{excerpt}"',
   unhide: 'Unhide',
   unhideLabel: 'Unhide someone you hid from "{excerpt}"',
-  noHidden: "You haven't hidden anyone.",
+  noHidden: 'No one hidden.',
   keywords: 'Muted words',
   keywordsBody: 'Posts and replies with these words are hidden for you.',
   keywordLabel: 'Mute a word',
@@ -1854,27 +2070,45 @@ export const quad = {
   removeKeyword: 'Unmute',
   keywordInvalid: 'Use 2 to 30 characters.',
   noKeywords: 'No muted words.',
+  unhidden: 'Unhidden',
+  muted: 'Muted',
 } as const;
 
 /** Around campus (R1.1, DESIGN_SYSTEM C01 to C03 with D16, D19, D20). */
 export const campus = {
-  // D19 segment on Discover
-  segmentLabel: 'Discover view',
-  segmentSwipe: 'For you',
-  segmentCampus: 'Around campus',
-  // C01 feed
-  title: 'Around campus',
+  // C01 Feed tab (DEC 98)
+  title: 'Feed',
   filtersLabel: 'Show',
   filters: {
     all: 'All',
+    news: 'News',
     food: 'Free food',
     free: 'Free stuff',
     wanted: 'Wanted',
-    new: 'New',
+    new: 'This week',
   },
   loading: 'Loading posts',
   postFood: 'Post free food',
   askFor: 'Ask for something',
+  postNews: 'Post news',
+  newPost: 'New post',
+  composer: "What's happening on campus?",
+  composerLabel: 'Write a post for your campus',
+  // Feed posts (DEC 98)
+  save: 'Save',
+  saved: 'Saved',
+  makeOffer: 'Make offer',
+  askForIt: 'Ask for it',
+  share: 'Share',
+  openLink: 'Open link',
+  morePhotos: '+{n}',
+  saveFailed: "Couldn't save that. Try again.",
+  newsLabel: '{name} posted: {title}. {meta}',
+  postLabel: '{name} is selling {title} for {price}. {meta}',
+  postMeta: '{ago} · {place}',
+  eventWhen: '{day} at {time}',
+  photosOf: 'Photo {i} of {n}',
+  newsTag: 'News',
   foodTag: 'Free food',
   freeTag: 'Free',
   wantedTag: 'Wanted',
@@ -1888,8 +2122,16 @@ export const campus = {
   goneBody: 'Time ran out on this one.',
   noPlace: 'Ask in the post for the spot',
   iHaveThis: 'I have this',
-  iHaveThisLabel: 'I have this: list {title} for them',
+  iHaveThisLabel: 'I have this: message them about {title}',
+  /** The first chat message when you answer an ask (DEC 149). */
+  iHaveThisMessage: 'I have this',
+  iHaveThisFailed: "Couldn't open the chat. Try again.",
   yours: 'Your post',
+  /** Delete on your own Feed posts (owner review 2026-10-24). */
+  deleteOwnPost: 'Delete your post',
+  deletePostTitle: 'Delete this post?',
+  deletePostBody: 'It comes off the Feed for everyone, with its comments.',
+  deletePostConfirm: 'Delete post',
   foodLabel: 'Free food: {title}. {place}. {time}',
   wantedLabel: 'Wanted: {title}. {budget}. {who}',
   listingLabel: '{title}, {price}. {meta}',
@@ -1899,12 +2141,16 @@ export const campus = {
   loadingMore: 'Loading more',
   empty: {
     all: {
-      title: 'Quiet around campus right now',
-      body: 'Free food, giveaways, Wanted posts and new listings show up here.',
+      title: 'Quiet around campus',
+      body: 'News, free food, giveaways and new listings show up here.',
+    },
+    news: {
+      title: 'No news yet',
+      body: 'Got an event or club news? Post it.',
     },
     food: {
       title: 'No free food right now',
-      body: 'Turn on free food alerts in notification settings to hear about it first.',
+      body: 'Turn on free food alerts to hear first.',
     },
     free: {
       title: 'Nothing free right now',
@@ -1912,7 +2158,7 @@ export const campus = {
     },
     wanted: {
       title: 'No Wanted posts yet',
-      body: 'Need something? Ask for it, and anyone who has one can list it for you.',
+      body: 'Need something? Ask, and anyone who has it can list it for you.',
     },
     new: {
       title: 'Nothing new this week',
@@ -1920,10 +2166,10 @@ export const campus = {
     },
   },
   // Day one (C6) and founding sellers (C7)
-  dayOneTitle: "It's early days here",
-  dayOneBody: '{n} listings so far. Post yours and be one of the first.',
-  dayOneBodyOne: '1 listing so far. Post yours and be one of the first.',
-  dayOneBodyNone: 'Nothing is listed yet. Post the first thing.',
+  dayOneTitle: 'Be one of the first to list',
+  dayOneBody: '{n} listings so far.',
+  dayOneBodyOne: '1 listing so far.',
+  dayOneBodyNone: 'Nothing is listed yet.',
   dayOneAction: 'List something',
   foundingTitle: 'Founding seller spots are open',
   foundingBody: '{left} of {limit} spots left. The first sellers here get a badge for good.',
@@ -1945,40 +2191,66 @@ export const campus = {
     m120: '2 hours',
     m180: '3 hours',
   },
-  foodNote:
-    'People on campus with free food alerts on get a notification. The post hides itself when the time runs out.',
+  foodNote: 'The post hides itself when the time runs out.',
   foodPostedTitle: 'Your free food post is up',
-  foodPostedBody: 'It shows in Around campus until the time runs out.',
+  foodPostedBody: 'It shows in the Feed until the time runs out.',
+  // Post news (DEC 98)
+  newsTitle: 'Post news',
+  newsWhat: 'Headline',
+  newsWhatPlaceholder: 'For example, Club fair on the lawn Friday',
+  newsDetails: 'Details (optional)',
+  newsDetailsPlaceholder: 'What it is, who it is for, anything to bring.',
+  newsPhotos: 'Photos (optional, up to 4)',
+  addPhotos: 'Add photos',
+  newsLink: 'Link (optional)',
+  newsLinkPlaceholder: 'https://',
+  newsLinkHint: 'A sign-up form, a page or a post.',
+  newsEvent: "It's an event",
+  newsDate: 'Date',
+  newsTime: 'Time',
+  newsPickDate: 'Pick a date',
+  newsPickTime: 'Pick a time',
+  newsPlace: 'Where (optional)',
+  newsPlacePlaceholder: 'For example, Hamilton-Williams lobby',
+  newsNote: 'Everyone on your campus sees it with your name.',
+  newsPostedTitle: 'Your post is up',
+  newsPostedBody: 'It shows in the Feed for everyone on your campus.',
   // C03 Post a Wanted
   wantedTitle: 'Ask for something',
-  wantedWhat: 'What are you looking for?',
-  wantedWhatPlaceholder: 'For example, TI-84 Plus for MATH 1151',
-  budgetLabel: 'Budget in dollars (optional)',
+  wantedWhat: 'What do you need?',
+  wantedWhatPlaceholder: 'e.g. TI-84 calculator, desk lamp',
+  budgetLabel: 'Pay up to (optional)',
   budgetPlaceholder: '40',
-  budgetHint: 'Leave it empty if you are flexible.',
+  budgetHint: "Leave it empty if you're flexible.",
   categoryLabel: 'Category (optional)',
-  categoryHint: 'People who list something in this category hear about your post.',
+  categoryHint: 'Sellers in this category get a heads-up.',
+  /** Need it by and alert me (DEC 127). */
+  needByLabel: 'When do you need it?',
+  needBy: { none: 'Anytime', week: 'This week', twoWeeks: 'In 2 weeks', month: 'This month' },
+  needByLine: 'Needs it by {date}',
+  alertMe: 'Tell me when one is listed',
+  alertMeBody: 'Get a notification when someone lists a match.',
   detailsLabel: 'Details (optional)',
-  detailsPlaceholder: 'Edition, size, color, when you need it.',
-  wantedNote:
-    'Others see your first name and budget. Anyone who has it lists it, and you get a notification so you can make an offer.',
-  wantedPostedTitle: 'Your Wanted post is up',
+  detailsPlaceholder: 'Size, color, condition, or what you need it for.',
+  wantedPostedTitle: 'Your ask is up',
   wantedPostedBody: "We'll tell you when someone lists one.",
   reviewTitle: 'Your post is in review',
   reviewBody: "Most reviews take under 2 hours. We'll tell you when it's up.",
   postedCheck: 'Posted',
-  seeCampus: 'See Around campus',
+  seeCampus: 'See the Feed',
   done: 'Done',
   // Shared form bits
   post: 'Post',
   addPhoto: 'Add a photo',
   changePhoto: 'Change photo',
   removePhoto: 'Remove photo',
-  photoOptional: 'Photo (optional)',
+  photoOptional: 'Photo',
+  removePhotoN: 'Remove photo {i}',
   photoUploading: 'Uploading photo',
   photoFailed: "The photo didn't upload. Try again.",
   photoLabel: 'Your photo',
   photosOff: 'Photo access is off for OnlySwap. Turn it on in Settings to add a photo.',
+  cameraOff: 'Camera access is off for OnlySwap. Turn it on in Settings to take a photo.',
   openSettings: 'Open settings',
   fixFirst: 'Fix the highlighted fields to post.',
   errors: {
@@ -1989,6 +2261,12 @@ export const campus = {
     minutesRange: 'Pick how long it is around.',
     budgetHigh: 'Budgets go up to $2,000.',
     descriptionLong: 'Keep the details under 1000 characters.',
+    linkInvalid: 'Use a full link, like https://example.com.',
+    linkLong: 'Keep the link under 300 characters.',
+    eventMissing: 'Pick a date and time, or turn off the event switch.',
+    eventPast: 'Pick a time that has not passed yet.',
+    eventFar: 'Events can be up to 90 days away.',
+    newsCap: "That's 3 news posts today, the most for one day. You can post again tomorrow.",
     banned: '"{term}" isn\'t allowed on OnlySwap.',
     foodCap: "That's 3 free food posts today, the most for one day. You can post again tomorrow.",
     wantedCap: "That's 5 Wanted posts today, the most for one day. You can post again tomorrow.",
@@ -2003,6 +2281,7 @@ export const campus = {
   // Food and Wanted on the listing screen (B02)
   listingFood: 'Free food',
   listingWanted: 'Wanted',
+  listingNews: 'News',
   listingFoodBody: 'Free for anyone. Go to the spot while it lasts.',
   listingWantedBody: 'Someone is looking for this. Have one? List it for them.',
   wantedOwnBody: 'We tell you when someone lists one.',
@@ -2062,9 +2341,8 @@ export const waitlist = {
 
 export const unlocked = {
   title: 'Your campus is open',
-  body: '{campus} reached {threshold} students, so OnlySwap is open for everyone there. You are one of the first people in.',
-  bodyNoCampus:
-    'Your school reached its goal, so OnlySwap is open for everyone there. You are one of the first people in.',
+  body: "{campus} reached {threshold} students. You're one of the first in.",
+  bodyNoCampus: "Your school reached its goal. You're one of the first in.",
   foundingTitle: 'Founding seller spots are open',
   foundingBody: 'The first sellers here get a badge for good. Giving something away counts too.',
   start: 'Start swiping',
@@ -2104,6 +2382,73 @@ export const web = {
   },
 } as const;
 
+// Likes and comments on Feed posts (DEC 121).
+export const comments = {
+  title: 'Comments',
+  like: 'Like',
+  comment: 'Comment',
+  likePost: 'Like this post',
+  likeCount: '{n} likes',
+  likeCount1: '1 like',
+  commentCount: '{n} comments',
+  commentCount1: '1 comment',
+  openComments: 'Open comments',
+  sortLabel: 'Sort comments',
+  sortTop: 'Top',
+  sortNew: 'Newest',
+  placeholder: 'Write a comment',
+  replyPlaceholder: 'Write a reply',
+  inputLabel: 'Comment',
+  send: 'Post comment',
+  replyingTo: 'Replying to {name}',
+  cancelReply: 'Cancel reply',
+  reply: 'Reply',
+  replyTo: 'Reply to {name}',
+  likeComment: 'Like comment from {name}',
+  viewReplies: 'View {n} more replies',
+  viewReplies1: 'View 1 more reply',
+  loadingReplies: 'Loading replies',
+  author: 'Author',
+  deleted: 'Comment deleted',
+  held: 'Only you can see this while a person checks it.',
+  heldToast: 'Posted. A person checks it before others see it.',
+  empty: 'No comments yet',
+  emptyBody: 'Be the first to say something.',
+  offNote: 'The author turned off comments on this post.',
+  closedNote: 'This post has ended, so it takes no new comments.',
+  turnOff: 'Turn off comments',
+  turnOn: 'Turn on comments',
+  turnedOff: 'Comments are off for this post.',
+  turnedOn: 'Comments are on for this post.',
+  options: 'Comment options',
+  postOptions: 'Post options',
+  copyText: 'Copy text',
+  copied: 'Copied',
+  delete: 'Delete comment',
+  deleteTitle: 'Delete this comment?',
+  deleteBody: 'It comes off the post for everyone. Replies to it stay.',
+  deletedToast: 'Comment deleted',
+  report: 'Report comment',
+  failed: 'That did not go through. Try again.',
+  likeFailed: "Couldn't save your like. Try again.",
+  goneTitle: 'This post is gone',
+  goneBody: 'It was taken down or it ended.',
+  back: 'Go back',
+  openPost: 'Open the post',
+  loading: 'Loading comments',
+  loadingMore: 'Loading more comments',
+  blocked: {
+    phone: 'It has a phone number in it. Share numbers in a chat, not in public comments.',
+    email:
+      'It has an email address in it. Share contact details in a chat, not in public comments.',
+    url: 'It has a link in it. Links stay out of comments.',
+    handle: 'It has a social media handle in it. Share handles in a chat, not in public comments.',
+    room: 'It has a room number in it. Keep where you live out of public comments.',
+    term: 'It has a word that is not allowed here: "{term}".',
+    other: 'That comment cannot be posted.',
+  },
+} as const;
+
 export const en = {
   permissions,
   tabs,
@@ -2114,6 +2459,7 @@ export const en = {
   banner,
   photo,
   states,
+  crash,
   nav,
   primer,
   report,
@@ -2148,6 +2494,7 @@ export const en = {
   system,
   quad,
   campus,
+  comments,
   waitlist,
   unlocked,
   spotsMap,

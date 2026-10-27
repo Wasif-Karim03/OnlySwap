@@ -26,7 +26,7 @@ import {
   PrivacyScreen,
   SettingsScreen,
 } from '../src/features/me/SettingsScreens';
-import { me as meCopy, settings } from '../src/strings/en';
+import { campus as campusCopy, me as meCopy, settings } from '../src/strings/en';
 import { useThemeModeStore } from '../src/theme/mode';
 
 const ME: Me = {
@@ -89,6 +89,8 @@ function api(over: Partial<MeApi> = {}): MeApi {
     updateListing: jest.fn(async () => {}),
     deleteListing: jest.fn(async () => {}),
     relist: jest.fn(async () => {}),
+    setAway: jest.fn(async () => {}),
+    setMovingOut: jest.fn(async () => {}),
     ...over,
   };
 }
@@ -123,6 +125,33 @@ describe('F01-F08 profile', () => {
     expect(listingTab('hold')).toBe('active');
     expect(listingTab('sold')).toBe('sold');
     expect(listingTab('held_review')).toBe('other');
+  });
+
+  it('Feed posts sit on Posts, not Active, and can be deleted (owner review 2026-10-24)', async () => {
+    const a = api({
+      listings: jest.fn(async () => [
+        listing('a', 'active'),
+        listing('w', 'active', {
+          kind: 'wanted',
+          title: 'Bottle',
+          photos: [{ path: 'l/w_full.webp', thumb_path: 'l/w_thumb.webp', blurhash: null }],
+        } as Partial<MyListing>),
+      ]),
+      deleteListing: jest.fn(async () => {}),
+    });
+    render(
+      { profile: () => <ProfileTabScreen api={a} mediaBase={() => 'http://m'} /> },
+      '/profile',
+    );
+    expect(await screen.findByTestId('profile-listing-a')).toBeTruthy();
+    expect(screen.queryByTestId('profile-listing-w')).toBeNull();
+    fireEvent.press(await screen.findByRole('tab', { name: `${meCopy.tabs.posts} 1` }));
+    expect(await screen.findByTestId('profile-post-w')).toBeTruthy();
+    // The photo shows big on the post card, not only after opening it.
+    expect(screen.getByTestId('profile-post-photo-w')).toBeTruthy();
+    fireEvent.press(screen.getByTestId('profile-post-delete-w'));
+    fireEvent.press(await screen.findByText(campusCopy.deletePostConfirm));
+    await waitFor(() => expect(a.deleteListing).toHaveBeenCalledWith('w'));
   });
 
   it('F01: header, year at school, one line of real numbers, grid, menu (DEC 90)', async () => {
@@ -447,5 +476,68 @@ describe('P11-ACC-02 F17 Download your data', () => {
     render({ 'settings/data': () => <DataExportScreen api={a} /> }, '/settings/data');
     expect(await screen.findByText(settings.dataOffline)).toBeTruthy();
     expect(screen.getByTestId('data-export-send')).toBeDisabled();
+  });
+});
+
+describe('T-UNIT-RENEW-01 renew from My listings (DEC 125)', () => {
+  it('renews an active listing in one tap, and shows the date when it is too soon', async () => {
+    const relist = jest.fn(async () => {});
+    const listings = jest.fn(async () => [
+      listing('a', 'active', { can_relist: true, renew_at: '2027-03-09T12:00:00Z' }),
+      listing('d', 'active', { renew_at: '2027-03-12T17:00:00Z' }),
+    ]);
+    render(
+      {
+        'profile/listings': () => (
+          <MyListingsScreen api={api({ relist, listings })} mediaBase={() => 'http://m'} />
+        ),
+      },
+      '/profile/listings',
+    );
+    expect(await screen.findByTestId('renew-at-d')).toBeTruthy();
+    expect(screen.queryByTestId('renew-d')).toBeNull();
+    fireEvent.press(screen.getByTestId('renew-a'));
+    await waitFor(() => expect(relist).toHaveBeenCalledWith('a', null));
+    expect(screen.queryByTestId('screen-relist-stub')).toBeNull();
+  });
+});
+
+describe('T-UNIT-AWAY-01 pause my listings (DEC 126)', () => {
+  it('turns away mode on from My listings', async () => {
+    const setAway = jest.fn(async () => {});
+    render(
+      {
+        'profile/listings': () => (
+          <MyListingsScreen api={api({ setAway })} mediaBase={() => 'http://m'} />
+        ),
+      },
+      '/profile/listings',
+    );
+    fireEvent.press(await screen.findByLabelText(meCopy.away));
+    await waitFor(() => expect(setAway).toHaveBeenCalledWith(true));
+  });
+});
+
+describe('T-UNIT-MOVING-02 moving out (DEC 133)', () => {
+  it('sets a date from My listings and shows it', async () => {
+    let by: string | null = null;
+    const setMovingOut = jest.fn(async (d: string | null) => {
+      by = d;
+    });
+    const me = jest.fn(async () => ({ ...ME, moving_out_by: by }));
+    render(
+      {
+        'profile/listings': () => (
+          <MyListingsScreen api={api({ setMovingOut, me })} mediaBase={() => 'http://m'} />
+        ),
+      },
+      '/profile/listings',
+    );
+    fireEvent.press(await screen.findByTestId('moving-out-twoWeeks'));
+    await waitFor(() =>
+      expect(setMovingOut).toHaveBeenCalledWith(expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/)),
+    );
+    // The date shows in place of the explainer.
+    expect(await screen.findByText(/^Moving out by /)).toBeTruthy();
   });
 });

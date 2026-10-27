@@ -50,9 +50,12 @@ rm -f "$CORS"
 WR r2 bucket lifecycle add "$PRIVATE_BUCKET" exports-8-days exports/ --expire-days 8 --force >>"$LOG" 2>&1 \
   && echo "lifecycle ok" || echo "lifecycle: may already exist (check $LOG)" | tee -a "$LOG"
 
-say "3/6 Media Worker (photos)"
+say "3/6 Media Worker (photos and photo screening)"
 printf %s "$(kc_get onlyswap-vault-media_signing_key)" | WR secret put MEDIA_SIGNING_KEY -c workers/media/wrangler.toml --env staging >>"$LOG" 2>&1 \
   || die "worker secret failed (see $LOG)"
+[ -n "$(kc_get onlyswap-vault-scan_key)" ] || kc_set onlyswap-vault-scan_key "$(openssl rand -hex 32)"
+printf %s "$(kc_get onlyswap-vault-scan_key)" | WR secret put SCAN_KEY -c workers/media/wrangler.toml --env staging >>"$LOG" 2>&1 \
+  || die "worker scan key failed (see $LOG)"
 WR deploy -c workers/media/wrangler.toml --env staging 2>&1 | tee -a "$LOG" > /tmp/onlyswap-wrangler-deploy.txt || die "worker deploy failed"
 MEDIA_URL=$(grep -oE 'https://[a-z0-9.-]+\.workers\.dev' /tmp/onlyswap-wrangler-deploy.txt | head -1)
 [ -n "$MEDIA_URL" ] || die "no workers.dev URL (enable your workers.dev subdomain: CHROME_PROMPTS.md step C)"
@@ -77,6 +80,7 @@ R2_SECRET_ACCESS_KEY=$SK
 R2_BUCKET_MEDIA=$MEDIA_BUCKET
 R2_BUCKET_PRIVATE=$PRIVATE_BUCKET
 MEDIA_URL=$MEDIA_URL
+SCAN_KEY=$(kc_get onlyswap-vault-scan_key)
 EOF
 SB secrets set --project-ref "$REF" --env-file "$SECF" >/dev/null 2>>"$LOG"; rc=$?; rm -f "$SECF"
 [ $rc -eq 0 ] || die "supabase secrets failed (see $LOG)"
@@ -114,9 +118,12 @@ say "6/6 Admin ($ADMIN_PROJECT.pages.dev) and web app ($WEB_PROJECT.pages.dev)"
 ( cd apps/admin && VITE_APP_ENV=staging VITE_SUPABASE_URL=$EXPO_PUBLIC_SUPABASE_URL VITE_SUPABASE_ANON_KEY=$EXPO_PUBLIC_SUPABASE_ANON_KEY \
     VITE_MEDIA_URL=$MEDIA_URL pnpm -s build ) >>"$LOG" 2>&1 || die "admin build failed (see $LOG)"
 pages "$ADMIN_PROJECT" apps/admin/dist || die "admin deploy failed"
+# The web app needs a Turnstile site key (export:web's preflight stops without
+# one): Cloudflare's always-pass test key, paired with the staging
+# TURNSTILE_SECRET_KEY on the functions.
 ( cd apps/mobile && EXPO_PUBLIC_APP_ENV=staging EXPO_PUBLIC_SUPABASE_URL=$EXPO_PUBLIC_SUPABASE_URL \
     EXPO_PUBLIC_SUPABASE_ANON_KEY=$EXPO_PUBLIC_SUPABASE_ANON_KEY EXPO_PUBLIC_MEDIA_URL=$MEDIA_URL \
-    EXPO_PUBLIC_SITE_URL=$SITE_URL pnpm -s export:web ) >>"$LOG" 2>&1 || die "web app build failed (see $LOG)"
+    EXPO_PUBLIC_SITE_URL=$SITE_URL EXPO_PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA pnpm -s export:web ) >>"$LOG" 2>&1 || die "web app build failed (see $LOG)"
 pages "$WEB_PROJECT" apps/mobile/dist || die "web app deploy failed"
 
 say "Check"

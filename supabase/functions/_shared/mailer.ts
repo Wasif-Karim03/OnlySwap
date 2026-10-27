@@ -1,7 +1,8 @@
 // Email templates and the send-email drain (P9-MAIL-01/02; API §5, ADR mail).
-// No imports besides internal.ts, so the Edge Function (Deno) and Node tests
+// No imports besides internal.ts and emailLayout.ts, so the Edge Function (Deno) and Node tests
 // run the same code. Transport: Gmail SMTP (Plan A) or Resend (Plan B), both
 // free; the function picks by MAIL_PROVIDER. Plain, short, no tracking pixels.
+import { emailHtml } from './emailLayout.ts';
 import { isServiceCaller, type InternalResponse } from './internal.ts';
 
 export type Template =
@@ -14,7 +15,29 @@ export type Template =
   | 'support_request'
   | 'priority_report'
   | 'support_reply'
-  | 'report_queue';
+  | 'report_queue'
+  | 'photo_flag';
+
+/** Where admin links and photos point (send-email reads ADMIN_URL and MEDIA_URL). */
+export type MailUrls = { admin?: string; media?: string };
+
+export const DEFAULT_ADMIN_URL = 'https://onlyswap-admin.pages.dev';
+
+const REASON_WORDS: Record<string, string> = {
+  weapon: 'a weapon',
+  drugs: 'drugs',
+  violence: 'violence or gore',
+  hate: 'a hate symbol',
+  sexual: 'sexual content',
+  minor: 'a possible minor-safety problem',
+  other: 'something against the rules',
+};
+
+const KIND_WORDS: Record<string, string> = {
+  listing: 'Listing',
+  quad: 'Quad post',
+  avatar: 'Profile photo',
+};
 
 export type Rendered = { subject: string; text: string; html: string; replyTo?: string };
 
@@ -28,20 +51,15 @@ const esc = (s: unknown) =>
 const str = (v: unknown, fallback = '') =>
   typeof v === 'string' && v.trim() ? v.trim() : fallback;
 
-function page(paragraphs: string[], site: string): string {
-  const body = paragraphs.map((p) => `<p style="margin:0 0 14px">${p}</p>`).join('');
-  return (
-    '<!doctype html><html><body style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;font-size:16px;line-height:1.5;color:#111110;max-width:520px;margin:0 auto;padding:24px">' +
-    body +
-    `<p style="margin:24px 0 0;font-size:13px;color:#5A5A54">OnlySwap · <a href="${esc(site)}" style="color:#5A5A54">${esc(
-      site.replace(/^https?:\/\//, ''),
-    )}</a></p></body></html>`
-  );
-}
-
 /** Renders one outbox row. Unknown templates throw (the row fails after retries). */
-export function render(template: Template, vars: Record<string, unknown>, site: string): Rendered {
+export function render(
+  template: Template,
+  vars: Record<string, unknown>,
+  site: string,
+  urls: MailUrls = {},
+): Rendered {
   const text = (lines: string[]) => [...lines, '', `OnlySwap · ${site}`].join('\n');
+  const open = { label: 'Open OnlySwap', href: site.replace(/\/+$/, '') };
   switch (template) {
     case 'campus_open': {
       const campus = str(vars.campus, 'your campus');
@@ -52,11 +70,38 @@ export function render(template: Template, vars: Record<string, unknown>, site: 
       return {
         subject: `OnlySwap is open at ${campus}`,
         text: text(lines),
-        html: page(lines.map(esc), site),
+        html: emailHtml({
+          site,
+          preheader: `Thanks for waiting. Sign in with your school email and your spot is ready.`,
+          hero: {
+            title: `You're in. ${esc(campus)} is open.`,
+            body: 'Thanks for waiting. Sign in with the same school email and your spot is ready.',
+            button: open,
+          },
+          blocks: [
+            {
+              kind: 'steps',
+              label: 'How it works',
+              steps: [
+                [
+                  "Swipe what's for sale",
+                  'Right to make an offer. Everyone here is a verified student.',
+                ],
+                ['Chat once they say yes', 'A chat opens when the seller accepts your offer.'],
+                [
+                  'Meet on campus, pay in person',
+                  'Pick a Meetup spot and a time. Check the item before you pay.',
+                ],
+              ],
+            },
+          ],
+          reason: `You joined the ${esc(campus)} waitlist, so we said we'd tell you. This is the only email about it.`,
+        }),
       };
     }
     case 'account_paused': {
       const until = str(vars.until);
+      const why = str(vars.reason);
       const lines = [
         `Your OnlySwap account is paused${until ? ` until ${until}` : ''}.`,
         'You can still read and finish your open chats. If you think this is wrong, open the app and send an appeal.',
@@ -64,7 +109,29 @@ export function render(template: Template, vars: Record<string, unknown>, site: 
       return {
         subject: 'Your OnlySwap account is paused',
         text: text(lines),
-        html: page(lines.map(esc), site),
+        html: emailHtml({
+          site,
+          preheader: 'You can still finish your open chats and planned meetups.',
+          title: until ? `Your account is paused until ${esc(until)}` : 'Your account is paused',
+          intro: `${why ? `${esc(why)} ` : ''}While it's paused you can't list or make offers.`,
+          blocks: [
+            {
+              kind: 'checks',
+              title: 'You can still',
+              items: ['Read and reply in your open chats', 'Finish meetups you already planned'],
+            },
+            {
+              kind: 'p',
+              html: 'Think we got it wrong? Send an appeal from the app. A person on our team reads every one.',
+            },
+            { kind: 'button', button: { ...open, style: 'outline' } },
+          ],
+          reason: "We send account emails like this one even if you've turned off notifications.",
+          links: [
+            { label: 'Community rules', path: '/rules' },
+            { label: 'Help', path: '/help' },
+          ],
+        }),
       };
     }
     case 'reverify_due': {
@@ -76,7 +143,23 @@ export function render(template: Template, vars: Record<string, unknown>, site: 
       return {
         subject: "Confirm you're still a student",
         text: text(lines),
-        html: page(lines.map(esc), site),
+        html: emailHtml({
+          site,
+          preheader: 'It takes a minute: open the app and enter the code we send you.',
+          hero: {
+            title: "Quick check: you're still a student?",
+            body: `Confirm${due ? ` by ${esc(due)}` : ''} to keep buying and selling. Open the app and enter the code we send to your school email.`,
+            button: open,
+          },
+          blocks: [
+            {
+              kind: 'p',
+              muted: true,
+              html: 'We ask once a year so everyone on OnlySwap is a current student.',
+            },
+          ],
+          reason: 'You have an OnlySwap account with this school email.',
+        }),
       };
     }
     case 'account_deleted': {
@@ -87,7 +170,32 @@ export function render(template: Template, vars: Record<string, unknown>, site: 
       return {
         subject: 'Your OnlySwap account is deleted',
         text: text(lines),
-        html: page(lines.map(esc), site),
+        html: emailHtml({
+          site,
+          preheader: 'Your listings and profile are gone.',
+          title: 'Your account is deleted',
+          intro: 'Sorry to see you go. Here is what happened.',
+          blocks: [
+            {
+              kind: 'rows',
+              rows: [
+                ['Profile and photo', 'Deleted'],
+                ['Listings', 'Removed'],
+                ['Chats', 'Show a deleted user'],
+              ],
+            },
+            {
+              kind: 'p',
+              muted: true,
+              html: "Didn't do this? Reply to this email and we'll look into it.",
+            },
+          ],
+          reason: 'This is the last email we send to this address about your account.',
+          links: [
+            { label: 'Help', path: '/help' },
+            { label: 'Privacy', path: '/privacy' },
+          ],
+        }),
       };
     }
     case 'data_export': {
@@ -96,10 +204,36 @@ export function render(template: Template, vars: Record<string, unknown>, site: 
       return {
         subject: 'Your OnlySwap data export',
         text: text(lines),
-        html: page(
-          [esc(lines[0]), `Download it within 7 days: <a href="${esc(url)}">${esc(url)}</a>`],
+        html: emailHtml({
           site,
-        ),
+          preheader: 'Download it within 7 days.',
+          title: 'Your data is ready',
+          intro: 'You asked for a copy of your OnlySwap data. Here it is.',
+          blocks: [
+            {
+              kind: 'rows',
+              rows: [
+                ['File', 'onlyswap-data.zip'],
+                ['Includes', 'Profile, listings, offers, chats'],
+                ['Link works for', '7 days'],
+              ],
+            },
+            {
+              kind: 'button',
+              button: { label: 'Download your data', href: esc(url), style: 'full' },
+            },
+            {
+              kind: 'p',
+              muted: true,
+              html: "Didn't ask for this? Reply to this email and we'll help secure your account.",
+            },
+          ],
+          reason: 'You got this because a data export was requested in Settings, Your data.',
+          links: [
+            { label: 'Help', path: '/help' },
+            { label: 'Privacy', path: '/privacy' },
+          ],
+        }),
       };
     }
     case 'admin_reveal_receipt': {
@@ -112,7 +246,28 @@ export function render(template: Template, vars: Record<string, unknown>, site: 
       return {
         subject: 'A safety review looked at your account',
         text: text(lines),
-        html: page(lines.map(esc), site),
+        html: emailHtml({
+          site,
+          preheader: 'We tell you every time this happens.',
+          title: 'A safety review looked at your account',
+          intro: `${esc(who)} viewed ${esc(what)} on your account as part of a safety review.`,
+          blocks: [
+            {
+              kind: 'p',
+              html: "We tell you every time this happens. You don't need to do anything.",
+            },
+            {
+              kind: 'p',
+              muted: true,
+              html: 'Questions about it? Reply to this email.',
+            },
+          ],
+          reason: "We send account emails like this one even if you've turned off notifications.",
+          links: [
+            { label: 'Privacy', path: '/privacy' },
+            { label: 'Help', path: '/help' },
+          ],
+        }),
       };
     }
     case 'support_request': {
@@ -123,7 +278,15 @@ export function render(template: Template, vars: Record<string, unknown>, site: 
       return {
         subject: `Support: ${topic}`,
         text: text(lines),
-        html: page([esc(lines[0]), esc(body).replace(/\n/g, '<br>')], site),
+        html: emailHtml({
+          site,
+          preheader: `From ${esc(replyTo || 'someone')}`,
+          title: `Support: ${esc(topic)}`,
+          intro: `From ${esc(replyTo || 'someone')}. Reply to this email to answer them.`,
+          blocks: [{ kind: 'quote', html: esc(body).replace(/\n/g, '<br>') }],
+          reason: 'Sent to the OnlySwap support inbox.',
+          links: [],
+        }),
         replyTo: replyTo || undefined,
       };
     }
@@ -137,7 +300,78 @@ export function render(template: Template, vars: Record<string, unknown>, site: 
       return {
         subject: `Priority report: ${reason}`,
         text: text(lines),
-        html: page(lines.map(esc), site),
+        html: emailHtml({
+          site,
+          preheader: `Filed on a ${esc(target)}. Review it now.`,
+          title: `Priority report: ${esc(reason)}`,
+          intro: `Filed on a ${esc(target)}. Open the admin console to review it now.`,
+          reason: 'Sent to OnlySwap admins for priority reports.',
+          links: [],
+        }),
+      };
+    }
+    case 'photo_flag': {
+      // Red alert to the team: the automatic photo check flagged and held a post (DEC 154).
+      const why = str(vars.reason, 'other');
+      const words = REASON_WORDS[why] ?? REASON_WORDS.other!;
+      const kind = KIND_WORDS[str(vars.kind)] ?? 'Post';
+      const poster = str(vars.poster) || (str(vars.kind) === 'quad' ? 'Anonymous (reveal in the console)' : 'Unknown');
+      const what = str(vars.what);
+      const campus = str(vars.campus);
+      const posted = str(vars.posted_at);
+      const flagged = str(vars.flagged_at);
+      const admin = (urls.admin || DEFAULT_ADMIN_URL).replace(/\/+$/, '');
+      const reportUrl = `${admin}/reports/${encodeURIComponent(str(vars.report_id))}`;
+      const key = str(vars.photo_key);
+      const photo =
+        key && urls.media && why !== 'sexual' && why !== 'minor'
+          ? `${urls.media.replace(/\/+$/, '')}/${key.replace(/^\/+/, '')}`
+          : '';
+      const rows: [string, string][] = [
+        ['Flagged for', esc(words)],
+        ['What', esc(kind)],
+        ...(what ? ([['Title', esc(what)]] as [string, string][]) : []),
+        ['Posted by', esc(poster)],
+        ...(campus ? ([['Campus', esc(campus)]] as [string, string][]) : []),
+        ...(posted ? ([['Posted', esc(posted)]] as [string, string][]) : []),
+        ...(flagged ? ([['Flagged', esc(flagged)]] as [string, string][]) : []),
+      ];
+      const lines = [
+        `RED ALERT: a photo was flagged for ${words}.`,
+        `${kind}${what ? `: ${what}` : ''}`,
+        `Posted by ${poster}${campus ? ` at ${campus}` : ''}${posted ? `, ${posted}` : ''}.`,
+        'It is already hidden from students. Review it now:',
+        reportUrl,
+      ];
+      return {
+        subject: `Red alert: ${kind.toLowerCase()} flagged for ${words}`,
+        text: text(lines),
+        html: emailHtml({
+          site,
+          preheader: `${kind}${what ? ` "${esc(what)}"` : ''} by ${esc(poster)}. Already hidden. Review it now.`,
+          hero: {
+            tone: 'red',
+            eyebrow: 'Red alert',
+            title: `A photo was flagged for ${esc(words)}`,
+            body: "It's already hidden from students. Check it and decide what to do with the account.",
+            button: { label: 'Review in the console', href: esc(reportUrl) },
+          },
+          blocks: [
+            { kind: 'rows', rows },
+            photo
+              ? { kind: 'image', src: esc(photo), alt: 'The flagged photo', href: esc(reportUrl) }
+              : {
+                  kind: 'p',
+                  muted: true,
+                  html:
+                    why === 'sexual' || why === 'minor'
+                      ? "We don't put photos like this in email. Open the console to review it."
+                      : 'Open the console to see the photo.',
+                },
+          ],
+          reason: 'Sent to OnlySwap admins when the automatic photo check flags a post.',
+          links: [],
+        }),
       };
     }
     case 'support_reply': {
@@ -154,27 +388,50 @@ export function render(template: Template, vars: Record<string, unknown>, site: 
       return {
         subject: 'Re: your OnlySwap support request',
         text: text(lines),
-        html: page(
-          [
-            esc(lines[0]),
-            esc(body).replace(/\n/g, '<br>'),
-            'You can reply to this email if you need anything else.',
-          ],
+        html: emailHtml({
           site,
-        ),
+          preheader: 'OnlySwap support answered your message.',
+          title: 'We answered your message',
+          intro: `Hi, this is OnlySwap support${ref ? ` (ref ${esc(ref)})` : ''}.`,
+          blocks: [
+            { kind: 'quote', html: esc(body).replace(/\n/g, '<br>') },
+            {
+              kind: 'p',
+              muted: true,
+              html: 'You can reply to this email if you need anything else.',
+            },
+          ],
+          reason: 'You got this because you contacted OnlySwap support.',
+        }),
       };
     }
     case 'report_queue': {
-      const open = Number(vars.open) || 0;
+      const count = Number(vars.open) || 0;
       const hours = Number(vars.oldest_hours) || 0;
       const lines = [
-        `${open} open report${open === 1 ? '' : 's'}; the oldest has waited ${hours} hour${hours === 1 ? '' : 's'}.`,
+        `${count} open report${count === 1 ? '' : 's'}; the oldest has waited ${hours} hour${hours === 1 ? '' : 's'}.`,
         'Open the admin console to review the queue.',
       ];
       return {
         subject: 'Reports are waiting',
         text: text(lines),
-        html: page(lines.map(esc), site),
+        html: emailHtml({
+          site,
+          preheader: `${count} open, the oldest ${hours} h.`,
+          title: 'Reports are waiting',
+          blocks: [
+            {
+              kind: 'rows',
+              rows: [
+                ['Open reports', String(count)],
+                ['Oldest waiting', `${hours} hour${hours === 1 ? '' : 's'}`],
+              ],
+            },
+            { kind: 'p', muted: true, html: 'Open the admin console to review the queue.' },
+          ],
+          reason: 'Sent to OnlySwap admins when reports wait too long.',
+          links: [],
+        }),
       };
     }
     default:
@@ -192,6 +449,7 @@ export type OutboxRow = {
 export type SendEmailDeps = {
   keys: (string | undefined)[];
   site: string;
+  urls?: MailUrls;
   claim: (limit: number) => Promise<OutboxRow[]>;
   finish: (results: { id: number; ok: boolean; error?: string }[]) => Promise<void>;
   send: (to: string, mail: Rendered) => Promise<void>;
@@ -210,7 +468,7 @@ export async function handleSendEmail(
   const results: { id: number; ok: boolean; error?: string }[] = [];
   for (const r of rows) {
     try {
-      await deps.send(r.to, render(r.template, r.vars ?? {}, deps.site));
+      await deps.send(r.to, render(r.template, r.vars ?? {}, deps.site, deps.urls));
       results.push({ id: r.id, ok: true });
     } catch (e) {
       results.push({

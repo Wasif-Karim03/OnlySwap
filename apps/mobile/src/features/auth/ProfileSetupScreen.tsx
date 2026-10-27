@@ -17,6 +17,7 @@ import { primer, profileSetup as copy, states } from '@/strings';
 
 import { authApi, type AuthApi, type ClassYear } from './api';
 import { AuthStep } from './AuthStep';
+import { NotYouSignOut } from './NotYouSignOut';
 import { avatarDeps, type AvatarDeps } from './avatar';
 import { lastInitialOf, shownAs, validateName } from './logic';
 import { useGateHandoff } from './useAppGate';
@@ -128,6 +129,7 @@ export function ProfileSetupScreen({
       title={copy.title}
       body={copy.body}
       leading="none"
+      trailing={<NotYouSignOut api={api} />}
       step={4}
       dock={
         <Button
@@ -140,6 +142,44 @@ export function ProfileSetupScreen({
         />
       }
     >
+      <Input
+        label={copy.firstName}
+        inlineLabel
+        value={first}
+        onChangeText={(v) => {
+          setFirst(v);
+          if (nameError) setNameError(null);
+        }}
+        error={nameError ?? undefined}
+        autoCapitalize="words"
+        autoComplete="given-name"
+        textContentType="givenName"
+        returnKeyType="next"
+        onSubmitEditing={() => lastRef.current?.focus()}
+        maxLength={30}
+        testID="profile-first"
+      />
+      <Input
+        ref={lastRef}
+        label={copy.lastName}
+        inlineLabel
+        value={last}
+        onChangeText={setLast}
+        autoCapitalize="words"
+        autoComplete="family-name"
+        textContentType="familyName"
+        returnKeyType="done"
+        maxLength={30}
+        testID="profile-last"
+      />
+      <Text variant="meta" tone="ink3" testID="profile-shown-as">
+        {preview ? copy.shownAs.replace('{name}', preview) : copy.lastNameHint}
+      </Text>
+
+      {/* Required names first; photo and year sit in a quiet optional group. */}
+      <Text variant="label" tone="ink2" accessibilityRole="header" style={styles.optional}>
+        {copy.optional}
+      </Text>
       <View style={styles.photoRow}>
         <Tappable
           accessibilityRole="button"
@@ -168,10 +208,8 @@ export function ProfileSetupScreen({
           </View>
         </Tappable>
         <View style={styles.photoCopy}>
+          {/* The hint stays the button's accessibility hint only (3.01). */}
           <Text variant="bodyStrong">{hasPhoto ? copy.changePhoto : copy.addPhoto}</Text>
-          <Text variant="meta" tone="ink2">
-            {copy.photoHint}
-          </Text>
           {hasPhoto && !uploading ? (
             <Tappable
               accessibilityRole="button"
@@ -237,40 +275,6 @@ export function ProfileSetupScreen({
         </View>
       ) : null}
 
-      <Input
-        label={copy.firstName}
-        inlineLabel
-        value={first}
-        onChangeText={(v) => {
-          setFirst(v);
-          if (nameError) setNameError(null);
-        }}
-        error={nameError ?? undefined}
-        autoCapitalize="words"
-        autoComplete="given-name"
-        textContentType="givenName"
-        returnKeyType="next"
-        onSubmitEditing={() => lastRef.current?.focus()}
-        maxLength={30}
-        testID="profile-first"
-      />
-      <Input
-        ref={lastRef}
-        label={copy.lastName}
-        inlineLabel
-        value={last}
-        onChangeText={setLast}
-        autoCapitalize="words"
-        autoComplete="family-name"
-        textContentType="familyName"
-        returnKeyType="done"
-        maxLength={30}
-        testID="profile-last"
-      />
-      <Text variant="meta" tone="ink3" testID="profile-shown-as">
-        {preview ? copy.shownAs.replace('{name}', preview) : copy.lastNameHint}
-      </Text>
-
       <View style={styles.yearBlock}>
         <Text variant="label" tone="ink3">
           {copy.year}
@@ -331,5 +335,6 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.bg2,
     alignItems: 'flex-start',
   },
+  optional: { marginTop: theme.space.lg },
   yearBlock: { gap: theme.space.sm, marginTop: theme.space.sm },
 }));

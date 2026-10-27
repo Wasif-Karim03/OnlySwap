@@ -2,8 +2,9 @@ import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { Icon, type IconName } from './icons/Icon';
-import { Tappable } from './Tappable';
+import { SMALL_SLOP, Tappable } from './Tappable';
 import { Text } from './Text';
+import { a11yState } from '@/lib/a11y';
 
 type ChipProps = {
   label: string;
@@ -44,11 +45,12 @@ export function Chip({
     <Tappable
       accessibilityRole={removable ? 'button' : tab ? 'tab' : 'checkbox'}
       accessibilityLabel={removable && removeLabel ? `${label}, ${removeLabel}` : label}
-      accessibilityState={
-        removable ? { disabled } : tab ? { selected, disabled } : { checked: selected, disabled }
-      }
+      {...a11yState(
+        removable ? { disabled } : tab ? { selected, disabled } : { checked: selected, disabled },
+      )}
       disabled={disabled}
       onPress={removable ? onRemove : onPress}
+      hitSlop={SMALL_SLOP}
       guard={false}
       testID={testID}
     >

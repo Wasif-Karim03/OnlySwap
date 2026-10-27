@@ -830,9 +830,29 @@
     ]
   },
   {
+    "name": "confirm_age_v2",
+    "args": "method text, band text, birth_date date",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "confirm_deal",
     "args": "chat_id uuid, outcome text",
     "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "confirm_handoff",
+    "args": "meetup_id uuid, code text",
+    "returns": "jsonb",
     "security": "definer",
     "grants": [
       "authenticated",
@@ -880,8 +900,28 @@
     ]
   },
   {
+    "name": "create_listing_comment",
+    "args": "listing_id uuid, body text, parent_id uuid, client_id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "create_meetup_share",
     "args": "meetup_id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "create_news",
+    "args": "id uuid, title text, description text, photos jsonb, link_url text, event_at timestamp with time zone, place text",
     "returns": "jsonb",
     "security": "definer",
     "grants": [
@@ -942,6 +982,16 @@
   {
     "name": "delete_listing",
     "args": "id uuid",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "delete_listing_comment",
+    "args": "comment_id uuid",
     "returns": "void",
     "security": "definer",
     "grants": [
@@ -1031,6 +1081,16 @@
     ]
   },
   {
+    "name": "get_comment_replies",
+    "args": "comment_id uuid, cursor jsonb",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "get_feed",
     "args": "cursor jsonb, \"limit\" integer",
     "returns": "jsonb",
@@ -1072,12 +1132,32 @@
     ]
   },
   {
+    "name": "get_listing_comments",
+    "args": "listing_id uuid, sort text, cursor jsonb",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "get_listing_public_card",
     "args": "id uuid",
     "returns": "jsonb",
     "security": "definer",
     "grants": [
       "anon",
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "get_listings_by_ids",
+    "args": "ids uuid[]",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
       "authenticated",
       "service_role"
     ]
@@ -1284,6 +1364,36 @@
     ]
   },
   {
+    "name": "like_listing",
+    "args": "listing_id uuid, liked boolean",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "like_listing_comment",
+    "args": "comment_id uuid, liked boolean",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "link_app_transaction",
+    "args": "app_transaction_id text",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "list_blocked",
     "args": "",
     "returns": "jsonb",
@@ -1330,6 +1440,16 @@
     "security": "definer",
     "grants": [
       "anon",
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "make_bundle_offer",
+    "args": "listing_id uuid, bundle_ids uuid[], amount_cents integer, note text, quick_notes text[]",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
       "authenticated",
       "service_role"
     ]
@@ -1467,6 +1587,16 @@
     ]
   },
   {
+    "name": "record_age_assurance",
+    "args": "regulated boolean, declaration text",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "record_swipes",
     "args": "items jsonb",
     "returns": "void",
@@ -1587,9 +1717,29 @@
     ]
   },
   {
+    "name": "set_away",
+    "args": "away boolean",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "set_chat_mute",
     "args": "chat_id uuid, muted boolean",
     "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "set_listing_comments",
+    "args": "listing_id uuid, enabled boolean",
+    "returns": "jsonb",
     "security": "definer",
     "grants": [
       "authenticated",
@@ -1607,9 +1757,49 @@
     ]
   },
   {
+    "name": "set_moving_out",
+    "args": "by date",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "set_quad_replies",
     "args": "post_id uuid, enabled boolean",
     "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "set_wanted_prefs",
+    "args": "id uuid, need_by date, alerts boolean",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "similar_listings",
+    "args": "id uuid",
+    "returns": "jsonb",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "start_wanted_chat",
+    "args": "wanted_id uuid, body text, client_id uuid",
+    "returns": "jsonb",
     "security": "definer",
     "grants": [
       "authenticated",
@@ -1670,6 +1860,16 @@
     "name": "unmute_keyword",
     "args": "keyword text",
     "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "unread_count",
+    "args": "",
+    "returns": "integer",
     "security": "definer",
     "grants": [
       "authenticated",

@@ -2,7 +2,8 @@
 // listing photos, avatars and share cards from the `onlyswap-media` bucket.
 // Quad photos (R1.1) are public like listing photos (unguessable keys).
 // Everything else is a 404; chat photos are read through signed URLs (S47).
-// No imports, so Node tests run the same code as the Worker.
+// Only ./scan.ts is imported, so Node tests run the same code as the Worker.
+import { handleScan, SCAN_PATH, type Ai, type Images } from './scan.ts';
 
 /** The parts of an R2 bucket binding the Worker uses. */
 export type Bucket = {
@@ -13,7 +14,28 @@ export type Bucket = {
   } | null>;
 };
 
-export type Env = { MEDIA: Bucket; MEDIA_SIGNING_KEY?: string };
+export type Env = {
+  MEDIA: Bucket;
+  MEDIA_SIGNING_KEY?: string;
+  AI?: Ai;
+  SCAN_KEY?: string;
+  IMAGES?: Images;
+};
+
+/**
+ * The edge cache (E-07): `caches.default` plus `ctx.waitUntil` in the Worker.
+ * Repeat GETs of a public image are served from the colo cache, so they skip
+ * the R2 read (Class B). Cloudflare ignores the Cache API on workers.dev, so
+ * this only pays off once the Worker is on a custom domain (RELEASE Q2).
+ */
+export type Edge = {
+  cache: {
+    match: (request: Request) => Promise<Response | undefined>;
+    put: (request: Request, response: Response) => Promise<void>;
+    delete: (request: Request) => Promise<boolean>;
+  };
+  waitUntil: (promise: Promise<unknown>) => void;
+};
 
 /** Public prefixes (DATA_MODEL §6). `c/{campus}/chat/` stays private. */
 export const PUBLIC_PREFIXES = ['c/', 'share/'] as const;
@@ -24,8 +46,16 @@ const TYPES: Record<string, string> = {
   jpeg: 'image/jpeg',
 };
 
-/** Object keys are immutable (a new photo gets a new uuid), so cache for a year. */
-export const CACHE_CONTROL = 'public, max-age=31536000, immutable';
+/**
+ * Object keys are immutable (a new photo gets a new uuid), so browsers cache
+ * for a year. The edge keeps a copy for at most a day (`s-maxage`), so a
+ * deleted account's photos leave the shared cache within 24 h even when the
+ * cache purge fails (LR-02, DEC 139). Entries written by an earlier Worker
+ * (no `s-maxage`) are treated as misses (IR4-01).
+ */
+export const EDGE_TTL_S = 86400;
+/** Keep `s-maxage` equal to EDGE_TTL_S. */
+export const CACHE_CONTROL = 'public, max-age=31536000, immutable, s-maxage=86400';
 
 export const RATE_LIMIT = { windowMs: 60_000, max: 600 };
 
@@ -47,14 +77,19 @@ export function resetRateLimit(): void {
   hits.clear();
 }
 
+/** Keys are plain ASCII; a percent-encoded path is never a canonical key. */
+const KEY_CHARS = /^[A-Za-z0-9/_.-]+$/;
+
+/** The key named by a raw pathname, or null when it is not in canonical form. */
+function canonicalKey(pathname: string): string | null {
+  if (pathname.includes('%')) return null;
+  const key = pathname.replace(/^\/+/, '');
+  return KEY_CHARS.test(key) ? key : null;
+}
+
 /** A key the Worker may serve, or null. */
 export function publicKey(pathname: string): string | null {
-  let key: string;
-  try {
-    key = decodeURIComponent(pathname.replace(/^\/+/, ''));
-  } catch {
-    return null;
-  }
+  const key = canonicalKey(pathname);
   if (!key || key.length > 512) return null;
   if (key.split('/').some((part) => part === '' || part === '.' || part === '..')) return null;
   if (!PUBLIC_PREFIXES.some((p) => key.startsWith(p))) return null;
@@ -66,13 +101,9 @@ export function publicKey(pathname: string): string | null {
 
 /** c/{campus}/chat/{chat}/{file}: private, served only with a valid signature. */
 export function chatKey(pathname: string): string | null {
-  let key: string;
-  try {
-    key = decodeURIComponent(pathname.replace(/^\/+/, ''));
-  } catch {
-    return null;
-  }
+  const key = canonicalKey(pathname);
   if (
+    !key ||
     key.length > 512 ||
     key.split('/').some((part) => part === '' || part === '.' || part === '..')
   ) {
@@ -125,11 +156,25 @@ function notFound(): Response {
   });
 }
 
+/** 304 when the client already has this version, else the response as is (body dropped for HEAD). */
+function answer(request: Request, res: Response): Response {
+  if (request.headers.get('if-none-match') === res.headers.get('etag')) {
+    return new Response(null, { status: 304, headers: res.headers });
+  }
+  if (request.method === 'HEAD') return new Response(null, { status: 200, headers: res.headers });
+  return res;
+}
+
 export async function handle(
   request: Request,
   env: Env,
   now: number = Date.now(),
+  edge?: Edge,
 ): Promise<Response> {
+  // Photo screening for the scan-photos Edge Function (DEC 152).
+  if (request.method === 'POST' && new URL(request.url).pathname === SCAN_PATH) {
+    return handleScan(request, env);
+  }
   if (request.method !== 'GET' && request.method !== 'HEAD') {
     return new Response('Method not allowed', { status: 405, headers: { allow: 'GET, HEAD' } });
   }
@@ -149,6 +194,20 @@ export async function handle(
   }
   if (!key) return notFound();
 
+  // Public images only. The cache key is the canonical URL of the validated
+  // key (what cachePurge.ts purges), so cache-busters share one entry.
+  const shared = edge && cacheControl === CACHE_CONTROL ? edge : undefined;
+  const cacheKey = new Request(`${url.origin}/${key}`);
+  if (shared) {
+    const hit = await shared.cache.match(cacheKey);
+    if (hit) {
+      if (hit.headers.get('cache-control') === CACHE_CONTROL) return answer(request, hit);
+      // A legacy entry (IR4-01): drop it before the R2 read, so a later put
+      // cannot be overtaken and an R2 miss leaves nothing behind.
+      await shared.cache.delete(cacheKey);
+    }
+  }
+
   const object = await env.MEDIA.get(key);
   if (!object) return notFound();
 
@@ -162,8 +221,10 @@ export async function handle(
     etag: object.httpEtag,
     'content-length': String(object.size),
   };
-  if (request.headers.get('if-none-match') === object.httpEtag) {
-    return new Response(null, { status: 304, headers });
+  if (request.headers.get('if-none-match') === object.httpEtag || request.method === 'HEAD') {
+    return answer(request, new Response(null, { status: 200, headers }));
   }
-  return new Response(request.method === 'HEAD' ? null : object.body, { status: 200, headers });
+  const res = new Response(object.body, { status: 200, headers });
+  if (shared) shared.waitUntil(shared.cache.put(cacheKey, res.clone()));
+  return res;
 }

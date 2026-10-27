@@ -3,8 +3,10 @@ appId: app.onlyswap
 tags: [search, reviewer]
 ---
 - runFlow: ../subflows/reviewer.yaml
+# DEC 145: search moved from Discover to the Feed.
+- tapOn: Feed
 - tapOn:
-    id: discover-search
+    id: feed-search
 - tapOn:
     id: search-input
 - inputText: mini frig

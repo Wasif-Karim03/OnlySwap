@@ -128,6 +128,17 @@ describe('T-UNIT-OFF-02 offer status → UI', () => {
     ).toBe(offers.status.hold_other);
   });
 
+  it('auto-declined says sold only when it sold; a removal says the listing closed (DEC 99)', () => {
+    const closed = (status: string) =>
+      offerView(offer({ status: 'auto_declined', listing: { ...offer().listing!, status } })).line;
+    expect(closed('sold')).toBe(offers.status.auto_declined);
+    expect(closed('removed')).toBe(offers.status.listing_closed);
+    expect(closed('expired')).toBe(offers.status.listing_closed);
+    expect(offerView(offer({ status: 'auto_declined', listing: null })).line).toBe(
+      offers.status.listing_closed,
+    );
+  });
+
   it('sorts the inbox by whose turn it is', () => {
     const s = inboxSections({
       incoming: [offer({ id: 'a' }), offer({ id: 'b', status: 'countered', last_actor: 'seller' })],
@@ -173,6 +184,7 @@ function render(routes: Record<string, () => ReactNode>, initialUrl: string) {
 function api(over: Partial<OffersApi> = {}): OffersApi {
   return {
     make: jest.fn(async () => offer()),
+    makeBundle: jest.fn(async () => offer()),
     accept: jest.fn(async () => ({ chat_id: 'c1' })),
     counter: jest.fn(async () => offer()),
     decline: jest.fn(async () => {}),
@@ -322,6 +334,48 @@ describe('E02 Offer', () => {
     await waitFor(() => expect(a.withdraw).toHaveBeenCalledWith('o1'));
   });
 
+  it('a failed withdraw closes the dialog, says why and shows the new state (audit)', async () => {
+    const get = jest
+      .fn()
+      .mockResolvedValueOnce(offer({ role: 'buyer' }))
+      .mockResolvedValue(offer({ role: 'buyer', status: 'accepted', chat_id: 'c9' }));
+    const a = api({
+      get,
+      withdraw: jest.fn(async () => {
+        throw { code: 'P0001', message: 'INVALID:status' };
+      }),
+    });
+    render({ 'offer/[id]': () => <OfferScreen id="o1" api={a} /> }, '/offer/o1');
+    fireEvent.press(await screen.findByTestId('offer-withdraw'));
+    fireEvent.press(await screen.findByText(offers.withdrawConfirm));
+    expect(await screen.findByTestId('offer-open-chat')).toBeTruthy();
+    expect(screen.queryByTestId('offer-withdraw')).toBeNull();
+    await waitFor(() => expect(screen.queryByText(offers.withdrawConfirm)).toBeNull());
+  });
+
+  it('refetches when the other side acts (realtime ping)', async () => {
+    let ping: () => void = () => {};
+    const realtime: RealtimeSource = {
+      userId: async () => 'me',
+      subscribe: (_t, _e, cb) => {
+        ping = () => cb({});
+        return () => {};
+      },
+    };
+    const get = jest
+      .fn()
+      .mockResolvedValueOnce(offer({ role: 'buyer' }))
+      .mockResolvedValue(offer({ role: 'buyer', status: 'accepted', chat_id: 'c9' }));
+    render(
+      { 'offer/[id]': () => <OfferScreen id="o1" api={api({ get })} realtime={realtime} /> },
+      '/offer/o1',
+    );
+    expect(await screen.findByTestId('offer-withdraw')).toBeTruthy();
+    await waitFor(() => expect(get).toHaveBeenCalledTimes(1));
+    ping();
+    expect(await screen.findByTestId('offer-open-chat')).toBeTruthy();
+  });
+
   it('accepted opens the chat', async () => {
     const a = api({ get: jest.fn(async () => offer({ status: 'accepted', chat_id: 'c9' })) });
     render({ 'offer/[id]': () => <OfferScreen id="o1" api={a} /> }, '/offer/o1');
@@ -377,6 +431,36 @@ describe('E01 Inbox', () => {
     expect(await screen.findByTestId('unread-c1')).toBeTruthy();
     fireEvent.press(screen.getByTestId('inbox-chat-c1'));
     expect(await screen.findByTestId('screen-chat')).toBeTruthy();
+  });
+
+  it('E-20: a burst of realtime pings refetches the inbox once', async () => {
+    let ping: () => void = () => {};
+    const realtime: RealtimeSource = {
+      userId: async () => 'me',
+      subscribe: (_t, _e, cb) => {
+        ping = () => cb({});
+        return () => {};
+      },
+    };
+    const inbox = jest.fn(async () => ({
+      incoming: [offer({ id: 'a' })],
+      outgoing: [],
+      chats: [],
+    }));
+    render({ inbox: () => <InboxScreen api={api({ inbox })} realtime={realtime} /> }, '/inbox');
+    expect(await screen.findByTestId('inbox-offer-a')).toBeTruthy();
+    const before = inbox.mock.calls.length;
+    await act(async () => {
+      ping();
+      ping();
+      ping();
+    });
+    await waitFor(() => expect(inbox.mock.calls.length).toBe(before + 1));
+    // renderRouter runs on fake timers.
+    await act(async () => {
+      jest.advanceTimersByTime(600);
+    });
+    expect(inbox.mock.calls.length).toBe(before + 1);
   });
 
   it('empty state', async () => {

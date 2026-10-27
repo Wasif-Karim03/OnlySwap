@@ -3,24 +3,32 @@ import { useRouter } from 'expo-router';
 import { FlatList, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { NavBar } from '@/components/NavBar';
 import { SkeletonList } from '@/components/Skeleton';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
-import { offers as copy } from '@/strings';
+import { intlLocale, offers as copy } from '@/strings';
 
 import { offersApi, type OffersApi } from './api';
-import { money, offerView } from './logic';
+import { money, offerLineShort, offerView, shortAgo } from './logic';
+
+/** "Sam offered. 2h" / "Declined. Mon": no doubled period after a full sentence. */
+function withTime(line: string, when: string): string {
+  return `${line}${line.endsWith('.') ? '' : '.'} ${when}`;
+}
 
 /** F05 Offers on this listing (P7-OFF-05, P7-OFF-07): the seller's history, in arrival order. */
 export function ListingOffersScreen({
   listingId,
   api = offersApi,
+  now = () => new Date(),
 }: {
   listingId: string;
   api?: OffersApi;
+  now?: () => Date;
 }) {
   const router = useRouter();
   const query = useQuery({
@@ -47,24 +55,30 @@ export function ListingOffersScreen({
         data={query.data}
         keyExtractor={(o) => o.id}
         contentContainerStyle={styles.list}
-        renderItem={({ item: o, index }) => {
+        refreshControl={<PullToRefresh onRefresh={() => query.refetch()} />}
+        renderItem={({ item: o }) => {
           const v = offerView(o);
+          const buyer = o.other?.display_name ?? copy.deletedUser;
+          const amount = money(o.amount_cents);
+          const when = shortAgo(o.responded_at ?? o.created_at, now(), intlLocale);
           return (
             <Tappable
               accessibilityRole="button"
-              accessibilityLabel={`${index + 1}. ${v.line}`}
+              // The full line keeps the amount for VoiceOver; the visible one is short.
+              accessibilityLabel={`${buyer}, ${amount}, ${v.line}`}
               onPress={() => router.push({ pathname: '/offer/[id]', params: { id: o.id } })}
               testID={`listing-offer-${o.id}`}
             >
               <View style={styles.row}>
-                <Text variant="label" tone="ink2">{`${index + 1}`}</Text>
                 <View style={styles.flex}>
-                  <Text variant="bodyStrong">{o.other?.display_name ?? copy.deletedUser}</Text>
+                  <Text variant="bodyStrong" numberOfLines={1}>
+                    {buyer}
+                  </Text>
                   <Text variant="meta" tone="ink2">
-                    {v.line}
+                    {withTime(offerLineShort(o, v.line), when)}
                   </Text>
                 </View>
-                <Text variant="label">{money(o.amount_cents)}</Text>
+                <Text variant="bodyStrong">{amount}</Text>
               </View>
             </Tappable>
           );
@@ -88,6 +102,7 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: 'center',
     gap: theme.space.md,
     minHeight: theme.space.rowMin,
+    paddingVertical: theme.space.md,
     borderBottomWidth: 1,
     borderColor: theme.colors.line,
   },

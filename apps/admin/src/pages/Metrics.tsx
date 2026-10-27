@@ -469,6 +469,10 @@ function DayColumns({ days, series, label }: { days: FunnelDay[]; series: Series
   );
 }
 
+/** Heat cells tint with ink (design review 2.10); capped so the ink text stays readable. */
+const HEAT_MAX_INK = 40;
+const HEAT_INK_PER_PCT = 0.6;
+
 /** Retention cell tinted by the rate (like the mock's heat cells). */
 function RateCell({ rate, n, of }: { rate: Num; n: number; of: number }) {
   if (!of) return <td className="num muted">Too early</td>;
@@ -478,7 +482,7 @@ function RateCell({ rate, n, of }: { rate: Num; n: number; of: number }) {
       <span
         className="heat-cell"
         style={{
-          background: `color-mix(in srgb, var(--color-accent) ${Math.round(Math.min(100, pct * 1.6))}%, transparent)`,
+          background: `color-mix(in srgb, var(--color-ink) ${Math.round(Math.min(HEAT_MAX_INK, pct * HEAT_INK_PER_PCT))}%, transparent)`,
         }}
       >
         {formatPct(rate)}

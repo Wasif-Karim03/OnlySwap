@@ -59,6 +59,12 @@ describe('T-UNIT-MEDIA-01 processPhoto size', () => {
     expect(out.thumb?.width).toBe(400);
   });
 
+  it('makes the thumbnail from the 1080 image, so the original is decoded only once', async () => {
+    const { deps, calls } = engine();
+    await processPhoto(big, 'listing', deps);
+    expect(calls.map((c) => c.uri)).toEqual([big.uri, `file:///out/1080_${QUALITY}.webp`]);
+  });
+
   it('portrait photos limit the height; small photos are not upscaled', () => {
     expect(fitLongEdge(3024, 4032, 1080)).toEqual({ height: 1080 });
     expect(fitLongEdge(800, 600, 1080)).toBeNull();
@@ -105,7 +111,9 @@ describe('T-UNIT-MEDIA-02 processPhoto formats', () => {
     const { deps, calls } = engine();
     await processPhoto({ uri: 'file:///in/small.jpg', width: 300, height: 200 }, 'listing', deps);
     expect(calls).toHaveLength(2);
-    expect(calls.every((c) => c.resize === undefined && c.format === 'webp')).toBe(true);
+    // The original is re-encoded unresized; the thumbnail comes from that copy.
+    expect(calls[0]).toMatchObject({ uri: 'file:///in/small.jpg', resize: undefined });
+    expect(calls.every((c) => c.format === 'webp')).toBe(true);
   });
 });
 

@@ -1,12 +1,13 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
+import { size } from '@onlyswap/tokens';
 import { StyleSheet } from 'react-native';
 
 import { avatarShade, initials } from '../src/components/Avatar';
 import { isOffline, OFFLINE_SHOW_DELAY_MS, OfflineBanner } from '../src/components/Banner';
 import { Button } from '../src/components/Button';
-import { ChipGroup, toggleChip } from '../src/components/Chip';
+import { Chip, ChipGroup, toggleChip } from '../src/components/Chip';
 import { IconButton } from '../src/components/IconButton';
 import { Input } from '../src/components/Input';
 import { GroupedList, ListRow } from '../src/components/ListRow';
@@ -367,5 +368,22 @@ describe('P2-CMP-06 Card, ListRow, Tag, Avatar, icons', () => {
       [join(__dirname, '../../../scripts/generate-icons.mjs'), '--check'],
       { stdio: 'pipe' },
     );
+  });
+});
+
+describe('I-04 44 pt targets on small controls', () => {
+  const reach = (testID: string) => {
+    const slop = screen.getByTestId(testID).props.hitSlop;
+    return size.buttonS + slop.top + slop.bottom;
+  };
+  it('Button S and Chip reach 44 pt with hitSlop', () => {
+    render(<Button label="Edit" size="S" onPress={() => {}} testID="b-s" />);
+    expect(reach('b-s')).toBeGreaterThanOrEqual(size.hit);
+    render(<Chip label="Books" selected={false} onPress={() => {}} testID="chip" />);
+    expect(reach('chip')).toBeGreaterThanOrEqual(size.hit);
+  });
+  it('Button M keeps no slop (already 44 pt)', () => {
+    render(<Button label="Save" size="M" onPress={() => {}} testID="b-m" />);
+    expect(screen.getByTestId('b-m').props.hitSlop).toBeUndefined();
   });
 });

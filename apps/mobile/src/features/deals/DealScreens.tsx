@@ -12,10 +12,11 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { ErrorState } from '@/components/ErrorState';
 import { NavBar } from '@/components/NavBar';
 import { OptionRow } from '@/components/OptionRow';
-import { SkeletonList } from '@/components/Skeleton';
+import { SkeletonBlock, SkeletonList } from '@/components/Skeleton';
 import { SuccessCheck } from '@/components/SuccessCheck';
 import { Text } from '@/components/Text';
 import { TextArea } from '@/components/TextArea';
+import { useToastStore } from '@/components/Toast';
 import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
 import { deal as copy } from '@/strings';
@@ -28,7 +29,14 @@ import { listingKey } from '../feed/ListingScreen';
 import { offersApi, type OffersApi } from '../offers/api';
 import { profileApi, type ProfileApi } from '../profiles/api';
 import { dealsApi, maybeAskForReview, type DealsApi } from './api';
-import { BAD_TAGS, GOOD_TAGS, ratePhase, type DealOutcome, type RatingTag } from './logic';
+import {
+  BAD_TAGS,
+  GOOD_TAGS,
+  ratePhase,
+  type DealOutcome,
+  type RatingTag,
+  type RatingView,
+} from './logic';
 
 /** E07 Did it sell? (P8-DEAL-02; board E16). */
 export function DidItSellScreen({
@@ -72,25 +80,22 @@ export function DidItSellScreen({
   };
 
   const seller = info.data?.role === 'seller';
+  // Hold the question until the chat settles so buyer and seller wording never flips.
+  const title = info.isPending ? undefined : seller ? copy.didItSellTitle : copy.didYouGetItTitle;
   return (
     <View style={styles.root} testID="screen-did-it-sell">
-      <NavBar
-        leading="close"
-        onLeading={close}
-        title={seller ? copy.didItSellTitle : copy.didYouGetItTitle}
-      />
-      <View style={styles.body}>
+      <NavBar leading="close" onLeading={close} title={title} />
+      <View style={[styles.body, styles.flex]}>
+        {info.isPending ? <SkeletonBlock line="heading" width="60%" /> : null}
         {info.data ? (
           <Text variant="heading" accessibilityRole="header">
             {info.data.listing_title}
           </Text>
         ) : null}
-        <Button
-          label={copy.done}
-          loading={busy}
-          onPress={() => answer('done')}
-          testID="deal-done"
-        />
+        {error ? <Banner kind="error" message={error} /> : null}
+      </View>
+      {/* The answer sits in the thumb zone (P7): one filled primary. */}
+      <View style={[styles.dock, styles.dockStack]}>
         <Button
           label={copy.notYet}
           variant="secondary"
@@ -98,12 +103,17 @@ export function DidItSellScreen({
           testID="deal-not-yet"
         />
         <Button
+          label={copy.done}
+          loading={busy}
+          onPress={() => answer('done')}
+          testID="deal-done"
+        />
+        <Button
           label={copy.fellThrough}
           variant="text"
           onPress={() => setConfirmFell(true)}
           testID="deal-fell-through"
         />
-        {error ? <Banner kind="error" message={error} /> : null}
       </View>
       <ConfirmDialog
         visible={confirmFell}
@@ -124,10 +134,13 @@ export function DidItSellScreen({
 /** F07 Mark sold: pick the buyer or "someone not on OnlySwap" (P8-DEAL-02). */
 export function MarkSoldScreen({
   listingId,
+  preselect,
   api = dealsApi,
   offers = offersApi,
 }: {
   listingId: string;
+  /** The buyer to pick first (opened from their chat, DEC 97). */
+  preselect?: string;
   api?: DealsApi;
   offers?: Pick<OffersApi, 'listingOffers'>;
 }) {
@@ -137,7 +150,7 @@ export function MarkSoldScreen({
     queryKey: ['listing-offers', listingId],
     queryFn: () => offers.listingOffers(listingId),
   });
-  const [buyer, setBuyer] = useState<string | null | undefined>(undefined);
+  const [buyer, setBuyer] = useState<string | null | undefined>(preselect);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const close = () =>
@@ -157,6 +170,10 @@ export function MarkSoldScreen({
       await api.markSold(listingId, buyer);
       void qc.invalidateQueries({ queryKey: listingKey(listingId) });
       void qc.invalidateQueries({ queryKey: ['inbox'] });
+      // Every open chat about it (the one it was opened from loses its button).
+      void qc.invalidateQueries({ queryKey: ['chat'] });
+      void qc.invalidateQueries({ queryKey: ['my-listings'] });
+      useToastStore.getState().show('success', copy.markSoldDone);
       close();
     } catch (e) {
       setError(errorText(e));
@@ -228,6 +245,7 @@ export function RateScreen({
   const [thumbs, setThumbs] = useState<boolean | null>(null);
   const [tags, setTags] = useState<RatingTag[]>([]);
   const [comment, setComment] = useState('');
+  const [commentOpen, setCommentOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const close = () =>
@@ -285,8 +303,10 @@ export function RateScreen({
     return (
       <View style={styles.root} testID={`screen-rate-${phase}`}>
         <NavBar leading="close" onLeading={close} title={copy.rateTitle} />
-        <View style={styles.body}>
-          <SuccessCheck visible accessibilityLabel={copy.waitingTitle} />
+        <ScrollView contentContainerStyle={styles.body}>
+          {phase === 'waiting' ? (
+            <SuccessCheck visible accessibilityLabel={copy.waitingTitle} />
+          ) : null}
           <Text variant="title" accessibilityRole="header">
             {phase === 'waiting' ? copy.waitingTitle : copy.revealedTitle}
           </Text>
@@ -295,18 +315,15 @@ export function RateScreen({
               {copy.waitingBody}
             </Text>
           ) : (
-            <View style={styles.reveal}>
-              <Text variant="bodyStrong">{fill(copy.theirRating, { name })}</Text>
-              <Text variant="body">
-                {[
-                  r.theirs!.thumbs_up ? copy.thumbsUp : copy.thumbsDown,
-                  ...r.theirs!.tags.map((t) => copy.tags[t]),
-                ].join(' · ')}
-              </Text>
-              {r.theirs!.comment ? <Text variant="body">{r.theirs!.comment}</Text> : null}
+            // Both sides in one hairline list: what you said, then what they said.
+            <View>
+              {r.mine ? <RatingRow title={copy.youSaid} rating={r.mine} /> : null}
+              <RatingRow title={fill(copy.theirRating, { name })} rating={r.theirs!} />
             </View>
           )}
-          <Button label={copy.done_} variant="secondary" onPress={close} />
+        </ScrollView>
+        <View style={styles.dock}>
+          <Button label={copy.done_} variant="secondary" onPress={close} testID="rate-done" />
         </View>
       </View>
     );
@@ -361,13 +378,25 @@ export function RateScreen({
                 />
               ))}
             </View>
-            <TextArea
-              label={copy.commentLabel}
-              placeholder={copy.commentPlaceholder}
-              value={comment}
-              onChangeText={setComment}
-              maxLength={200}
-            />
+            {/* The comment stays folded until asked for: one less field by default. */}
+            {commentOpen || comment ? (
+              <TextArea
+                label={copy.commentLabel}
+                placeholder={copy.commentPlaceholder}
+                value={comment}
+                onChangeText={setComment}
+                maxLength={200}
+                autoFocus={commentOpen}
+              />
+            ) : (
+              <Button
+                label={copy.addComment}
+                variant="text"
+                fullWidth={false}
+                onPress={() => setCommentOpen(true)}
+                testID="rate-add-comment"
+              />
+            )}
           </>
         ) : null}
         {error ? <Banner kind="error" message={error} /> : null}
@@ -385,17 +414,36 @@ export function RateScreen({
   );
 }
 
+type Rating = NonNullable<RatingView['theirs']>;
+
+/** One side of a revealed rating: who said it, thumbs and tags, then the comment. */
+function RatingRow({ title, rating }: { title: string; rating: Rating }) {
+  return (
+    <View style={styles.ratingRow}>
+      <Text variant="bodyStrong">{title}</Text>
+      <Text variant="body" tone="ink2">
+        {[
+          rating.thumbs_up ? copy.thumbsUp : copy.thumbsDown,
+          ...rating.tags.map((t) => copy.tags[t]),
+        ].join(' · ')}
+      </Text>
+      {rating.comment ? <Text variant="body">{rating.comment}</Text> : null}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create((theme, rt) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   body: { ...readableColumn, padding: theme.space.screen, gap: theme.space.md },
   row: { flexDirection: 'row', gap: theme.space.sm },
   flex: { flex: 1 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
-  reveal: {
+  ratingRow: {
     gap: theme.space.xs,
-    padding: theme.space.lg,
-    borderRadius: theme.radius.card,
-    backgroundColor: theme.colors.bg2,
+    minHeight: theme.space.rowMin,
+    paddingVertical: theme.space.md,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.line,
   },
   dock: {
     ...readableColumn,
@@ -403,4 +451,5 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingTop: theme.space.md,
     paddingBottom: Math.max(rt.insets.bottom, theme.space.md),
   },
+  dockStack: { gap: theme.space.sm },
 }));

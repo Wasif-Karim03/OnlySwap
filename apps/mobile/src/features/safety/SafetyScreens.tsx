@@ -2,12 +2,14 @@ import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Linking, Platform, ScrollView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { Banner } from '@/components/Banner';
 import { Button } from '@/components/Button';
 import { Chip } from '@/components/Chip';
 import { ErrorState } from '@/components/ErrorState';
+import { Icon } from '@/components/icons/Icon';
 import { IconButton } from '@/components/IconButton';
 import { Input } from '@/components/Input';
 import { NavBar } from '@/components/NavBar';
@@ -16,9 +18,17 @@ import { SuccessCheck } from '@/components/SuccessCheck';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { TextArea } from '@/components/TextArea';
+import { useTurnstile, type TurnstileSeam } from '@/components/TurnstileField';
 import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
-import { safety as copy, intlLocale } from '@/strings';
+import { isTurnstileError } from '@/lib/turnstile';
+import {
+  banner as bannerCopy,
+  emailAccess as emailAccessCopy,
+  report as reportCopy,
+  safety as copy,
+  intlLocale,
+} from '@/strings';
 import { readableColumn } from '@/theme/layout';
 
 import { authApi, type AuthApi } from '../auth/api';
@@ -26,10 +36,12 @@ import { SpotsMap } from '../meetups/SpotsMap';
 import { sellApi } from '../sell/api';
 import { directionsUrl, sortSpots, type Spot } from '../sell/logic';
 import { safetyApi, type SafetyApi } from './api';
+import { a11yState } from '@/lib/a11y';
 
 /** E21 Report update (P11-SAFE-02): received → reviewed, generic outcome only. */
 export function ReportUpdateScreen({ id, api = safetyApi }: { id: string; api?: SafetyApi }) {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const q = useQuery({ queryKey: ['report', id], queryFn: () => api.report(id) });
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/notifications'));
   let body;
@@ -37,28 +49,60 @@ export function ReportUpdateScreen({ id, api = safetyApi }: { id: string; api?: 
   else if (q.isError) body = <ErrorState error={q.error} onRetry={() => q.refetch()} />;
   else {
     const reviewed = q.data.status === 'reviewed';
+    const dayOf = (event: 'received' | 'reviewed') => {
+      const at = q.data.timeline.find((t) => t.event === event)?.at;
+      return at
+        ? new Date(at).toLocaleDateString(intlLocale, { month: 'short', day: 'numeric' })
+        : null;
+    };
+    const currentDay = dayOf(reviewed ? 'reviewed' : 'received');
+    // The current status first in plain words, then both steps with the
+    // pending one in ink3 so the reporter sees what comes next (3.07).
     body = (
-      <View style={styles.body}>
-        {q.data.timeline.map((t) => (
-          <View key={t.event} style={styles.step}>
-            <Text variant="bodyStrong">
-              {t.event === 'reviewed' ? copy.reportReviewed : copy.reportReceived}
+      <ScrollView contentContainerStyle={styles.body}>
+        <View style={styles.status}>
+          <Text variant="heading" accessibilityRole="header">
+            {reviewed ? copy.reportReviewed : copy.reportReceived}
+          </Text>
+          {currentDay ? (
+            <Text variant="label" tone="ink2" style={styles.regular}>
+              {currentDay}
             </Text>
-            <Text variant="meta" tone="ink2">
-              {new Date(t.at).toLocaleDateString(intlLocale, { month: 'short', day: 'numeric' })}
-            </Text>
-          </View>
-        ))}
-        <Text variant="body" testID={`report-${q.data.status}`}>
+          ) : null}
+        </View>
+        <Text variant="body" tone="ink2" testID={`report-${q.data.status}`}>
           {reviewed ? copy.reportReviewedBody : copy.reportReceivedBody}
         </Text>
-      </View>
+        <View>
+          {(['received', 'reviewed'] as const).map((event, i) => {
+            const day = dayOf(event);
+            const done = event === 'received' || reviewed;
+            return (
+              <View key={event} style={styles.step(i > 0)} testID={`report-step-${event}`}>
+                <Text variant="bodyStrong" tone={done ? 'ink' : 'ink3'} style={styles.flex}>
+                  {event === 'reviewed' ? copy.reportReviewed : copy.reportReceived}
+                </Text>
+                {done && day ? (
+                  <Text variant="meta" tone="ink2">
+                    {day}
+                  </Text>
+                ) : null}
+              </View>
+            );
+          })}
+        </View>
+      </ScrollView>
     );
   }
   return (
     <View style={styles.root} testID="screen-report">
       <NavBar title={copy.reportTitle} onLeading={leave} />
       {body}
+      {q.data ? (
+        <View style={[styles.dock, { paddingBottom: insets.bottom + styles.dockGap.height }]}>
+          <Button label={reportCopy.done} onPress={leave} testID="report-done" />
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -76,33 +120,62 @@ export function SafetyCenterScreen({
   openUrl?: (url: string) => Promise<unknown>;
 }) {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const q = useQuery({ queryKey: ['spots'], queryFn: spots, staleTime: 3600_000 });
   const [selected, setSelected] = useState<string | null>(null);
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/profile'));
   const list = sortSpots(q.data ?? []);
+  // Meetup spots first (P5), then tips, then what can't be listed. "Call 911"
+  // leaves the tinted card for a docked button in the thumb zone (3.07).
   return (
     <View style={styles.root} testID="screen-safety">
       <NavBar title={copy.centerTitle} onLeading={leave} />
       <ScrollView contentContainerStyle={styles.body}>
-        {/* DEC 90 mock screen 18: the emergency action first. No campus police
-            number is on file, so 911 is the one call button. */}
-        <View style={styles.emergency} testID="safety-emergency">
-          <Text variant="heading" accessibilityRole="header">
-            {copy.emergencyTitle}
+        <Text variant="heading" accessibilityRole="header">
+          {copy.spotsTitle}
+        </Text>
+        <Text variant="label" tone="ink2" style={styles.regular}>
+          {copy.spotsBody}
+        </Text>
+        {q.isPending ? <SkeletonList rows={3} /> : null}
+        {q.isError ? (
+          <ErrorState error={q.error} onRetry={() => q.refetch()} layout="inline" />
+        ) : null}
+        {q.isSuccess && list.length === 0 ? (
+          <Text variant="body" tone="ink2" testID="safety-spots-empty">
+            {copy.spotsEmpty}
           </Text>
-          <Text variant="label" style={styles.regular}>
-            {copy.emergencyBody}
-          </Text>
-          <View style={styles.emergencyRow}>
-            <Button
-              label={copy.emergency}
-              variant="destructive"
-              size="M"
-              onPress={() => void openUrl('tel:911')}
-              testID="safety-911"
+        ) : null}
+        {list.length > 0 ? (
+          <SpotsMap spots={list} selectedId={selected} onSelect={setSelected} />
+        ) : null}
+        {list.map((s) => (
+          <View
+            key={s.id}
+            style={styles.row(s.id === selected)}
+            {...a11yState({ selected: s.id === selected })}
+            testID={`safety-spot-${s.id}`}
+          >
+            <View style={styles.flex}>
+              <Text variant="bodyStrong">{s.name}</Text>
+              {s.description || s.hours ? (
+                <Text variant="meta" tone="ink2">
+                  {[s.description, s.hours].filter(Boolean).join(' · ')}
+                </Text>
+              ) : null}
+              {s.police ? (
+                <Text variant="meta" tone="ink2" style={styles.police}>
+                  {copy.police}
+                </Text>
+              ) : null}
+            </View>
+            <IconButton
+              icon="pin"
+              accessibilityLabel={fill(copy.directions, { name: s.name })}
+              onPress={() => void openUrl(directionsUrl(s, Platform.OS))}
             />
           </View>
-        </View>
+        ))}
 
         <Text variant="heading" accessibilityRole="header" style={styles.section}>
           {copy.tipsTitle}
@@ -130,57 +203,36 @@ export function SafetyCenterScreen({
         </View>
 
         <Text variant="heading" accessibilityRole="header" style={styles.section}>
-          {copy.spotsTitle}
-        </Text>
-        <Text variant="label" tone="ink2" style={styles.regular}>
-          {copy.spotsBody}
-        </Text>
-        {q.isPending ? <SkeletonList rows={3} /> : null}
-        {q.isError ? (
-          <ErrorState error={q.error} onRetry={() => q.refetch()} layout="inline" />
-        ) : null}
-        {list.length > 0 ? (
-          <SpotsMap spots={list} selectedId={selected} onSelect={setSelected} />
-        ) : null}
-        {list.map((s) => (
-          <View
-            key={s.id}
-            style={styles.row(s.id === selected)}
-            accessibilityState={{ selected: s.id === selected }}
-            testID={`safety-spot-${s.id}`}
-          >
-            <View style={styles.flex}>
-              <Text variant="bodyStrong">{s.name}</Text>
-              {s.description || s.hours ? (
-                <Text variant="meta" tone="ink2">
-                  {[s.description, s.hours].filter(Boolean).join(' · ')}
-                </Text>
-              ) : null}
-              {s.police ? (
-                <Text variant="meta" tone="green" style={styles.police}>
-                  {copy.police}
-                </Text>
-              ) : null}
-            </View>
-            <IconButton
-              icon="pin"
-              accessibilityLabel={fill(copy.directions, { name: s.name })}
-              onPress={() => void openUrl(directionsUrl(s, Platform.OS))}
-            />
-          </View>
-        ))}
-        <Text variant="heading" accessibilityRole="header" style={styles.section}>
           {copy.bannedTitle}
         </Text>
         <Text variant="label" tone="ink2" style={styles.regular}>
           {copy.bannedIntro}
         </Text>
         {copy.banned.map((b) => (
-          <Text key={b} variant="body">
+          // The label drops the typed bullet so VoiceOver doesn't read "bullet".
+          <Text key={b} variant="body" accessibilityLabel={b}>
             {`• ${b}`}
           </Text>
         ))}
       </ScrollView>
+      {/* No campus police number is on file, so 911 is the one call button. */}
+      <View
+        style={[styles.dock, { paddingBottom: insets.bottom + styles.dockGap.height }]}
+        testID="safety-emergency"
+      >
+        <Text variant="label" accessibilityRole="header">
+          {copy.emergencyTitle}
+        </Text>
+        <Text variant="meta" tone="ink2">
+          {copy.emergencyBody}
+        </Text>
+        <Button
+          label={copy.emergency}
+          variant="destructive"
+          onPress={() => void openUrl('tel:911')}
+          testID="safety-911"
+        />
+      </View>
     </View>
   );
 }
@@ -191,11 +243,15 @@ type Topic = keyof typeof copy.topics;
 export function HelpScreen({
   auth = authApi,
   email: defaultEmail = '',
+  turnstileField,
 }: {
   auth?: Pick<AuthApi, 'sendSupportRequest'>;
   email?: string;
+  /** Test seam for the web bot check (LR-04). */
+  turnstileField?: TurnstileSeam;
 }) {
   const router = useRouter();
+  const bot = useTurnstile(turnstileField);
   const [open, setOpen] = useState<number | null>(null);
   const [topic, setTopic] = useState<Topic>('general');
   const [email, setEmail] = useState(defaultEmail);
@@ -209,12 +265,18 @@ export function HelpScreen({
     setBusy(true);
     setError(null);
     try {
-      await auth.sendSupportRequest({ email, topic, body: message });
+      await auth.sendSupportRequest({
+        email,
+        topic,
+        body: message,
+        ...(bot.token ? { turnstileToken: bot.token } : {}),
+      });
       setSent(true);
     } catch (e) {
-      setError(errorText(e));
+      setError(isTurnstileError(e) ? bannerCopy.botCheckFailed : errorText(e));
     } finally {
       setBusy(false);
+      bot.reset();
     }
   };
 
@@ -229,12 +291,20 @@ export function HelpScreen({
           <Tappable
             key={f.q}
             accessibilityRole="button"
-            accessibilityState={{ expanded: open === i }}
+            {...a11yState({ expanded: open === i })}
             accessibilityLabel={f.q}
             onPress={() => setOpen(open === i ? null : i)}
           >
             <View style={styles.faq}>
-              <Text variant="bodyStrong">{f.q}</Text>
+              {/* A trailing chevron that turns down when open (3.07); no animation. */}
+              <View style={styles.faqHead}>
+                <Text variant="bodyStrong" style={styles.flex}>
+                  {f.q}
+                </Text>
+                <View style={styles.chev(open === i)}>
+                  <Icon name="chev" size={16} tone="ink3" />
+                </View>
+              </View>
               {open === i ? (
                 <Text variant="body" tone="ink2">
                   {f.a}
@@ -243,6 +313,20 @@ export function HelpScreen({
             </View>
           </Tappable>
         ))}
+        {/* F20 lists the lost-access form under Help (DESIGN_SYSTEM.md:285). */}
+        <Tappable
+          accessibilityRole="link"
+          accessibilityLabel={emailAccessCopy.title}
+          onPress={() => router.push('/help/email-access')}
+          testID="help-email-access"
+        >
+          <View style={[styles.faq, styles.faqHead]}>
+            <Text variant="bodyStrong" style={styles.flex}>
+              {emailAccessCopy.title}
+            </Text>
+            <Icon name="chev" size={16} tone="ink3" />
+          </View>
+        </Tappable>
 
         <Text variant="heading" accessibilityRole="header">
           {copy.contactTitle}
@@ -279,10 +363,11 @@ export function HelpScreen({
               maxLength={2000}
               testID="help-body"
             />
+            {bot.element}
             {error ? <Banner kind="error" message={error} /> : null}
             <Button
               label={copy.contactSend}
-              disabled={!email.trim() || !message.trim()}
+              disabled={!email.trim() || !message.trim() || (bot.required && !bot.token)}
               loading={busy}
               onPress={send}
               testID="help-send"
@@ -302,19 +387,25 @@ const styles = StyleSheet.create((theme) => ({
     gap: theme.space.md,
     paddingBottom: theme.space['2xl'],
   },
-  step: {
-    gap: theme.space.xs,
-    paddingVertical: theme.space.sm,
-    borderBottomWidth: 1,
-    borderColor: theme.colors.line,
+  status: { gap: theme.space.xs },
+  step: (divided: boolean) => ({
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.space.md,
+    minHeight: theme.space.rowMin,
+    borderTopWidth: divided ? 1 : 0,
+    borderTopColor: theme.colors.line,
+  }),
+  dock: {
+    ...readableColumn,
+    gap: theme.space.sm,
+    paddingHorizontal: theme.space.screen,
+    paddingTop: theme.space.lg,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.line,
+    backgroundColor: theme.colors.bg,
   },
-  emergency: {
-    gap: theme.space.xs,
-    padding: theme.space.lg,
-    borderRadius: theme.radius.card,
-    backgroundColor: theme.colors.redBg,
-  },
-  emergencyRow: { marginTop: theme.space.sm },
+  dockGap: { height: theme.space.md },
   regular: { fontWeight: '400' },
   section: { marginTop: theme.space.md },
   tip: (divided: boolean) => ({
@@ -325,7 +416,7 @@ const styles = StyleSheet.create((theme) => ({
     borderTopColor: theme.colors.line,
   }),
   num: { minWidth: theme.space.lg },
-  police: { fontWeight: '700', marginTop: theme.space.xs },
+  police: { fontWeight: '600', marginTop: theme.space.xs },
   row: (selected: boolean) => ({
     flexDirection: 'row',
     alignItems: 'center',
@@ -344,6 +435,8 @@ const styles = StyleSheet.create((theme) => ({
     borderBottomWidth: 1,
     borderColor: theme.colors.line,
   },
+  faqHead: { flexDirection: 'row', alignItems: 'center', gap: theme.space.sm },
+  chev: (open: boolean) => ({ transform: [{ rotate: open ? '90deg' : '0deg' }] }),
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
   sent: { alignItems: 'center', gap: theme.space.sm, paddingVertical: theme.space.lg },
 }));

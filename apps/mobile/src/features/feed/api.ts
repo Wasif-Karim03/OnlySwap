@@ -54,3 +54,14 @@ export const feedApi: FeedApi = {
     });
   },
 };
+
+/** More like this and Recently viewed (DEC 128, 0239). */
+export type MoreApi = {
+  similar: (id: string) => Promise<FeedItem[]>;
+  byIds: (ids: string[]) => Promise<FeedItem[]>;
+};
+
+export const moreApi: MoreApi = {
+  similar: (id) => rpc<FeedItem[]>('similar_listings', { id }),
+  byIds: (ids) => rpc<FeedItem[]>('get_listings_by_ids', { ids }),
+};

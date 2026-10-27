@@ -1,3 +1,32 @@
+import { chat as copy } from '@/strings';
+
+/**
+ * The green label in the chat's item bar while the chat is open: "Sold" once
+ * the listing sold or both sides said the deal is done, else "Accepted".
+ */
+export function dealStatusLabel(c: {
+  offer_id?: string | null;
+  listing_status: string | null;
+  buyer_outcome: string | null;
+  seller_outcome: string | null;
+}): string | null {
+  const done = c.buyer_outcome === 'done' && c.seller_outcome === 'done';
+  if (c.listing_status === 'sold' || done) return copy.soldStatus;
+  // A chat from "I have this" (DEC 149) has no accepted offer yet.
+  return c.offer_id === null ? null : copy.accepted;
+}
+
+/** The line under the item: the agreed price, or what an ask offered to pay. */
+export function dealPriceLine(
+  c: { offer_id?: string | null; agreed_cents: number },
+  money: (cents: number) => string,
+): string {
+  if (c.offer_id !== null) return copy.inPerson.replace('{amount}', money(c.agreed_cents));
+  return c.agreed_cents > 0
+    ? copy.wantedUpTo.replace('{amount}', money(c.agreed_cents))
+    : copy.wantedAsk;
+}
+
 /** Query key for one chat's details (get_chat); shared by the chat and meetup screens. */
 export const chatKey = (id: string) => ['chat', id] as const;
 
@@ -94,6 +123,12 @@ export function firstSentId(items: ChatItem[]): number | null {
 const URL_RE =
   /\b(?:https?:\/\/|www\.)\S+|\b[a-z0-9-]+\.(?:com|net|org|io|co|me|app|link|ly|xyz)\b/i;
 const PHONE_RE = /(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b/;
+// Moving the chat to another app is the usual first step off-platform (UX
+// audit 2026-10-25), and it matters most with minors on the app.
+const SOCIAL_RE =
+  /\b(?:snap(?:chat)?|insta(?:gram)?|whats\s?app|telegram|discord|kik|wechat)\b|\b(?:ig|sc)\s*[:@-]|(?:^|\s)@[a-z0-9._]{3,}/i;
+// The handoff code is only for the meetup itself; never ask for it in chat.
+const CODE_RE = /\bcode\b\D{0,12}\d{4}\b/i;
 const PAY_RE =
   /\b(?:venmo|zelle|cash\s?app|cashapp|paypal|apple\s?pay|gift\s?cards?|wire|western\s?union|crypto|bitcoin|deposit|pay\s(?:first|upfront|up front|ahead))\b/i;
 
@@ -102,7 +137,7 @@ export function scamHint(body: string | null | undefined): 'link' | 'phone' | 'p
   if (!body) return null;
   if (PAY_RE.test(body)) return 'payment';
   if (URL_RE.test(body)) return 'link';
-  if (PHONE_RE.test(body)) return 'phone';
+  if (PHONE_RE.test(body) || SOCIAL_RE.test(body) || CODE_RE.test(body)) return 'phone';
   return null;
 }
 
@@ -166,4 +201,60 @@ export function chatPhotoUrl(base: string, signedPath: string | null | undefined
 export function bubbleAspect(width: number | null | undefined, height: number | null | undefined) {
   if (!width || !height || width <= 0 || height <= 0) return 1;
   return Math.min(Math.max(width / height, 0.6), 1.8);
+}
+
+/** Messages within this many minutes from the same side share one group. */
+export const GROUP_GAP_MS = 3 * 60_000;
+
+/** Where a bubble sits in its group, and what goes around it. */
+export type BubbleSpot = {
+  /** Top of its group (older neighbour is someone else, later, or another day). */
+  first: boolean;
+  /** Bottom of its group: the time goes under it. */
+  last: boolean;
+  /** Set on the oldest message of each day: the separator above it. */
+  day: 'today' | 'yesterday' | Date | null;
+};
+
+const side = (m: ChatItem) =>
+  m.kind === 'system' || m.kind === 'meetup' ? 'system' : m.mine === true ? 'mine' : 'theirs';
+const dayStart = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+
+/**
+ * Bubble grouping for the chat list (iMessage style, owner 2026-10-15).
+ * `items` is newest first, as the inverted list gets it; so the older
+ * neighbour of i is i + 1 and the newer one is i - 1. Day and time are the
+ * phone's.
+ */
+export function bubbleSpots(items: readonly ChatItem[], now: Date): BubbleSpot[] {
+  // A message still on this phone may have no server time yet: it is "now".
+  const at = items.map((m) => {
+    const d = new Date(m.created_at);
+    return Number.isNaN(d.getTime()) ? now : d;
+  });
+  const together = (a: number, b: number) =>
+    side(items[a]!) === side(items[b]!) &&
+    side(items[a]!) !== 'system' &&
+    dayStart(at[a]!) === dayStart(at[b]!) &&
+    Math.abs(at[a]!.getTime() - at[b]!.getTime()) <= GROUP_GAP_MS;
+  const today = dayStart(now);
+  return items.map((_, i) => {
+    const older = i + 1 < items.length ? i + 1 : null;
+    const newer = i > 0 ? i - 1 : null;
+    const d = dayStart(at[i]!);
+    const newDay = older === null || dayStart(at[older]!) !== d;
+    return {
+      first: older === null || !together(i, older),
+      last: newer === null || !together(i, newer),
+      day: !newDay
+        ? null
+        : d === today
+          ? 'today'
+          : d === today - 86_400_000 ||
+              // across a daylight-saving change the day is 23 or 25 hours
+              Math.round((today - d) / 86_400_000) === 1
+            ? 'yesterday'
+            : at[i]!,
+    };
+  });
 }

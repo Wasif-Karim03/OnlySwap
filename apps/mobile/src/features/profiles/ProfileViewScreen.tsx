@@ -6,10 +6,10 @@ import { StyleSheet } from 'react-native-unistyles';
 
 import { track } from '@/lib/analytics';
 import { Avatar } from '@/components/Avatar';
+import { Button } from '@/components/Button';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
-import { IconButton } from '@/components/IconButton';
 import { ListingTile } from '@/components/ListingTile';
 import { GroupedList, ListRow } from '@/components/ListRow';
 import { NavBar } from '@/components/NavBar';
@@ -18,11 +18,13 @@ import { Sheet } from '@/components/Sheet';
 import { SkeletonList } from '@/components/Skeleton';
 import { Tag } from '@/components/Tag';
 import { Text } from '@/components/Text';
+import { useToastStore } from '@/components/Toast';
 import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
-import { feed as feedCopy, profileView as copy, intlLocale } from '@/strings';
+import { feed as feedCopy, profileView as copy, intlLocale, safety as safetyCopy } from '@/strings';
 import { readableColumn } from '@/theme/layout';
 
+import { movingOutLine } from '../feed/logic';
 import { mediaUrl, priceLabel } from '../sell/logic';
 import { profileApi, type ProfileApi, type ProfileResult, type PublicProfile } from './api';
 
@@ -50,7 +52,11 @@ export function joinedLabel(iso: string | null): string | null {
   return fill(copy.memberSince, { date });
 }
 
-/** B10 Seller profile (P6-USER-01; board B20-B22): listings, reviews, new seller, blocked. */
+/**
+ * B10 Seller profile (P6-USER-01; board B20-B22; DESIGN_REVIEW 3.06): a
+ * left-aligned head with facts, real stats and plain-word status, then
+ * listings and reviews. Report and Block sit behind a labeled More action.
+ */
 export function ProfileViewScreen({
   id,
   api = profileApi,
@@ -106,8 +112,12 @@ export function ProfileViewScreen({
           action={{
             label: copy.unblock,
             onPress: async () => {
-              await api.unblock(id);
-              await refresh();
+              try {
+                await api.unblock(id);
+                await refresh();
+              } catch {
+                useToastStore.getState().show('error', safetyCopy.unblockFailed);
+              }
             },
           }}
         />
@@ -123,6 +133,12 @@ export function ProfileViewScreen({
     joinedLabel(p.created_at),
     replyLabel(p.median_reply_minutes),
   ].filter(Boolean);
+  // Plain words joined by dots; only the founding badge keeps a fill (DEC 141).
+  const status = [
+    p.new_seller ? copy.newSeller : null,
+    p.away ? copy.away : null,
+    p.moving_out_by ? movingOutLine(p.moving_out_by) : null,
+  ].filter(Boolean);
 
   return (
     <View style={styles.root} testID="screen-profile">
@@ -130,9 +146,11 @@ export function ProfileViewScreen({
         onLeading={leave}
         trailing={
           p.access === 'ok' ? (
-            <IconButton
-              icon="more"
-              accessibilityLabel={copy.more}
+            <Button
+              label={copy.more}
+              variant="text"
+              size="S"
+              fullWidth={false}
               onPress={() => setOptions(true)}
               testID="profile-more"
             />
@@ -148,21 +166,27 @@ export function ProfileViewScreen({
           <Text variant="meta" tone="ink2">
             {facts.join(feedCopy.metaSeparator)}
           </Text>
-          <View style={styles.tags}>
-            {p.founding_seller ? <Tag label={copy.founding} tone="accent" /> : null}
-            {p.new_seller ? <Tag label={copy.newSeller} tone="amber" /> : null}
-          </View>
-          <View style={styles.stats}>
-            <Text variant="label">{swapsLabel(p.swaps_count)}</Text>
-            <Text variant="label">{thumbsLabel(p.thumbs_up, p.thumbs_total)}</Text>
-          </View>
+          <Text variant="label">
+            {[swapsLabel(p.swaps_count), thumbsLabel(p.thumbs_up, p.thumbs_total)].join(
+              feedCopy.metaSeparator,
+            )}
+          </Text>
+          {p.founding_seller || status.length > 0 ? (
+            <View style={styles.tags}>
+              {p.founding_seller ? <Tag label={copy.founding} tone="accent" /> : null}
+              {status.length > 0 ? (
+                <Text variant="meta" tone="ink2">
+                  {status.join(feedCopy.metaSeparator)}
+                </Text>
+              ) : null}
+            </View>
+          ) : null}
+          {p.new_seller && p.access === 'ok' ? (
+            <Text variant="meta" tone="ink2" testID="profile-new-seller">
+              {copy.newSellerBody}
+            </Text>
+          ) : null}
         </View>
-
-        {p.new_seller && p.access === 'ok' ? (
-          <View style={styles.note} testID="profile-new-seller">
-            <Text variant="body">{copy.newSellerBody}</Text>
-          </View>
-        ) : null}
 
         <Text variant="heading" accessibilityRole="header">
           {copy.listings}
@@ -268,13 +292,13 @@ export function ProfileViewScreen({
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   body: { ...readableColumn, padding: theme.space.screen, gap: theme.space.md },
-  head: { alignItems: 'center', gap: theme.space.sm, paddingBottom: theme.space.lg },
-  tags: { flexDirection: 'row', gap: theme.space.sm },
-  stats: { flexDirection: 'row', gap: theme.space.lg },
-  note: {
-    padding: theme.space.lg,
-    borderRadius: theme.radius.card,
-    backgroundColor: theme.colors.amberBg,
+  head: { alignItems: 'flex-start', gap: theme.space.xs, paddingBottom: theme.space.lg },
+  tags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: theme.space.sm,
+    marginTop: theme.space.xs,
   },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.md },
   cell: { width: '47%' },

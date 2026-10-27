@@ -309,14 +309,41 @@ const reasons = Object.fromEntries(
     t.NSPrivacyAccessedAPITypeReasons,
   ]),
 );
+// AR-06: every required-reason API the app and its widget use. Pod install
+// may merge more reasons in from SDK manifests, so these are "at least".
+const hasReasons = (r, cat, want) => want.every((x) => (r[cat] ?? []).includes(x));
 check(
-  'privacy manifest: UserDefaults CA92.1',
-  JSON.stringify(reasons.NSPrivacyAccessedAPICategoryUserDefaults) === '["CA92.1"]',
+  'privacy manifest: UserDefaults CA92.1 + 1C8F.1 (App Group)',
+  hasReasons(reasons, 'NSPrivacyAccessedAPICategoryUserDefaults', ['CA92.1', '1C8F.1']),
+  JSON.stringify(reasons.NSPrivacyAccessedAPICategoryUserDefaults),
 );
 check(
   'privacy manifest: FileTimestamp C617.1',
-  JSON.stringify(reasons.NSPrivacyAccessedAPICategoryFileTimestamp) === '["C617.1"]',
+  hasReasons(reasons, 'NSPrivacyAccessedAPICategoryFileTimestamp', ['C617.1']),
+  JSON.stringify(reasons.NSPrivacyAccessedAPICategoryFileTimestamp),
 );
+check(
+  'privacy manifest: SystemBootTime 35F9.1',
+  hasReasons(reasons, 'NSPrivacyAccessedAPICategorySystemBootTime', ['35F9.1']),
+  JSON.stringify(reasons.NSPrivacyAccessedAPICategorySystemBootTime),
+);
+const widgetPrivacyPath = join(iosDir, 'ExpoWidgetsTarget', 'PrivacyInfo.xcprivacy');
+if (existsSync(join(iosDir, 'ExpoWidgetsTarget'))) {
+  const wp = existsSync(widgetPrivacyPath)
+    ? parsePlist(readFileSync(widgetPrivacyPath, 'utf8'))
+    : null;
+  const wr = Object.fromEntries(
+    (wp?.NSPrivacyAccessedAPITypes ?? []).map((t) => [
+      t.NSPrivacyAccessedAPIType,
+      t.NSPrivacyAccessedAPITypeReasons,
+    ]),
+  );
+  check(
+    'widget privacy manifest: no tracking, UserDefaults 1C8F.1',
+    wp?.NSPrivacyTracking === false &&
+      hasReasons(wr, 'NSPrivacyAccessedAPICategoryUserDefaults', ['1C8F.1']),
+  );
+}
 
 const pbx = readFileSync(join(iosDir, `${target}.xcodeproj`, 'project.pbxproj'), 'utf8');
 check('bundle id app.onlyswap', /PRODUCT_BUNDLE_IDENTIFIER = "?app\.onlyswap"?;/.test(pbx));
@@ -325,6 +352,25 @@ check(
   /TARGETED_DEVICE_FAMILY = "?1,2"?;/.test(pbx),
 );
 const podProps = JSON.parse(readFileSync(join(iosDir, 'Podfile.properties.json'), 'utf8'));
+check(
+  'SDK privacy manifests merged into the app (apple.privacyManifestAggregationEnabled)',
+  podProps['apple.privacyManifestAggregationEnabled'] !== 'false',
+  String(podProps['apple.privacyManifestAggregationEnabled']),
+);
+if (existsSync(join(iosDir, 'ExpoWidgetsTarget'))) {
+  // The widget target's Resources phase lists the manifest (withWidgetPrivacyManifest).
+  const widgetTarget = pbx.match(
+    /\/\* ExpoWidgetsTarget \*\/ = \{\s*isa = PBXNativeTarget;[\s\S]*?buildPhases = \(([\s\S]*?)\);/,
+  );
+  const resId = widgetTarget?.[1].match(/(\w+) \/\* Resources \*\//)?.[1];
+  const resPhase = resId
+    ? pbx.match(new RegExp(`${resId} /\\* Resources \\*/ = \\{[\\s\\S]*?\\};`))?.[0]
+    : null;
+  check(
+    'widget target bundles PrivacyInfo.xcprivacy',
+    Boolean(resPhase && resPhase.includes('PrivacyInfo.xcprivacy in Resources')),
+  );
+}
 check(
   'iOS deployment target 16.4',
   podProps['ios.deploymentTarget'] === '16.4' || /IPHONEOS_DEPLOYMENT_TARGET = 16\.4;/.test(pbx),
@@ -342,10 +388,16 @@ check(
   diff(removed, BLOCKED),
 );
 const kept = perms.filter((p) => !p.removed).map((p) => p.name);
+// CAMERA is for the ISBN scan (DEC 131).
+const DIRECT = [
+  'android.permission.INTERNET',
+  'android.permission.CAMERA',
+  'android.permission.VIBRATE',
+];
 check(
-  'app manifest requests only INTERNET and VIBRATE directly',
-  sameSet(kept, ['android.permission.INTERNET', 'android.permission.VIBRATE']),
-  diff(kept, ['android.permission.INTERNET', 'android.permission.VIBRATE']),
+  'app manifest requests only INTERNET, CAMERA and VIBRATE directly',
+  sameSet(kept, DIRECT),
+  diff(kept, DIRECT),
 );
 check('activity is portrait', /android:screenOrientation="portrait"/.test(manifest));
 check('deep link scheme onlyswap', /<data android:scheme="onlyswap"\/>/.test(manifest));

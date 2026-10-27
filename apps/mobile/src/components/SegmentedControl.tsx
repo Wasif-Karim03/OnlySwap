@@ -1,7 +1,9 @@
 import { Pressable, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { CountPill } from './Badge';
 import { Text } from './Text';
+import { a11yState } from '@/lib/a11y';
 
 type Props<T extends string> = {
   label: string;
@@ -15,6 +17,9 @@ type Props<T extends string> = {
   /** Track color: `bg2` on white screens, `bg3` on grey (bg2) screens. */
   surface?: 'bg2' | 'bg3';
 };
+
+/** Pressed segments dim, like tabs; nothing moves (DESIGN_REVIEW 3.08). */
+const PRESSED_OPACITY = 0.6;
 
 /** 2 to 4 segments (DESIGN_SYSTEM §6). */
 export function SegmentedControl<T extends string>({
@@ -39,20 +44,14 @@ export function SegmentedControl<T extends string>({
             accessibilityLabel={
               badge !== null ? `${s.label}, ${s.badgeLabel ?? String(badge)}` : s.label
             }
-            accessibilityState={{ selected }}
+            {...a11yState({ selected })}
             onPress={() => onChange(s.value)}
-            style={styles.segment(selected)}
+            style={({ pressed }) => [styles.segment(selected), pressed && styles.pressed]}
           >
-            <Text variant="label" tone={selected ? 'ink' : 'ink2'}>
+            <Text variant="label" tone={selected ? 'inverse' : 'ink2'}>
               {s.label}
             </Text>
-            {badge !== null ? (
-              <View style={styles.badge}>
-                <Text variant="meta" tone="inverse" overlay>
-                  {badge > 99 ? '99+' : String(badge)}
-                </Text>
-              </View>
-            ) : null}
+            <CountPill count={s.badge} hidden={false} />
           </Pressable>
         );
       })}
@@ -65,24 +64,21 @@ const styles = StyleSheet.create((theme) => ({
     flexDirection: 'row',
     padding: theme.space.xs,
     gap: theme.space.xs,
-    borderRadius: theme.radius.control,
+    borderRadius: theme.radius.chip,
     backgroundColor: theme.colors[surface],
   }),
   segment: (selected: boolean) => ({
     flex: 1,
     flexDirection: 'row',
     gap: theme.space.xs,
-    minHeight: theme.size.buttonS,
+    // 44 pt target (3.08): the old 36 pt segment had no slop.
+    minHeight: theme.size.buttonM,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: theme.radius.control - theme.space.xs,
-    backgroundColor: selected ? theme.colors.card : 'transparent',
-  }),
-  badge: {
-    minWidth: theme.size.badge,
-    paddingHorizontal: theme.space.xs,
     borderRadius: theme.radius.chip,
-    alignItems: 'center',
-    backgroundColor: theme.colors.red,
-  },
+    // Ink fill like Chip and the tab bar pill: a card fill on bg2 was 1.11:1,
+    // so the chosen segment couldn't be told apart (UX audit 2026-10-25).
+    backgroundColor: selected ? theme.colors.ink : 'transparent',
+  }),
+  pressed: { opacity: PRESSED_OPACITY },
 }));

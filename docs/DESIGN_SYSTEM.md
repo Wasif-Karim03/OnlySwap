@@ -31,15 +31,15 @@ App code never uses raw hex values, font sizes or spacing numbers.
 | `line2` | #CFCFC9 | #3D3D41 | borders, radio rings |
 | `ink` | #111110 | #F3F3EF | primary text, dark buttons |
 | `ink2` | #5A5A54 | #A6A69F | secondary text |
-| `ink3` | #9A9A93 | #6D6D67 | tertiary / placeholders (large text only in light) |
+| `ink3` | #6F6F68 | #9A9A93 | tertiary / placeholders (4.5:1 on bg, bg2 and card, DEC 108) |
 | `accent` | #C8E27D (Pistachio default) | same | primary fills, selection |
 | `onAccent` | #111110 | #0C0C0D | text/icons on accent |
-| `red` / `redBg` | #E8432A / #FCEBE7 | #FF5A40 / #2C1511 | destructive, errors |
-| `green` / `greenBg` | #17804A / #E5F3EA | #3DD68C / #0F2A1C | verified, success |
+| `red` / `redBg` | #C8321C / #FCEBE7 | #FF5A40 / #2C1511 | destructive, errors |
+| `green` / `greenBg` | #12703F / #E5F3EA | #3DD68C / #0F2A1C | verified, success |
 | `amber` / `amberBg` | #9A6200 / #FBF0DA | #F5B84B / #2A2110 | warnings, held |
 | `sky` / `skyBg` | #1A5FA6 / #E2F0FF | #8CC3FF / #13263A | meetups (DEC 90) |
 | `peach` / `peachBg` | #9A4414 / #FFE9D9 | #FFB58A / #36200F | free food (DEC 90) |
-| `lilac` / `lilacBg` | #5B45C4 / #ECE7FF | #B9A9FF / #231D40 | the Quad (DEC 90) |
+| `lilac` / `lilacBg` | #5B45C4 / #ECE7FF | #B9A9FF / #231D40 | retired (DEC 142): no new uses; the Quad and Settings tiles use neutral `bg2` and ink tones. The token stays until no code uses it |
 | `overlay` | rgba(0,0,0,.45) | rgba(0,0,0,.6) | sheet scrim |
 
 **Accent options** (owner picks one; the rest are not user settings): Pistachio #C8E27D, Butter #FFD95A, Tangerine #FF9A4D, Coral #FF7B67, Bubblegum #FFA3D1, Sky #7CC0FF, Cobalt #2B45E8 (`onAccent` #FFFFFF).
@@ -47,7 +47,7 @@ App code never uses raw hex values, font sizes or spacing numbers.
 **Contrast rules** (tested in T-UNIT-TOK-01):
 - `ink` on `bg` / `bg2` ≥ 7:1.
 - `ink2` on `bg` ≥ 4.5:1.
-- `ink3` only for text ≥ 17 pt or non-essential meta.
+- `ink3` for meta and placeholders; it passes 4.5:1 on `bg`, `bg2` and `card` in both modes (T-UNIT-TOK-02).
 - `onAccent` on `accent` ≥ 4.5:1.
 - `sky`, `peach`, `lilac` text and `ink` on their `*Bg` ≥ 4.5:1.
 - **`accent` as text or icon on `bg` is banned** (UX-03).
@@ -58,23 +58,23 @@ System fonts: SF Pro (iOS), Roboto (Android), `-apple-system, system-ui` (web). 
 
 | Token | Size / weight / tracking / line | Use |
 |---|---|---|
-| `display` | 34 / 800 / −0.04em / 1.05 | onboarding hero, big moments |
-| `title` | 26 / 800 / −0.035em / 1.1 | tab root large titles |
-| `heading` | 20 / 750 / −0.025em / 1.2 | sections, sheet titles |
-| `price` | 28 / 800 / −0.04em / 1.0 | card and listing price |
-| `body` | 16 / 400 / 0 / 1.5 | reading text |
-| `bodyStrong` | 16 / 650 | list primary |
-| `label` | 14 / 600 | buttons in lists, tags, chips |
-| `meta` | 12.5 / 500 / 1.35 | times, counts, hints |
+| `display` | 34 / 700 / 0 / 1.2 | large titles, big moments (DEC 143) |
+| `title` | 28 / 700 / 0 / 1.21 | tab root titles, success titles |
+| `heading` | 20 / 600 / 0 / 1.25 | sections, sheet titles |
+| `price` | 28 / 700 / 0 / 1.1 | card and listing price |
+| `body` | 17 / 400 / 0 / 1.3 | reading text |
+| `bodyStrong` | 17 / 600 / 0 / 1.3 | list primary, buttons |
+| `label` | 15 / 600 / 0 / 1.33 | buttons in lists, tags, chips |
+| `meta` | 13 / 400 / 0 / 1.38 | times, counts, hints |
 
-`allowFontScaling` stays on. `maxFontSizeMultiplier` is 1.4 **only** on photo overlays and the tab bar.
+`allowFontScaling` stays on. `maxFontSizeMultiplier` is 1.4 **only** on photo overlays, the tab bar and fixed-size chrome (OTP cells, avatar initials, badges, the segmented pill).
 
 ## 4. Space, radius, elevation
 
 | Group | Values |
 |---|---|
 | **Space (4-pt)** | `xs` 4, `sm` 8, `md` 12, `lg` 16, `xl` 24, `2xl` 32; screen edge 20; list row min height 52 |
-| **Radius** | `chip` full, `control` 15 (buttons, inputs), `card` 18, `sheet` 28 (top corners), `thumb` 12, `avatar` full |
+| **Radius** | `chip` full, `control` 15 (buttons, inputs), `card` 18, `sheet` 34 (top corners, DEC 143), `deck` 28 (DEC 143), `thumb` 12, `avatar` full |
 | **Elevation** | cards have no shadow (hairline `line` instead). Sheets and toasts have one soft shadow (`0 8 24 rgba(0,0,0,.12)`). No stacked shadows (UX-14) |
 
 ## 5. Motion and haptics
@@ -96,8 +96,9 @@ System fonts: SF Pro (iOS), Roboto (Android), `-apple-system, system-ui` (web). 
 
 **Haptics budget (UX-09):**
 - `selection` at the swipe threshold
-- `success` on offer sent, offer accepted and listing posted
+- `success` on offer sent, offer accepted and listing posted (a marketplace listing; Food and Wanted posts get no haptic, DEC 142)
 - `warning` on error shake
+- `success` when an item is marked sold, and a soft impact when both ratings are in (DEC 143)
 
 Nothing else gets a haptic.
 
@@ -129,14 +130,15 @@ Components live in `apps/mobile/src/components/`. Each is built with every state
 | SwipeCard / SwipeDeck | — | idle, dragging, stamped, flying, undo | 3 mounted cards |
 | ListingTile / ListingCardH | — | default, sold (overlay), hold (overlay) | |
 | OfferCard | incoming, outgoing | pending, countered, accepted, declined, expired, withdrawn | |
-| MessageBubble | mine / theirs / system / meetup | pending, sent, failed (retry) | scam hint row (SEC-06) |
+| MessageBubble | mine (accent fill, ink text) / theirs (bg2) / system / meetup | pending, sent, failed (retry); grouped (first / middle / last, tight corners where they meet) | scam hint row (SEC-06); time under the last bubble of a group; day separators in the list (DEC 120) |
 | MeetupCard | proposed, confirmed, changed, cancelled | + here/late badges | |
 | SpotRow | public / police-designated | selected | "Directions" opens Maps |
 | RatingThumbs | up / down + tags | — | |
 | EmptyState / ErrorState / Skeleton | per layout | — | |
 | PermissionPrimer | camera, photos, notifications | undetermined, denied → Settings | (no location in R1.0) |
 | ReportSheet | listing, user, chat, message | reason, details, block toggle, submitting, duplicate | |
-| ProgressBar / StepIndicator / NavBar / TabBar | — | — | tab roots large title, pushed screens inline title (UX-04) |
+| ProgressBar / StepIndicator / NavBar / TabBar | — | — | tab roots large title, pushed screens inline title (UX-04); TabBar uses the labelled iOS style on Android too, no accent pill (DEC 120) |
+| IconButton badge | bell | 0 hidden, 1 to 99, 99+ | red count in the corner; the button's label says the count (DEC 120) |
 
 **Share card (MOB-06):** render on-screen at opacity 0 with `collapsable={false}`, capture with view-shot at 1200×630 JPEG q0.8. On failure, share without an image.
 
@@ -150,7 +152,7 @@ Components live in `apps/mobile/src/components/`. Each is built with every state
 
 The following aren't allowed in code review:
 - gradient buttons or backgrounds (except the photo scrim)
-- glassmorphism panels
+- glassmorphism panels on content (cards, rows, posts, sheets). Floating chrome may use the system material (DEC 143)
 - more than one shadow per element
 - emoji in UI
 - "✨", "🚀" or hype words ("seamless", "unlock", "supercharge")
@@ -200,11 +202,11 @@ The "Data/API" column lists the calls from API.md.
 
 | ID | Route | Frames | Rel | States | Actions → effect | Data/API |
 |---|---|---|---|---|---|---|
-| A01 | `index.tsx` Launch | A1 | 1.0 | splash ≤700 ms; restore session | gate routing | `get_app_config`, session |
+| A01 | `index.tsx` Launch | A1 | 1.0 | splash ≤700 ms; restore session; launch animation over it (DEC 135): mark halves swap and click back, accent ring, fade out after routing | gate routing | `get_app_config`, session |
 | A02 | `welcome.tsx` | A2 | 1.0 | static | Continue → A03; "I already have an account" → A03 login mode | — |
 | A03 | `email.tsx` | A3, A4, A5, X1 | 1.0 | typing (school detect), personal email error, unknown school card (A5), reviewer password field (A4), sending, rate limited, offline | Send code → A04; Join waitlist → `waitlist-request`; reviewer Sign in | `lookup_school`, `signInWithOtp`, `signInWithPassword` |
 | A04 | `verify.tsx` | A6, A9, X2 | 1.0 | waiting, autofill, verifying, wrong (attempts left), expired, locked 5 min, resend timer | complete → session → gate | `verifyOtp` |
-| A05 | `age.tsx` | A7, A8 | 1.0 | checking OS signal, date field (native), under 18 (A8), error | `confirm_age`; minor → `delete-account`(underage) + sign out | `expo-age-range`, `confirm_age` |
+| A05 | `age.tsx` | A7, A8 | 1.0 | checking OS signal, date field (native), under 13 (A8, DEC 136), error | `confirm_age_v2`; under 13 → `delete-account`(underage) + sign out | `expo-age-range`, `confirm_age_v2` |
 | A06 | `profile.tsx` | A10 | 1.0 | name required, photo optional + upload progress, permission denied | Continue | `update_profile`, `upload-url` |
 | A07 | `rules.tsx` | A11 (+ D10 "Updated rules") | 1.0 | unchecked (disabled), checked, updated-rules variant with a diff list | Agree | `accept_rules` |
 | A08 | `notifications.tsx` | A12 | 1.0 | undetermined, denied → Settings, granted skip | Turn on → OS prompt → `register_push_token` | expo-notifications |
@@ -266,6 +268,7 @@ The "Data/API" column lists the calls from API.md.
 | F03 | `profile/listings.tsx` | F3, X37 | 1.0 | active/hold/sold/drafts; empty | listings (select) |
 | F04 | `listing/[id]/stats.tsx` | F4 | 1.0 | — | `listing_stats` |
 | F05 | `listing/[id]/offers.tsx` | F5 | 1.0 | — | `listing_offers` |
+| F05c | `listing/[id]/comments.tsx` | — | DEC 121 | post title link, Like with count, Top / Newest chips; threads with one level of replies and "View n more replies"; Like and Reply under each comment, long press for Copy / Delete / Report; composer with "Replying to" bar; author's ⋯ turns comments off; loading, empty, error, gone, read-only states. Feed cards: Like (filled ink heart when liked, never red or accent) and Comment, counts line; Save sits top right | `get_listing_comments`, `get_comment_replies`, `create_listing_comment`, `like_listing`, `like_listing_comment`, `delete_listing_comment`, `set_listing_comments` |
 | F06 | `listing/[id]/edit.tsx` | F6 | 1.0 | + Delete listing (soft) confirm | `update_listing`, `delete_listing` |
 | F07 | `listing/[id]/sold.tsx` | F7 | 1.0 | pick buyer or "someone not on OnlySwap" | `mark_sold` |
 | F08 | `listing/[id]/relist.tsx` | F8 | 1.0 | — | `relist_listing` |

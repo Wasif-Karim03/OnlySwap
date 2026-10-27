@@ -10,10 +10,14 @@ import { Icon, type IconName } from '@/components/icons/Icon';
 import { Input } from '@/components/Input';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
+import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
 import { getStorage } from '@/lib/storage';
 import { search as copy } from '@/strings';
 
+import { moreApi, type MoreApi } from '../feed/api';
+import { ListingStrip } from '../feed/ListingStrip';
+import { parseViewed, viewedStorage, type ViewedStorage } from '../feed/recent';
 import { searchApi, type SearchApi } from './api';
 import { addRecent, parseRecent, type Suggestion } from './logic';
 
@@ -34,14 +38,34 @@ const ICON = { saved: 'bookmark', category: 'grid', trending: 'trend', title: 's
 export function SearchScreen({
   api = searchApi,
   recentStorage = defaultRecent,
+  more = moreApi,
+  viewedStore = viewedStorage,
+  mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
 }: {
   api?: SearchApi;
   recentStorage?: RecentStorage;
+  /** Recently viewed (DEC 128). */
+  more?: MoreApi;
+  viewedStore?: ViewedStorage;
+  mediaBase?: () => string;
 }) {
   const router = useRouter();
   const [text, setText] = useState('');
   const [debounced, setDebounced] = useState('');
   const [recent, setRecent] = useState(() => parseRecent(recentStorage.get()));
+  const [viewedIds] = useState(() => {
+    try {
+      return parseViewed(viewedStore.get());
+    } catch {
+      return [];
+    }
+  });
+  const viewed = useQuery({
+    queryKey: ['recently-viewed', viewedIds.join(',')],
+    queryFn: () => more.byIds(viewedIds),
+    enabled: viewedIds.length > 0,
+    staleTime: 60_000,
+  });
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(text.trim()), SUGGEST_DEBOUNCE_MS);
@@ -128,10 +152,19 @@ export function SearchScreen({
           </View>
         ) : (
           <>
+            <ListingStrip
+              title={copy.recentlyViewed}
+              items={viewed.data ?? []}
+              mediaBase={mediaBase()}
+              onOpen={(id) =>
+                router.push({ pathname: '/listing/[id]', params: { id, from: 'search' } })
+              }
+              testID="search-recently-viewed"
+            />
             {recent.length > 0 ? (
               <View style={styles.section} testID="search-recent">
                 <View style={styles.row}>
-                  <Text variant="bodyStrong" accessibilityRole="header" style={styles.heading}>
+                  <Text variant="label" tone="ink3" accessibilityRole="header" style={styles.flex}>
                     {copy.recent}
                   </Text>
                   <Button label={copy.clearRecent} variant="text" size="S" onPress={clearRecent} />
@@ -151,7 +184,7 @@ export function SearchScreen({
             ) : null}
             {list.length > 0 ? (
               <View style={styles.section} testID="search-trending">
-                <Text variant="bodyStrong" accessibilityRole="header" style={styles.heading}>
+                <Text variant="label" tone="ink3" accessibilityRole="header">
                   {copy.trending}
                 </Text>
                 <View>
@@ -232,7 +265,6 @@ const styles = StyleSheet.create((theme, rt) => ({
   },
   flex: { flex: 1 },
   row: { flexDirection: 'row', alignItems: 'center' },
-  heading: { flex: 1, fontWeight: theme.type.heading.fontWeight },
   body: {
     paddingHorizontal: theme.space.screen,
     paddingTop: theme.space.md,

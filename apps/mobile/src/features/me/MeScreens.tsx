@@ -29,17 +29,28 @@ import { useToastStore } from '@/components/Toast';
 import { getEnv } from '@/lib/env';
 import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
-import { feed as feedCopy, me as copy, profileView, intlLocale } from '@/strings';
+import {
+  campus as campusCopy,
+  feed as feedCopy,
+  me as copy,
+  profileView,
+  intlLocale,
+} from '@/strings';
+import { a11yState } from '@/lib/a11y';
 import { readableColumn } from '@/theme/layout';
 
 import { avatarDeps, type AvatarDeps } from '../auth/avatar';
 import { feedApi, type FeedApi } from '../feed/api';
 import { listingKey } from '../feed/ListingScreen';
-import { isVisible } from '../feed/logic';
+import { NEED_BY, needByDate, type NeedBy } from '../campus/logic';
+import { isVisible, movingOutLine } from '../feed/logic';
 import type { ClassYear } from '../profiles/api';
 import { centsToDollars, dollarsToCents } from '../search/logic';
-import { mediaUrl, priceLabel } from '../sell/logic';
-import { listingTab, meApi, type Me, type MeApi, type MyListing } from './api';
+import { mediaUrl, priceLabel, validateDetails, type DetailsError } from '../sell/logic';
+import { errorText as detailErrorText } from '../sell/SellDetailsScreen';
+import { DockedScroll } from '../sell/SellStep';
+import { isFeedPost, listingTab, meApi, type Me, type MeApi, type MyListing } from './api';
+import { NotificationBell } from '@/features/notifications/NotificationBell';
 
 export const meKey = ['me'] as const;
 const YEARS: ClassYear[] = ['freshman', 'sophomore', 'junior', 'senior', 'grad', 'other'];
@@ -76,8 +87,18 @@ export function splitAround(template: string, key: string): [string, string] {
  */
 export function profileStats(m: Pick<Me, 'counts' | 'created_at'>, locale: string) {
   const out: { key: string; value: string; template: string; name: string }[] = [
-    { key: 'sold', value: String(m.counts.sold), template: copy.statsSold, name: 'n' },
-    { key: 'swaps', value: String(m.counts.swaps), template: copy.statsSwaps, name: 'n' },
+    {
+      key: 'sold',
+      value: String(m.counts.sold),
+      template: m.counts.sold === 1 ? copy.statsSoldOne : copy.statsSold,
+      name: 'n',
+    },
+    {
+      key: 'swaps',
+      value: String(m.counts.swaps),
+      template: m.counts.swaps === 1 ? copy.statsSwapsOne : copy.statsSwaps,
+      name: 'n',
+    },
   ];
   if (m.counts.thumbs_total > 0) {
     const pct = Math.round((m.counts.thumbs_up / m.counts.thumbs_total) * 100);
@@ -98,11 +119,12 @@ export function profileStats(m: Pick<Me, 'counts' | 'created_at'>, locale: strin
 }
 
 /**
- * F01 Profile tab (P11-SET-01; DEC 90 mock screen 15): your initial on the
- * accent, name, year and school with a check, one inline line of real
- * numbers, Edit profile, then Active and Sold as a three-column photo grid
- * with small white price tags. Notifications, Saved and Settings sit top
- * right; My listings and your public profile are plain rows under the grid.
+ * F01 Profile tab (P11-SET-01; DEC 90 mock screen 15; DESIGN_REVIEW 3.06):
+ * large "Profile" title with quiet bell, Saved and Settings buttons, then your
+ * initial on the accent, name, year and school with a check (the block opens
+ * your public profile), Edit profile beside it, one inline line of real
+ * numbers, then Active and Sold as a three-column photo grid with small white
+ * price tags. My listings is the one row under the grid.
  */
 export function ProfileTabScreen({
   api = meApi,
@@ -116,7 +138,9 @@ export function ProfileTabScreen({
   const router = useRouter();
   const q = useQuery({ queryKey: meKey, queryFn: () => api.me() });
   const mine = useQuery({ queryKey: ['my-listings'], queryFn: () => api.listings() });
-  const [tab, setTab] = useState<'active' | 'sold'>('active');
+  const qc = useQueryClient();
+  const [tab, setTab] = useState<'active' | 'sold' | 'posts'>('active');
+  const [deleting, setDeleting] = useState<string | null>(null);
   let body;
   if (q.isPending) body = <SkeletonList rows={5} />;
   else if (q.isError) body = <ErrorState error={q.error} onRetry={() => q.refetch()} />;
@@ -130,22 +154,84 @@ export function ProfileTabScreen({
         : fill(copy.verifiedAt, { campus: m.campus.name })
       : null;
     const stats = profileStats(m, intlLocale);
-    const items = (mine.data ?? []).filter((l) => listingTab(l.status) === tab);
+    const forSale = (mine.data ?? []).filter((l) => !isFeedPost(l.kind));
+    const posts = (mine.data ?? []).filter((l) => isFeedPost(l.kind));
+    const items = tab === 'posts' ? posts : forSale.filter((l) => listingTab(l.status) === tab);
     const counts = {
-      active: (mine.data ?? []).filter((l) => listingTab(l.status) === 'active').length,
-      sold: (mine.data ?? []).filter((l) => listingTab(l.status) === 'sold').length,
+      active: forSale.filter((l) => listingTab(l.status) === 'active').length,
+      sold: forSale.filter((l) => listingTab(l.status) === 'sold').length,
+      posts: posts.length,
     };
     let grid;
     if (mine.isPending) grid = <SkeletonList rows={2} />;
     else if (mine.isError)
       grid = <ErrorState error={mine.error} onRetry={() => mine.refetch()} layout="inline" />;
+    else if (tab === 'posts')
+      grid =
+        items.length === 0 ? (
+          <Text variant="label" tone="ink2" style={styles.emptyGrid} testID="profile-posts-empty">
+            {copy.postsEmpty}
+          </Text>
+        ) : (
+          <View testID="profile-posts">
+            {items.map((l) => {
+              const status =
+                l.status !== 'active' && l.status in copy.statusLabels
+                  ? copy.statusLabels[l.status as keyof typeof copy.statusLabels]
+                  : null;
+              const kindLabel = copy.postKinds[l.kind as keyof typeof copy.postKinds] ?? '';
+              const open = () => router.push({ pathname: '/listing/[id]', params: { id: l.id } });
+              const label = [kindLabel, l.title, status].filter(Boolean).join(', ');
+              // A small post card: the photo big on top, as in the Feed (owner
+              // review 2026-10-24: text alone was hard to scan).
+              return (
+                <View key={l.id} style={styles.postCard} testID={`profile-post-${l.id}`}>
+                  {l.photos[0] ? (
+                    <Tappable
+                      accessibilityRole="button"
+                      accessibilityLabel={label}
+                      onPress={open}
+                      testID={`profile-post-photo-${l.id}`}
+                    >
+                      <Photo
+                        source={mediaUrl(base, l.photos[0].path)}
+                        aspectRatio={4 / 3}
+                        rounded="thumb"
+                      />
+                    </Tappable>
+                  ) : null}
+                  <View style={styles.postRow}>
+                    <Tappable
+                      accessibilityRole="button"
+                      accessibilityLabel={label}
+                      onPress={open}
+                      style={styles.postMain}
+                    >
+                      <Text variant="meta" tone="ink2" numberOfLines={1}>
+                        {status ? `${kindLabel} · ${status}` : kindLabel}
+                      </Text>
+                      <Text variant="bodyStrong" numberOfLines={2}>
+                        {l.title}
+                      </Text>
+                    </Tappable>
+                    <IconButton
+                      icon="trash"
+                      accessibilityLabel={campusCopy.deleteOwnPost}
+                      onPress={() => setDeleting(l.id)}
+                      testID={`profile-post-delete-${l.id}`}
+                    />
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        );
     else if (items.length === 0)
       grid =
         tab === 'active' ? (
           <View style={styles.emptyGrid} testID="profile-sell-nudge">
-            <Text variant="bodyStrong">{copy.sellNudgeTitle}</Text>
             <Text variant="label" tone="ink2" style={styles.regular}>
-              {copy.sellNudgeBody}
+              {copy.activeEmpty}
             </Text>
             <Button
               label={copy.sellNudge}
@@ -163,12 +249,23 @@ export function ProfileTabScreen({
       grid = (
         <View style={styles.photoGrid} testID="profile-grid">
           {items.map((l) => {
-            const price = priceLabel(l.kind, l.price_cents, feedCopy.free);
+            // News and events have no price; tag them News, as My listings does.
+            const price =
+              l.kind === 'news'
+                ? campusCopy.listingNews
+                : priceLabel(l.kind, l.price_cents, feedCopy.free);
+            // Hold, review and the like are invisible in the photo grid: say them.
+            const status =
+              l.status !== 'active' && l.status !== 'sold' && l.status in copy.statusLabels
+                ? copy.statusLabels[l.status as keyof typeof copy.statusLabels]
+                : null;
             return (
               <Tappable
                 key={l.id}
                 accessibilityRole="button"
-                accessibilityLabel={`${l.title}, ${price}`}
+                accessibilityLabel={
+                  status ? `${l.title}, ${price}, ${status}` : `${l.title}, ${price}`
+                }
                 onPress={() => router.push({ pathname: '/listing/[id]', params: { id: l.id } })}
                 style={styles.gridCell}
                 testID={`profile-listing-${l.id}`}
@@ -192,31 +289,48 @@ export function ProfileTabScreen({
     body = (
       <ScrollView contentContainerStyle={styles.body}>
         <View style={styles.head}>
-          <Avatar
-            name={name}
-            uri={m.avatar_path ? mediaUrl(base, m.avatar_path) : null}
-            size="L"
-            fill="accent"
-            letters={1}
+          <Tappable
+            accessibilityRole="button"
+            accessibilityLabel={school ? `${name}, ${school}` : name}
+            accessibilityHint={copy.viewProfile}
+            onPress={() => router.push({ pathname: '/user/[id]', params: { id: m.id } })}
+            style={styles.headMain}
+            testID="profile-view-public"
+          >
+            <Avatar
+              name={name}
+              uri={m.avatar_path ? mediaUrl(base, m.avatar_path) : null}
+              size="L"
+              fill="accent"
+              letters={1}
+            />
+            <View style={styles.flex}>
+              <Text variant="heading" numberOfLines={2}>
+                {name}
+              </Text>
+              {school ? (
+                <View style={styles.school} testID="profile-school">
+                  <Text variant="label" tone="ink2" style={styles.regular}>
+                    {school}
+                  </Text>
+                  <Icon name="check" size={14} tone="green" strokeWidth={2.4} />
+                </View>
+              ) : null}
+              {m.founding_seller ? (
+                <View style={styles.tagRow}>
+                  <Tag label={profileView.founding} />
+                </View>
+              ) : null}
+            </View>
+          </Tappable>
+          <Button
+            label={copy.edit}
+            variant="secondary"
+            size="S"
+            fullWidth={false}
+            onPress={() => router.push('/profile/edit')}
+            testID="profile-edit"
           />
-          <View style={styles.flex}>
-            <Text variant="title" accessibilityRole="header">
-              {name}
-            </Text>
-            {school ? (
-              <View style={styles.school} accessible testID="profile-school">
-                <Text variant="label" tone="ink2" style={styles.regular}>
-                  {school}
-                </Text>
-                <Icon name="check" size={14} tone="green" strokeWidth={2.4} />
-              </View>
-            ) : null}
-            {m.founding_seller ? (
-              <View style={styles.tagRow}>
-                <Tag label={profileView.founding} tone="accent" />
-              </View>
-            ) : null}
-          </View>
         </View>
         <Text variant="label" tone="ink2" style={styles.stats} testID="profile-stats">
           {stats.map((st, i) => {
@@ -235,32 +349,38 @@ export function ProfileTabScreen({
             );
           })}
         </Text>
-        <Button
-          label={copy.edit}
-          variant="secondary"
-          size="M"
-          onPress={() => router.push('/profile/edit')}
-          testID="profile-edit"
-        />
         <View style={styles.segment}>
           <SegmentedControl
             label={copy.listingsTitle}
             segments={[
               { value: 'active', label: `${copy.tabs.active} ${counts.active}` },
               { value: 'sold', label: `${copy.tabs.sold} ${counts.sold}` },
+              { value: 'posts', label: `${copy.tabs.posts} ${counts.posts}` },
             ]}
             value={tab}
             onChange={setTab}
           />
         </View>
         {grid}
+        <ConfirmDialog
+          visible={deleting !== null}
+          title={campusCopy.deletePostTitle}
+          message={campusCopy.deletePostBody}
+          confirmLabel={campusCopy.deletePostConfirm}
+          destructive
+          onConfirm={async () => {
+            if (!deleting) return;
+            await api.deleteListing(deleting);
+            setDeleting(null);
+            void qc.invalidateQueries({ queryKey: ['my-listings'] });
+            void qc.invalidateQueries({ queryKey: ['campus-feed'] });
+          }}
+          onCancel={() => setDeleting(null)}
+          testID="profile-post-delete-confirm"
+        />
         <View style={styles.links}>
           <GroupedList>
             <ListRow label={copy.myListings} onPress={() => router.push('/profile/listings')} />
-            <ListRow
-              label={copy.viewProfile}
-              onPress={() => router.push({ pathname: '/user/[id]', params: { id: m.id } })}
-            />
           </GroupedList>
         </View>
         {devLinks}
@@ -269,29 +389,30 @@ export function ProfileTabScreen({
   }
   return (
     <View style={styles.root} testID="screen-profile">
-      <View style={styles.topBar}>
-        <IconButton
-          icon="bell"
-          filled
-          accessibilityLabel={copy.notifications}
-          onPress={() => router.push('/notifications')}
-          testID="profile-open-notifications"
-        />
-        <IconButton
-          icon="bookmark"
-          filled
-          accessibilityLabel={copy.saved}
-          onPress={() => router.push('/saved')}
-          testID="profile-open-saved"
-        />
-        <IconButton
-          icon="gear"
-          filled
-          accessibilityLabel={copy.settings}
-          onPress={() => router.push('/settings')}
-          testID="profile-open-settings"
-        />
-      </View>
+      <NavBar
+        variant="large"
+        title={copy.title}
+        trailing={
+          <>
+            <NotificationBell
+              accessibilityLabel={copy.notifications}
+              testID="profile-open-notifications"
+            />
+            <IconButton
+              icon="bookmark"
+              accessibilityLabel={copy.saved}
+              onPress={() => router.push('/saved')}
+              testID="profile-open-saved"
+            />
+            <IconButton
+              icon="gear"
+              accessibilityLabel={copy.settings}
+              onPress={() => router.push('/settings')}
+              testID="profile-open-settings"
+            />
+          </>
+        }
+      />
       {body}
     </View>
   );
@@ -319,6 +440,7 @@ export function EditProfileScreen({
   const [uploading, setUploading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
 
   if (q.isPending)
     return (
@@ -341,6 +463,14 @@ export function EditProfileScreen({
     avatar: m.avatar_path,
   };
   const set = (patch: Partial<typeof d>) => setDraft({ ...d, ...patch });
+  // Local dirty check: Save waits for a change, and Back asks before dropping one.
+  const dirty =
+    d.first !== (m.first_name ?? '') ||
+    d.initial !== (m.last_initial ?? '') ||
+    d.year !== m.year ||
+    d.bio !== (m.bio ?? '') ||
+    d.avatar !== m.avatar_path;
+  const back = () => (dirty ? setConfirmDiscard(true) : leave());
 
   const changePhoto = async () => {
     const picked = await avatar.pick();
@@ -367,7 +497,7 @@ export function EditProfileScreen({
         avatarPath: d.avatar,
       });
       await qc.invalidateQueries({ queryKey: meKey });
-      useToastStore.getState().show('success', copy.saved_);
+      useToastStore.getState().show('success', copy.profileSaved);
       leave();
     } catch (e) {
       setError(errorText(e));
@@ -377,67 +507,96 @@ export function EditProfileScreen({
   };
 
   return (
-    <Screen title={copy.editTitle} testID="screen-edit-profile" onBack={leave}>
-      <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-        <View style={styles.head}>
-          <Avatar
-            name={d.first}
-            uri={d.avatar ? mediaUrl(getEnv().EXPO_PUBLIC_MEDIA_URL, d.avatar) : null}
-            size="L"
-          />
-          <Button
-            label={uploading ? copy.uploading : copy.changePhoto}
-            variant="secondary"
-            size="S"
-            loading={uploading}
-            onPress={changePhoto}
-          />
-        </View>
-        <Input
-          label={copy.firstName}
-          value={d.first}
-          onChangeText={(v) => set({ first: v })}
-          maxLength={30}
-          testID="edit-first"
-        />
-        <Input
-          label={copy.lastInitial}
-          value={d.initial}
-          onChangeText={(v) => set({ initial: v.slice(0, 1).toUpperCase() })}
-          maxLength={1}
-        />
-        <Text variant="label">{copy.year}</Text>
-        <View style={styles.chips}>
-          {YEARS.map((y) => (
-            <Chip
-              key={y}
-              label={profileView.years[y]}
-              selected={d.year === y}
-              onPress={() => set({ year: d.year === y ? null : y })}
+    <Screen title={copy.editTitle} testID="screen-edit-profile" onBack={back}>
+      <DockedScroll
+        dock={
+          <>
+            {error ? <Banner kind="error" message={error} /> : null}
+            <Button
+              label={copy.save}
+              loading={busy}
+              disabled={!dirty || !d.first.trim() || uploading}
+              onPress={save}
+              testID="edit-save"
             />
-          ))}
+          </>
+        }
+      >
+        <View style={styles.form}>
+          {/* The avatar is the control; "Change photo" is its caption. */}
+          <Tappable
+            accessibilityRole="button"
+            accessibilityLabel={uploading ? copy.uploading : copy.changePhoto}
+            {...a11yState({ disabled: uploading, busy: uploading })}
+            disabled={uploading}
+            onPress={changePhoto}
+            style={styles.avatarPick}
+            testID="edit-change-photo"
+          >
+            <Avatar
+              name={d.first}
+              uri={d.avatar ? mediaUrl(getEnv().EXPO_PUBLIC_MEDIA_URL, d.avatar) : null}
+              size="L"
+            />
+            <Text variant="label" tone="ink2">
+              {uploading ? copy.uploading : copy.changePhoto}
+            </Text>
+          </Tappable>
+          <Input
+            label={copy.firstName}
+            value={d.first}
+            onChangeText={(v) => set({ first: v })}
+            maxLength={30}
+            testID="edit-first"
+          />
+          <Input
+            label={copy.lastInitial}
+            value={d.initial}
+            onChangeText={(v) => set({ initial: v.slice(0, 1).toUpperCase() })}
+            maxLength={1}
+          />
+          <Text variant="label">{copy.year}</Text>
+          <View style={styles.chips}>
+            {YEARS.map((y) => (
+              <Chip
+                key={y}
+                label={profileView.years[y]}
+                selected={d.year === y}
+                onPress={() => set({ year: d.year === y ? null : y })}
+              />
+            ))}
+          </View>
+          <TextArea
+            label={copy.bio}
+            placeholder={copy.bioPlaceholder}
+            value={d.bio}
+            onChangeText={(v) => set({ bio: v })}
+            maxLength={80}
+          />
         </View>
-        <TextArea
-          label={copy.bio}
-          placeholder={copy.bioPlaceholder}
-          value={d.bio}
-          onChangeText={(v) => set({ bio: v })}
-          maxLength={80}
-        />
-        {error ? <Banner kind="error" message={error} /> : null}
-        <Button
-          label={copy.save}
-          loading={busy}
-          disabled={!d.first.trim() || uploading}
-          onPress={save}
-          testID="edit-save"
-        />
-      </ScrollView>
+      </DockedScroll>
+      <ConfirmDialog
+        visible={confirmDiscard}
+        title={copy.discardTitle}
+        message={copy.discardBody}
+        confirmLabel={copy.discardConfirm}
+        destructive
+        onConfirm={() => {
+          setConfirmDiscard(false);
+          leave();
+        }}
+        onCancel={() => setConfirmDiscard(false)}
+        testID="edit-discard"
+      />
     </Screen>
   );
 }
 
-/** F03 My listings (P11-SET-01; X37 empty). */
+/**
+ * F03 My listings (P11-SET-01; X37 empty; DESIGN_REVIEW 3.06): the segment
+ * and the tiles first, one action per tile (Stats lives on the listing
+ * screen), then Pause and Moving out in one "Selling options" group.
+ */
 export function MyListingsScreen({
   api = meApi,
   mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
@@ -446,20 +605,84 @@ export function MyListingsScreen({
   mediaBase?: () => string;
 }) {
   const router = useRouter();
+  const qc = useQueryClient();
   const q = useQuery({ queryKey: ['my-listings'], queryFn: () => api.listings() });
   const [tab, setTab] = useState<'active' | 'sold' | 'other'>('active');
+  const [renewing, setRenewing] = useState<string | null>(null);
+  // Away mode (DEC 126): the switch reads get_me and flips it optimistically.
+  const meQ = useQuery({ queryKey: meKey, queryFn: () => api.me() });
+  const [awayBusy, setAwayBusy] = useState(false);
+  const setAway = async (away: boolean) => {
+    setAwayBusy(true);
+    try {
+      await api.setAway(away);
+      qc.setQueryData(meKey, (m: Me | undefined) =>
+        m ? { ...m, away_since: away ? new Date().toISOString() : null } : m,
+      );
+      void qc.invalidateQueries({ queryKey: meKey });
+      useToastStore.getState().show('success', away ? copy.awayOn : copy.awayOff);
+    } catch (e) {
+      useToastStore.getState().show('error', errorText(e));
+    } finally {
+      setAwayBusy(false);
+    }
+  };
+  // DEC 133 moving out: a date buyers see, and bundle offers while it is set.
+  const movingOut = meQ.data?.moving_out_by ?? null;
+  const setMovingOut = async (choice: NeedBy) => {
+    const by = needByDate(choice, new Date());
+    setAwayBusy(true);
+    try {
+      await api.setMovingOut(by);
+      qc.setQueryData(meKey, (m: Me | undefined) => (m ? { ...m, moving_out_by: by } : m));
+      void qc.invalidateQueries({ queryKey: meKey });
+      useToastStore.getState().show('success', by ? copy.movingOutSet : copy.movingOutCleared);
+    } catch (e) {
+      useToastStore.getState().show('error', errorText(e));
+    } finally {
+      setAwayBusy(false);
+    }
+  };
+  // Renew (DEC 125): one tap moves an active listing back to the top; no screen.
+  const renew = async (id: string) => {
+    setRenewing(id);
+    try {
+      await api.relist(id, null);
+      void qc.invalidateQueries({ queryKey: ['my-listings'] });
+      useToastStore.getState().show('success', copy.renewed);
+    } catch (e) {
+      useToastStore.getState().show('error', errorText(e));
+    } finally {
+      setRenewing(null);
+    }
+  };
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/profile'));
   let body;
   if (q.isPending) body = <SkeletonList />;
   else if (q.isError) body = <ErrorState error={q.error} onRetry={() => q.refetch()} />;
   else {
-    const items = q.data.filter((l) => listingTab(l.status) === tab);
+    const items = q.data.filter((l) => !isFeedPost(l.kind) && listingTab(l.status) === tab);
     body =
       items.length === 0 ? (
+        // Inline: Selling options sit right below, so no full-screen stretch
+        // (owner device check 2026-10-26: the options box was pushed off).
         <EmptyState
+          inline
           icon="tag"
-          title={copy.listingsEmptyTitle}
-          body={copy.listingsEmptyBody}
+          title={
+            tab === 'active'
+              ? copy.listingsEmptyTitle
+              : tab === 'sold'
+                ? copy.listingsEmptySold
+                : copy.listingsEmptyOther
+          }
+          body={
+            tab === 'sold'
+              ? copy.listingsEmptySoldBody
+              : tab === 'other'
+                ? copy.listingsEmptyOtherBody
+                : undefined
+          }
           action={
             tab === 'active'
               ? { label: copy.sellNudge, onPress: () => router.push('/sell') }
@@ -468,12 +691,16 @@ export function MyListingsScreen({
           testID="my-listings-empty"
         />
       ) : (
-        <ScrollView contentContainerStyle={styles.grid}>
+        <View style={styles.grid}>
           {items.map((l: MyListing) => (
             <View key={l.id} style={styles.cell}>
               <ListingTile
                 title={l.title}
-                price={priceLabel(l.kind, l.price_cents, feedCopy.free)}
+                price={
+                  l.kind === 'news'
+                    ? campusCopy.listingNews
+                    : priceLabel(l.kind, l.price_cents, feedCopy.free)
+                }
                 photo={l.photos[0] ? mediaUrl(mediaBase(), l.photos[0].thumb_path) : null}
                 state={l.status === 'sold' ? 'sold' : l.status === 'hold' ? 'hold' : 'default'}
                 note={
@@ -485,15 +712,25 @@ export function MyListingsScreen({
                 testID={`my-listing-${l.id}`}
               />
               <View style={styles.row}>
-                <Button
-                  label={copy.stats}
-                  variant="text"
-                  size="S"
-                  onPress={() =>
-                    router.push({ pathname: '/listing/[id]/stats', params: { id: l.id } })
-                  }
-                />
-                {l.can_relist ? (
+                {l.can_relist && l.status === 'active' ? (
+                  <Button
+                    label={copy.renew}
+                    variant="text"
+                    size="S"
+                    loading={renewing === l.id}
+                    onPress={() => void renew(l.id)}
+                    testID={`renew-${l.id}`}
+                  />
+                ) : l.status === 'active' && l.renew_at ? (
+                  <Text variant="meta" tone="ink3" testID={`renew-at-${l.id}`}>
+                    {fill(copy.renewAt, {
+                      date: new Date(l.renew_at).toLocaleDateString(intlLocale, {
+                        month: 'short',
+                        day: 'numeric',
+                      }),
+                    })}
+                  </Text>
+                ) : l.can_relist ? (
                   <Button
                     label={copy.relist}
                     variant="text"
@@ -507,12 +744,12 @@ export function MyListingsScreen({
               </View>
             </View>
           ))}
-        </ScrollView>
+        </View>
       );
   }
   return (
     <Screen title={copy.listingsTitle} testID="screen-my-listings" onBack={leave}>
-      <View style={styles.tabs}>
+      <ScrollView contentContainerStyle={styles.listingsBody}>
         <SegmentedControl
           label={copy.listingsTitle}
           segments={[
@@ -523,8 +760,39 @@ export function MyListingsScreen({
           value={tab}
           onChange={setTab}
         />
-      </View>
-      {body}
+        {body}
+        {meQ.data ? (
+          <GroupedList header={copy.sellingOptions}>
+            <View style={styles.optionRow} testID="away-toggle">
+              <Toggle
+                label={copy.away}
+                description={copy.awayBody}
+                value={Boolean(meQ.data.away_since)}
+                disabled={awayBusy}
+                onChange={(v) => void setAway(v)}
+              />
+            </View>
+            <View style={styles.optionBlock} testID="moving-out">
+              <Text variant="bodyStrong">{copy.movingOut}</Text>
+              <Text variant="meta" tone="ink2">
+                {movingOutLine(movingOut) ?? copy.movingOutBody}
+              </Text>
+              <View style={styles.chipRow}>
+                {NEED_BY.map((n) => (
+                  <Chip
+                    key={n}
+                    label={copy.movingOutChoices[n]}
+                    selected={n === 'none' ? !movingOut : needByDate(n, new Date()) === movingOut}
+                    disabled={awayBusy}
+                    onPress={() => void setMovingOut(n)}
+                    testID={`moving-out-${n}`}
+                  />
+                ))}
+              </View>
+            </View>
+          </GroupedList>
+        ) : null}
+      </ScrollView>
     </Screen>
   );
 }
@@ -543,29 +811,21 @@ export function ListingStatsScreen({ id, api = meApi }: { id: string; api?: MeAp
     const s = q.data;
     body = (
       <ScrollView contentContainerStyle={styles.body}>
-        <View style={styles.statGrid}>
-          {[
-            [copy.views, s.views],
-            [copy.saves, s.saves],
-            [copy.offers, s.offers],
-            [copy.openOffers, s.open_offers],
-          ].map(([label, n]) => (
-            <View key={String(label)} style={styles.statCell}>
-              <Text variant="price">{String(n)}</Text>
-              <Text variant="meta" tone="ink2">
-                {String(label)}
-              </Text>
-            </View>
-          ))}
-        </View>
-        {s.best_offer_cents ? (
-          <Text variant="bodyStrong">{`${copy.bestOffer}: $${centsToDollars(s.best_offer_cents)}`}</Text>
-        ) : null}
-        <Text variant="meta" tone="ink2">
-          {fill(copy.listed, { date: date(s.created_at) })}
-          {s.expires_at ? ` · ${fill(copy.expires, { date: date(s.expires_at) })}` : ''}
-        </Text>
-        <Text variant="heading" accessibilityRole="header">
+        {/* One grouped list, label left and number right: no stat boxes (DEC 90). */}
+        <GroupedList>
+          <ListRow label={copy.views} value={String(s.views)} />
+          <ListRow label={copy.saves} value={String(s.saves)} />
+          <ListRow label={copy.offers} value={String(s.offers)} />
+          <ListRow label={copy.openOffers} value={String(s.open_offers)} />
+          {s.best_offer_cents ? (
+            <ListRow label={copy.bestOffer} value={`$${centsToDollars(s.best_offer_cents)}`} />
+          ) : null}
+          <ListRow label={fill(copy.listed, { date: date(s.created_at) })} />
+          {s.expires_at ? (
+            <ListRow label={fill(copy.expires, { date: date(s.expires_at) })} />
+          ) : null}
+        </GroupedList>
+        <Text variant="label" tone="ink3" accessibilityRole="header" style={styles.statsLabel}>
           {copy.priceHistory}
         </Text>
         {s.price_changes.length === 0 ? (
@@ -612,6 +872,8 @@ export function EditListingScreen({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const [showErrors, setShowErrors] = useState(false);
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/profile/listings'));
 
   if (q.isPending)
@@ -634,12 +896,31 @@ export function EditListingScreen({
     open: l.open_to_offers,
   };
   const set = (patch: Partial<typeof d>) => setDraft({ ...d, ...patch });
+  const errors = editErrors(l.kind === 'sale', d);
+  const errorFor = (field: DetailsError['field']) => {
+    const e = showErrors ? errors.find((x) => x.field === field) : undefined;
+    return e ? detailErrorText(e) : undefined;
+  };
+  const dirty =
+    draft !== null &&
+    (draft.title !== l.title ||
+      draft.description !== (l.description ?? '') ||
+      draft.price !== centsToDollars(l.price_cents) ||
+      draft.open !== l.open_to_offers);
+  // Back with unsaved edits asks first (3.03).
+  const back = () => (dirty ? setConfirmDiscard(true) : leave());
 
   const save = async () => {
+    // Say what's wrong next to the field instead of greying out Save (3.03).
+    if (errors.length > 0) {
+      setShowErrors(true);
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
-      const cents = l.kind === 'free' ? undefined : dollarsToCents(d.price);
+      // Only a sale has a price; free, food, Wanted and news posts don't (DEC 98).
+      const cents = l.kind === 'sale' ? dollarsToCents(d.price) : undefined;
       await api.updateListing(id, {
         title: d.title.trim(),
         description: d.description.trim(),
@@ -648,6 +929,7 @@ export function EditListingScreen({
       });
       await qc.invalidateQueries({ queryKey: listingKey(id) });
       void qc.invalidateQueries({ queryKey: ['my-listings'] });
+      useToastStore.getState().show('success', copy.saved_);
       leave();
     } catch (e) {
       setError(errorText(e));
@@ -657,48 +939,62 @@ export function EditListingScreen({
   };
 
   return (
-    <Screen title={copy.editListingTitle} testID="screen-edit-listing" onBack={leave}>
-      <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-        <Input
-          label={copy.titleLabel}
-          value={d.title}
-          onChangeText={(v) => set({ title: v })}
-          maxLength={80}
-          testID="edit-title"
-        />
-        <TextArea
-          label={copy.descriptionLabel}
-          value={d.description}
-          onChangeText={(v) => set({ description: v })}
-          maxLength={1000}
-        />
-        {l.kind !== 'free' ? (
+    <Screen title={copy.editListingTitle} testID="screen-edit-listing" onBack={back}>
+      <DockedScroll
+        standalone
+        dock={
           <>
-            <Input
-              kind="price"
-              label={copy.priceLabel}
-              value={d.price}
-              onChangeText={(v) => set({ price: v })}
-              testID="edit-price"
+            {error ? <Banner kind="error" message={error} /> : null}
+            <Button
+              label={copy.saveChanges}
+              loading={busy}
+              onPress={save}
+              testID="edit-listing-save"
             />
-            <Toggle label={copy.openToOffers} value={d.open} onChange={(v) => set({ open: v })} />
           </>
-        ) : null}
-        {error ? <Banner kind="error" message={error} /> : null}
-        <Button
-          label={copy.saveChanges}
-          loading={busy}
-          disabled={d.title.trim().length < 3}
-          onPress={save}
-          testID="edit-listing-save"
-        />
-        <Button
-          label={copy.deleteListing}
-          variant="text"
-          onPress={() => setConfirmDelete(true)}
-          testID="edit-listing-delete"
-        />
-      </ScrollView>
+        }
+      >
+        <View style={styles.form}>
+          <Input
+            label={copy.titleLabel}
+            value={d.title}
+            onChangeText={(v) => set({ title: v })}
+            maxLength={80}
+            error={errorFor('title')}
+            testID="edit-title"
+          />
+          <TextArea
+            label={copy.descriptionLabel}
+            value={d.description}
+            onChangeText={(v) => set({ description: v })}
+            maxLength={1000}
+          />
+          {l.kind === 'sale' ? (
+            <>
+              <Input
+                kind="price"
+                label={copy.priceLabel}
+                value={d.price}
+                onChangeText={(v) => set({ price: v })}
+                error={errorFor('price')}
+                testID="edit-price"
+              />
+              <Toggle label={copy.openToOffers} value={d.open} onChange={(v) => set({ open: v })} />
+            </>
+          ) : null}
+        </View>
+        {/* Delete sits apart at the end, in red, away from Save (3.03). */}
+        <View style={styles.dangerZone} testID="edit-listing-delete">
+          <GroupedList>
+            <ListRow
+              icon="trash"
+              label={copy.deleteListing}
+              destructive
+              onPress={() => setConfirmDelete(true)}
+            />
+          </GroupedList>
+        </View>
+      </DockedScroll>
       <ConfirmDialog
         visible={confirmDelete}
         title={copy.deleteTitle}
@@ -713,8 +1009,49 @@ export function EditListingScreen({
         }}
         onCancel={() => setConfirmDelete(false)}
       />
+      <ConfirmDialog
+        visible={confirmDiscard}
+        title={copy.discardTitle}
+        message={copy.discardBody}
+        confirmLabel={copy.discardConfirm}
+        destructive
+        onConfirm={() => {
+          setConfirmDiscard(false);
+          leave();
+        }}
+        onCancel={() => setConfirmDiscard(false)}
+      />
     </Screen>
   );
+}
+
+/** Category can't change on these screens; any id skips that check. */
+const CATEGORY_UNCHANGED = 0;
+
+/** Title (every kind) and price (sales) problems, reusing the sell rules. */
+function editErrors(
+  sale: boolean,
+  d: { title: string; description: string; price: string },
+): DetailsError[] {
+  return validateDetails({
+    kind: sale ? 'sale' : 'free',
+    title: d.title,
+    categoryId: CATEGORY_UNCHANGED,
+    price: d.price,
+    description: d.description,
+  }).filter((e) => e.field === 'title' || e.field === 'price');
+}
+
+/** A typed relist price that the sell rules reject, or none when left blank. */
+function relistError(price: string): DetailsError | undefined {
+  if (price.trim() === '') return undefined;
+  return validateDetails({
+    kind: 'sale',
+    title: 'relist',
+    categoryId: CATEGORY_UNCHANGED,
+    price,
+    description: '',
+  }).find((e) => e.field === 'price');
 }
 
 /** F08 Relist (P11-SET-01). */
@@ -724,8 +1061,14 @@ export function RelistScreen({ id, api = meApi }: { id: string; api?: MeApi }) {
   const [price, setPrice] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showErrors, setShowErrors] = useState(false);
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/profile/listings'));
+  const priceError = relistError(price);
   const relist = async () => {
+    if (priceError) {
+      setShowErrors(true);
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -741,37 +1084,52 @@ export function RelistScreen({ id, api = meApi }: { id: string; api?: MeApi }) {
   };
   return (
     <Screen title={copy.relistTitle} testID="screen-relist" onBack={leave}>
-      <View style={styles.body}>
-        <Text variant="body">{copy.relistBody}</Text>
-        <Input
-          kind="price"
-          label={copy.relistPrice}
-          value={price}
-          onChangeText={setPrice}
-          testID="relist-price"
-        />
-        {error ? <Banner kind="error" message={error} /> : null}
-        <Button label={copy.relistButton} loading={busy} onPress={relist} testID="relist-button" />
-      </View>
+      <DockedScroll
+        standalone
+        dock={
+          <>
+            {error ? <Banner kind="error" message={error} /> : null}
+            <Button
+              label={copy.relistButton}
+              loading={busy}
+              onPress={relist}
+              testID="relist-button"
+            />
+          </>
+        }
+      >
+        <View style={styles.form}>
+          <Text variant="body">{copy.relistBody}</Text>
+          <Input
+            kind="price"
+            label={copy.relistPrice}
+            value={price}
+            onChangeText={setPrice}
+            error={showErrors && priceError ? detailErrorText(priceError) : undefined}
+            testID="relist-price"
+          />
+        </View>
+      </DockedScroll>
     </Screen>
   );
 }
 
-const styles = StyleSheet.create((theme, rt) => ({
+const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: theme.space.sm,
-    paddingTop: rt.insets.top + theme.space.xs,
-    paddingHorizontal: theme.space.lg,
-  },
   regular: { fontWeight: '400' },
   school: { flexDirection: 'row', alignItems: 'center', gap: theme.space.xs, flexWrap: 'wrap' },
   segment: { marginTop: theme.space.xs },
   links: { marginTop: theme.space.md },
   emptyGrid: { gap: theme.space.sm, paddingVertical: theme.space.md, alignItems: 'flex-start' },
   photoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.xs },
+  postCard: {
+    gap: theme.space.sm,
+    paddingVertical: theme.space.md,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.line,
+  },
+  postRow: { flexDirection: 'row', alignItems: 'center', gap: theme.space.md },
+  postMain: { flex: 1, gap: theme.space.xs / 2 },
   gridCell: { width: '32.3%' },
   gridPhoto: {
     aspectRatio: 1,
@@ -795,26 +1153,45 @@ const styles = StyleSheet.create((theme, rt) => ({
     gap: theme.space.md,
     paddingBottom: theme.space['2xl'],
   },
+  form: { gap: theme.space.md },
+  dangerZone: {
+    marginTop: theme.space.xl,
+    paddingTop: theme.space.lg,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: theme.colors.line,
+  },
   head: { flexDirection: 'row', alignItems: 'center', gap: theme.space.md },
+  avatarPick: { alignSelf: 'center', alignItems: 'center', gap: theme.space.sm },
+  headMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: theme.space.md },
   flex: { flex: 1 },
   tagRow: { flexDirection: 'row', marginTop: theme.space.xs },
   stats: { marginTop: -theme.space.xs },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
-  tabs: { paddingHorizontal: theme.space.screen, paddingBottom: theme.space.md },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.space.sm,
+    paddingTop: theme.space.xs,
+  },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: theme.space.md,
+  },
+  listingsBody: {
+    ...readableColumn,
+    flexGrow: 1,
     padding: theme.space.screen,
+    gap: theme.space.lg,
+    paddingBottom: theme.space['2xl'],
+  },
+  optionRow: { paddingHorizontal: theme.space.lg },
+  optionBlock: {
+    paddingHorizontal: theme.space.lg,
+    paddingVertical: theme.space.md,
+    gap: theme.space.xs,
   },
   cell: { width: '47%', gap: theme.space.xs },
   row: { flexDirection: 'row', flexWrap: 'wrap' },
-  statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.md },
-  statCell: {
-    width: '46%',
-    padding: theme.space.lg,
-    borderRadius: theme.radius.card,
-    backgroundColor: theme.colors.bg2,
-    gap: theme.space.xs,
-  },
+  statsLabel: { marginTop: theme.space.sm },
 }));

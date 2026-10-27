@@ -3,6 +3,7 @@ import { StyleSheet } from 'react-native-unistyles';
 
 import { Icon } from './icons/Icon';
 import { Text } from './Text';
+import { a11yState } from '@/lib/a11y';
 
 type Props = {
   label: string;
@@ -11,7 +12,11 @@ type Props = {
   onPress: () => void;
   disabled?: boolean;
   description?: string;
+  testID?: string;
 };
+
+/** Pressed rows dim; nothing moves (DESIGN_REVIEW 3.08). */
+const PRESSED_OPACITY = 0.6;
 
 /** Radio or checkbox row; the whole row is pressable (DESIGN_SYSTEM §6). */
 export function OptionRow({
@@ -21,16 +26,18 @@ export function OptionRow({
   onPress,
   disabled = false,
   description,
+  testID,
 }: Props) {
   return (
     <Pressable
       accessibilityRole={kind}
       accessibilityLabel={label}
       accessibilityHint={description}
-      accessibilityState={{ checked: selected, disabled }}
+      {...a11yState({ checked: selected, disabled })}
       disabled={disabled}
       onPress={onPress}
-      style={styles.row(disabled)}
+      style={({ pressed }) => [styles.row(disabled), pressed && styles.pressed]}
+      testID={testID}
     >
       <View style={styles.mark(kind, selected)}>
         {selected ? (
@@ -82,5 +89,6 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: theme.radius.chip,
     backgroundColor: theme.colors.ink,
   },
+  pressed: { opacity: PRESSED_OPACITY },
   text: { flex: 1 },
 }));

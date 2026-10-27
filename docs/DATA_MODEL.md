@@ -42,7 +42,7 @@
 | self | `auth.uid() = row owner` |
 | other user | authenticated, not the owner |
 | participant | buyer or seller of the chat/offer |
-| admin | `private.is_admin(min_role)`: `admins` row + JWT `aal='aal2'` |
+| admin | `private.is_admin(min_role)`: `admins` row + JWT `aal='aal2'`. Table reads are also campus-scoped: `private.admin_sees(campus)` / `admin_sees_user(uid)` let a moderator with `admins.campus_id` set see only that campus's rows; global admins (`campus_id` null) see all (0226, DEC 113) |
 | service | `service_role` (Edge Functions, cron) |
 
 **JWT claims** are added by the custom access token hook: `campus_id`, `status`, `adult`, `admin_role`.
@@ -65,10 +65,10 @@ create type campus_status  as enum ('waitlist','live','paused');
 create type user_status    as enum ('active','waitlist','reverify','paused','suspended','banned');
 create type class_year     as enum ('freshman','sophomore','junior','senior','grad','other');
 create type age_method     as enum ('os_signal','self_declared','review');
-create type listing_kind   as enum ('sale','free','wanted','food');
+create type listing_kind   as enum ('sale','free','wanted','food','news');  -- news: DEC 98 (0214)
 create type listing_status as enum ('active','hold','sold','expired','held_review','removed','deleted');
 create type item_condition as enum ('new','like_new','good','fair');
-create type swipe_dir      as enum ('left','save');           -- right-swipe = offer (recorded as offer)
+create type swipe_dir      as enum ('left','save','right');   -- 'right' added in 0222 (DEC 106): a right swipe that opened the offer sheet; the offer itself is in offers
 create type offer_status   as enum ('pending','countered','accepted','declined','expired','withdrawn','auto_declined');
 create type chat_status    as enum ('open','closed','blocked');
 create type message_kind   as enum ('text','system','meetup','photo');   -- 'photo' used from R1.1
@@ -125,7 +125,11 @@ create table profiles (
   bio text check (char_length(bio) <= 80),
   avatar_path text,
   verified_until date not null,
-  adult_confirmed_at timestamptz, age_method age_method,
+  adult_confirmed_at timestamptz, age_method age_method,   -- adult_confirmed_at: met the minimum age (13 since DEC 136, 18 before)
+  age_band text check (age_band in ('13_17','18_plus')),   -- AR-01: set by confirm_age_v2; null until confirmed; a trigger fills 18_plus for v1, seeds and fixtures and clears it on a reset. Never a birth date
+  age_regulated boolean,                                   -- AR-03: Apple age assurance applied at the age check; null = not asked or unknown
+  age_declaration text check (age_declaration in ('self_declared','guardian_declared','confirmed')),  -- AR-03: Declared Age Range declaration type; never a birth date
+  parental_consent text check (parental_consent in ('granted','revoked')),  -- AR-03: granted for a regulated 13_17 account; revoked only by the App Store notification endpoint (AR-04)
   rules_accepted_at timestamptz, rules_version text,
   invite_code text unique not null default private.new_invite_code(),
   invited_by uuid references profiles on delete set null,
@@ -185,6 +189,8 @@ create table listings (
   open_to_offers bool not null default true,
   meet_spot_ids uuid[] not null default '{}',
   meet_note text check (char_length(meet_note) <= 60),
+  link_url text check (link_url is null or (char_length(link_url) <= 300 and link_url ~ '^https?://[^[:space:]]+$')),  -- news only (DEC 98, 0215)
+  event_at timestamptz,                                -- news event time; expires_at = end of that day (DEC 98)
   availability text[] not null default '{}',
   wanted_max_cents int check (wanted_max_cents between 0 and 200000),
   wanted_ref uuid references listings on delete set null,        -- PM-05
@@ -220,7 +226,8 @@ create table listing_photos (
 
 create table listing_reservations (id uuid primary key, user_id uuid not null, created_at timestamptz default now(), used_at timestamptz);  -- no access; purge 24 h
 create table listing_price_changes (id bigint generated always as identity primary key, listing_id uuid references listings on delete cascade, old_cents int, new_cents int, changed_at timestamptz default now()); -- no access
-create table swipes (user_id uuid references profiles on delete cascade, listing_id uuid references listings on delete cascade, dir swipe_dir not null, created_at timestamptz default now(), primary key (user_id, listing_id));  -- self select; purge 30 d (non-save)
+create table listing_removals (listing_id uuid primary key references listings on delete cascade, reason text not null, removed_by uuid, removed_at timestamptz default now()); -- no access; the admin's reason for a removed listing, read only by the seller through my_listings and get_listing (`removed_reason`), cleared when put back (DEC 96)
+create table swipes (user_id uuid references profiles on delete cascade, listing_id uuid references listings on delete cascade, dir swipe_dir not null, created_at timestamptz default now(), dwell_ms int check (dwell_ms between 0 and 600000), primary key (user_id, listing_id));  -- self select; purge 30 d (non-save); dwell_ms = time on card (DEC 100)
 create index on swipes (listing_id);
 create table saves (user_id uuid references profiles on delete cascade, listing_id uuid references listings on delete cascade, price_at_save int, created_at timestamptz default now(), primary key (user_id, listing_id));  -- self select
 create index on saves (listing_id);
@@ -357,7 +364,7 @@ create table reports (
   reporter_id uuid references profiles on delete set null,
   target_type text not null check (target_type in ('listing','user','chat','message','quad_post','quad_reply')),
   target_id text not null,
-  target_user_id uuid references profiles on delete set null,     -- never returned to reporter
+  target_user_id uuid references profiles on delete set null,     -- never returned to reporter; always null for quad_post/quad_reply (0220, DEC 104)
   reason text not null check (reason in ('scam','not_allowed','stolen','counterfeit','misleading','harassment','threat',
          'hate','sexual','minor_safety','calls_out_student','spam','self_harm','no_show','other')),
   details text check (char_length(details) <= 500),
@@ -458,6 +465,19 @@ The tables are:
 - `quad_hides(user_id, hidden_author_id, source_post_id, pk)`
 - `quad_mutes(user_id, keyword, pk)`
 
+### 2.6b Feed likes and comments — `0233_feed_comments.sql` (DEC 121)
+
+- `listings` gains `like_count`, `comment_count` (live comments and replies), `comments_enabled` (default true).
+- `listing_likes(user_id, listing_id, created_at)`, PK (user_id, listing_id).
+- `listing_comments(id, listing_id, author_id, parent_id → listing_comments, client_id, body 1..500 null once deleted, status text check in ('live','held','removed','deleted'), hold_reason, like_count, reply_count, created_at)`; unique (author_id, client_id). One level: `parent_id` is always a top-level comment.
+- `listing_comment_likes(user_id, comment_id, created_at)`, PK (user_id, comment_id).
+- Counts are kept by triggers. RLS on, no grants: reads and writes go through the RPCs (API §3). Never hard-deleted while the post exists; a deleted comment keeps its row. `reports.target_type` adds `listing_comment`; `notifications.grp` adds `comments`; `notification_prefs.comments` (default true). `export_user_data` adds `feed {liked_posts, comments, liked_comments}`.
+
+### 2.6c App Store consent — `0244_app_store_consent.sql` (AR-04, DEC 136)
+
+- `app_transactions(app_transaction_id text, user_id → profiles on delete cascade, created_at, last_seen_at)`, PK (app_transaction_id, user_id). One Apple download can hold several accounts and one account several downloads. RLS on, no policies, no client grants: written only by `link_app_transaction`, read only by `private.rescind_consent` (service role).
+- `private.rescind_consent(id)`: every linked profile gets `parental_consent = 'revoked'`, `status = 'suspended'`, `status_reason = 'parental_consent'` (a banned account stays banned). Idempotent; returns the count. Deal data is untouched.
+
 ### 2.7 Views [R1.0]
 
 | View | Definition / use |
@@ -481,17 +501,17 @@ create table activity_events (
   id bigint generated always as identity primary key,
   user_id uuid not null references profiles on delete cascade,
   campus_id uuid not null references campuses on delete cascade,
-  kind text not null check (kind in ('app_open','deck_shown','listing_viewed','swiped_left','saved',
-                                     'unsaved','offer_made','searched','opened_from')),
+  kind text not null check (kind in ('app_open','listing_viewed','unsaved','searched','opened_from')),  -- DEC 100
   listing_id uuid references listings on delete set null,
   source text check (source in ('discover','search','campus','profile','saved','link','notification')),
-  dwell_ms int check (dwell_ms between 0 and 600000),     -- time on card or page, capped at 10 min
+  dwell_ms int check (dwell_ms between 0 and 600000),     -- time on page, capped at 10 min
   query text check (char_length(query) <= 80),            -- searched only
   platform text check (platform in ('ios','android','web')),
   app_version text check (char_length(app_version) <= 20),
   created_at timestamptz not null default now()
 );  -- indexes: (user_id, created_at desc), (listing_id, created_at desc), (campus_id, created_at desc), (created_at)
--- Written only by track_events (API §3); a deck card counts once per person per listing per 24 h. Purge 90 d.
+-- Written only by track_events (API §3). Deck cards, swipes, saves and offers live in their own tables
+-- (time on card is swipes.dwell_ms, DEC 100). Purge 30 d.
 
 alter table profiles add column last_platform text check (last_platform in ('ios','android','web'));
 alter table profiles add column last_app_version text check (char_length(last_app_version) <= 20);
@@ -647,7 +667,7 @@ stateDiagram-v2
 | `active` | — | — | app | everything |
 | `reverify` | `verified_until` < today | `complete_reverify` | X9 | nothing but re-verify |
 | `paused` | 2 no-shows or 1st strike (auto, 7 d max) | `paused_until` passes (cron) | X10 | read, finish open chats |
-| `suspended` | admin (moderator ≤ 7 d) | admin, or `paused_until` passes | X10 | read, finish open chats |
+| `suspended` | admin (moderator ≤ 7 d); or a parent withdrew consent in the App Store (`status_reason = 'parental_consent'`, AR-04) | admin, or `paused_until` passes; for consent, an admin after the parent allows the app again | X10 (consent copy, no appeal) | read, finish open chats |
 | `banned` | admin (owner only) | appeal overturned | X10 banned | appeal only; `banned_hashes` stored on deletion |
 
 Suspensions and bans revoke sessions (ADR-013).
@@ -669,7 +689,8 @@ Suspensions and bans revoke sessions (ADR-013).
 | Account, listings, messages | until account deletion. Closed chats archived to R2 after 90 d; archives deleted on account deletion |
 | Notifications | 60 d |
 | Swipes (non-save) | 30 d |
-| Activity events (`activity_events`) | 90 d (daily `prune_activity` job) |
+| Activity events (`activity_events`) | 30 d (daily `prune_activity` job, DEC 100) |
+| pg_cron run history (`cron.job_run_details`) | 7 d (daily `prune_cron_history` job, DEC 110) |
 | Account deletion records (`account_deletions`, no name or email) | 365 d |
 | Reports + evidence | 180 d after resolution (reporter nulled on deletion) |
 | Audit log | 2 years |
@@ -690,7 +711,7 @@ Suspensions and bans revoke sessions (ADR-013).
 | Bucket | Access | Contents |
 |---|---|---|
 | `onlyswap-media` | public read through the media Worker, prefix allowlist | `c/{campus}/l/{listing}/{uuid}_{full\|thumb}.webp`, `c/{campus}/u/{user}/avatar_{uuid}.webp`, `share/{listing}.jpg`; R1.1: `c/{campus}/chat/{chat}/…` (signed reads), `c/{campus}/quad/{post}/…` |
-| `onlyswap-private` | presigned GET only | `exports/{uid}/{id}.json` (lifecycle 8 d), `evidence/{report}/…` (lifecycle 200 d), `archive/chats/{chat}.json` |
+| `onlyswap-private` | presigned GET only | `exports/{uid}/{id}.json` (lifecycle 8 d), `evidence/{report}/…` (lifecycle 200 d), `archive/chats/{chat}/{token}.json` (0248, one key per archive job; legacy `archive/chats/{chat}.json` objects from before 0246 are still deleted with the account) |
 | `onlyswap-backups` | GitHub Actions only | `db/{date}.sql.age` (lifecycle 30 d) |
 
 **Limits** (enforced by signed `content-length` + `content-type`, SEC-02):
@@ -708,7 +729,7 @@ Suspensions and bans revoke sessions (ADR-013).
 - EXIF stripped by re-encode (tested)
 - blurhash
 
-**Cleanup:** draft objects without a listing row older than 24 h are deleted daily; sold listings older than 180 d keep the thumbnail only.
+**Cleanup:** every issued key is a row in `media_uploads` (0246: `pending` → `attached` when a writer claims it, `detached` when dropped, `collecting` under a 10-minute GC lease, `collected` tombstone kept 30 days so it can never be attached again). Keys not attached for 24 h (drafts never posted included) are deleted one by one every 6 h by `gc_uploads` → `cleanup-drafts`; a user may hold at most 160 objects not attached. A deleted account's R2 prefixes are kept as a versioned manifest on `account_deletions` and swept again 15 minutes after confirmation. Report evidence moved to the private bucket only grows (two deletions sharing a report merge; keys lost before a copy are listed in `evidence.photo_keys_missing`), and a chat archive is marked done only if nobody in it is deleting (`finish_chat_archive_checked`); each chat is claimed by one archive run (`private.chat_archive_jobs`, token and 30-minute lease), and a refused archive stays on that table as `cleanup` until `cleanup-drafts` confirms its object deleted. Since 0248 a job row is keyed by `(chat_id, token)` with at most one `writing` or `done` row per chat: a takeover of an expired lease moves the old row to `cleanup` under its own key, so a stale cleaner can never delete a replacement archive. Sweeps resume at `account_deletions.media_sweep_pos` (saved every 25 prefixes and at every stop, reset by a new generation), and `cleanup-drafts` runs its phases on a fixed schedule (work and tail deadlines per phase) so no phase can starve the next. Media locks come before rate counters and row locks in every function that takes them (RV-03). Sold listings older than 180 d keep the thumbnail only.
 
 ---
 
@@ -731,6 +752,7 @@ Suspensions and bans revoke sessions (ADR-013).
 | `0100_ref_data.sql` | categories, banned words (+ pets, gift cards, recalled items), `app_config` defaults: idempotent upserts (BE-15) | R1.0 |
 | `0200_quad.sql` … | R1.1 features | R1.1 |
 | `0206_activity_events.sql`, `0207_admin_v2_reads.sql`, `0208_admin_v2_tools.sql` | §2.8, API §3 `track_events`, API §4.1 (DEC 93) | admin v2 |
+| `0217_activity_volume.sql` | §2.8, swipes, API §3 `record_swipes` and `track_events` (DEC 100) | audit E-03 |
 
 Staging-only objects (`test_set_now`, the `private.now()` override, the `test_otps` table) live in `supabase/migrations_staging/` and are **never** applied to production; a CI check enforces this.
 

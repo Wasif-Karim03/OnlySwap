@@ -85,6 +85,11 @@ export function GlobalSearch() {
         />
         <kbd aria-hidden="true">⌘K</kbd>
       </div>
+      {open && q.trim().length < 2 ? (
+        <div className="pop" role="status">
+          <div className="empty">Type 2 or more letters.</div>
+        </div>
+      ) : null}
       {open && q.trim().length >= 2 ? (
         <div className="pop" role="listbox" aria-label="Search results">
           {error ? <div className="empty error">{error}</div> : null}

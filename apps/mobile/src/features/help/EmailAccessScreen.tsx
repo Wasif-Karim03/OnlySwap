@@ -3,16 +3,19 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { Banner } from '@/components/Banner';
 import { Button } from '@/components/Button';
-import { GlyphTile } from '@/components/EmptyState';
 import { Input } from '@/components/Input';
+import { SuccessCheck } from '@/components/SuccessCheck';
 import { Text } from '@/components/Text';
 import { TextArea } from '@/components/TextArea';
 import { authApi, type AuthApi } from '@/features/auth/api';
 import { AuthStep } from '@/features/auth/AuthStep';
 import { normalizeEmail } from '@/features/auth/logic';
+import { useTurnstile, type TurnstileSeam } from '@/components/TurnstileField';
 import { errorCopy, toAppError } from '@/lib/errors';
-import { emailAccess as copy } from '@/strings';
+import { isTurnstileError } from '@/lib/turnstile';
+import { banner, emailAccess as copy } from '@/strings';
 
 const deviceTz = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 const MAX_BODY = 2000;
@@ -29,8 +32,16 @@ export function composeMessage(schoolEmail: string, message: string): string {
  * signed out. The owner checks who they are by hand and moves the account to
  * a new school address (admin_change_email).
  */
-export function EmailAccessScreen({ api = authApi }: { api?: AuthApi }) {
+export function EmailAccessScreen({
+  api = authApi,
+  turnstileField,
+}: {
+  api?: AuthApi;
+  /** Test seam for the web bot check (LR-04). */
+  turnstileField?: TurnstileSeam;
+}) {
   const router = useRouter();
+  const bot = useTurnstile(turnstileField);
   const [contact, setContact] = useState('');
   const [school, setSchool] = useState('');
   const [message, setMessage] = useState('');
@@ -58,12 +69,18 @@ export function EmailAccessScreen({ api = authApi }: { api?: AuthApi }) {
         email,
         topic: 'cant_access_email',
         body: composeMessage(school, message),
+        ...(bot.token ? { turnstileToken: bot.token } : {}),
       });
       setSentTo(email);
     } catch (e) {
-      setError(errorCopy(toAppError(e), { campusTimeZone: deviceTz() }));
+      setError(
+        isTurnstileError(e)
+          ? banner.botCheckFailed
+          : errorCopy(toAppError(e), { campusTimeZone: deviceTz() }),
+      );
     } finally {
       setSending(false);
+      bot.reset();
     }
   };
 
@@ -76,7 +93,7 @@ export function EmailAccessScreen({ api = authApi }: { api?: AuthApi }) {
         onBack={leave}
         dock={<Button label={copy.done} onPress={leave} testID="email-access-done" />}
       >
-        <GlyphTile icon="mail" tile="accent" />
+        <SuccessCheck visible accessibilityLabel={copy.sentTitle} />
       </AuthStep>
     );
   }
@@ -88,13 +105,19 @@ export function EmailAccessScreen({ api = authApi }: { api?: AuthApi }) {
       body={copy.body}
       onBack={leave}
       dock={
-        <Button
-          label={copy.send}
-          onPress={() => void submit()}
-          loading={sending}
-          disabled={sending}
-          testID="email-access-send"
-        />
+        <>
+          {/* The note sits right above Send as its one caption (3.07). */}
+          <Text variant="meta" tone="ink2" style={styles.note}>
+            {copy.note}
+          </Text>
+          <Button
+            label={copy.send}
+            onPress={() => void submit()}
+            loading={sending}
+            disabled={sending || (bot.required && !bot.token)}
+            testID="email-access-send"
+          />
+        </>
       }
     >
       <Input
@@ -128,25 +151,17 @@ export function EmailAccessScreen({ api = authApi }: { api?: AuthApi }) {
         placeholder={copy.messagePlaceholder}
         testID="email-access-message"
       />
-      <View style={styles.note}>
-        <Text variant="meta" tone="ink2">
-          {copy.note}
-        </Text>
-      </View>
+      {bot.element}
       {error ? (
-        <Text
-          variant="meta"
-          tone="red"
-          accessibilityLiveRegion="polite"
-          testID="email-access-error"
-        >
-          {error}
-        </Text>
+        // A Banner, not small red meta text, so it is hard to miss (3.07).
+        <View testID="email-access-error">
+          <Banner kind="error" message={error} />
+        </View>
       ) : null}
     </AuthStep>
   );
 }
 
 const styles = StyleSheet.create((theme) => ({
-  note: { marginTop: theme.space.xs },
+  note: { marginBottom: theme.space.xs },
 }));

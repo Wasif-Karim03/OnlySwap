@@ -1,9 +1,10 @@
 import { useEffect, useRef } from 'react';
-import { View } from 'react-native';
+import { AccessibilityInfo, Platform, Pressable, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { StyleSheet } from 'react-native-unistyles';
 import { create } from 'zustand';
 
+import { useScreenReader } from '@/lib/a11y';
 import { toast as toastCopy } from '@/strings';
 
 import { Icon } from './icons/Icon';
@@ -14,6 +15,8 @@ export type ToastKind = 'info' | 'success' | 'error';
 
 export const TOAST_MS = 4000;
 export const UNDO_MS = 5000;
+/** With VoiceOver or TalkBack on, a toast stays long enough to hear and act on. */
+export const SCREEN_READER_TOAST_MS = 10_000;
 
 type ToastItem = { id: number; kind: ToastKind; message: string; onUndo?: () => void };
 
@@ -38,17 +41,25 @@ export const useToastStore = create<ToastState>((set, get) => ({
 
 const ICON = { info: 'info', success: 'check', error: 'alert' } as const;
 
-/** Mount once near the root. Auto-dismiss 4 s, undo toasts 5 s. */
+/**
+ * Mount once near the root. Auto-dismiss 4 s, undo toasts 5 s, or tap to
+ * dismiss. Sits high enough to clear a docked 54 pt button on any screen.
+ */
 export function ToastHost() {
   const current = useToastStore((s) => s.current);
   const dismiss = useToastStore((s) => s.dismiss);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const screenReader = useScreenReader();
 
   useEffect(() => {
     if (!current) return undefined;
-    timer.current = setTimeout(() => dismiss(current.id), current.onUndo ? UNDO_MS : TOAST_MS);
+    // iOS ignores accessibilityLiveRegion, so VoiceOver never read toasts
+    // (UX audit 2026-10-25). Android announces through the live region.
+    if (Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility(current.message);
+    const ms = screenReader ? SCREEN_READER_TOAST_MS : current.onUndo ? UNDO_MS : TOAST_MS;
+    timer.current = setTimeout(() => dismiss(current.id), ms);
     return () => clearTimeout(timer.current);
-  }, [current, dismiss]);
+  }, [current, dismiss, screenReader]);
 
   if (!current) return null;
   return (
@@ -60,37 +71,42 @@ export function ToastHost() {
       style={styles.host}
       pointerEvents="box-none"
     >
-      <View
-        style={styles.toast}
-        accessibilityRole="alert"
-        accessibilityLiveRegion="polite"
-        testID="toast"
+      {/* Tap the pill to dismiss it, except an undo toast, where a stray tap
+        would throw away the Undo before its window ends. */}
+      <Pressable
+        accessible={false}
+        onPress={current.onUndo ? undefined : () => dismiss(current.id)}
       >
-        <Icon
-          name={ICON[current.kind]}
-          size={20}
-          tone={current.kind === 'error' ? 'red' : current.kind === 'success' ? 'green' : 'inverse'}
-        />
-        <Text variant="label" tone="inverse" style={styles.message}>
-          {current.message}
-        </Text>
-        {current.onUndo ? (
-          <Tappable
-            accessibilityRole="button"
-            accessibilityLabel={toastCopy.undo}
-            onPress={() => {
-              current.onUndo?.();
-              dismiss(current.id);
-            }}
-          >
-            <View style={styles.undo}>
-              <Text variant="label" tone="inverse" style={styles.undoText}>
-                {toastCopy.undo}
-              </Text>
-            </View>
-          </Tappable>
-        ) : null}
-      </View>
+        <View
+          style={styles.toast}
+          accessibilityRole="alert"
+          accessibilityLiveRegion="polite"
+          testID="toast"
+        >
+          {/* Inverse for every kind: green and red on the ink pill fail 3:1 in
+            dark mode. The glyph (check, alert) carries the meaning (DEC 142). */}
+          <Icon name={ICON[current.kind]} size={20} tone="inverse" />
+          <Text variant="label" tone="inverse" style={styles.message}>
+            {current.message}
+          </Text>
+          {current.onUndo ? (
+            <Tappable
+              accessibilityRole="button"
+              accessibilityLabel={toastCopy.undo}
+              onPress={() => {
+                current.onUndo?.();
+                dismiss(current.id);
+              }}
+            >
+              <View style={styles.undo}>
+                <Text variant="label" tone="inverse" style={styles.undoText}>
+                  {toastCopy.undo}
+                </Text>
+              </View>
+            </Tappable>
+          ) : null}
+        </View>
+      </Pressable>
     </Animated.View>
   );
 }
@@ -100,7 +116,8 @@ const styles = StyleSheet.create((theme, rt) => ({
     position: 'absolute',
     left: theme.space.lg,
     right: theme.space.lg,
-    bottom: rt.insets.bottom + theme.space['2xl'] * 2,
+    // One fixed offset above a docked L button and its padding (display only).
+    bottom: rt.insets.bottom + theme.size.buttonL + theme.space.lg * 2,
   },
   toast: {
     minHeight: theme.size.buttonL,
@@ -108,7 +125,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     alignItems: 'center',
     gap: theme.space.sm,
     paddingHorizontal: theme.space.lg,
-    borderRadius: theme.radius.control,
+    borderRadius: theme.radius.chip,
     backgroundColor: theme.colors.ink,
     shadowColor: theme.elevation.soft.color,
     shadowOpacity: theme.elevation.soft.opacity,

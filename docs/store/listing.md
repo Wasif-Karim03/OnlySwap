@@ -20,7 +20,7 @@ Swipe through what people on campus are selling: dorm stuff, textbooks, tech.
 Swipe right to make an offer. When the seller says yes, a chat opens so you can
 plan a meetup at a Meetup spot on campus. Check the item and pay in person.
 
-- Only verified students 18 and older, checked with a school email
+- Only verified students 13 and older, checked with a school email
 - No strangers in your messages: chat opens only after an offer is accepted
 - Meetup spots on campus, with reminders and a link you can send a friend
 - Around campus: free food, free stuff and Wanted posts from students nearby
@@ -60,7 +60,7 @@ automatically. Every feature is turned on there.
   one yourself to see it (Around campus → Post free food).
 - **The Quad** (anonymous campus board): the Quad tab. The first visit shows
   the four Quad rules; tap "I agree to the Quad rules". Posts are anonymous to
-  other students but always tied to a verified 18+ account. Each post and reply
+  other students but always tied to a verified, age-checked account. Each post and reply
   has a menu with Report and "Hide posts from this person"; posts voted down to
   -5 are hidden and reviewed. New posts are filtered for names, phone numbers,
   emails, handles, rooms and banned words before they go live.
@@ -70,7 +70,8 @@ automatically. Every feature is turned on there.
   press.
 - **Safety:** report and block from any listing, chat, message or profile;
   report from any Quad post or reply; a person reviews reports within 24 hours.
-  18+ age check at sign-up. Account deletion in Profile → Settings → Delete
+  Age check at sign-up (13 or older; under 13 is blocked and the account deleted;
+  the review accounts are already age-checked, so you won't see it). Account deletion in Profile → Settings → Delete
   account and on the web at /delete. Download your data in Profile → Settings.
 - **Payments:** the app sells physical goods paid in person (3.1.3(e)); there
   are no in-app purchases.
@@ -84,20 +85,25 @@ automatically. Every feature is turned on there.
 | A way to block abusive users | Block on profiles and chats; in the Quad, "Hide posts from this person" (authors are anonymous, so we hide without telling you who) plus keyword mutes |
 | Published contact information | Help page `/help` (linked in Settings), support email in App Store Connect |
 | Users agree to terms before posting | Terms, Privacy and Community Rules accepted at sign-up; Quad rules accepted before the first Quad post; updated rules must be accepted again |
-| No anonymous bullying | The Quad is anonymous only to students: every post is tied to a verified 18+ school account; calling out students is against the rules and filtered; strikes and bans apply |
+| No anonymous bullying | The Quad is anonymous only to students: every post is tied to a verified, age-checked school account; calling out students is against the rules and filtered; strikes and bans apply |
 
 ## Age rating answers (R1.1 content present)
 
 **Apple:** User-generated content yes; Messaging and chat yes; Social media /
-public posting yes (the Quad); Age assurance yes (18+ check at sign-up); Mature
-themes, profanity or crude humor: infrequent/mild (user posts can contain it,
-it's filtered and moderated); everything else none. Then **override to 18+**
-(Apple's 18+ rating). Unrestricted web access: no. Gambling, contests: no.
+public posting yes (the Quad); Social media disabled for under-13s yes (no
+under-13 accounts: the age check blocks them); Age assurance yes (Declared Age
+Range where required, else a birthday check; DEC 136); Parental controls no;
+Mature themes, profanity or crude humor: infrequent/mild (user posts can
+contain it, it's filtered and moderated); everything else none. Unrestricted
+web access: no. Gambling, contests: no. **No override:** the expected
+calculated rating is **13+** (DEC 136). If App Store Connect calculates higher,
+keep it; never pick a rating below the calculated one.
 
 **Google Play (IARC):** Users can interact or exchange content: yes (chat, the
 Quad). Shares user location: no. Digital purchases: no. Unmoderated UGC: no
-(report, block/hide, filters, human review). Then set Target audience to 18+
-only.
+(report, block/hide, filters, human review). Then set Target audience to
+**13-15, 16-17 and 18+** (no under-13 groups, so the Families policy does not
+apply; "Appeals to children": no).
 
 ## Privacy label / Data safety
 

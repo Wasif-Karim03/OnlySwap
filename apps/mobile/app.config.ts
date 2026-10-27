@@ -124,11 +124,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     extra: { eas: { projectId: EAS_PROJECT_ID } },
     ios: {
       bundleIdentifier: BUNDLE_ID,
-      // iPad (P17-FEAT-02): phones stay portrait (`orientation`); with
-      // requireFullScreen off, prebuild adds all four iPad orientations
-      // (UISupportedInterfaceOrientations~ipad) for Split View and Slide Over.
-      supportsTablet: true,
-      requireFullScreen: false,
+      // Phones only (DEC 146). On an iPad the app runs in a phone-sized window.
+      supportsTablet: false,
       deploymentTarget: '16.4',
       config: { usesNonExemptEncryption: false },
       associatedDomains: [`applinks:${WEB_HOST}`],
@@ -142,11 +139,17 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         NSPrivacyAccessedAPITypes: [
           {
             NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryUserDefaults',
-            NSPrivacyAccessedAPITypeReasons: ['CA92.1'],
+            // CA92.1 the app's own; 1C8F.1 the widget App Group (AR-06).
+            NSPrivacyAccessedAPITypeReasons: ['CA92.1', '1C8F.1'],
           },
           {
             NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryFileTimestamp',
             NSPrivacyAccessedAPITypeReasons: ['C617.1'],
+          },
+          {
+            // React Native core (also merged from its pod at pod install).
+            NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategorySystemBootTime',
+            NSPrivacyAccessedAPITypeReasons: ['35F9.1'],
           },
         ],
       },
@@ -200,7 +203,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           // iOS 27 asserts at launch unless the app adopts the UIScene life
           // cycle (crash found on the iOS 27 Simulator). SDK 57's opt-in; SDK 58
           // does this in the template.
-          ios: { enableSceneSupport: true },
+          // Xcode 27.1 ships Swift 6.4, which rejects SDK 57's precompiled
+          // Expo XCFrameworks (built with Swift 6.3.1). Build them from source;
+          // see patches/expo-modules-jsi@57.1.2.patch for the matching fix.
+          ios: { enableSceneSupport: true, usePrecompiledModules: false },
         },
       ],
       [
@@ -209,6 +215,15 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           photosPermission: permissions.photos,
           cameraPermission: permissions.camera,
           microphonePermission: false,
+        },
+      ],
+      // Scan ISBN (DEC 131): barcode only, no audio.
+      [
+        'expo-camera',
+        {
+          cameraPermission: permissions.camera,
+          microphonePermission: false,
+          recordAudioAndroid: false,
         },
       ],
       [
@@ -227,6 +242,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       // hooks; its manifest asks for location, which BLOCKED_ANDROID_PERMISSIONS
       // strips. No NSLocation* usage string is added (spots only, DEC 35).
       '@maplibre/maplibre-react-native',
+      // AR-06: widget privacy manifest. Listed BEFORE expo-widgets because mods
+      // run in reverse order, so it runs after the widget target exists.
+      './plugins/withWidgetPrivacyManifest',
       // P17-FEAT-01: iOS "Next meetup" widget + meetup Live Activity (WidgetKit
       // extension, App Group). No push to Live Activities: the app starts,
       // updates and ends them itself ($0, no APNs server).

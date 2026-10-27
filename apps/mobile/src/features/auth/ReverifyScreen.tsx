@@ -5,9 +5,9 @@ import { ActivityIndicator, View } from 'react-native';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 import { Button } from '@/components/Button';
-import { GlyphTile } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { GroupedList, ListRow } from '@/components/ListRow';
+import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { errorCopy, toAppError } from '@/lib/errors';
 import { reverify as copy, states, intlLocale } from '@/strings';
@@ -115,7 +115,6 @@ export function ReverifyScreen({ api = authApi }: { api?: AuthApi }) {
         </>
       }
     >
-      <GlyphTile icon="shield" />
       {data ? (
         <GroupedList>
           <ListRow label={copy.emailLabel} value={data.email} />
@@ -132,6 +131,18 @@ export function ReverifyScreen({ api = authApi }: { api?: AuthApi }) {
       <Text variant="meta" tone="ink2">
         {copy.graduated}
       </Text>
+      {/* The existing delete-account screen; Settings is out of reach from here. */}
+      <Tappable
+        accessibilityRole="link"
+        accessibilityLabel={copy.closeAccount}
+        onPress={() => router.push('/settings/delete')}
+        style={styles.link}
+        testID="reverify-close-account"
+      >
+        <Text variant="label" tone="ink2" style={styles.underline}>
+          {copy.closeAccount}
+        </Text>
+      </Tappable>
     </AuthStep>
   );
 }
@@ -143,4 +154,6 @@ const styles = StyleSheet.create((theme) => ({
     justifyContent: 'center',
     backgroundColor: theme.colors.bg,
   },
+  link: { minHeight: theme.size.hit, justifyContent: 'center', alignSelf: 'flex-start' },
+  underline: { textDecorationLine: 'underline' },
 }));

@@ -26,7 +26,10 @@ test('under the lines: no alerts, every figure listed', () => {
 
 test('at the alert line: named and non-zero exit material', () => {
   const { markdown, alerts } = report({ db_bytes: 360 * MB, emails_24h: 400 });
-  assert.deepEqual(alerts, ['Supabase database', 'Emails in the last 24 h (Gmail ~500/day)']);
+  assert.deepEqual(alerts, [
+    'Supabase database',
+    'Emails in the last 24 h: outbox plus sign-in codes (Gmail ~500/day)',
+  ]);
   assert.match(markdown, /\*\*Over the alert line:\*\*/);
   assert.match(
     markdown,

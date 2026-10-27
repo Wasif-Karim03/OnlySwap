@@ -111,7 +111,12 @@ export function BannedWordsSection() {
             Search
           </button>
         </form>
-        <Loadable state={state} rows={6} empty={(d) => d.length === 0} emptyText="No terms match.">
+        <Loadable
+          state={state}
+          rows={6}
+          empty={(d) => d.length === 0}
+          emptyText="No terms match. Clear the filters."
+        >
           {(rows) => (
             <>
               <Table

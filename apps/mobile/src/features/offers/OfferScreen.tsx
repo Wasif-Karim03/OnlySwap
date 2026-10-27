@@ -21,13 +21,28 @@ import { getEnv } from '@/lib/env';
 import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
-import { offers as copy, intlLocale } from '@/strings';
+import { supabaseRealtime, useUserChannel, type RealtimeSource } from '@/lib/realtime';
+import { offers as copy } from '@/strings';
 import { readableColumn } from '@/theme/layout';
 
 import { dollarsToCents } from '../search/logic';
 import { mediaUrl } from '../sell/logic';
 import { offersApi, type OffersApi } from './api';
-import { MAX_ROUND, money, offerView, type Offer } from './logic';
+import {
+  expirySpan,
+  MAX_ROUND,
+  money,
+  offerLineShort,
+  offerTitle,
+  offerView,
+  type Offer,
+  type OfferAction,
+} from './logic';
+
+/** The round is worth a mention only near the end (round 3 of 4 and later). */
+const SHOW_ROUND_FROM = 3;
+/** Quick notes read as plain words, one after another. */
+const NOTE_SEPARATOR = ' · ';
 
 export const offerKey = (id: string) => ['offer', id] as const;
 
@@ -36,14 +51,21 @@ export function OfferScreen({
   id,
   api = offersApi,
   mediaBase = () => getEnv().EXPO_PUBLIC_MEDIA_URL,
+  now = () => new Date(),
+  realtime = supabaseRealtime,
 }: {
   id: string;
   api?: OffersApi;
   mediaBase?: () => string;
+  now?: () => Date;
+  realtime?: RealtimeSource;
 }) {
   const router = useRouter();
   const qc = useQueryClient();
-  const query = useQuery({ queryKey: offerKey(id), queryFn: () => api.get(id) });
+  // Always fresh: the other side can accept, counter or decline while this
+  // screen is open (audit 2026-10-24: Withdraw stayed up on an accepted offer).
+  const query = useQuery({ queryKey: offerKey(id), queryFn: () => api.get(id), staleTime: 0 });
+  useUserChannel('inbox', () => void query.refetch(), realtime);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [counterOpen, setCounterOpen] = useState(false);
@@ -99,6 +121,22 @@ export function OfferScreen({
   const counterCents = dollarsToCents(counterAmount);
   const base = mediaBase();
   const name = o.other?.display_name ?? copy.deletedUser;
+  // One visible line without the amount (it is the big number); the label keeps it.
+  const shortLine = offerLineShort(o, view.line);
+  const span = view.open ? expirySpan(o.expires_at, now(), 'long') : null;
+  const meta = view.open
+    ? [
+        o.round >= SHOW_ROUND_FROM ? fill(copy.round, { n: o.round }) : null,
+        span ? fill(copy.expiresIn, { when: span }) : null,
+      ]
+        .filter(Boolean)
+        .join('. ')
+    : '';
+  const declineReason =
+    o.status === 'declined' && o.decline_reason
+      ? fill(copy.declinedReason, { reason: o.decline_reason })
+      : null;
+  const has = (a: OfferAction) => view.actions.includes(a);
 
   return (
     <View style={styles.root} testID={`screen-offer-${view.frame}`}>
@@ -121,8 +159,13 @@ export function OfferScreen({
               </View>
               <View style={styles.flex}>
                 <Text variant="bodyStrong" numberOfLines={2}>
-                  {o.listing.title}
+                  {offerTitle(o)}
                 </Text>
+                {o.bundle?.length ? (
+                  <Text variant="meta" tone="ink2" numberOfLines={3} testID="offer-bundle">
+                    {fill(copy.bundleAlso, { items: o.bundle.map((b) => b.title).join(', ') })}
+                  </Text>
+                ) : null}
                 <Text variant="meta" tone="ink2">
                   {money(o.listing.price_cents)}
                 </Text>
@@ -134,9 +177,14 @@ export function OfferScreen({
         <Text variant="price" accessibilityRole="header">
           {money(o.amount_cents)}
         </Text>
-        <Text variant="bodyStrong" testID="offer-line">
-          {view.line}
+        <Text variant="bodyStrong" accessibilityLabel={view.line} testID="offer-line">
+          {shortLine}
         </Text>
+        {declineReason ? (
+          <Text variant="body" tone="ink2" testID="offer-decline-reason">
+            {declineReason}
+          </Text>
+        ) : null}
         <View style={styles.row}>
           <Avatar
             name={name}
@@ -145,23 +193,16 @@ export function OfferScreen({
           />
           <Text variant="label">{name}</Text>
         </View>
-        {view.open ? (
-          <Text variant="meta" tone="ink2">
-            {`${fill(copy.round, { n: o.round })} · ${fill(copy.expiresIn, {
-              when: new Date(o.expires_at).toLocaleString(intlLocale, {
-                weekday: 'short',
-                hour: 'numeric',
-                minute: '2-digit',
-              }),
-            })}`}
+        {meta ? (
+          <Text variant="meta" tone="ink2" testID="offer-meta">
+            {meta}
           </Text>
         ) : null}
+        {/* Quick notes are plain words, not chips: they are tags, not controls. */}
         {o.quick_notes.length ? (
-          <View style={styles.chips}>
-            {o.quick_notes.map((n) => (
-              <Chip key={n} label={n} disabled />
-            ))}
-          </View>
+          <Text variant="body" tone="ink2" testID="offer-quick-notes">
+            {o.quick_notes.join(NOTE_SEPARATOR)}
+          </Text>
         ) : null}
         {o.note ? <Text variant="body">{o.note}</Text> : null}
         {view.open && o.round >= MAX_ROUND && view.actions.includes('accept') ? (
@@ -172,32 +213,39 @@ export function OfferScreen({
         {error ? <Banner kind="error" message={error} /> : null}
       </ScrollView>
 
+      {/* One filled action (P7): Accept, with Counter beside it; the rest are text buttons. */}
       <View style={styles.dock}>
-        {view.actions.includes('accept') ? (
-          <Button
-            label={fill(copy.accept, { amount: money(o.amount_cents) })}
-            loading={busy}
-            onPress={accept}
-            testID="offer-accept"
-          />
+        {has('accept') ? (
+          <View style={styles.pair}>
+            <View style={styles.flex}>
+              <Button
+                label={fill(copy.accept, { amount: money(o.amount_cents) })}
+                loading={busy}
+                onPress={accept}
+                testID="offer-accept"
+              />
+            </View>
+            {has('counter') ? (
+              <View style={styles.flex}>
+                <Button
+                  label={copy.counter}
+                  variant="secondary"
+                  onPress={() => setCounterOpen(true)}
+                  testID="offer-counter"
+                />
+              </View>
+            ) : null}
+          </View>
         ) : null}
-        {view.actions.includes('counter') ? (
-          <Button
-            label={copy.counter}
-            variant="dark"
-            onPress={() => setCounterOpen(true)}
-            testID="offer-counter"
-          />
-        ) : null}
-        {view.actions.includes('decline') ? (
+        {has('decline') ? (
           <Button
             label={copy.decline}
-            variant="secondary"
+            variant="text"
             onPress={() => setDeclineOpen(true)}
             testID="offer-decline"
           />
         ) : null}
-        {view.actions.includes('withdraw') ? (
+        {has('withdraw') ? (
           <Button
             label={copy.withdraw}
             variant="text"
@@ -288,9 +336,15 @@ export function OfferScreen({
         confirmLabel={copy.withdrawConfirm}
         destructive
         onConfirm={async () => {
-          await api.withdraw(o.id);
-          setWithdrawOpen(false);
-          await refresh();
+          try {
+            await api.withdraw(o.id);
+          } catch (e) {
+            // Usually the offer moved on (accepted or expired) before the tap.
+            setError(errorText(e));
+          } finally {
+            setWithdrawOpen(false);
+            void refresh();
+          }
         }}
         onCancel={() => setWithdrawOpen(false)}
       />
@@ -301,18 +355,20 @@ export function OfferScreen({
 const styles = StyleSheet.create((theme, rt) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   body: { ...readableColumn, padding: theme.space.screen, gap: theme.space.md },
+  // A plain hairline row, not a boxed card (2.1 surface rule).
   listing: {
     flexDirection: 'row',
     gap: theme.space.md,
     alignItems: 'center',
-    padding: theme.space.md,
-    borderRadius: theme.radius.card,
-    borderWidth: 1,
-    borderColor: theme.colors.line,
+    minHeight: theme.space.rowMin,
+    paddingBottom: theme.space.md,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.line,
   },
   thumb: { width: theme.size.buttonL, height: theme.size.buttonL },
   flex: { flex: 1 },
   row: { flexDirection: 'row', alignItems: 'center', gap: theme.space.sm },
+  pair: { flexDirection: 'row', gap: theme.space.sm },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
   sheet: { gap: theme.space.lg, paddingBottom: theme.space.xl },
   dock: {

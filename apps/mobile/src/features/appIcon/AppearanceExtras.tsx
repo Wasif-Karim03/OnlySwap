@@ -20,6 +20,7 @@ import {
   nativeIconName,
   type AppIconChoice,
 } from './logic';
+import { a11yState } from '@/lib/a11y';
 
 const PREVIEWS: Record<AppIconChoice, number> = {
   default: require('../../../assets/images/icon.png') as number,
@@ -75,7 +76,7 @@ export function AppIconPicker({
               key={choice}
               accessibilityRole="radio"
               accessibilityLabel={copy.appIcons[choice]}
-              accessibilityState={{ checked: on }}
+              {...a11yState({ checked: on })}
               onPress={() => void choose(choice)}
               style={styles.tile}
               testID={`app-icon-${choice}`}

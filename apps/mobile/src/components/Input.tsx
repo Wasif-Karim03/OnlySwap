@@ -4,6 +4,7 @@ import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 import { Icon } from './icons/Icon';
 import { Text } from './Text';
+import { a11yState } from '@/lib/a11y';
 
 export type InputKind = 'text' | 'email' | 'price' | 'search';
 
@@ -87,7 +88,7 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
           <TextInput
             ref={ref}
             accessibilityLabel={label}
-            accessibilityState={{ disabled }}
+            {...a11yState({ disabled })}
             accessibilityHint={error}
             editable={!disabled}
             placeholderTextColor={theme.colors.ink3}

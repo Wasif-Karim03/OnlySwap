@@ -74,6 +74,17 @@ export function initSentry(
   );
 }
 
+/**
+ * Reports an error a boundary caught (F-08). No-op until Sentry starts; the
+ * crash opt-out still drops it in beforeSend.
+ */
+export function captureError(error: unknown): void {
+  if (!started) return;
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const Sentry = require('@sentry/react-native') as typeof import('@sentry/react-native');
+  Sentry.captureException(error);
+}
+
 /** The F12 switch. Events already queued are dropped by beforeSend. */
 export function setCrashOptOut(out: boolean): void {
   getStorage().set('privacy.crashOptOut', out);
