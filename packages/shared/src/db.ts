@@ -2477,6 +2477,9 @@ isOneToOne: false
 "delete_quad_post":
 { Args: { "post_id": string }; Returns: undefined
                            },
+"delete_quad_reply":
+{ Args: { "reply_id": string }; Returns: undefined
+                           },
 "delete_saved_search":
 { Args: { "id": string }; Returns: undefined
                            },
@@ -2581,6 +2584,9 @@ isOneToOne: false
                            },
 "hide_quad_author":
 { Args: { "post_id": string }; Returns: undefined
+                           },
+"hide_quad_reply_author":
+{ Args: { "reply_id": string }; Returns: undefined
                            },
 "like_listing":
 { Args: { "liked": boolean,"listing_id": string }; Returns: Json
@@ -2709,6 +2715,9 @@ isOneToOne: false
                            },
 "similar_listings":
 { Args: { "id": string }; Returns: Json
+                           },
+"start_wanted_chat":
+{ Args: { "body"?: string,"client_id"?: string,"wanted_id": string }; Returns: Json
                            },
 "submit_rating":
 { Args: { "chat_id": string,"comment"?: string,"tags"?: (string)[],"thumbs_up": boolean }; Returns: undefined
