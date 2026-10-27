@@ -23,6 +23,7 @@ import {
   Field,
   Icon,
   Loadable,
+  media,
   Page,
   PersonCell,
   ReasonActions,
@@ -47,7 +48,8 @@ type ReportRow = {
 
 type ReportDetail = Omit<ReportRow, 'target_name' | 'reports_on_target'> & {
   details: string | null;
-  evidence: { text?: string; excerpts?: string[] } | null;
+  /** photo_keys and auto ('weapon', 'sexual', ...) come from the automatic photo check (DEC 154). */
+  evidence: { text?: string; excerpts?: string[]; photo_keys?: string[]; auto?: string } | null;
   reporter_id: string | null;
   reporter_name: string | null;
   action_taken: string | null;
@@ -170,6 +172,87 @@ export function ReportsPage() {
   );
 }
 
+const AUTO_WORDS: Record<string, string> = {
+  weapon: 'a weapon',
+  drugs: 'drugs',
+  violence: 'violence or gore',
+  hate: 'a hate symbol',
+  sexual: 'sexual content',
+  minor: 'a possible minor-safety problem',
+  other: 'something against the rules',
+};
+
+/**
+ * Automatic photo flag (DEC 154): red alert, who posted, when, and the photo.
+ * The photo starts blurred; sexual starts hidden behind a click; minor is never shown.
+ */
+function AutoFlag({
+  why,
+  keys,
+  targetType: kind,
+  poster,
+  flaggedAt,
+}: {
+  why: string;
+  keys: string[];
+  targetType: string;
+  poster: ReportDetail['target'];
+  flaggedAt: string;
+}) {
+  const [shown, setShown] = useState(false);
+  const minor = why === 'minor';
+  return (
+    <div className="auto-flag" role="alert">
+      <div className="auto-flag-head">
+        <Icon name="flag" />
+        <span className="strong">Red alert: photo flagged for {AUTO_WORDS[why] ?? AUTO_WORDS.other}</span>
+      </div>
+      <dl className="kv flush">
+        <dt>Posted by</dt>
+        <dd>
+          {poster ? (
+            <Link to="/people/$id" params={{ id: poster.id }}>
+              {poster.display_name}
+            </Link>
+          ) : kind === 'quad_post' ? (
+            'Anonymous Quad author (use Reveal author on the Quad page; it is logged)'
+          ) : (
+            'Unknown or deleted account'
+          )}
+        </dd>
+        <dt>Flagged</dt>
+        <dd>
+          {whenLabel(flaggedAt)} ({timeAgo(flaggedAt)})
+        </dd>
+        <dt>Status</dt>
+        <dd>Already hidden from students</dd>
+      </dl>
+      {minor ? (
+        <p className="body-text">
+          This photo is not shown here. Don't download or share it. Ban the account, keep the
+          evidence (never delete it) and file a CyberTipline report: see
+          docs/runbooks/photo-screening.md.
+        </p>
+      ) : keys.length ? (
+        <div className="auto-flag-photos">
+          {keys.map((k) => (
+            <button
+              key={k}
+              type="button"
+              className={`auto-flag-photo${shown ? ' shown' : ''}`}
+              onClick={() => setShown(true)}
+              aria-label={shown ? 'Flagged photo' : 'Show the flagged photo'}
+            >
+              <img src={media(k)} alt="The flagged photo" />
+              {shown ? null : <span className="btn sm">Show photo</span>}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function ReportDetailCard({
   id,
   row,
@@ -234,7 +317,9 @@ function ReportDetailCard({
               </h2>
               <div className="r">
                 <span className="muted">
-                  Reported {timeAgo(r.created_at)} by {r.reporter_name ?? 'a deleted account'}
+                  {r.evidence?.auto && !r.reporter_id
+                    ? `Flagged ${timeAgo(r.created_at)} by the automatic photo check`
+                    : `Reported ${timeAgo(r.created_at)} by ${r.reporter_name ?? 'a deleted account'}`}
                 </span>
               </div>
             </div>
@@ -259,6 +344,15 @@ function ReportDetailCard({
               )}
             </div>
             <div className="cb stack tight">
+              {r.evidence?.auto ? (
+                <AutoFlag
+                  why={r.evidence.auto}
+                  keys={r.evidence.photo_keys ?? []}
+                  targetType={r.target_type}
+                  poster={r.target}
+                  flaggedAt={r.created_at}
+                />
+              ) : null}
               <div className="muted small strong">What was reported</div>
               {r.evidence?.text ? <div className="quote">"{r.evidence.text}"</div> : null}
               {(r.evidence?.excerpts ?? []).map((x, i) => (
@@ -266,7 +360,7 @@ function ReportDetailCard({
                   {x}
                 </div>
               ))}
-              {!r.evidence?.text && !(r.evidence?.excerpts ?? []).length ? (
+              {!r.evidence?.text && !(r.evidence?.excerpts ?? []).length && !r.evidence?.auto ? (
                 <div className="muted">No text was captured with this report.</div>
               ) : null}
               {r.details ? (

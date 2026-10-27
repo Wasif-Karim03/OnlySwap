@@ -115,6 +115,16 @@ export function Shell() {
         </div>
       </aside>
       <main className="main">
+        {counts?.priority_reports ? (
+          <Link to="/reports" className="red-alert" role="alert">
+            <Icon name="flag" />
+            <span className="strong">
+              Red alert: {counts.priority_reports} urgent report
+              {counts.priority_reports === 1 ? '' : 's'}
+            </span>
+            <span>Flagged photos and safety reports. Review now.</span>
+          </Link>
+        ) : null}
         <Outlet />
       </main>
     </div>

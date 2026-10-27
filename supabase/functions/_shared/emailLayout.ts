@@ -9,6 +9,7 @@ export const INK3 = '#8A8A84';
 export const LINE = '#ECECE8';
 export const BG2 = '#F3F3F0';
 export const PISTACHIO = '#C8E27D';
+export const RED = '#C8321C';
 const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 const MONO = "'SF Mono',ui-monospace,Menlo,Consolas,monospace";
 
@@ -20,7 +21,9 @@ export type Block =
   | { kind: 'rows'; rows: [label: string, value: string][] }
   | { kind: 'steps'; label: string; steps: [title: string, body: string][] }
   | { kind: 'checks'; title: string; items: string[] }
-  | { kind: 'quote'; html: string };
+  | { kind: 'quote'; html: string }
+  /** A photo the reader may need to see (moderation alerts). src and href are escaped URLs. */
+  | { kind: 'image'; src: string; alt: string; href?: string };
 
 export type Hero = {
   title: string;
@@ -29,6 +32,10 @@ export type Hero = {
   code?: string;
   codeNote?: string;
   button?: Button;
+  /** 'red' is for moderation alerts: white text on red, white button. */
+  tone?: 'pistachio' | 'red';
+  /** Small caps line above the title, e.g. "Red alert". */
+  eyebrow?: string;
 };
 
 export type Layout = {
@@ -58,22 +65,22 @@ export function logoUrl(site: string): string {
   return `${trimSite(site)}/email/logo.png`;
 }
 
-function wordmark(site: string): string {
+function wordmark(site: string, color: string = INK): string {
   return (
     `<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>` +
     `<td style="vertical-align:middle;padding-right:7px"><img src="${logoUrl(site)}" width="18" height="18" alt="" style="display:block;border:0"></td>` +
-    `<td style="vertical-align:middle;font-family:${FONT};font-size:15px;font-weight:700;letter-spacing:-0.2px;color:${INK}">onlyswap</td>` +
+    `<td style="vertical-align:middle;font-family:${FONT};font-size:15px;font-weight:700;letter-spacing:-0.2px;color:${color}">onlyswap</td>` +
     `</tr></table>`
   );
 }
 
-export function buttonHtml(b: Button): string {
+export function buttonHtml(b: Button, onRed = false): string {
   const style = b.style ?? 'solid';
   const full = style === 'full';
   const outline = style === 'outline';
-  const bg = outline ? '#FFFFFF' : INK;
-  const fg = outline ? INK : '#FFFFFF';
-  const border = outline ? `border:1.5px solid ${INK};` : '';
+  const bg = outline || onRed ? '#FFFFFF' : INK;
+  const fg = outline || onRed ? INK : '#FFFFFF';
+  const border = outline && !onRed ? `border:1.5px solid ${INK};` : '';
   return (
     `<table role="presentation" cellpadding="0" cellspacing="0" border="0"${full ? ' width="100%"' : ''}><tr>` +
     `<td align="center" bgcolor="${bg}" style="border-radius:12px;${border}">` +
@@ -83,15 +90,21 @@ export function buttonHtml(b: Button): string {
 }
 
 function heroHtml(h: Hero, site: string): string {
-  const parts: string[] = [
-    wordmark(site),
-    `<div style="height:20px;line-height:20px">&nbsp;</div>`,
-    `<div style="font-family:${FONT};font-size:26px;line-height:30px;font-weight:700;letter-spacing:-0.4px;color:${INK}">${h.title}</div>`,
-  ];
+  const red = h.tone === 'red';
+  const fg = red ? '#FFFFFF' : INK;
+  const parts: string[] = [wordmark(site, fg), `<div style="height:20px;line-height:20px">&nbsp;</div>`];
+  if (h.eyebrow) {
+    parts.push(
+      `<div style="padding-bottom:6px;font-family:${FONT};font-size:12px;line-height:16px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:${fg}">${h.eyebrow}</div>`,
+    );
+  }
+  parts.push(
+    `<div style="font-family:${FONT};font-size:26px;line-height:30px;font-weight:700;letter-spacing:-0.4px;color:${fg}">${h.title}</div>`,
+  );
   if (h.body) {
     parts.push(
       `<div style="height:12px;line-height:12px">&nbsp;</div>`,
-      `<div style="font-family:${FONT};font-size:16px;line-height:23px;color:${INK}">${h.body}</div>`,
+      `<div style="font-family:${FONT};font-size:16px;line-height:23px;color:${fg}">${h.body}</div>`,
     );
   }
   if (h.code) {
@@ -107,11 +120,11 @@ function heroHtml(h: Hero, site: string): string {
     );
   }
   if (h.button) {
-    parts.push(`<div style="height:18px;line-height:18px">&nbsp;</div>`, buttonHtml(h.button));
+    parts.push(`<div style="height:18px;line-height:18px">&nbsp;</div>`, buttonHtml(h.button, red));
   }
   return (
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>` +
-    `<td bgcolor="${PISTACHIO}" style="border-radius:22px;padding:22px 22px 24px">${parts.join('')}</td>` +
+    `<td bgcolor="${red ? RED : PISTACHIO}" style="border-radius:22px;padding:22px 22px 24px">${parts.join('')}</td>` +
     `</tr></table>`
   );
 }
@@ -122,6 +135,14 @@ function blockHtml(b: Block): string {
       return `<p style="margin:0 0 14px;font-family:${FONT};font-size:16px;line-height:24px;color:${b.muted ? INK2 : INK}">${b.html}</p>`;
     case 'button':
       return `<div style="padding:6px 0 16px">${buttonHtml(b.button)}</div>`;
+    case 'image': {
+      const img = `<img src="${b.src}" width="100%" alt="${b.alt}" style="display:block;width:100%;max-width:508px;height:auto;border:0;border-radius:16px">`;
+      return (
+        `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 18px"><tr>` +
+        `<td bgcolor="${BG2}" style="border-radius:16px">${b.href ? `<a href="${b.href}">${img}</a>` : img}</td>` +
+        `</tr></table>`
+      );
+    }
     case 'quote':
       return (
         `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px"><tr>` +

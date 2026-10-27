@@ -15,7 +15,29 @@ export type Template =
   | 'support_request'
   | 'priority_report'
   | 'support_reply'
-  | 'report_queue';
+  | 'report_queue'
+  | 'photo_flag';
+
+/** Where admin links and photos point (send-email reads ADMIN_URL and MEDIA_URL). */
+export type MailUrls = { admin?: string; media?: string };
+
+export const DEFAULT_ADMIN_URL = 'https://onlyswap-admin.pages.dev';
+
+const REASON_WORDS: Record<string, string> = {
+  weapon: 'a weapon',
+  drugs: 'drugs',
+  violence: 'violence or gore',
+  hate: 'a hate symbol',
+  sexual: 'sexual content',
+  minor: 'a possible minor-safety problem',
+  other: 'something against the rules',
+};
+
+const KIND_WORDS: Record<string, string> = {
+  listing: 'Listing',
+  quad: 'Quad post',
+  avatar: 'Profile photo',
+};
 
 export type Rendered = { subject: string; text: string; html: string; replyTo?: string };
 
@@ -30,7 +52,12 @@ const str = (v: unknown, fallback = '') =>
   typeof v === 'string' && v.trim() ? v.trim() : fallback;
 
 /** Renders one outbox row. Unknown templates throw (the row fails after retries). */
-export function render(template: Template, vars: Record<string, unknown>, site: string): Rendered {
+export function render(
+  template: Template,
+  vars: Record<string, unknown>,
+  site: string,
+  urls: MailUrls = {},
+): Rendered {
   const text = (lines: string[]) => [...lines, '', `OnlySwap · ${site}`].join('\n');
   const open = { label: 'Open OnlySwap', href: site.replace(/\/+$/, '') };
   switch (template) {
@@ -283,6 +310,70 @@ export function render(template: Template, vars: Record<string, unknown>, site: 
         }),
       };
     }
+    case 'photo_flag': {
+      // Red alert to the team: the automatic photo check flagged and held a post (DEC 154).
+      const why = str(vars.reason, 'other');
+      const words = REASON_WORDS[why] ?? REASON_WORDS.other!;
+      const kind = KIND_WORDS[str(vars.kind)] ?? 'Post';
+      const poster = str(vars.poster) || (str(vars.kind) === 'quad' ? 'Anonymous (reveal in the console)' : 'Unknown');
+      const what = str(vars.what);
+      const campus = str(vars.campus);
+      const posted = str(vars.posted_at);
+      const flagged = str(vars.flagged_at);
+      const admin = (urls.admin || DEFAULT_ADMIN_URL).replace(/\/+$/, '');
+      const reportUrl = `${admin}/reports/${encodeURIComponent(str(vars.report_id))}`;
+      const key = str(vars.photo_key);
+      const photo =
+        key && urls.media && why !== 'sexual' && why !== 'minor'
+          ? `${urls.media.replace(/\/+$/, '')}/${key.replace(/^\/+/, '')}`
+          : '';
+      const rows: [string, string][] = [
+        ['Flagged for', esc(words)],
+        ['What', esc(kind)],
+        ...(what ? ([['Title', esc(what)]] as [string, string][]) : []),
+        ['Posted by', esc(poster)],
+        ...(campus ? ([['Campus', esc(campus)]] as [string, string][]) : []),
+        ...(posted ? ([['Posted', esc(posted)]] as [string, string][]) : []),
+        ...(flagged ? ([['Flagged', esc(flagged)]] as [string, string][]) : []),
+      ];
+      const lines = [
+        `RED ALERT: a photo was flagged for ${words}.`,
+        `${kind}${what ? `: ${what}` : ''}`,
+        `Posted by ${poster}${campus ? ` at ${campus}` : ''}${posted ? `, ${posted}` : ''}.`,
+        'It is already hidden from students. Review it now:',
+        reportUrl,
+      ];
+      return {
+        subject: `Red alert: ${kind.toLowerCase()} flagged for ${words}`,
+        text: text(lines),
+        html: emailHtml({
+          site,
+          preheader: `${kind}${what ? ` "${esc(what)}"` : ''} by ${esc(poster)}. Already hidden. Review it now.`,
+          hero: {
+            tone: 'red',
+            eyebrow: 'Red alert',
+            title: `A photo was flagged for ${esc(words)}`,
+            body: "It's already hidden from students. Check it and decide what to do with the account.",
+            button: { label: 'Review in the console', href: esc(reportUrl) },
+          },
+          blocks: [
+            { kind: 'rows', rows },
+            photo
+              ? { kind: 'image', src: esc(photo), alt: 'The flagged photo', href: esc(reportUrl) }
+              : {
+                  kind: 'p',
+                  muted: true,
+                  html:
+                    why === 'sexual' || why === 'minor'
+                      ? "We don't put photos like this in email. Open the console to review it."
+                      : 'Open the console to see the photo.',
+                },
+          ],
+          reason: 'Sent to OnlySwap admins when the automatic photo check flags a post.',
+          links: [],
+        }),
+      };
+    }
     case 'support_reply': {
       // Free text from our team (admin_update_support), plain and escaped.
       const body = str(vars.body);
@@ -358,6 +449,7 @@ export type OutboxRow = {
 export type SendEmailDeps = {
   keys: (string | undefined)[];
   site: string;
+  urls?: MailUrls;
   claim: (limit: number) => Promise<OutboxRow[]>;
   finish: (results: { id: number; ok: boolean; error?: string }[]) => Promise<void>;
   send: (to: string, mail: Rendered) => Promise<void>;
@@ -376,7 +468,7 @@ export async function handleSendEmail(
   const results: { id: number; ok: boolean; error?: string }[] = [];
   for (const r of rows) {
     try {
-      await deps.send(r.to, render(r.template, r.vars ?? {}, deps.site));
+      await deps.send(r.to, render(r.template, r.vars ?? {}, deps.site, deps.urls));
       results.push({ id: r.id, ok: true });
     } catch (e) {
       results.push({

@@ -16,6 +16,7 @@ const ALL: Template[] = [
   'priority_report',
   'support_reply',
   'report_queue',
+  'photo_flag',
 ];
 
 test('every template renders a subject, text and html with the site footer', () => {
@@ -99,4 +100,32 @@ test('Resend transport posts the mail', async () => {
   await send('a@osu.edu', render('account_deleted', {}, SITE));
   assert.deepEqual(body.to, ['a@osu.edu']);
   assert.equal(body.from, 'OnlySwap <hi@x.dev>');
+});
+
+test('photo_flag: red alert with who, what, when and the photo, never a sexual or minor photo', () => {
+  const vars = {
+    report_id: 'r1',
+    reason: 'weapon',
+    kind: 'listing',
+    poster: 'Maya R.',
+    what: 'Kitchen knife set',
+    campus: 'Ohio Wesleyan',
+    posted_at: 'Oct 27, 9:41 AM',
+    flagged_at: 'Oct 27, 9:42 AM',
+    photo_key: 'c/x/l/knife_full.webp',
+  };
+  const urls = { admin: 'https://admin.test', media: 'https://media.test' };
+  const m = render('photo_flag', vars, SITE, urls);
+  assert.match(m.subject, /^Red alert: listing flagged for a weapon$/);
+  for (const s of ['Maya R.', 'Kitchen knife set', 'Oct 27, 9:41 AM', 'https://admin.test/reports/r1'])
+    assert.ok(m.text.includes(s) && m.html.includes(s), s);
+  assert.ok(m.html.includes('src="https://media.test/c/x/l/knife_full.webp"'));
+  assert.ok(m.html.includes('#C8321C'), 'red hero');
+  for (const reason of ['sexual', 'minor']) {
+    const x = render('photo_flag', { ...vars, reason }, SITE, urls);
+    assert.ok(!x.html.includes('knife_full.webp'), `${reason}: no photo in email`);
+  }
+  const quad = render('photo_flag', { ...vars, kind: 'quad', poster: null }, SITE, urls);
+  assert.ok(quad.text.includes('Anonymous'), 'quad authors stay anonymous');
+  assert.ok(render('photo_flag', vars, SITE).html.includes('https://onlyswap-admin.pages.dev/reports/r1'));
 });

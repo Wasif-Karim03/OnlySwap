@@ -6,7 +6,7 @@
 import nodemailer from 'npm:nodemailer@6.9.16';
 import postgres from 'npm:postgres@3.4.7';
 
-import { handleSendEmail, resendSender, type OutboxRow, type Rendered } from '../_shared/mailer.ts';
+import { DEFAULT_ADMIN_URL, handleSendEmail, resendSender, type OutboxRow, type Rendered } from '../_shared/mailer.ts';
 import { withMonitoring } from '../_shared/monitor.ts';
 
 const sql = postgres(Deno.env.get('SUPABASE_DB_URL')!, { max: 1, prepare: false });
@@ -14,6 +14,11 @@ const keys = [Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'), Deno.env.get('INTERNAL_
 const site = Deno.env.get('SITE_URL') ?? 'https://onlyswap.pages.dev';
 const provider = Deno.env.get('EMAIL_PROVIDER') ?? 'gmail';
 const from = Deno.env.get('EMAIL_FROM') ?? '';
+// Red-alert emails link to the console and show the flagged photo (DEC 154).
+const urls = {
+  admin: Deno.env.get('ADMIN_URL') ?? DEFAULT_ADMIN_URL,
+  media: Deno.env.get('MEDIA_URL') ?? '',
+};
 
 function gmailSender() {
   const transport = nodemailer.createTransport({
@@ -49,6 +54,7 @@ Deno.serve(
         {
           keys,
           site,
+          urls,
           claim: async (limit) => {
             const rows = await sql`select private.claim_emails(${limit}) as j`;
             return (rows[0]?.j ?? []) as OutboxRow[];
