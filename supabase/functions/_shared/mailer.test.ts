@@ -117,7 +117,12 @@ test('photo_flag: red alert with who, what, when and the photo, never a sexual o
   const urls = { admin: 'https://admin.test', media: 'https://media.test' };
   const m = render('photo_flag', vars, SITE, urls);
   assert.match(m.subject, /^Red alert: listing flagged for a weapon$/);
-  for (const s of ['Maya R.', 'Kitchen knife set', 'Oct 27, 9:41 AM', 'https://admin.test/reports/r1'])
+  for (const s of [
+    'Maya R.',
+    'Kitchen knife set',
+    'Oct 27, 9:41 AM',
+    'https://admin.test/reports/r1',
+  ])
     assert.ok(m.text.includes(s) && m.html.includes(s), s);
   assert.ok(m.html.includes('src="https://media.test/c/x/l/knife_full.webp"'));
   assert.ok(m.html.includes('#C8321C'), 'red hero');
@@ -127,5 +132,7 @@ test('photo_flag: red alert with who, what, when and the photo, never a sexual o
   }
   const quad = render('photo_flag', { ...vars, kind: 'quad', poster: null }, SITE, urls);
   assert.ok(quad.text.includes('Anonymous'), 'quad authors stay anonymous');
-  assert.ok(render('photo_flag', vars, SITE).html.includes('https://onlyswap-admin.pages.dev/reports/r1'));
+  assert.ok(
+    render('photo_flag', vars, SITE).html.includes('https://onlyswap-admin.pages.dev/reports/r1'),
+  );
 });

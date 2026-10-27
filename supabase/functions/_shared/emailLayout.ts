@@ -92,7 +92,10 @@ export function buttonHtml(b: Button, onRed = false): string {
 function heroHtml(h: Hero, site: string): string {
   const red = h.tone === 'red';
   const fg = red ? '#FFFFFF' : INK;
-  const parts: string[] = [wordmark(site, fg), `<div style="height:20px;line-height:20px">&nbsp;</div>`];
+  const parts: string[] = [
+    wordmark(site, fg),
+    `<div style="height:20px;line-height:20px">&nbsp;</div>`,
+  ];
   if (h.eyebrow) {
     parts.push(
       `<div style="padding-bottom:6px;font-family:${FONT};font-size:12px;line-height:16px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:${fg}">${h.eyebrow}</div>`,
