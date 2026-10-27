@@ -1,4564 +1,2786 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.18"
-  }
-  public: {
-    Tables: {
-      account_deletions: {
-        Row: {
-          campus_id: string | null
-          finished_at: string | null
-          id: string
-          media_confirmed_at: string | null
-          media_confirmed_gen: number | null
-          media_gen: number
-          media_prefixes: string[] | null
-          media_sweep_pos: number
-          media_swept_gen: number | null
-          started_at: string
-          status: string
-          underage: boolean
-          user_id: string | null
-        }
-        Insert: {
-          campus_id?: string | null
-          finished_at?: string | null
-          id?: string
-          media_confirmed_at?: string | null
-          media_confirmed_gen?: number | null
-          media_gen?: number
-          media_prefixes?: string[] | null
-          media_sweep_pos?: number
-          media_swept_gen?: number | null
-          started_at?: string
-          status?: string
-          underage?: boolean
-          user_id?: string | null
-        }
-        Update: {
-          campus_id?: string | null
-          finished_at?: string | null
-          id?: string
-          media_confirmed_at?: string | null
-          media_confirmed_gen?: number | null
-          media_gen?: number
-          media_prefixes?: string[] | null
-          media_sweep_pos?: number
-          media_swept_gen?: number | null
-          started_at?: string
-          status?: string
-          underage?: boolean
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      activity_days: {
-        Row: {
-          day: string
-          user_id: string
-        }
-        Insert: {
-          day: string
-          user_id: string
-        }
-        Update: {
-          day?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      activity_events: {
-        Row: {
-          app_version: string | null
-          campus_id: string
-          created_at: string
-          dwell_ms: number | null
-          id: number
-          kind: string
-          listing_id: string | null
-          platform: string | null
-          query: string | null
-          source: string | null
-          user_id: string
-        }
-        Insert: {
-          app_version?: string | null
-          campus_id: string
-          created_at?: string
-          dwell_ms?: number | null
-          id?: never
-          kind: string
-          listing_id?: string | null
-          platform?: string | null
-          query?: string | null
-          source?: string | null
-          user_id: string
-        }
-        Update: {
-          app_version?: string | null
-          campus_id?: string
-          created_at?: string
-          dwell_ms?: number | null
-          id?: never
-          kind?: string
-          listing_id?: string | null
-          platform?: string | null
-          query?: string | null
-          source?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "activity_events_campus_id_fkey"
-            columns: ["campus_id"]
-            isOneToOne: false
-            referencedRelation: "campus_progress"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "activity_events_campus_id_fkey"
-            columns: ["campus_id"]
-            isOneToOne: false
-            referencedRelation: "campuses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "activity_events_listing_id_fkey"
-            columns: ["listing_id"]
-            isOneToOne: false
-            referencedRelation: "listings"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "activity_events_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "activity_events_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "activity_events_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "activity_events_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      admins: {
-        Row: {
-          campus_id: string | null
-          created_at: string | null
-          invited_by: string | null
-          role: Database["public"]["Enums"]["admin_role"]
-          user_id: string
-        }
-        Insert: {
-          campus_id?: string | null
-          created_at?: string | null
-          invited_by?: string | null
-          role: Database["public"]["Enums"]["admin_role"]
-          user_id: string
-        }
-        Update: {
-          campus_id?: string | null
-          created_at?: string | null
-          invited_by?: string | null
-          role?: Database["public"]["Enums"]["admin_role"]
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "admins_campus_id_fkey"
-            columns: ["campus_id"]
-            isOneToOne: false
-            referencedRelation: "campus_progress"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "admins_campus_id_fkey"
-            columns: ["campus_id"]
-            isOneToOne: false
-            referencedRelation: "campuses"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      age_blocks: {
-        Row: {
-          campus_id: string | null
-          created_at: string | null
-          email_hash: string
-        }
-        Insert: {
-          campus_id?: string | null
-          created_at?: string | null
-          email_hash: string
-        }
-        Update: {
-          campus_id?: string | null
-          created_at?: string | null
-          email_hash?: string
-        }
-        Relationships: []
-      }
-      announcements: {
-        Row: {
-          body: string | null
-          campus_id: string | null
-          created_at: string | null
-          created_by: string | null
-          id: string
-          pinned_until: string | null
-          send_push: boolean | null
-          sent_at: string | null
-          title: string | null
-          type: string | null
-        }
-        Insert: {
-          body?: string | null
-          campus_id?: string | null
-          created_at?: string | null
-          created_by?: string | null
-          id?: string
-          pinned_until?: string | null
-          send_push?: boolean | null
-          sent_at?: string | null
-          title?: string | null
-          type?: string | null
-        }
-        Update: {
-          body?: string | null
-          campus_id?: string | null
-          created_at?: string | null
-          created_by?: string | null
-          id?: string
-          pinned_until?: string | null
-          send_push?: boolean | null
-          sent_at?: string | null
-          title?: string | null
-          type?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "announcements_campus_id_fkey"
-            columns: ["campus_id"]
-            isOneToOne: false
-            referencedRelation: "campus_progress"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "announcements_campus_id_fkey"
-            columns: ["campus_id"]
-            isOneToOne: false
-            referencedRelation: "campuses"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      app_config: {
-        Row: {
-          key: string
-          updated_at: string | null
-          value: Json
-        }
-        Insert: {
-          key: string
-          updated_at?: string | null
-          value: Json
-        }
-        Update: {
-          key?: string
-          updated_at?: string | null
-          value?: Json
-        }
-        Relationships: []
-      }
-      app_transactions: {
-        Row: {
-          app_transaction_id: string
-          created_at: string
-          last_seen_at: string
-          user_id: string
-        }
-        Insert: {
-          app_transaction_id: string
-          created_at?: string
-          last_seen_at?: string
-          user_id: string
-        }
-        Update: {
-          app_transaction_id?: string
-          created_at?: string
-          last_seen_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "app_transactions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "app_transactions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "app_transactions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "app_transactions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      appeals: {
-        Row: {
-          body: string | null
-          created_at: string | null
-          decided_at: string | null
-          decided_by: string | null
-          decision_note: string | null
-          id: string
-          reason_choice: string | null
-          status: string
-          subject_id: string
-          subject_type: string
-          user_id: string
-        }
-        Insert: {
-          body?: string | null
-          created_at?: string | null
-          decided_at?: string | null
-          decided_by?: string | null
-          decision_note?: string | null
-          id?: string
-          reason_choice?: string | null
-          status?: string
-          subject_id: string
-          subject_type: string
-          user_id: string
-        }
-        Update: {
-          body?: string | null
-          created_at?: string | null
-          decided_at?: string | null
-          decided_by?: string | null
-          decision_note?: string | null
-          id?: string
-          reason_choice?: string | null
-          status?: string
-          subject_id?: string
-          subject_type?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "appeals_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "appeals_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "appeals_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "appeals_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      audit_log: {
-        Row: {
-          action: string
-          actor_id: string | null
-          campus_id: string | null
-          case_ref: string | null
-          created_at: string
-          id: number
-          meta: Json | null
-          reason: string | null
-          target_id: string | null
-          target_type: string | null
-        }
-        Insert: {
-          action: string
-          actor_id?: string | null
-          campus_id?: string | null
-          case_ref?: string | null
-          created_at?: string
-          id?: never
-          meta?: Json | null
-          reason?: string | null
-          target_id?: string | null
-          target_type?: string | null
-        }
-        Update: {
-          action?: string
-          actor_id?: string | null
-          campus_id?: string | null
-          case_ref?: string | null
-          created_at?: string
-          id?: never
-          meta?: Json | null
-          reason?: string | null
-          target_id?: string | null
-          target_type?: string | null
-        }
-        Relationships: []
-      }
-      banned_hashes: {
-        Row: {
-          created_at: string | null
-          email_hash: string
-        }
-        Insert: {
-          created_at?: string | null
-          email_hash: string
-        }
-        Update: {
-          created_at?: string | null
-          email_hash?: string
-        }
-        Relationships: []
-      }
-      banned_words: {
-        Row: {
-          action: string
-          created_at: string | null
-          created_by: string | null
-          fired_count: number
-          id: string
-          match: string
-          overturned_count: number
-          pattern: string
-          scopes: string[]
-        }
-        Insert: {
-          action: string
-          created_at?: string | null
-          created_by?: string | null
-          fired_count?: number
-          id?: string
-          match?: string
-          overturned_count?: number
-          pattern: string
-          scopes: string[]
-        }
-        Update: {
-          action?: string
-          created_at?: string | null
-          created_by?: string | null
-          fired_count?: number
-          id?: string
-          match?: string
-          overturned_count?: number
-          pattern?: string
-          scopes?: string[]
-        }
-        Relationships: []
-      }
-      blocks: {
-        Row: {
-          blocked_id: string
-          blocker_id: string
-          created_at: string | null
-        }
-        Insert: {
-          blocked_id: string
-          blocker_id: string
-          created_at?: string | null
-        }
-        Update: {
-          blocked_id?: string
-          blocker_id?: string
-          created_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "blocks_blocked_id_fkey"
-            columns: ["blocked_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "blocks_blocked_id_fkey"
-            columns: ["blocked_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "blocks_blocked_id_fkey"
-            columns: ["blocked_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "blocks_blocked_id_fkey"
-            columns: ["blocked_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "blocks_blocker_id_fkey"
-            columns: ["blocker_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "blocks_blocker_id_fkey"
-            columns: ["blocker_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "blocks_blocker_id_fkey"
-            columns: ["blocker_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "blocks_blocker_id_fkey"
-            columns: ["blocker_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      campus_domains: {
-        Row: {
-          campus_id: string
-          created_at: string
-          domain: string
-          kind: string
-        }
-        Insert: {
-          campus_id: string
-          created_at?: string
-          domain: string
-          kind: string
-        }
-        Update: {
-          campus_id?: string
-          created_at?: string
-          domain?: string
-          kind?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "campus_domains_campus_id_fkey"
-            columns: ["campus_id"]
-            isOneToOne: false
-            referencedRelation: "campus_progress"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "campus_domains_campus_id_fkey"
-            columns: ["campus_id"]
-            isOneToOne: false
-            referencedRelation: "campuses"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      campuses: {
-        Row: {
-          created_at: string
-          founding_seller_limit: number
-          id: string
-          is_demo: boolean
-          name: string
-          noshow_pause_threshold: number
-          offers_per_hour: number
-          quad_autohide_score: number
-          quad_enabled: boolean
-          reverify_months: number
-          short_name: string
-          slug: string
-          status: Database["public"]["Enums"]["campus_status"]
-          timezone: string
-          unlock_threshold: number
-          unlocked_at: string | null
-        }
-        Insert: {
-          created_at?: string
-          founding_seller_limit?: number
-          id?: string
-          is_demo?: boolean
-          name: string
-          noshow_pause_threshold?: number
-          offers_per_hour?: number
-          quad_autohide_score?: number
-          quad_enabled?: boolean
-          reverify_months?: number
-          short_name: string
-          slug: string
-          status?: Database["public"]["Enums"]["campus_status"]
-          timezone?: string
-          unlock_threshold?: number
-          unlocked_at?: string | null
-        }
-        Update: {
-          created_at?: string
-          founding_seller_limit?: number
-          id?: string
-          is_demo?: boolean
-          name?: string
-          noshow_pause_threshold?: number
-          offers_per_hour?: number
-          quad_autohide_score?: number
-          quad_enabled?: boolean
-          reverify_months?: number
-          short_name?: string
-          slug?: string
-          status?: Database["public"]["Enums"]["campus_status"]
-          timezone?: string
-          unlock_threshold?: number
-          unlocked_at?: string | null
-        }
-        Relationships: []
-      }
-      categories: {
-        Row: {
-          id: number
-          name: string | null
-          parent_id: number | null
-          slug: string | null
-          sort: number | null
-        }
-        Insert: {
-          id: number
-          name?: string | null
-          parent_id?: number | null
-          slug?: string | null
-          sort?: number | null
-        }
-        Update: {
-          id?: number
-          name?: string | null
-          parent_id?: number | null
-          slug?: string | null
-          sort?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "categories_parent_id_fkey"
-            columns: ["parent_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      chats: {
-        Row: {
-          agreed_cents: number
-          archived_at: string | null
-          buyer_hidden: boolean
-          buyer_id: string | null
-          buyer_muted: boolean
-          buyer_outcome: string | null
-          buyer_read_at: string | null
-          closed_at: string | null
-          created_at: string
-          id: string
-          last_message_at: string
-          listing_id: string | null
-          listing_price_cents: number
-          listing_thumb_path: string | null
-          listing_title: string
-          offer_id: string | null
-          seller_hidden: boolean
-          seller_id: string | null
-          seller_muted: boolean
-          seller_outcome: string | null
-          seller_read_at: string | null
-          status: Database["public"]["Enums"]["chat_status"]
-        }
-        Insert: {
-          agreed_cents: number
-          archived_at?: string | null
-          buyer_hidden?: boolean
-          buyer_id?: string | null
-          buyer_muted?: boolean
-          buyer_outcome?: string | null
-          buyer_read_at?: string | null
-          closed_at?: string | null
-          created_at?: string
-          id?: string
-          last_message_at?: string
-          listing_id?: string | null
-          listing_price_cents: number
-          listing_thumb_path?: string | null
-          listing_title: string
-          offer_id?: string | null
-          seller_hidden?: boolean
-          seller_id?: string | null
-          seller_muted?: boolean
-          seller_outcome?: string | null
-          seller_read_at?: string | null
-          status?: Database["public"]["Enums"]["chat_status"]
-        }
-        Update: {
-          agreed_cents?: number
-          archived_at?: string | null
-          buyer_hidden?: boolean
-          buyer_id?: string | null
-          buyer_muted?: boolean
-          buyer_outcome?: string | null
-          buyer_read_at?: string | null
-          closed_at?: string | null
-          created_at?: string
-          id?: string
-          last_message_at?: string
-          listing_id?: string | null
-          listing_price_cents?: number
-          listing_thumb_path?: string | null
-          listing_title?: string
-          offer_id?: string | null
-          seller_hidden?: boolean
-          seller_id?: string | null
-          seller_muted?: boolean
-          seller_outcome?: string | null
-          seller_read_at?: string | null
-          status?: Database["public"]["Enums"]["chat_status"]
-        }
-        Relationships: [
-          {
-            foreignKeyName: "chats_buyer_id_fkey"
-            columns: ["buyer_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "chats_buyer_id_fkey"
-            columns: ["buyer_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "chats_buyer_id_fkey"
-            columns: ["buyer_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "chats_buyer_id_fkey"
-            columns: ["buyer_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "chats_listing_id_fkey"
-            columns: ["listing_id"]
-            isOneToOne: false
-            referencedRelation: "listings"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "chats_offer_id_fkey"
-            columns: ["offer_id"]
-            isOneToOne: true
-            referencedRelation: "offers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "chats_seller_id_fkey"
-            columns: ["seller_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "chats_seller_id_fkey"
-            columns: ["seller_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "chats_seller_id_fkey"
-            columns: ["seller_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "chats_seller_id_fkey"
-            columns: ["seller_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      common_first_names: {
-        Row: {
-          name: string
-        }
-        Insert: {
-          name: string
-        }
-        Update: {
-          name?: string
-        }
-        Relationships: []
-      }
-      daily_counters: {
-        Row: {
-          campus_id: string
-          day: string
-          key: string
-          value: number
-        }
-        Insert: {
-          campus_id: string
-          day: string
-          key: string
-          value?: number
-        }
-        Update: {
-          campus_id?: string
-          day?: string
-          key?: string
-          value?: number
-        }
-        Relationships: []
-      }
-      data_exports: {
-        Row: {
-          created_at: string | null
-          expires_at: string | null
-          id: string
-          path: string | null
-          status: string | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          expires_at?: string | null
-          id?: string
-          path?: string | null
-          status?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          expires_at?: string | null
-          id?: string
-          path?: string | null
-          status?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "data_exports_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "data_exports_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "data_exports_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "data_exports_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      email_outbox: {
-        Row: {
-          attempts: number
-          claimed_at: string | null
-          dedupe_key: string | null
-          error: string | null
-          id: number
-          send_after: string
-          sent_at: string | null
-          state: string
-          template: string
-          to_email: string
-          vars: Json
-        }
-        Insert: {
-          attempts?: number
-          claimed_at?: string | null
-          dedupe_key?: string | null
-          error?: string | null
-          id?: never
-          send_after?: string
-          sent_at?: string | null
-          state?: string
-          template: string
-          to_email: string
-          vars?: Json
-        }
-        Update: {
-          attempts?: number
-          claimed_at?: string | null
-          dedupe_key?: string | null
-          error?: string | null
-          id?: never
-          send_after?: string
-          sent_at?: string | null
-          state?: string
-          template?: string
-          to_email?: string
-          vars?: Json
-        }
-        Relationships: []
-      }
-      listing_comment_likes: {
-        Row: {
-          comment_id: string
-          created_at: string
-          user_id: string
-        }
-        Insert: {
-          comment_id: string
-          created_at?: string
-          user_id: string
-        }
-        Update: {
-          comment_id?: string
-          created_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "listing_comment_likes_comment_id_fkey"
-            columns: ["comment_id"]
-            isOneToOne: false
-            referencedRelation: "listing_comments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "listing_comment_likes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "listing_comment_likes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "listing_comment_likes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "listing_comment_likes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      listing_comments: {
-        Row: {
-          author_id: string
-          body: string | null
-          client_id: string | null
-          created_at: string
-          hold_reason: string | null
-          id: string
-          like_count: number
-          listing_id: string
-          parent_id: string | null
-          reply_count: number
-          status: string
-        }
-        Insert: {
-          author_id: string
-          body?: string | null
-          client_id?: string | null
-          created_at?: string
-          hold_reason?: string | null
-          id?: string
-          like_count?: number
-          listing_id: string
-          parent_id?: string | null
-          reply_count?: number
-          status?: string
-        }
-        Update: {
-          author_id?: string
-          body?: string | null
-          client_id?: string | null
-          created_at?: string
-          hold_reason?: string | null
-          id?: string
-          like_count?: number
-          listing_id?: string
-          parent_id?: string | null
-          reply_count?: number
-          status?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "listing_comments_author_id_fkey"
-            columns: ["author_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "listing_comments_author_id_fkey"
-            columns: ["author_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "listing_comments_author_id_fkey"
-            columns: ["author_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "listing_comments_author_id_fkey"
-            columns: ["author_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "listing_comments_listing_id_fkey"
-            columns: ["listing_id"]
-            isOneToOne: false
-            referencedRelation: "listings"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "listing_comments_parent_id_fkey"
-            columns: ["parent_id"]
-            isOneToOne: false
-            referencedRelation: "listing_comments"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      listing_likes: {
-        Row: {
-          created_at: string
-          listing_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          listing_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          listing_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "listing_likes_listing_id_fkey"
-            columns: ["listing_id"]
-            isOneToOne: false
-            referencedRelation: "listings"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "listing_likes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "listing_likes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "listing_likes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "listing_likes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      listing_photos: {
-        Row: {
-          blurhash: string | null
-          height: number | null
-          id: string
-          idx: number
-          listing_id: string
-          path: string
-          thumb_path: string
-          width: number | null
-        }
-        Insert: {
-          blurhash?: string | null
-          height?: number | null
-          id?: string
-          idx: number
-          listing_id: string
-          path: string
-          thumb_path: string
-          width?: number | null
-        }
-        Update: {
-          blurhash?: string | null
-          height?: number | null
-          id?: string
-          idx?: number
-          listing_id?: string
-          path?: string
-          thumb_path?: string
-          width?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "listing_photos_listing_id_fkey"
-            columns: ["listing_id"]
-            isOneToOne: false
-            referencedRelation: "listings"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      listing_price_changes: {
-        Row: {
-          changed_at: string | null
-          id: number
-          listing_id: string | null
-          new_cents: number | null
-          old_cents: number | null
-        }
-        Insert: {
-          changed_at?: string | null
-          id?: never
-          listing_id?: string | null
-          new_cents?: number | null
-          old_cents?: number | null
-        }
-        Update: {
-          changed_at?: string | null
-          id?: never
-          listing_id?: string | null
-          new_cents?: number | null
-          old_cents?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "listing_price_changes_listing_id_fkey"
-            columns: ["listing_id"]
-            isOneToOne: false
-            referencedRelation: "listings"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      listing_removals: {
-        Row: {
-          listing_id: string
-          reason: string
-          removed_at: string
-          removed_by: string | null
-        }
-        Insert: {
-          listing_id: string
-          reason: string
-          removed_at?: string
-          removed_by?: string | null
-        }
-        Update: {
-          listing_id?: string
-          reason?: string
-          removed_at?: string
-          removed_by?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "listing_removals_listing_id_fkey"
-            columns: ["listing_id"]
-            isOneToOne: true
-            referencedRelation: "listings"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      listing_reservations: {
-        Row: {
-          created_at: string | null
-          id: string
-          used_at: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id: string
-          used_at?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          used_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      listings: {
-        Row: {
-          availability: string[]
-          bumped_at: string
-          buyer_id: string | null
-          campus_id: string
-          category_id: number | null
-          comment_count: number
-          comments_enabled: boolean
-          condition: Database["public"]["Enums"]["item_condition"] | null
-          created_at: string
-          deleted_at: string | null
-          description: string | null
-          event_at: string | null
-          expires_at: string | null
-          hold_offer_id: string | null
-          id: string
-          kind: Database["public"]["Enums"]["listing_kind"]
-          like_count: number
-          link_url: string | null
-          meet_note: string | null
-          meet_spot_ids: string[]
-          need_by: string | null
-          offer_count: number
-          open_to_offers: boolean
-          price_cents: number
-          save_count: number
-          search: unknown
-          seller_id: string | null
-          share_image_path: string | null
-          sold_at: string | null
-          sold_in_app: boolean | null
-          status: Database["public"]["Enums"]["listing_status"]
-          title: string
-          updated_at: string
-          view_count: number
-          wanted_alerts: boolean
-          wanted_max_cents: number | null
-          wanted_ref: string | null
-        }
-        Insert: {
-          availability?: string[]
-          bumped_at?: string
-          buyer_id?: string | null
-          campus_id: string
-          category_id?: number | null
-          comment_count?: number
-          comments_enabled?: boolean
-          condition?: Database["public"]["Enums"]["item_condition"] | null
-          created_at?: string
-          deleted_at?: string | null
-          description?: string | null
-          event_at?: string | null
-          expires_at?: string | null
-          hold_offer_id?: string | null
-          id: string
-          kind?: Database["public"]["Enums"]["listing_kind"]
-          like_count?: number
-          link_url?: string | null
-          meet_note?: string | null
-          meet_spot_ids?: string[]
-          need_by?: string | null
-          offer_count?: number
-          open_to_offers?: boolean
-          price_cents?: number
-          save_count?: number
-          search?: unknown
-          seller_id?: string | null
-          share_image_path?: string | null
-          sold_at?: string | null
-          sold_in_app?: boolean | null
-          status?: Database["public"]["Enums"]["listing_status"]
-          title: string
-          updated_at?: string
-          view_count?: number
-          wanted_alerts?: boolean
-          wanted_max_cents?: number | null
-          wanted_ref?: string | null
-        }
-        Update: {
-          availability?: string[]
-          bumped_at?: string
-          buyer_id?: string | null
-          campus_id?: string
-          category_id?: number | null
-          comment_count?: number
-          comments_enabled?: boolean
-          condition?: Database["public"]["Enums"]["item_condition"] | null
-          created_at?: string
-          deleted_at?: string | null
-          description?: string | null
-          event_at?: string | null
-          expires_at?: string | null
-          hold_offer_id?: string | null
-          id?: string
-          kind?: Database["public"]["Enums"]["listing_kind"]
-          like_count?: number
-          link_url?: string | null
-          meet_note?: string | null
-          meet_spot_ids?: string[]
-          need_by?: string | null
-          offer_count?: number
-          open_to_offers?: boolean
-          price_cents?: number
-          save_count?: number
-          search?: unknown
-          seller_id?: string | null
-          share_image_path?: string | null
-          sold_at?: string | null
-          sold_in_app?: boolean | null
-          status?: Database["public"]["Enums"]["listing_status"]
-          title?: string
-          updated_at?: string
-          view_count?: number
-          wanted_alerts?: boolean
-          wanted_max_cents?: number | null
-          wanted_ref?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "listings_buyer_id_fkey"
-            columns: ["buyer_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "listings_buyer_id_fkey"
-            columns: ["buyer_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "listings_buyer_id_fkey"
-            columns: ["buyer_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "listings_buyer_id_fkey"
-            columns: ["buyer_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "listings_campus_id_fkey"
-            columns: ["campus_id"]
-            isOneToOne: false
-            referencedRelation: "campus_progress"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "listings_campus_id_fkey"
-            columns: ["campus_id"]
-            isOneToOne: false
-            referencedRelation: "campuses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "listings_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "listings_hold_offer_id_fkey"
-            columns: ["hold_offer_id"]
-            isOneToOne: false
-            referencedRelation: "offers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "listings_seller_id_fkey"
-            columns: ["seller_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "listings_seller_id_fkey"
-            columns: ["seller_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "listings_seller_id_fkey"
-            columns: ["seller_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "listings_seller_id_fkey"
-            columns: ["seller_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "listings_wanted_ref_fkey"
-            columns: ["wanted_ref"]
-            isOneToOne: false
-            referencedRelation: "listings"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      media_uploads: {
-        Row: {
-          attempts: number
-          created_at: string
-          key: string
-          kind: string
-          lease_token: string | null
-          lease_until: string | null
-          size_bytes: number
-          state: string
-          state_at: string
-          target_id: string
-          user_id: string
-        }
-        Insert: {
-          attempts?: number
-          created_at?: string
-          key: string
-          kind: string
-          lease_token?: string | null
-          lease_until?: string | null
-          size_bytes?: number
-          state?: string
-          state_at?: string
-          target_id: string
-          user_id: string
-        }
-        Update: {
-          attempts?: number
-          created_at?: string
-          key?: string
-          kind?: string
-          lease_token?: string | null
-          lease_until?: string | null
-          size_bytes?: number
-          state?: string
-          state_at?: string
-          target_id?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      meetups: {
-        Row: {
-          buyer_here_at: string | null
-          cancel_reason: string | null
-          cancelled_by: string | null
-          chat_id: string
-          confirmed_at: string | null
-          created_at: string
-          custom_place: string | null
-          deal_check_sent_at: string | null
-          handoff_at: string | null
-          handoff_code: string | null
-          handoff_tries: number
-          id: string
-          late_minutes: number | null
-          late_user: string | null
-          previous_starts_at: string | null
-          proposed_by: string | null
-          reminder_sent_at: string | null
-          seller_here_at: string | null
-          share_created_by: string | null
-          share_expires_at: string | null
-          share_token: string | null
-          spot_id: string | null
-          starts_at: string
-          status: Database["public"]["Enums"]["meetup_status"]
-        }
-        Insert: {
-          buyer_here_at?: string | null
-          cancel_reason?: string | null
-          cancelled_by?: string | null
-          chat_id: string
-          confirmed_at?: string | null
-          created_at?: string
-          custom_place?: string | null
-          deal_check_sent_at?: string | null
-          handoff_at?: string | null
-          handoff_code?: string | null
-          handoff_tries?: number
-          id?: string
-          late_minutes?: number | null
-          late_user?: string | null
-          previous_starts_at?: string | null
-          proposed_by?: string | null
-          reminder_sent_at?: string | null
-          seller_here_at?: string | null
-          share_created_by?: string | null
-          share_expires_at?: string | null
-          share_token?: string | null
-          spot_id?: string | null
-          starts_at: string
-          status?: Database["public"]["Enums"]["meetup_status"]
-        }
-        Update: {
-          buyer_here_at?: string | null
-          cancel_reason?: string | null
-          cancelled_by?: string | null
-          chat_id?: string
-          confirmed_at?: string | null
-          created_at?: string
-          custom_place?: string | null
-          deal_check_sent_at?: string | null
-          handoff_at?: string | null
-          handoff_code?: string | null
-          handoff_tries?: number
-          id?: string
-          late_minutes?: number | null
-          late_user?: string | null
-          previous_starts_at?: string | null
-          proposed_by?: string | null
-          reminder_sent_at?: string | null
-          seller_here_at?: string | null
-          share_created_by?: string | null
-          share_expires_at?: string | null
-          share_token?: string | null
-          spot_id?: string | null
-          starts_at?: string
-          status?: Database["public"]["Enums"]["meetup_status"]
-        }
-        Relationships: [
-          {
-            foreignKeyName: "meetups_chat_id_fkey"
-            columns: ["chat_id"]
-            isOneToOne: false
-            referencedRelation: "chats"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "meetups_proposed_by_fkey"
-            columns: ["proposed_by"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "meetups_proposed_by_fkey"
-            columns: ["proposed_by"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "meetups_proposed_by_fkey"
-            columns: ["proposed_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "meetups_proposed_by_fkey"
-            columns: ["proposed_by"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "meetups_spot_id_fkey"
-            columns: ["spot_id"]
-            isOneToOne: false
-            referencedRelation: "safe_spots"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      messages: {
-        Row: {
-          body: string | null
-          chat_id: string
-          client_id: string | null
-          created_at: string
-          id: number
-          kind: Database["public"]["Enums"]["message_kind"]
-          meta: Json | null
-          photo_path: string | null
-          sender_id: string | null
-        }
-        Insert: {
-          body?: string | null
-          chat_id: string
-          client_id?: string | null
-          created_at?: string
-          id?: never
-          kind?: Database["public"]["Enums"]["message_kind"]
-          meta?: Json | null
-          photo_path?: string | null
-          sender_id?: string | null
-        }
-        Update: {
-          body?: string | null
-          chat_id?: string
-          client_id?: string | null
-          created_at?: string
-          id?: never
-          kind?: Database["public"]["Enums"]["message_kind"]
-          meta?: Json | null
-          photo_path?: string | null
-          sender_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "messages_chat_id_fkey"
-            columns: ["chat_id"]
-            isOneToOne: false
-            referencedRelation: "chats"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "messages_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "messages_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "messages_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "messages_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      noshow_reports: {
-        Row: {
-          created_at: string
-          id: string
-          meetup_id: string
-          note: string | null
-          reported_id: string | null
-          reporter_id: string | null
-          status: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          meetup_id: string
-          note?: string | null
-          reported_id?: string | null
-          reporter_id?: string | null
-          status?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          meetup_id?: string
-          note?: string | null
-          reported_id?: string | null
-          reporter_id?: string | null
-          status?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "noshow_reports_meetup_id_fkey"
-            columns: ["meetup_id"]
-            isOneToOne: false
-            referencedRelation: "meetups"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "noshow_reports_reported_id_fkey"
-            columns: ["reported_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "noshow_reports_reported_id_fkey"
-            columns: ["reported_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "noshow_reports_reported_id_fkey"
-            columns: ["reported_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "noshow_reports_reported_id_fkey"
-            columns: ["reported_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "noshow_reports_reporter_id_fkey"
-            columns: ["reporter_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "noshow_reports_reporter_id_fkey"
-            columns: ["reporter_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "noshow_reports_reporter_id_fkey"
-            columns: ["reporter_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "noshow_reports_reporter_id_fkey"
-            columns: ["reporter_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      notification_prefs: {
-        Row: {
-          comments: boolean
-          free_food: boolean
-          meetups: boolean
-          message_previews: boolean
-          messages: boolean
-          offers: boolean
-          price_drop: boolean
-          quad_replies: boolean
-          quiet_end: string
-          quiet_start: string
-          saved_search: boolean
-          tips: boolean
-          user_id: string
-        }
-        Insert: {
-          comments?: boolean
-          free_food?: boolean
-          meetups?: boolean
-          message_previews?: boolean
-          messages?: boolean
-          offers?: boolean
-          price_drop?: boolean
-          quad_replies?: boolean
-          quiet_end?: string
-          quiet_start?: string
-          saved_search?: boolean
-          tips?: boolean
-          user_id: string
-        }
-        Update: {
-          comments?: boolean
-          free_food?: boolean
-          meetups?: boolean
-          message_previews?: boolean
-          messages?: boolean
-          offers?: boolean
-          price_drop?: boolean
-          quad_replies?: boolean
-          quiet_end?: string
-          quiet_start?: string
-          saved_search?: boolean
-          tips?: boolean
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "notification_prefs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "notification_prefs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "notification_prefs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "notification_prefs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      notifications: {
-        Row: {
-          body: string
-          claimed_at: string | null
-          created_at: string
-          data: Json
-          dedupe_key: string | null
-          grp: string
-          id: number
-          push_after: string
-          push_state: Database["public"]["Enums"]["push_state"]
-          read_at: string | null
-          time_sensitive: boolean
-          title: string
-          type: string
-          user_id: string
-        }
-        Insert: {
-          body: string
-          claimed_at?: string | null
-          created_at?: string
-          data?: Json
-          dedupe_key?: string | null
-          grp: string
-          id?: never
-          push_after?: string
-          push_state?: Database["public"]["Enums"]["push_state"]
-          read_at?: string | null
-          time_sensitive?: boolean
-          title: string
-          type: string
-          user_id: string
-        }
-        Update: {
-          body?: string
-          claimed_at?: string | null
-          created_at?: string
-          data?: Json
-          dedupe_key?: string | null
-          grp?: string
-          id?: never
-          push_after?: string
-          push_state?: Database["public"]["Enums"]["push_state"]
-          read_at?: string | null
-          time_sensitive?: boolean
-          title?: string
-          type?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "notifications_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "notifications_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "notifications_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "notifications_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      offers: {
-        Row: {
-          amount_cents: number
-          bundle_ids: string[]
-          buyer_id: string | null
-          created_at: string
-          decline_reason: string | null
-          expires_at: string
-          id: string
-          last_actor: string
-          listing_id: string | null
-          note: string | null
-          quick_notes: string[]
-          responded_at: string | null
-          round: number
-          seller_id: string | null
-          status: Database["public"]["Enums"]["offer_status"]
-        }
-        Insert: {
-          amount_cents: number
-          bundle_ids?: string[]
-          buyer_id?: string | null
-          created_at?: string
-          decline_reason?: string | null
-          expires_at?: string
-          id?: string
-          last_actor?: string
-          listing_id?: string | null
-          note?: string | null
-          quick_notes?: string[]
-          responded_at?: string | null
-          round?: number
-          seller_id?: string | null
-          status?: Database["public"]["Enums"]["offer_status"]
-        }
-        Update: {
-          amount_cents?: number
-          bundle_ids?: string[]
-          buyer_id?: string | null
-          created_at?: string
-          decline_reason?: string | null
-          expires_at?: string
-          id?: string
-          last_actor?: string
-          listing_id?: string | null
-          note?: string | null
-          quick_notes?: string[]
-          responded_at?: string | null
-          round?: number
-          seller_id?: string | null
-          status?: Database["public"]["Enums"]["offer_status"]
-        }
-        Relationships: [
-          {
-            foreignKeyName: "offers_buyer_id_fkey"
-            columns: ["buyer_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "offers_buyer_id_fkey"
-            columns: ["buyer_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "offers_buyer_id_fkey"
-            columns: ["buyer_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "offers_buyer_id_fkey"
-            columns: ["buyer_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "offers_listing_id_fkey"
-            columns: ["listing_id"]
-            isOneToOne: false
-            referencedRelation: "listings"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "offers_seller_id_fkey"
-            columns: ["seller_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "offers_seller_id_fkey"
-            columns: ["seller_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "offers_seller_id_fkey"
-            columns: ["seller_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "offers_seller_id_fkey"
-            columns: ["seller_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      profiles: {
-        Row: {
-          adult_confirmed_at: string | null
-          age_band: string | null
-          age_declaration: string | null
-          age_method: Database["public"]["Enums"]["age_method"] | null
-          age_regulated: boolean | null
-          analytics_opt_in: boolean
-          areas: string[]
-          avatar_path: string | null
-          away_since: string | null
-          bio: string | null
-          campus_id: string
-          crash_reports_opt_in: boolean
-          created_at: string
-          display_name: string | null
-          email_hash: string
-          first_name: string | null
-          founding_seller_until: string | null
-          id: string
-          invite_code: string
-          invited_by: string | null
-          last_active_at: string | null
-          last_app_version: string | null
-          last_initial: string | null
-          last_platform: string | null
-          moving_out_by: string | null
-          noshow_count: number
-          parental_consent: string | null
-          paused_until: string | null
-          quad_rules_accepted_at: string | null
-          rules_accepted_at: string | null
-          rules_version: string | null
-          seen_unlock_at: string | null
-          status: Database["public"]["Enums"]["user_status"]
-          status_reason: string | null
-          strike_count: number
-          theme_mode: string
-          verified_until: string
-          year: Database["public"]["Enums"]["class_year"] | null
-        }
-        Insert: {
-          adult_confirmed_at?: string | null
-          age_band?: string | null
-          age_declaration?: string | null
-          age_method?: Database["public"]["Enums"]["age_method"] | null
-          age_regulated?: boolean | null
-          analytics_opt_in?: boolean
-          areas?: string[]
-          avatar_path?: string | null
-          away_since?: string | null
-          bio?: string | null
-          campus_id: string
-          crash_reports_opt_in?: boolean
-          created_at?: string
-          display_name?: string | null
-          email_hash: string
-          first_name?: string | null
-          founding_seller_until?: string | null
-          id: string
-          invite_code?: string
-          invited_by?: string | null
-          last_active_at?: string | null
-          last_app_version?: string | null
-          last_initial?: string | null
-          last_platform?: string | null
-          moving_out_by?: string | null
-          noshow_count?: number
-          parental_consent?: string | null
-          paused_until?: string | null
-          quad_rules_accepted_at?: string | null
-          rules_accepted_at?: string | null
-          rules_version?: string | null
-          seen_unlock_at?: string | null
-          status?: Database["public"]["Enums"]["user_status"]
-          status_reason?: string | null
-          strike_count?: number
-          theme_mode?: string
-          verified_until: string
-          year?: Database["public"]["Enums"]["class_year"] | null
-        }
-        Update: {
-          adult_confirmed_at?: string | null
-          age_band?: string | null
-          age_declaration?: string | null
-          age_method?: Database["public"]["Enums"]["age_method"] | null
-          age_regulated?: boolean | null
-          analytics_opt_in?: boolean
-          areas?: string[]
-          avatar_path?: string | null
-          away_since?: string | null
-          bio?: string | null
-          campus_id?: string
-          crash_reports_opt_in?: boolean
-          created_at?: string
-          display_name?: string | null
-          email_hash?: string
-          first_name?: string | null
-          founding_seller_until?: string | null
-          id?: string
-          invite_code?: string
-          invited_by?: string | null
-          last_active_at?: string | null
-          last_app_version?: string | null
-          last_initial?: string | null
-          last_platform?: string | null
-          moving_out_by?: string | null
-          noshow_count?: number
-          parental_consent?: string | null
-          paused_until?: string | null
-          quad_rules_accepted_at?: string | null
-          rules_accepted_at?: string | null
-          rules_version?: string | null
-          seen_unlock_at?: string | null
-          status?: Database["public"]["Enums"]["user_status"]
-          status_reason?: string | null
-          strike_count?: number
-          theme_mode?: string
-          verified_until?: string
-          year?: Database["public"]["Enums"]["class_year"] | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_campus_id_fkey"
-            columns: ["campus_id"]
-            isOneToOne: false
-            referencedRelation: "campus_progress"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "profiles_campus_id_fkey"
-            columns: ["campus_id"]
-            isOneToOne: false
-            referencedRelation: "campuses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "profiles_invited_by_fkey"
-            columns: ["invited_by"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "profiles_invited_by_fkey"
-            columns: ["invited_by"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "profiles_invited_by_fkey"
-            columns: ["invited_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "profiles_invited_by_fkey"
-            columns: ["invited_by"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      push_tickets: {
-        Row: {
-          checked_at: string | null
-          created_at: string | null
-          error: string | null
-          id: number
-          notification_id: number | null
-          status: string | null
-          ticket_id: string | null
-          token_id: string | null
-        }
-        Insert: {
-          checked_at?: string | null
-          created_at?: string | null
-          error?: string | null
-          id?: never
-          notification_id?: number | null
-          status?: string | null
-          ticket_id?: string | null
-          token_id?: string | null
-        }
-        Update: {
-          checked_at?: string | null
-          created_at?: string | null
-          error?: string | null
-          id?: never
-          notification_id?: number | null
-          status?: string | null
-          ticket_id?: string | null
-          token_id?: string | null
-        }
-        Relationships: []
-      }
-      push_tokens: {
-        Row: {
-          app_version: string | null
-          created_at: string | null
-          disabled_at: string | null
-          id: string
-          last_seen_at: string | null
-          platform: string | null
-          token: string
-          user_id: string | null
-        }
-        Insert: {
-          app_version?: string | null
-          created_at?: string | null
-          disabled_at?: string | null
-          id?: string
-          last_seen_at?: string | null
-          platform?: string | null
-          token: string
-          user_id?: string | null
-        }
-        Update: {
-          app_version?: string | null
-          created_at?: string | null
-          disabled_at?: string | null
-          id?: string
-          last_seen_at?: string | null
-          platform?: string | null
-          token?: string
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "push_tokens_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "push_tokens_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "push_tokens_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "push_tokens_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      quad_hides: {
-        Row: {
-          created_at: string
-          excerpt: string | null
-          hidden_author_id: string
-          source_post_id: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          excerpt?: string | null
-          hidden_author_id: string
-          source_post_id?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          excerpt?: string | null
-          hidden_author_id?: string
-          source_post_id?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "quad_hides_hidden_author_id_fkey"
-            columns: ["hidden_author_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "quad_hides_hidden_author_id_fkey"
-            columns: ["hidden_author_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "quad_hides_hidden_author_id_fkey"
-            columns: ["hidden_author_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quad_hides_hidden_author_id_fkey"
-            columns: ["hidden_author_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quad_hides_source_post_id_fkey"
-            columns: ["source_post_id"]
-            isOneToOne: false
-            referencedRelation: "quad_posts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quad_hides_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "quad_hides_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "quad_hides_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quad_hides_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      quad_mutes: {
-        Row: {
-          created_at: string
-          keyword: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          keyword: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          keyword?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "quad_mutes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "quad_mutes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "quad_mutes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quad_mutes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      quad_poll_options: {
-        Row: {
-          id: string
-          idx: number
-          label: string
-          post_id: string
-          votes: number
-        }
-        Insert: {
-          id?: string
-          idx: number
-          label: string
-          post_id: string
-          votes?: number
-        }
-        Update: {
-          id?: string
-          idx?: number
-          label?: string
-          post_id?: string
-          votes?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "quad_poll_options_post_id_fkey"
-            columns: ["post_id"]
-            isOneToOne: false
-            referencedRelation: "quad_posts"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      quad_poll_votes: {
-        Row: {
-          created_at: string
-          option_id: string
-          post_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          option_id: string
-          post_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          option_id?: string
-          post_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "quad_poll_votes_option_id_fkey"
-            columns: ["option_id"]
-            isOneToOne: false
-            referencedRelation: "quad_poll_options"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quad_poll_votes_post_id_fkey"
-            columns: ["post_id"]
-            isOneToOne: false
-            referencedRelation: "quad_posts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quad_poll_votes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "quad_poll_votes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "quad_poll_votes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quad_poll_votes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      quad_posts: {
-        Row: {
-          author_id: string
-          body: string
-          campus_id: string
-          created_at: string
-          expires_at: string | null
-          hold_reason: string | null
-          id: string
-          kind: string
-          photo_path: string | null
-          place: string | null
-          replies_enabled: boolean
-          reply_count: number
-          score: number
-          status: string
-        }
-        Insert: {
-          author_id: string
-          body: string
-          campus_id: string
-          created_at?: string
-          expires_at?: string | null
-          hold_reason?: string | null
-          id?: string
-          kind?: string
-          photo_path?: string | null
-          place?: string | null
-          replies_enabled?: boolean
-          reply_count?: number
-          score?: number
-          status?: string
-        }
-        Update: {
-          author_id?: string
-          body?: string
-          campus_id?: string
-          created_at?: string
-          expires_at?: string | null
-          hold_reason?: string | null
-          id?: string
-          kind?: string
-          photo_path?: string | null
-          place?: string | null
-          replies_enabled?: boolean
-          reply_count?: number
-          score?: number
-          status?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "quad_posts_author_id_fkey"
-            columns: ["author_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "quad_posts_author_id_fkey"
-            columns: ["author_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "quad_posts_author_id_fkey"
-            columns: ["author_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quad_posts_author_id_fkey"
-            columns: ["author_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quad_posts_campus_id_fkey"
-            columns: ["campus_id"]
-            isOneToOne: false
-            referencedRelation: "campus_progress"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quad_posts_campus_id_fkey"
-            columns: ["campus_id"]
-            isOneToOne: false
-            referencedRelation: "campuses"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      quad_replies: {
-        Row: {
-          alias_no: number
-          author_id: string
-          body: string
-          created_at: string
-          hold_reason: string | null
-          id: string
-          post_id: string
-          score: number
-          status: string
-        }
-        Insert: {
-          alias_no: number
-          author_id: string
-          body: string
-          created_at?: string
-          hold_reason?: string | null
-          id?: string
-          post_id: string
-          score?: number
-          status?: string
-        }
-        Update: {
-          alias_no?: number
-          author_id?: string
-          body?: string
-          created_at?: string
-          hold_reason?: string | null
-          id?: string
-          post_id?: string
-          score?: number
-          status?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "quad_replies_author_id_fkey"
-            columns: ["author_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "quad_replies_author_id_fkey"
-            columns: ["author_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "quad_replies_author_id_fkey"
-            columns: ["author_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quad_replies_author_id_fkey"
-            columns: ["author_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quad_replies_post_id_fkey"
-            columns: ["post_id"]
-            isOneToOne: false
-            referencedRelation: "quad_posts"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      quad_votes: {
-        Row: {
-          created_at: string
-          target_id: string
-          target_type: string
-          user_id: string
-          value: number
-        }
-        Insert: {
-          created_at?: string
-          target_id: string
-          target_type: string
-          user_id: string
-          value: number
-        }
-        Update: {
-          created_at?: string
-          target_id?: string
-          target_type?: string
-          user_id?: string
-          value?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "quad_votes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "quad_votes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "quad_votes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quad_votes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      rate_counters: {
-        Row: {
-          action: string
-          count: number
-          user_id: string
-          window_start: string
-        }
-        Insert: {
-          action: string
-          count: number
-          user_id: string
-          window_start: string
-        }
-        Update: {
-          action?: string
-          count?: number
-          user_id?: string
-          window_start?: string
-        }
-        Relationships: []
-      }
-      ratings: {
-        Row: {
-          chat_id: string
-          comment: string | null
-          created_at: string
-          id: string
-          ratee_id: string | null
-          rater_id: string | null
-          tags: string[]
-          thumbs_up: boolean
-        }
-        Insert: {
-          chat_id: string
-          comment?: string | null
-          created_at?: string
-          id?: string
-          ratee_id?: string | null
-          rater_id?: string | null
-          tags?: string[]
-          thumbs_up: boolean
-        }
-        Update: {
-          chat_id?: string
-          comment?: string | null
-          created_at?: string
-          id?: string
-          ratee_id?: string | null
-          rater_id?: string | null
-          tags?: string[]
-          thumbs_up?: boolean
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ratings_chat_id_fkey"
-            columns: ["chat_id"]
-            isOneToOne: false
-            referencedRelation: "chats"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ratings_ratee_id_fkey"
-            columns: ["ratee_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "ratings_ratee_id_fkey"
-            columns: ["ratee_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "ratings_ratee_id_fkey"
-            columns: ["ratee_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ratings_ratee_id_fkey"
-            columns: ["ratee_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ratings_rater_id_fkey"
-            columns: ["rater_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "ratings_rater_id_fkey"
-            columns: ["rater_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "ratings_rater_id_fkey"
-            columns: ["rater_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ratings_rater_id_fkey"
-            columns: ["rater_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      reports: {
-        Row: {
-          action_taken: string | null
-          assigned_to: string | null
-          campus_id: string
-          created_at: string
-          details: string | null
-          evidence: Json
-          id: string
-          priority: number
-          reason: string
-          reporter_id: string | null
-          resolved_at: string | null
-          status: Database["public"]["Enums"]["report_status"]
-          target_id: string
-          target_type: string
-          target_user_id: string | null
-        }
-        Insert: {
-          action_taken?: string | null
-          assigned_to?: string | null
-          campus_id: string
-          created_at?: string
-          details?: string | null
-          evidence?: Json
-          id?: string
-          priority?: number
-          reason: string
-          reporter_id?: string | null
-          resolved_at?: string | null
-          status?: Database["public"]["Enums"]["report_status"]
-          target_id: string
-          target_type: string
-          target_user_id?: string | null
-        }
-        Update: {
-          action_taken?: string | null
-          assigned_to?: string | null
-          campus_id?: string
-          created_at?: string
-          details?: string | null
-          evidence?: Json
-          id?: string
-          priority?: number
-          reason?: string
-          reporter_id?: string | null
-          resolved_at?: string | null
-          status?: Database["public"]["Enums"]["report_status"]
-          target_id?: string
-          target_type?: string
-          target_user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "reports_reporter_id_fkey"
-            columns: ["reporter_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "reports_reporter_id_fkey"
-            columns: ["reporter_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "reports_reporter_id_fkey"
-            columns: ["reporter_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reports_reporter_id_fkey"
-            columns: ["reporter_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reports_target_user_id_fkey"
-            columns: ["target_user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "reports_target_user_id_fkey"
-            columns: ["target_user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "reports_target_user_id_fkey"
-            columns: ["target_user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reports_target_user_id_fkey"
-            columns: ["target_user_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      review_accounts: {
-        Row: {
-          email: string
-          note: string | null
-        }
-        Insert: {
-          email: string
-          note?: string | null
-        }
-        Update: {
-          email?: string
-          note?: string | null
-        }
-        Relationships: []
-      }
-      safe_spots: {
-        Row: {
-          active: boolean
-          campus_id: string
-          description: string | null
-          designated_on: string | null
-          designation: Database["public"]["Enums"]["spot_designation"]
-          hours: string | null
-          id: string
-          is_default: boolean
-          lat: number
-          lng: number
-          name: string
-          sort: number | null
-        }
-        Insert: {
-          active?: boolean
-          campus_id: string
-          description?: string | null
-          designated_on?: string | null
-          designation?: Database["public"]["Enums"]["spot_designation"]
-          hours?: string | null
-          id?: string
-          is_default?: boolean
-          lat: number
-          lng: number
-          name: string
-          sort?: number | null
-        }
-        Update: {
-          active?: boolean
-          campus_id?: string
-          description?: string | null
-          designated_on?: string | null
-          designation?: Database["public"]["Enums"]["spot_designation"]
-          hours?: string | null
-          id?: string
-          is_default?: boolean
-          lat?: number
-          lng?: number
-          name?: string
-          sort?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "safe_spots_campus_id_fkey"
-            columns: ["campus_id"]
-            isOneToOne: false
-            referencedRelation: "campus_progress"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "safe_spots_campus_id_fkey"
-            columns: ["campus_id"]
-            isOneToOne: false
-            referencedRelation: "campuses"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      saved_searches: {
-        Row: {
-          alerts: boolean
-          campus_id: string
-          created_at: string | null
-          filters: Json
-          id: string
-          last_notified_at: string | null
-          last_seen_at: string | null
-          query: string | null
-          user_id: string
-        }
-        Insert: {
-          alerts?: boolean
-          campus_id: string
-          created_at?: string | null
-          filters?: Json
-          id?: string
-          last_notified_at?: string | null
-          last_seen_at?: string | null
-          query?: string | null
-          user_id: string
-        }
-        Update: {
-          alerts?: boolean
-          campus_id?: string
-          created_at?: string | null
-          filters?: Json
-          id?: string
-          last_notified_at?: string | null
-          last_seen_at?: string | null
-          query?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "saved_searches_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "saved_searches_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "saved_searches_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "saved_searches_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      saves: {
-        Row: {
-          created_at: string | null
-          listing_id: string
-          price_at_save: number | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          listing_id: string
-          price_at_save?: number | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          listing_id?: string
-          price_at_save?: number | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "saves_listing_id_fkey"
-            columns: ["listing_id"]
-            isOneToOne: false
-            referencedRelation: "listings"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "saves_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "saves_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "saves_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "saves_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      strikes: {
-        Row: {
-          cleared_at: string | null
-          created_at: string | null
-          created_by: string | null
-          expires_at: string | null
-          id: string
-          reason: string | null
-          report_id: string | null
-          user_id: string | null
-        }
-        Insert: {
-          cleared_at?: string | null
-          created_at?: string | null
-          created_by?: string | null
-          expires_at?: string | null
-          id?: string
-          reason?: string | null
-          report_id?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          cleared_at?: string | null
-          created_at?: string | null
-          created_by?: string | null
-          expires_at?: string | null
-          id?: string
-          reason?: string | null
-          report_id?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "strikes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "strikes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "strikes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "strikes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      support_requests: {
-        Row: {
-          body: string | null
-          created_at: string | null
-          email: string | null
-          handled_at: string | null
-          id: string
-          replied_at: string | null
-          reply_count: number
-          staff_note: string | null
-          status: string
-          topic: string | null
-          updated_at: string | null
-          updated_by: string | null
-        }
-        Insert: {
-          body?: string | null
-          created_at?: string | null
-          email?: string | null
-          handled_at?: string | null
-          id?: string
-          replied_at?: string | null
-          reply_count?: number
-          staff_note?: string | null
-          status?: string
-          topic?: string | null
-          updated_at?: string | null
-          updated_by?: string | null
-        }
-        Update: {
-          body?: string | null
-          created_at?: string | null
-          email?: string | null
-          handled_at?: string | null
-          id?: string
-          replied_at?: string | null
-          reply_count?: number
-          staff_note?: string | null
-          status?: string
-          topic?: string | null
-          updated_at?: string | null
-          updated_by?: string | null
-        }
-        Relationships: []
-      }
-      swipes: {
-        Row: {
-          created_at: string | null
-          dir: Database["public"]["Enums"]["swipe_dir"]
-          dwell_ms: number | null
-          listing_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          dir: Database["public"]["Enums"]["swipe_dir"]
-          dwell_ms?: number | null
-          listing_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          dir?: Database["public"]["Enums"]["swipe_dir"]
-          dwell_ms?: number | null
-          listing_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "swipes_listing_id_fkey"
-            columns: ["listing_id"]
-            isOneToOne: false
-            referencedRelation: "listings"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "swipes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "swipes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "swipes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "swipes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      waitlist_requests: {
-        Row: {
-          created_at: string | null
-          domain: string
-          email_enc: string
-          email_hash: string
-          id: string
-          notified_at: string | null
-          school_guess: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          domain: string
-          email_enc: string
-          email_hash: string
-          id?: string
-          notified_at?: string | null
-          school_guess?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          domain?: string
-          email_enc?: string
-          email_hash?: string
-          id?: string
-          notified_at?: string | null
-          school_guess?: string | null
-        }
-        Relationships: []
-      }
-      watches: {
-        Row: {
-          created_at: string | null
-          listing_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          listing_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          listing_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "watches_listing_id_fkey"
-            columns: ["listing_id"]
-            isOneToOne: false
-            referencedRelation: "listings"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "watches_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "watches_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "watches_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "watches_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+  
+  "public": {
+          Tables: {
+            "account_deletions": {
+                  Row: {
+                    "campus_id": string | null,"finished_at": string | null,"id": string,"media_confirmed_at": string | null,"media_confirmed_gen": number | null,"media_gen": number,"media_prefixes": (string)[] | null,"media_sweep_pos": number,"media_swept_gen": number | null,"started_at": string,"status": string,"underage": boolean,"user_id": string | null
+                  }
+                  Insert: {
+                    "campus_id"?: string | null,"finished_at"?: string | null,"id"?: string,"media_confirmed_at"?: string | null,"media_confirmed_gen"?: number | null,"media_gen"?: number,"media_prefixes"?: (string)[] | null,"media_sweep_pos"?: number,"media_swept_gen"?: number | null,"started_at"?: string,"status"?: string,"underage"?: boolean,"user_id"?: string | null
+                  }
+                  Update: {
+                    "campus_id"?: string | null,"finished_at"?: string | null,"id"?: string,"media_confirmed_at"?: string | null,"media_confirmed_gen"?: number | null,"media_gen"?: number,"media_prefixes"?: (string)[] | null,"media_sweep_pos"?: number,"media_swept_gen"?: number | null,"started_at"?: string,"status"?: string,"underage"?: boolean,"user_id"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"activity_days": {
+                  Row: {
+                    "day": string,"user_id": string
+                  }
+                  Insert: {
+                    "day": string,"user_id": string
+                  }
+                  Update: {
+                    "day"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"activity_events": {
+                  Row: {
+                    "app_version": string | null,"campus_id": string,"created_at": string,"dwell_ms": number | null,"id": number,"kind": string,"listing_id": string | null,"platform": string | null,"query": string | null,"source": string | null,"user_id": string
+                  }
+                  Insert: {
+                    "app_version"?: string | null,"campus_id": string,"created_at"?: string,"dwell_ms"?: number | null,"id"?: never,"kind": string,"listing_id"?: string | null,"platform"?: string | null,"query"?: string | null,"source"?: string | null,"user_id": string
+                  }
+                  Update: {
+                    "app_version"?: string | null,"campus_id"?: string,"created_at"?: string,"dwell_ms"?: number | null,"id"?: never,"kind"?: string,"listing_id"?: string | null,"platform"?: string | null,"query"?: string | null,"source"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "activity_events_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campus_progress"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "activity_events_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campuses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "activity_events_listing_id_fkey"
+      columns: ["listing_id"]
+isOneToOne: false
+      referencedRelation: "listings"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "activity_events_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "activity_events_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "activity_events_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "activity_events_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
     }
-    Views: {
-      admin_metrics_funnel: {
-        Row: {
-          activated: number | null
-          campus_id: string | null
-          completed_swaps: number | null
-          day: string | null
-          meetups_confirmed: number | null
-          offers: number | null
-          offers_accepted: number | null
-          signups: number | null
-          swiped_10_24h: number | null
-        }
-        Relationships: []
-      }
-      admin_metrics_liquidity: {
-        Row: {
-          active_buyers: number | null
-          campus_id: string | null
-          feed_exhausted: number | null
-          listings_created: number | null
-          median_hours_to_first_offer: number | null
-          sell_through_final: boolean | null
-          sold_14d: number | null
-          week: string | null
-        }
-        Relationships: []
-      }
-      admin_metrics_retention: {
-        Row: {
-          campus_id: string | null
-          cohort: number | null
-          d1: number | null
-          d1_eligible: number | null
-          d30: number | null
-          d30_eligible: number | null
-          d7: number | null
-          d7_eligible: number | null
-          signup_week: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_campus_id_fkey"
-            columns: ["campus_id"]
-            isOneToOne: false
-            referencedRelation: "campus_progress"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "profiles_campus_id_fkey"
-            columns: ["campus_id"]
-            isOneToOne: false
-            referencedRelation: "campuses"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      admin_metrics_safety: {
-        Row: {
-          campus_id: string | null
-          completed_swaps: number | null
-          meetups_completed: number | null
-          meetups_confirmed: number | null
-          meetups_no_show: number | null
-          p90_hours_to_resolve: number | null
-          reports: number | null
-          week: string | null
-        }
-        Relationships: []
-      }
-      campus_progress: {
-        Row: {
-          founding_left: number | null
-          id: string | null
-          members: number | null
-          name: string | null
-          slug: string | null
-          status: Database["public"]["Enums"]["campus_status"] | null
-          threshold: number | null
-        }
-        Insert: {
-          founding_left?: never
-          id?: string | null
-          members?: never
-          name?: string | null
-          slug?: string | null
-          status?: Database["public"]["Enums"]["campus_status"] | null
-          threshold?: number | null
-        }
-        Update: {
-          founding_left?: never
-          id?: string | null
-          members?: never
-          name?: string | null
-          slug?: string | null
-          status?: Database["public"]["Enums"]["campus_status"] | null
-          threshold?: number | null
-        }
-        Relationships: []
-      }
-      campus_trending_terms: {
-        Row: {
-          campus_id: string | null
-          rank: number | null
-          saves: number | null
-          term: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "listings_campus_id_fkey"
-            columns: ["campus_id"]
-            isOneToOne: false
-            referencedRelation: "campus_progress"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "listings_campus_id_fkey"
-            columns: ["campus_id"]
-            isOneToOne: false
-            referencedRelation: "campuses"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      my_reports: {
-        Row: {
-          created_at: string | null
-          id: string | null
-          reason: string | null
-          resolved_at: string | null
-          status: Database["public"]["Enums"]["report_status"] | null
-          target_id: string | null
-          target_type: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string | null
-          reason?: string | null
-          resolved_at?: string | null
-          status?: Database["public"]["Enums"]["report_status"] | null
-          target_id?: string | null
-          target_type?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string | null
-          reason?: string | null
-          resolved_at?: string | null
-          status?: Database["public"]["Enums"]["report_status"] | null
-          target_id?: string | null
-          target_type?: string | null
-        }
-        Relationships: []
-      }
-      price_hints: {
-        Row: {
-          campus_id: string | null
-          category_id: number | null
-          n: number | null
-          p25: number | null
-          p50: number | null
-          p75: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "listings_campus_id_fkey"
-            columns: ["campus_id"]
-            isOneToOne: false
-            referencedRelation: "campus_progress"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "listings_campus_id_fkey"
-            columns: ["campus_id"]
-            isOneToOne: false
-            referencedRelation: "campuses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "listings_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      profile_stats: {
-        Row: {
-          active_listings: number | null
-          median_reply_minutes: number | null
-          swaps_count: number | null
-          thumbs_total: number | null
-          thumbs_up: number | null
-          user_id: string | null
-        }
-        Relationships: []
-      }
-      profile_stats_mv: {
-        Row: {
-          active_listings: number | null
-          campus_id: string | null
-          median_reply_minutes: number | null
-          swaps_count: number | null
-          thumbs_total: number | null
-          thumbs_up: number | null
-          user_id: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_campus_id_fkey"
-            columns: ["campus_id"]
-            isOneToOne: false
-            referencedRelation: "campus_progress"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "profiles_campus_id_fkey"
-            columns: ["campus_id"]
-            isOneToOne: false
-            referencedRelation: "campuses"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      public_profiles: {
-        Row: {
-          avatar_path: string | null
-          created_at: string | null
-          display_name: string | null
-          founding_seller_until: string | null
-          id: string | null
-          year: Database["public"]["Enums"]["class_year"] | null
-        }
-        Insert: {
-          avatar_path?: string | null
-          created_at?: string | null
-          display_name?: string | null
-          founding_seller_until?: string | null
-          id?: string | null
-          year?: Database["public"]["Enums"]["class_year"] | null
-        }
-        Update: {
-          avatar_path?: string | null
-          created_at?: string | null
-          display_name?: string | null
-          founding_seller_until?: string | null
-          id?: string | null
-          year?: Database["public"]["Enums"]["class_year"] | null
-        }
-        Relationships: []
-      }
-      ratings_visible: {
-        Row: {
-          chat_id: string | null
-          comment: string | null
-          created_at: string | null
-          id: string | null
-          ratee_id: string | null
-          rater_id: string | null
-          rater_name: string | null
-          tags: string[] | null
-          thumbs_up: boolean | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ratings_chat_id_fkey"
-            columns: ["chat_id"]
-            isOneToOne: false
-            referencedRelation: "chats"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ratings_ratee_id_fkey"
-            columns: ["ratee_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "ratings_ratee_id_fkey"
-            columns: ["ratee_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "ratings_ratee_id_fkey"
-            columns: ["ratee_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ratings_ratee_id_fkey"
-            columns: ["ratee_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ratings_rater_id_fkey"
-            columns: ["rater_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "ratings_rater_id_fkey"
-            columns: ["rater_id"]
-            isOneToOne: false
-            referencedRelation: "profile_stats_mv"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "ratings_rater_id_fkey"
-            columns: ["rater_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ratings_rater_id_fkey"
-            columns: ["rater_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+                  ]
+                },"admins": {
+                  Row: {
+                    "campus_id": string | null,"created_at": string | null,"invited_by": string | null,"role": Database["public"]['Enums']["admin_role"],"user_id": string
+                  }
+                  Insert: {
+                    "campus_id"?: string | null,"created_at"?: string | null,"invited_by"?: string | null,"role": Database["public"]['Enums']["admin_role"],"user_id": string
+                  }
+                  Update: {
+                    "campus_id"?: string | null,"created_at"?: string | null,"invited_by"?: string | null,"role"?: Database["public"]['Enums']["admin_role"],"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "admins_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campus_progress"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "admins_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campuses"
+      referencedColumns: ["id"]
     }
-    Functions: {
-      accept_offer: { Args: { offer_id: string }; Returns: Json }
-      accept_quad_rules: { Args: never; Returns: undefined }
-      accept_rules: { Args: { version: string }; Returns: undefined }
-      admin_activity_feed: {
-        Args: {
-          campus_id?: string
-          cursor?: Json
-          kinds?: string[]
-          limit?: number
-          listing_id?: string
-          since?: string
-          until?: string
-          user_id?: string
-        }
-        Returns: Json
-      }
-      admin_age_blocks_summary: {
-        Args: { campus_id?: string; days?: number }
-        Returns: Json
-      }
-      admin_bulk_set_listing_status: {
-        Args: { ids: string[]; reason: string; status: string }
-        Returns: Json
-      }
-      admin_change_email:
-        | { Args: { new_email: string; user_id: string }; Returns: Json }
-        | {
-            Args: { new_email: string; reason: string; user_id: string }
-            Returns: Json
+                  ]
+                },"age_blocks": {
+                  Row: {
+                    "campus_id": string | null,"created_at": string | null,"email_hash": string
+                  }
+                  Insert: {
+                    "campus_id"?: string | null,"created_at"?: string | null,"email_hash": string
+                  }
+                  Update: {
+                    "campus_id"?: string | null,"created_at"?: string | null,"email_hash"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"announcements": {
+                  Row: {
+                    "body": string | null,"campus_id": string | null,"created_at": string | null,"created_by": string | null,"id": string,"pinned_until": string | null,"send_push": boolean | null,"sent_at": string | null,"title": string | null,"type": string | null
+                  }
+                  Insert: {
+                    "body"?: string | null,"campus_id"?: string | null,"created_at"?: string | null,"created_by"?: string | null,"id"?: string,"pinned_until"?: string | null,"send_push"?: boolean | null,"sent_at"?: string | null,"title"?: string | null,"type"?: string | null
+                  }
+                  Update: {
+                    "body"?: string | null,"campus_id"?: string | null,"created_at"?: string | null,"created_by"?: string | null,"id"?: string,"pinned_until"?: string | null,"send_push"?: boolean | null,"sent_at"?: string | null,"title"?: string | null,"type"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "announcements_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campus_progress"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "announcements_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campuses"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"app_config": {
+                  Row: {
+                    "key": string,"updated_at": string | null,"value": NonNullable<Json>
+                  }
+                  Insert: {
+                    "key": string,"updated_at"?: string | null,"value": NonNullable<Json>
+                  }
+                  Update: {
+                    "key"?: string,"updated_at"?: string | null,"value"?: NonNullable<Json>
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"app_transactions": {
+                  Row: {
+                    "app_transaction_id": string,"created_at": string,"last_seen_at": string,"user_id": string
+                  }
+                  Insert: {
+                    "app_transaction_id": string,"created_at"?: string,"last_seen_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "app_transaction_id"?: string,"created_at"?: string,"last_seen_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "app_transactions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "app_transactions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "app_transactions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "app_transactions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"appeals": {
+                  Row: {
+                    "body": string | null,"created_at": string | null,"decided_at": string | null,"decided_by": string | null,"decision_note": string | null,"id": string,"reason_choice": string | null,"status": string,"subject_id": string,"subject_type": string,"user_id": string
+                  }
+                  Insert: {
+                    "body"?: string | null,"created_at"?: string | null,"decided_at"?: string | null,"decided_by"?: string | null,"decision_note"?: string | null,"id"?: string,"reason_choice"?: string | null,"status"?: string,"subject_id": string,"subject_type": string,"user_id": string
+                  }
+                  Update: {
+                    "body"?: string | null,"created_at"?: string | null,"decided_at"?: string | null,"decided_by"?: string | null,"decision_note"?: string | null,"id"?: string,"reason_choice"?: string | null,"status"?: string,"subject_id"?: string,"subject_type"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "appeals_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "appeals_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "appeals_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "appeals_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"audit_log": {
+                  Row: {
+                    "action": string,"actor_id": string | null,"campus_id": string | null,"case_ref": string | null,"created_at": string,"id": number,"meta": Json | null,"reason": string | null,"target_id": string | null,"target_type": string | null
+                  }
+                  Insert: {
+                    "action": string,"actor_id"?: string | null,"campus_id"?: string | null,"case_ref"?: string | null,"created_at"?: string,"id"?: never,"meta"?: Json | null,"reason"?: string | null,"target_id"?: string | null,"target_type"?: string | null
+                  }
+                  Update: {
+                    "action"?: string,"actor_id"?: string | null,"campus_id"?: string | null,"case_ref"?: string | null,"created_at"?: string,"id"?: never,"meta"?: Json | null,"reason"?: string | null,"target_id"?: string | null,"target_type"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"banned_hashes": {
+                  Row: {
+                    "created_at": string | null,"email_hash": string
+                  }
+                  Insert: {
+                    "created_at"?: string | null,"email_hash": string
+                  }
+                  Update: {
+                    "created_at"?: string | null,"email_hash"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"banned_words": {
+                  Row: {
+                    "action": string,"created_at": string | null,"created_by": string | null,"fired_count": number,"id": string,"match": string,"overturned_count": number,"pattern": string,"scopes": (string)[]
+                  }
+                  Insert: {
+                    "action": string,"created_at"?: string | null,"created_by"?: string | null,"fired_count"?: number,"id"?: string,"match"?: string,"overturned_count"?: number,"pattern": string,"scopes": (string)[]
+                  }
+                  Update: {
+                    "action"?: string,"created_at"?: string | null,"created_by"?: string | null,"fired_count"?: number,"id"?: string,"match"?: string,"overturned_count"?: number,"pattern"?: string,"scopes"?: (string)[]
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"blocks": {
+                  Row: {
+                    "blocked_id": string,"blocker_id": string,"created_at": string | null
+                  }
+                  Insert: {
+                    "blocked_id": string,"blocker_id": string,"created_at"?: string | null
+                  }
+                  Update: {
+                    "blocked_id"?: string,"blocker_id"?: string,"created_at"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "blocks_blocked_id_fkey"
+      columns: ["blocked_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "blocks_blocked_id_fkey"
+      columns: ["blocked_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "blocks_blocked_id_fkey"
+      columns: ["blocked_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "blocks_blocked_id_fkey"
+      columns: ["blocked_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "blocks_blocker_id_fkey"
+      columns: ["blocker_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "blocks_blocker_id_fkey"
+      columns: ["blocker_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "blocks_blocker_id_fkey"
+      columns: ["blocker_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "blocks_blocker_id_fkey"
+      columns: ["blocker_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"campus_domains": {
+                  Row: {
+                    "campus_id": string,"created_at": string,"domain": string,"kind": string
+                  }
+                  Insert: {
+                    "campus_id": string,"created_at"?: string,"domain": string,"kind": string
+                  }
+                  Update: {
+                    "campus_id"?: string,"created_at"?: string,"domain"?: string,"kind"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "campus_domains_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campus_progress"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "campus_domains_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campuses"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"campuses": {
+                  Row: {
+                    "created_at": string,"founding_seller_limit": number,"id": string,"is_demo": boolean,"name": string,"noshow_pause_threshold": number,"offers_per_hour": number,"quad_autohide_score": number,"quad_enabled": boolean,"reverify_months": number,"short_name": string,"slug": string,"status": Database["public"]['Enums']["campus_status"],"timezone": string,"unlock_threshold": number,"unlocked_at": string | null
+                  }
+                  Insert: {
+                    "created_at"?: string,"founding_seller_limit"?: number,"id"?: string,"is_demo"?: boolean,"name": string,"noshow_pause_threshold"?: number,"offers_per_hour"?: number,"quad_autohide_score"?: number,"quad_enabled"?: boolean,"reverify_months"?: number,"short_name": string,"slug": string,"status"?: Database["public"]['Enums']["campus_status"],"timezone"?: string,"unlock_threshold"?: number,"unlocked_at"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"founding_seller_limit"?: number,"id"?: string,"is_demo"?: boolean,"name"?: string,"noshow_pause_threshold"?: number,"offers_per_hour"?: number,"quad_autohide_score"?: number,"quad_enabled"?: boolean,"reverify_months"?: number,"short_name"?: string,"slug"?: string,"status"?: Database["public"]['Enums']["campus_status"],"timezone"?: string,"unlock_threshold"?: number,"unlocked_at"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"categories": {
+                  Row: {
+                    "id": number,"name": string | null,"parent_id": number | null,"slug": string | null,"sort": number | null
+                  }
+                  Insert: {
+                    "id": number,"name"?: string | null,"parent_id"?: number | null,"slug"?: string | null,"sort"?: number | null
+                  }
+                  Update: {
+                    "id"?: number,"name"?: string | null,"parent_id"?: number | null,"slug"?: string | null,"sort"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "categories_parent_id_fkey"
+      columns: ["parent_id"]
+isOneToOne: false
+      referencedRelation: "categories"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"chats": {
+                  Row: {
+                    "agreed_cents": number,"archived_at": string | null,"buyer_hidden": boolean,"buyer_id": string | null,"buyer_muted": boolean,"buyer_outcome": string | null,"buyer_read_at": string | null,"closed_at": string | null,"created_at": string,"id": string,"last_message_at": string,"listing_id": string | null,"listing_price_cents": number,"listing_thumb_path": string | null,"listing_title": string,"offer_id": string | null,"seller_hidden": boolean,"seller_id": string | null,"seller_muted": boolean,"seller_outcome": string | null,"seller_read_at": string | null,"status": Database["public"]['Enums']["chat_status"]
+                  }
+                  Insert: {
+                    "agreed_cents": number,"archived_at"?: string | null,"buyer_hidden"?: boolean,"buyer_id"?: string | null,"buyer_muted"?: boolean,"buyer_outcome"?: string | null,"buyer_read_at"?: string | null,"closed_at"?: string | null,"created_at"?: string,"id"?: string,"last_message_at"?: string,"listing_id"?: string | null,"listing_price_cents": number,"listing_thumb_path"?: string | null,"listing_title": string,"offer_id"?: string | null,"seller_hidden"?: boolean,"seller_id"?: string | null,"seller_muted"?: boolean,"seller_outcome"?: string | null,"seller_read_at"?: string | null,"status"?: Database["public"]['Enums']["chat_status"]
+                  }
+                  Update: {
+                    "agreed_cents"?: number,"archived_at"?: string | null,"buyer_hidden"?: boolean,"buyer_id"?: string | null,"buyer_muted"?: boolean,"buyer_outcome"?: string | null,"buyer_read_at"?: string | null,"closed_at"?: string | null,"created_at"?: string,"id"?: string,"last_message_at"?: string,"listing_id"?: string | null,"listing_price_cents"?: number,"listing_thumb_path"?: string | null,"listing_title"?: string,"offer_id"?: string | null,"seller_hidden"?: boolean,"seller_id"?: string | null,"seller_muted"?: boolean,"seller_outcome"?: string | null,"seller_read_at"?: string | null,"status"?: Database["public"]['Enums']["chat_status"]
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "chats_buyer_id_fkey"
+      columns: ["buyer_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "chats_buyer_id_fkey"
+      columns: ["buyer_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "chats_buyer_id_fkey"
+      columns: ["buyer_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "chats_buyer_id_fkey"
+      columns: ["buyer_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "chats_listing_id_fkey"
+      columns: ["listing_id"]
+isOneToOne: false
+      referencedRelation: "listings"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "chats_offer_id_fkey"
+      columns: ["offer_id"]
+isOneToOne: true
+      referencedRelation: "offers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "chats_seller_id_fkey"
+      columns: ["seller_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "chats_seller_id_fkey"
+      columns: ["seller_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "chats_seller_id_fkey"
+      columns: ["seller_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "chats_seller_id_fkey"
+      columns: ["seller_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"common_first_names": {
+                  Row: {
+                    "name": string
+                  }
+                  Insert: {
+                    "name": string
+                  }
+                  Update: {
+                    "name"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"daily_counters": {
+                  Row: {
+                    "campus_id": string,"day": string,"key": string,"value": number
+                  }
+                  Insert: {
+                    "campus_id": string,"day": string,"key": string,"value"?: number
+                  }
+                  Update: {
+                    "campus_id"?: string,"day"?: string,"key"?: string,"value"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"data_exports": {
+                  Row: {
+                    "created_at": string | null,"expires_at": string | null,"id": string,"path": string | null,"status": string | null,"user_id": string | null
+                  }
+                  Insert: {
+                    "created_at"?: string | null,"expires_at"?: string | null,"id"?: string,"path"?: string | null,"status"?: string | null,"user_id"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string | null,"expires_at"?: string | null,"id"?: string,"path"?: string | null,"status"?: string | null,"user_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "data_exports_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "data_exports_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "data_exports_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "data_exports_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"email_outbox": {
+                  Row: {
+                    "attempts": number,"claimed_at": string | null,"dedupe_key": string | null,"error": string | null,"id": number,"send_after": string,"sent_at": string | null,"state": string,"template": string,"to_email": string,"vars": NonNullable<Json>
+                  }
+                  Insert: {
+                    "attempts"?: number,"claimed_at"?: string | null,"dedupe_key"?: string | null,"error"?: string | null,"id"?: never,"send_after"?: string,"sent_at"?: string | null,"state"?: string,"template": string,"to_email": string,"vars"?: NonNullable<Json>
+                  }
+                  Update: {
+                    "attempts"?: number,"claimed_at"?: string | null,"dedupe_key"?: string | null,"error"?: string | null,"id"?: never,"send_after"?: string,"sent_at"?: string | null,"state"?: string,"template"?: string,"to_email"?: string,"vars"?: NonNullable<Json>
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"listing_comment_likes": {
+                  Row: {
+                    "comment_id": string,"created_at": string,"user_id": string
+                  }
+                  Insert: {
+                    "comment_id": string,"created_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "comment_id"?: string,"created_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "listing_comment_likes_comment_id_fkey"
+      columns: ["comment_id"]
+isOneToOne: false
+      referencedRelation: "listing_comments"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "listing_comment_likes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "listing_comment_likes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "listing_comment_likes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "listing_comment_likes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"listing_comments": {
+                  Row: {
+                    "author_id": string,"body": string | null,"client_id": string | null,"created_at": string,"hold_reason": string | null,"id": string,"like_count": number,"listing_id": string,"parent_id": string | null,"reply_count": number,"status": string
+                  }
+                  Insert: {
+                    "author_id": string,"body"?: string | null,"client_id"?: string | null,"created_at"?: string,"hold_reason"?: string | null,"id"?: string,"like_count"?: number,"listing_id": string,"parent_id"?: string | null,"reply_count"?: number,"status"?: string
+                  }
+                  Update: {
+                    "author_id"?: string,"body"?: string | null,"client_id"?: string | null,"created_at"?: string,"hold_reason"?: string | null,"id"?: string,"like_count"?: number,"listing_id"?: string,"parent_id"?: string | null,"reply_count"?: number,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "listing_comments_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "listing_comments_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "listing_comments_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "listing_comments_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "listing_comments_listing_id_fkey"
+      columns: ["listing_id"]
+isOneToOne: false
+      referencedRelation: "listings"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "listing_comments_parent_id_fkey"
+      columns: ["parent_id"]
+isOneToOne: false
+      referencedRelation: "listing_comments"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"listing_likes": {
+                  Row: {
+                    "created_at": string,"listing_id": string,"user_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"listing_id": string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"listing_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "listing_likes_listing_id_fkey"
+      columns: ["listing_id"]
+isOneToOne: false
+      referencedRelation: "listings"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "listing_likes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "listing_likes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "listing_likes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "listing_likes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"listing_photos": {
+                  Row: {
+                    "blurhash": string | null,"height": number | null,"id": string,"idx": number,"listing_id": string,"path": string,"thumb_path": string,"width": number | null
+                  }
+                  Insert: {
+                    "blurhash"?: string | null,"height"?: number | null,"id"?: string,"idx": number,"listing_id": string,"path": string,"thumb_path": string,"width"?: number | null
+                  }
+                  Update: {
+                    "blurhash"?: string | null,"height"?: number | null,"id"?: string,"idx"?: number,"listing_id"?: string,"path"?: string,"thumb_path"?: string,"width"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "listing_photos_listing_id_fkey"
+      columns: ["listing_id"]
+isOneToOne: false
+      referencedRelation: "listings"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"listing_price_changes": {
+                  Row: {
+                    "changed_at": string | null,"id": number,"listing_id": string | null,"new_cents": number | null,"old_cents": number | null
+                  }
+                  Insert: {
+                    "changed_at"?: string | null,"id"?: never,"listing_id"?: string | null,"new_cents"?: number | null,"old_cents"?: number | null
+                  }
+                  Update: {
+                    "changed_at"?: string | null,"id"?: never,"listing_id"?: string | null,"new_cents"?: number | null,"old_cents"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "listing_price_changes_listing_id_fkey"
+      columns: ["listing_id"]
+isOneToOne: false
+      referencedRelation: "listings"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"listing_removals": {
+                  Row: {
+                    "listing_id": string,"reason": string,"removed_at": string,"removed_by": string | null
+                  }
+                  Insert: {
+                    "listing_id": string,"reason": string,"removed_at"?: string,"removed_by"?: string | null
+                  }
+                  Update: {
+                    "listing_id"?: string,"reason"?: string,"removed_at"?: string,"removed_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "listing_removals_listing_id_fkey"
+      columns: ["listing_id"]
+isOneToOne: true
+      referencedRelation: "listings"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"listing_reservations": {
+                  Row: {
+                    "created_at": string | null,"id": string,"used_at": string | null,"user_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string | null,"id": string,"used_at"?: string | null,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string | null,"id"?: string,"used_at"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"listings": {
+                  Row: {
+                    "availability": (string)[],"bumped_at": string,"buyer_id": string | null,"campus_id": string,"category_id": number | null,"comment_count": number,"comments_enabled": boolean,"condition": Database["public"]['Enums']["item_condition"] | null,"created_at": string,"deleted_at": string | null,"description": string | null,"event_at": string | null,"expires_at": string | null,"hold_offer_id": string | null,"id": string,"kind": Database["public"]['Enums']["listing_kind"],"like_count": number,"link_url": string | null,"meet_note": string | null,"meet_spot_ids": (string)[],"need_by": string | null,"offer_count": number,"open_to_offers": boolean,"price_cents": number,"save_count": number,"search": unknown,"seller_id": string | null,"share_image_path": string | null,"sold_at": string | null,"sold_in_app": boolean | null,"status": Database["public"]['Enums']["listing_status"],"title": string,"updated_at": string,"view_count": number,"wanted_alerts": boolean,"wanted_max_cents": number | null,"wanted_ref": string | null
+                  }
+                  Insert: {
+                    "availability"?: (string)[],"bumped_at"?: string,"buyer_id"?: string | null,"campus_id": string,"category_id"?: number | null,"comment_count"?: number,"comments_enabled"?: boolean,"condition"?: Database["public"]['Enums']["item_condition"] | null,"created_at"?: string,"deleted_at"?: string | null,"description"?: string | null,"event_at"?: string | null,"expires_at"?: string | null,"hold_offer_id"?: string | null,"id": string,"kind"?: Database["public"]['Enums']["listing_kind"],"like_count"?: number,"link_url"?: string | null,"meet_note"?: string | null,"meet_spot_ids"?: (string)[],"need_by"?: string | null,"offer_count"?: number,"open_to_offers"?: boolean,"price_cents"?: number,"save_count"?: number,"search"?: never,"seller_id"?: string | null,"share_image_path"?: string | null,"sold_at"?: string | null,"sold_in_app"?: boolean | null,"status"?: Database["public"]['Enums']["listing_status"],"title": string,"updated_at"?: string,"view_count"?: number,"wanted_alerts"?: boolean,"wanted_max_cents"?: number | null,"wanted_ref"?: string | null
+                  }
+                  Update: {
+                    "availability"?: (string)[],"bumped_at"?: string,"buyer_id"?: string | null,"campus_id"?: string,"category_id"?: number | null,"comment_count"?: number,"comments_enabled"?: boolean,"condition"?: Database["public"]['Enums']["item_condition"] | null,"created_at"?: string,"deleted_at"?: string | null,"description"?: string | null,"event_at"?: string | null,"expires_at"?: string | null,"hold_offer_id"?: string | null,"id"?: string,"kind"?: Database["public"]['Enums']["listing_kind"],"like_count"?: number,"link_url"?: string | null,"meet_note"?: string | null,"meet_spot_ids"?: (string)[],"need_by"?: string | null,"offer_count"?: number,"open_to_offers"?: boolean,"price_cents"?: number,"save_count"?: number,"search"?: never,"seller_id"?: string | null,"share_image_path"?: string | null,"sold_at"?: string | null,"sold_in_app"?: boolean | null,"status"?: Database["public"]['Enums']["listing_status"],"title"?: string,"updated_at"?: string,"view_count"?: number,"wanted_alerts"?: boolean,"wanted_max_cents"?: number | null,"wanted_ref"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "listings_buyer_id_fkey"
+      columns: ["buyer_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "listings_buyer_id_fkey"
+      columns: ["buyer_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "listings_buyer_id_fkey"
+      columns: ["buyer_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "listings_buyer_id_fkey"
+      columns: ["buyer_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "listings_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campus_progress"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "listings_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campuses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "listings_category_id_fkey"
+      columns: ["category_id"]
+isOneToOne: false
+      referencedRelation: "categories"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "listings_hold_offer_id_fkey"
+      columns: ["hold_offer_id"]
+isOneToOne: false
+      referencedRelation: "offers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "listings_seller_id_fkey"
+      columns: ["seller_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "listings_seller_id_fkey"
+      columns: ["seller_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "listings_seller_id_fkey"
+      columns: ["seller_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "listings_seller_id_fkey"
+      columns: ["seller_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "listings_wanted_ref_fkey"
+      columns: ["wanted_ref"]
+isOneToOne: false
+      referencedRelation: "listings"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"media_uploads": {
+                  Row: {
+                    "attempts": number,"created_at": string,"key": string,"kind": string,"lease_token": string | null,"lease_until": string | null,"size_bytes": number,"state": string,"state_at": string,"target_id": string,"user_id": string
+                  }
+                  Insert: {
+                    "attempts"?: number,"created_at"?: string,"key": string,"kind": string,"lease_token"?: string | null,"lease_until"?: string | null,"size_bytes"?: number,"state"?: string,"state_at"?: string,"target_id": string,"user_id": string
+                  }
+                  Update: {
+                    "attempts"?: number,"created_at"?: string,"key"?: string,"kind"?: string,"lease_token"?: string | null,"lease_until"?: string | null,"size_bytes"?: number,"state"?: string,"state_at"?: string,"target_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"meetups": {
+                  Row: {
+                    "buyer_here_at": string | null,"cancel_reason": string | null,"cancelled_by": string | null,"chat_id": string,"confirmed_at": string | null,"created_at": string,"custom_place": string | null,"deal_check_sent_at": string | null,"handoff_at": string | null,"handoff_code": string | null,"handoff_tries": number,"id": string,"late_minutes": number | null,"late_user": string | null,"previous_starts_at": string | null,"proposed_by": string | null,"reminder_sent_at": string | null,"seller_here_at": string | null,"share_created_by": string | null,"share_expires_at": string | null,"share_token": string | null,"spot_id": string | null,"starts_at": string,"status": Database["public"]['Enums']["meetup_status"]
+                  }
+                  Insert: {
+                    "buyer_here_at"?: string | null,"cancel_reason"?: string | null,"cancelled_by"?: string | null,"chat_id": string,"confirmed_at"?: string | null,"created_at"?: string,"custom_place"?: string | null,"deal_check_sent_at"?: string | null,"handoff_at"?: string | null,"handoff_code"?: string | null,"handoff_tries"?: number,"id"?: string,"late_minutes"?: number | null,"late_user"?: string | null,"previous_starts_at"?: string | null,"proposed_by"?: string | null,"reminder_sent_at"?: string | null,"seller_here_at"?: string | null,"share_created_by"?: string | null,"share_expires_at"?: string | null,"share_token"?: string | null,"spot_id"?: string | null,"starts_at": string,"status"?: Database["public"]['Enums']["meetup_status"]
+                  }
+                  Update: {
+                    "buyer_here_at"?: string | null,"cancel_reason"?: string | null,"cancelled_by"?: string | null,"chat_id"?: string,"confirmed_at"?: string | null,"created_at"?: string,"custom_place"?: string | null,"deal_check_sent_at"?: string | null,"handoff_at"?: string | null,"handoff_code"?: string | null,"handoff_tries"?: number,"id"?: string,"late_minutes"?: number | null,"late_user"?: string | null,"previous_starts_at"?: string | null,"proposed_by"?: string | null,"reminder_sent_at"?: string | null,"seller_here_at"?: string | null,"share_created_by"?: string | null,"share_expires_at"?: string | null,"share_token"?: string | null,"spot_id"?: string | null,"starts_at"?: string,"status"?: Database["public"]['Enums']["meetup_status"]
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "meetups_chat_id_fkey"
+      columns: ["chat_id"]
+isOneToOne: false
+      referencedRelation: "chats"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "meetups_proposed_by_fkey"
+      columns: ["proposed_by"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "meetups_proposed_by_fkey"
+      columns: ["proposed_by"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "meetups_proposed_by_fkey"
+      columns: ["proposed_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "meetups_proposed_by_fkey"
+      columns: ["proposed_by"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "meetups_spot_id_fkey"
+      columns: ["spot_id"]
+isOneToOne: false
+      referencedRelation: "safe_spots"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"messages": {
+                  Row: {
+                    "body": string | null,"chat_id": string,"client_id": string | null,"created_at": string,"id": number,"kind": Database["public"]['Enums']["message_kind"],"meta": Json | null,"photo_path": string | null,"sender_id": string | null
+                  }
+                  Insert: {
+                    "body"?: string | null,"chat_id": string,"client_id"?: string | null,"created_at"?: string,"id"?: never,"kind"?: Database["public"]['Enums']["message_kind"],"meta"?: Json | null,"photo_path"?: string | null,"sender_id"?: string | null
+                  }
+                  Update: {
+                    "body"?: string | null,"chat_id"?: string,"client_id"?: string | null,"created_at"?: string,"id"?: never,"kind"?: Database["public"]['Enums']["message_kind"],"meta"?: Json | null,"photo_path"?: string | null,"sender_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "messages_chat_id_fkey"
+      columns: ["chat_id"]
+isOneToOne: false
+      referencedRelation: "chats"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "messages_sender_id_fkey"
+      columns: ["sender_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "messages_sender_id_fkey"
+      columns: ["sender_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "messages_sender_id_fkey"
+      columns: ["sender_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "messages_sender_id_fkey"
+      columns: ["sender_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"noshow_reports": {
+                  Row: {
+                    "created_at": string,"id": string,"meetup_id": string,"note": string | null,"reported_id": string | null,"reporter_id": string | null,"status": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"meetup_id": string,"note"?: string | null,"reported_id"?: string | null,"reporter_id"?: string | null,"status"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"meetup_id"?: string,"note"?: string | null,"reported_id"?: string | null,"reporter_id"?: string | null,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "noshow_reports_meetup_id_fkey"
+      columns: ["meetup_id"]
+isOneToOne: false
+      referencedRelation: "meetups"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "noshow_reports_reported_id_fkey"
+      columns: ["reported_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "noshow_reports_reported_id_fkey"
+      columns: ["reported_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "noshow_reports_reported_id_fkey"
+      columns: ["reported_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "noshow_reports_reported_id_fkey"
+      columns: ["reported_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "noshow_reports_reporter_id_fkey"
+      columns: ["reporter_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "noshow_reports_reporter_id_fkey"
+      columns: ["reporter_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "noshow_reports_reporter_id_fkey"
+      columns: ["reporter_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "noshow_reports_reporter_id_fkey"
+      columns: ["reporter_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"notification_prefs": {
+                  Row: {
+                    "comments": boolean,"free_food": boolean,"meetups": boolean,"message_previews": boolean,"messages": boolean,"offers": boolean,"price_drop": boolean,"quad_replies": boolean,"quiet_end": string,"quiet_start": string,"saved_search": boolean,"tips": boolean,"user_id": string
+                  }
+                  Insert: {
+                    "comments"?: boolean,"free_food"?: boolean,"meetups"?: boolean,"message_previews"?: boolean,"messages"?: boolean,"offers"?: boolean,"price_drop"?: boolean,"quad_replies"?: boolean,"quiet_end"?: string,"quiet_start"?: string,"saved_search"?: boolean,"tips"?: boolean,"user_id": string
+                  }
+                  Update: {
+                    "comments"?: boolean,"free_food"?: boolean,"meetups"?: boolean,"message_previews"?: boolean,"messages"?: boolean,"offers"?: boolean,"price_drop"?: boolean,"quad_replies"?: boolean,"quiet_end"?: string,"quiet_start"?: string,"saved_search"?: boolean,"tips"?: boolean,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "notification_prefs_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "notification_prefs_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "notification_prefs_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "notification_prefs_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"notifications": {
+                  Row: {
+                    "body": string,"claimed_at": string | null,"created_at": string,"data": NonNullable<Json>,"dedupe_key": string | null,"grp": string,"id": number,"push_after": string,"push_state": Database["public"]['Enums']["push_state"],"read_at": string | null,"time_sensitive": boolean,"title": string,"type": string,"user_id": string
+                  }
+                  Insert: {
+                    "body": string,"claimed_at"?: string | null,"created_at"?: string,"data"?: NonNullable<Json>,"dedupe_key"?: string | null,"grp": string,"id"?: never,"push_after"?: string,"push_state"?: Database["public"]['Enums']["push_state"],"read_at"?: string | null,"time_sensitive"?: boolean,"title": string,"type": string,"user_id": string
+                  }
+                  Update: {
+                    "body"?: string,"claimed_at"?: string | null,"created_at"?: string,"data"?: NonNullable<Json>,"dedupe_key"?: string | null,"grp"?: string,"id"?: never,"push_after"?: string,"push_state"?: Database["public"]['Enums']["push_state"],"read_at"?: string | null,"time_sensitive"?: boolean,"title"?: string,"type"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "notifications_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "notifications_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "notifications_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "notifications_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"offers": {
+                  Row: {
+                    "amount_cents": number,"bundle_ids": (string)[],"buyer_id": string | null,"created_at": string,"decline_reason": string | null,"expires_at": string,"id": string,"last_actor": string,"listing_id": string | null,"note": string | null,"quick_notes": (string)[],"responded_at": string | null,"round": number,"seller_id": string | null,"status": Database["public"]['Enums']["offer_status"]
+                  }
+                  Insert: {
+                    "amount_cents": number,"bundle_ids"?: (string)[],"buyer_id"?: string | null,"created_at"?: string,"decline_reason"?: string | null,"expires_at"?: string,"id"?: string,"last_actor"?: string,"listing_id"?: string | null,"note"?: string | null,"quick_notes"?: (string)[],"responded_at"?: string | null,"round"?: number,"seller_id"?: string | null,"status"?: Database["public"]['Enums']["offer_status"]
+                  }
+                  Update: {
+                    "amount_cents"?: number,"bundle_ids"?: (string)[],"buyer_id"?: string | null,"created_at"?: string,"decline_reason"?: string | null,"expires_at"?: string,"id"?: string,"last_actor"?: string,"listing_id"?: string | null,"note"?: string | null,"quick_notes"?: (string)[],"responded_at"?: string | null,"round"?: number,"seller_id"?: string | null,"status"?: Database["public"]['Enums']["offer_status"]
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "offers_buyer_id_fkey"
+      columns: ["buyer_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "offers_buyer_id_fkey"
+      columns: ["buyer_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "offers_buyer_id_fkey"
+      columns: ["buyer_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "offers_buyer_id_fkey"
+      columns: ["buyer_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "offers_listing_id_fkey"
+      columns: ["listing_id"]
+isOneToOne: false
+      referencedRelation: "listings"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "offers_seller_id_fkey"
+      columns: ["seller_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "offers_seller_id_fkey"
+      columns: ["seller_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "offers_seller_id_fkey"
+      columns: ["seller_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "offers_seller_id_fkey"
+      columns: ["seller_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"profiles": {
+                  Row: {
+                    "adult_confirmed_at": string | null,"age_band": string | null,"age_declaration": string | null,"age_method": Database["public"]['Enums']["age_method"] | null,"age_regulated": boolean | null,"analytics_opt_in": boolean,"areas": (string)[],"avatar_path": string | null,"away_since": string | null,"bio": string | null,"campus_id": string,"crash_reports_opt_in": boolean,"created_at": string,"display_name": string | null,"email_hash": string,"first_name": string | null,"founding_seller_until": string | null,"id": string,"invite_code": string,"invited_by": string | null,"last_active_at": string | null,"last_app_version": string | null,"last_initial": string | null,"last_platform": string | null,"moving_out_by": string | null,"noshow_count": number,"parental_consent": string | null,"paused_until": string | null,"quad_rules_accepted_at": string | null,"rules_accepted_at": string | null,"rules_version": string | null,"seen_unlock_at": string | null,"status": Database["public"]['Enums']["user_status"],"status_reason": string | null,"strike_count": number,"theme_mode": string,"verified_until": string,"year": Database["public"]['Enums']["class_year"] | null
+                  }
+                  Insert: {
+                    "adult_confirmed_at"?: string | null,"age_band"?: string | null,"age_declaration"?: string | null,"age_method"?: Database["public"]['Enums']["age_method"] | null,"age_regulated"?: boolean | null,"analytics_opt_in"?: boolean,"areas"?: (string)[],"avatar_path"?: string | null,"away_since"?: string | null,"bio"?: string | null,"campus_id": string,"crash_reports_opt_in"?: boolean,"created_at"?: string,"display_name"?: never,"email_hash": string,"first_name"?: string | null,"founding_seller_until"?: string | null,"id": string,"invite_code"?: string,"invited_by"?: string | null,"last_active_at"?: string | null,"last_app_version"?: string | null,"last_initial"?: string | null,"last_platform"?: string | null,"moving_out_by"?: string | null,"noshow_count"?: number,"parental_consent"?: string | null,"paused_until"?: string | null,"quad_rules_accepted_at"?: string | null,"rules_accepted_at"?: string | null,"rules_version"?: string | null,"seen_unlock_at"?: string | null,"status"?: Database["public"]['Enums']["user_status"],"status_reason"?: string | null,"strike_count"?: number,"theme_mode"?: string,"verified_until": string,"year"?: Database["public"]['Enums']["class_year"] | null
+                  }
+                  Update: {
+                    "adult_confirmed_at"?: string | null,"age_band"?: string | null,"age_declaration"?: string | null,"age_method"?: Database["public"]['Enums']["age_method"] | null,"age_regulated"?: boolean | null,"analytics_opt_in"?: boolean,"areas"?: (string)[],"avatar_path"?: string | null,"away_since"?: string | null,"bio"?: string | null,"campus_id"?: string,"crash_reports_opt_in"?: boolean,"created_at"?: string,"display_name"?: never,"email_hash"?: string,"first_name"?: string | null,"founding_seller_until"?: string | null,"id"?: string,"invite_code"?: string,"invited_by"?: string | null,"last_active_at"?: string | null,"last_app_version"?: string | null,"last_initial"?: string | null,"last_platform"?: string | null,"moving_out_by"?: string | null,"noshow_count"?: number,"parental_consent"?: string | null,"paused_until"?: string | null,"quad_rules_accepted_at"?: string | null,"rules_accepted_at"?: string | null,"rules_version"?: string | null,"seen_unlock_at"?: string | null,"status"?: Database["public"]['Enums']["user_status"],"status_reason"?: string | null,"strike_count"?: number,"theme_mode"?: string,"verified_until"?: string,"year"?: Database["public"]['Enums']["class_year"] | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "profiles_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campus_progress"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "profiles_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campuses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "profiles_invited_by_fkey"
+      columns: ["invited_by"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "profiles_invited_by_fkey"
+      columns: ["invited_by"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "profiles_invited_by_fkey"
+      columns: ["invited_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "profiles_invited_by_fkey"
+      columns: ["invited_by"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"push_tickets": {
+                  Row: {
+                    "checked_at": string | null,"created_at": string | null,"error": string | null,"id": number,"notification_id": number | null,"status": string | null,"ticket_id": string | null,"token_id": string | null
+                  }
+                  Insert: {
+                    "checked_at"?: string | null,"created_at"?: string | null,"error"?: string | null,"id"?: never,"notification_id"?: number | null,"status"?: string | null,"ticket_id"?: string | null,"token_id"?: string | null
+                  }
+                  Update: {
+                    "checked_at"?: string | null,"created_at"?: string | null,"error"?: string | null,"id"?: never,"notification_id"?: number | null,"status"?: string | null,"ticket_id"?: string | null,"token_id"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"push_tokens": {
+                  Row: {
+                    "app_version": string | null,"created_at": string | null,"disabled_at": string | null,"id": string,"last_seen_at": string | null,"platform": string | null,"token": string,"user_id": string | null
+                  }
+                  Insert: {
+                    "app_version"?: string | null,"created_at"?: string | null,"disabled_at"?: string | null,"id"?: string,"last_seen_at"?: string | null,"platform"?: string | null,"token": string,"user_id"?: string | null
+                  }
+                  Update: {
+                    "app_version"?: string | null,"created_at"?: string | null,"disabled_at"?: string | null,"id"?: string,"last_seen_at"?: string | null,"platform"?: string | null,"token"?: string,"user_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "push_tokens_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "push_tokens_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "push_tokens_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "push_tokens_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"quad_hides": {
+                  Row: {
+                    "created_at": string,"excerpt": string | null,"hidden_author_id": string,"source_post_id": string | null,"user_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"excerpt"?: string | null,"hidden_author_id": string,"source_post_id"?: string | null,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"excerpt"?: string | null,"hidden_author_id"?: string,"source_post_id"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "quad_hides_hidden_author_id_fkey"
+      columns: ["hidden_author_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_hides_hidden_author_id_fkey"
+      columns: ["hidden_author_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_hides_hidden_author_id_fkey"
+      columns: ["hidden_author_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_hides_hidden_author_id_fkey"
+      columns: ["hidden_author_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_hides_source_post_id_fkey"
+      columns: ["source_post_id"]
+isOneToOne: false
+      referencedRelation: "quad_posts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_hides_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_hides_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_hides_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_hides_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"quad_mutes": {
+                  Row: {
+                    "created_at": string,"keyword": string,"user_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"keyword": string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"keyword"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "quad_mutes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_mutes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_mutes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_mutes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"quad_poll_options": {
+                  Row: {
+                    "id": string,"idx": number,"label": string,"post_id": string,"votes": number
+                  }
+                  Insert: {
+                    "id"?: string,"idx": number,"label": string,"post_id": string,"votes"?: number
+                  }
+                  Update: {
+                    "id"?: string,"idx"?: number,"label"?: string,"post_id"?: string,"votes"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "quad_poll_options_post_id_fkey"
+      columns: ["post_id"]
+isOneToOne: false
+      referencedRelation: "quad_posts"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"quad_poll_votes": {
+                  Row: {
+                    "created_at": string,"option_id": string,"post_id": string,"user_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"option_id": string,"post_id": string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"option_id"?: string,"post_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "quad_poll_votes_option_id_fkey"
+      columns: ["option_id"]
+isOneToOne: false
+      referencedRelation: "quad_poll_options"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_poll_votes_post_id_fkey"
+      columns: ["post_id"]
+isOneToOne: false
+      referencedRelation: "quad_posts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_poll_votes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_poll_votes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_poll_votes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_poll_votes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"quad_posts": {
+                  Row: {
+                    "author_id": string,"body": string,"campus_id": string,"created_at": string,"expires_at": string | null,"hold_reason": string | null,"id": string,"kind": string,"photo_path": string | null,"place": string | null,"replies_enabled": boolean,"reply_count": number,"score": number,"status": string
+                  }
+                  Insert: {
+                    "author_id": string,"body": string,"campus_id": string,"created_at"?: string,"expires_at"?: string | null,"hold_reason"?: string | null,"id"?: string,"kind"?: string,"photo_path"?: string | null,"place"?: string | null,"replies_enabled"?: boolean,"reply_count"?: number,"score"?: number,"status"?: string
+                  }
+                  Update: {
+                    "author_id"?: string,"body"?: string,"campus_id"?: string,"created_at"?: string,"expires_at"?: string | null,"hold_reason"?: string | null,"id"?: string,"kind"?: string,"photo_path"?: string | null,"place"?: string | null,"replies_enabled"?: boolean,"reply_count"?: number,"score"?: number,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "quad_posts_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_posts_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_posts_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_posts_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_posts_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campus_progress"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_posts_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campuses"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"quad_replies": {
+                  Row: {
+                    "alias_no": number,"author_id": string,"body": string,"created_at": string,"hold_reason": string | null,"id": string,"post_id": string,"score": number,"status": string
+                  }
+                  Insert: {
+                    "alias_no": number,"author_id": string,"body": string,"created_at"?: string,"hold_reason"?: string | null,"id"?: string,"post_id": string,"score"?: number,"status"?: string
+                  }
+                  Update: {
+                    "alias_no"?: number,"author_id"?: string,"body"?: string,"created_at"?: string,"hold_reason"?: string | null,"id"?: string,"post_id"?: string,"score"?: number,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "quad_replies_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_replies_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_replies_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_replies_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_replies_post_id_fkey"
+      columns: ["post_id"]
+isOneToOne: false
+      referencedRelation: "quad_posts"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"quad_votes": {
+                  Row: {
+                    "created_at": string,"target_id": string,"target_type": string,"user_id": string,"value": number
+                  }
+                  Insert: {
+                    "created_at"?: string,"target_id": string,"target_type": string,"user_id": string,"value": number
+                  }
+                  Update: {
+                    "created_at"?: string,"target_id"?: string,"target_type"?: string,"user_id"?: string,"value"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "quad_votes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_votes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "quad_votes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "quad_votes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"rate_counters": {
+                  Row: {
+                    "action": string,"count": number,"user_id": string,"window_start": string
+                  }
+                  Insert: {
+                    "action": string,"count": number,"user_id": string,"window_start": string
+                  }
+                  Update: {
+                    "action"?: string,"count"?: number,"user_id"?: string,"window_start"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"ratings": {
+                  Row: {
+                    "chat_id": string,"comment": string | null,"created_at": string,"id": string,"ratee_id": string | null,"rater_id": string | null,"tags": (string)[],"thumbs_up": boolean
+                  }
+                  Insert: {
+                    "chat_id": string,"comment"?: string | null,"created_at"?: string,"id"?: string,"ratee_id"?: string | null,"rater_id"?: string | null,"tags"?: (string)[],"thumbs_up": boolean
+                  }
+                  Update: {
+                    "chat_id"?: string,"comment"?: string | null,"created_at"?: string,"id"?: string,"ratee_id"?: string | null,"rater_id"?: string | null,"tags"?: (string)[],"thumbs_up"?: boolean
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "ratings_chat_id_fkey"
+      columns: ["chat_id"]
+isOneToOne: false
+      referencedRelation: "chats"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ratings_ratee_id_fkey"
+      columns: ["ratee_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "ratings_ratee_id_fkey"
+      columns: ["ratee_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "ratings_ratee_id_fkey"
+      columns: ["ratee_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ratings_ratee_id_fkey"
+      columns: ["ratee_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ratings_rater_id_fkey"
+      columns: ["rater_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "ratings_rater_id_fkey"
+      columns: ["rater_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "ratings_rater_id_fkey"
+      columns: ["rater_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ratings_rater_id_fkey"
+      columns: ["rater_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"reports": {
+                  Row: {
+                    "action_taken": string | null,"assigned_to": string | null,"campus_id": string,"created_at": string,"details": string | null,"evidence": NonNullable<Json>,"id": string,"priority": number,"reason": string,"reporter_id": string | null,"resolved_at": string | null,"status": Database["public"]['Enums']["report_status"],"target_id": string,"target_type": string,"target_user_id": string | null
+                  }
+                  Insert: {
+                    "action_taken"?: string | null,"assigned_to"?: string | null,"campus_id": string,"created_at"?: string,"details"?: string | null,"evidence"?: NonNullable<Json>,"id"?: string,"priority"?: number,"reason": string,"reporter_id"?: string | null,"resolved_at"?: string | null,"status"?: Database["public"]['Enums']["report_status"],"target_id": string,"target_type": string,"target_user_id"?: string | null
+                  }
+                  Update: {
+                    "action_taken"?: string | null,"assigned_to"?: string | null,"campus_id"?: string,"created_at"?: string,"details"?: string | null,"evidence"?: NonNullable<Json>,"id"?: string,"priority"?: number,"reason"?: string,"reporter_id"?: string | null,"resolved_at"?: string | null,"status"?: Database["public"]['Enums']["report_status"],"target_id"?: string,"target_type"?: string,"target_user_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "reports_reporter_id_fkey"
+      columns: ["reporter_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "reports_reporter_id_fkey"
+      columns: ["reporter_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "reports_reporter_id_fkey"
+      columns: ["reporter_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "reports_reporter_id_fkey"
+      columns: ["reporter_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "reports_target_user_id_fkey"
+      columns: ["target_user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "reports_target_user_id_fkey"
+      columns: ["target_user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "reports_target_user_id_fkey"
+      columns: ["target_user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "reports_target_user_id_fkey"
+      columns: ["target_user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"review_accounts": {
+                  Row: {
+                    "email": string,"note": string | null
+                  }
+                  Insert: {
+                    "email": string,"note"?: string | null
+                  }
+                  Update: {
+                    "email"?: string,"note"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"safe_spots": {
+                  Row: {
+                    "active": boolean,"campus_id": string,"description": string | null,"designated_on": string | null,"designation": Database["public"]['Enums']["spot_designation"],"hours": string | null,"id": string,"is_default": boolean,"lat": number,"lng": number,"name": string,"sort": number | null
+                  }
+                  Insert: {
+                    "active"?: boolean,"campus_id": string,"description"?: string | null,"designated_on"?: string | null,"designation"?: Database["public"]['Enums']["spot_designation"],"hours"?: string | null,"id"?: string,"is_default"?: boolean,"lat": number,"lng": number,"name": string,"sort"?: number | null
+                  }
+                  Update: {
+                    "active"?: boolean,"campus_id"?: string,"description"?: string | null,"designated_on"?: string | null,"designation"?: Database["public"]['Enums']["spot_designation"],"hours"?: string | null,"id"?: string,"is_default"?: boolean,"lat"?: number,"lng"?: number,"name"?: string,"sort"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "safe_spots_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campus_progress"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "safe_spots_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campuses"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"saved_searches": {
+                  Row: {
+                    "alerts": boolean,"campus_id": string,"created_at": string | null,"filters": NonNullable<Json>,"id": string,"last_notified_at": string | null,"last_seen_at": string | null,"query": string | null,"user_id": string
+                  }
+                  Insert: {
+                    "alerts"?: boolean,"campus_id": string,"created_at"?: string | null,"filters"?: NonNullable<Json>,"id"?: string,"last_notified_at"?: string | null,"last_seen_at"?: string | null,"query"?: string | null,"user_id": string
+                  }
+                  Update: {
+                    "alerts"?: boolean,"campus_id"?: string,"created_at"?: string | null,"filters"?: NonNullable<Json>,"id"?: string,"last_notified_at"?: string | null,"last_seen_at"?: string | null,"query"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "saved_searches_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "saved_searches_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "saved_searches_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "saved_searches_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"saves": {
+                  Row: {
+                    "created_at": string | null,"listing_id": string,"price_at_save": number | null,"user_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string | null,"listing_id": string,"price_at_save"?: number | null,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string | null,"listing_id"?: string,"price_at_save"?: number | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "saves_listing_id_fkey"
+      columns: ["listing_id"]
+isOneToOne: false
+      referencedRelation: "listings"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "saves_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "saves_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "saves_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "saves_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"strikes": {
+                  Row: {
+                    "cleared_at": string | null,"created_at": string | null,"created_by": string | null,"expires_at": string | null,"id": string,"reason": string | null,"report_id": string | null,"user_id": string | null
+                  }
+                  Insert: {
+                    "cleared_at"?: string | null,"created_at"?: string | null,"created_by"?: string | null,"expires_at"?: string | null,"id"?: string,"reason"?: string | null,"report_id"?: string | null,"user_id"?: string | null
+                  }
+                  Update: {
+                    "cleared_at"?: string | null,"created_at"?: string | null,"created_by"?: string | null,"expires_at"?: string | null,"id"?: string,"reason"?: string | null,"report_id"?: string | null,"user_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "strikes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "strikes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "strikes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "strikes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"support_requests": {
+                  Row: {
+                    "body": string | null,"created_at": string | null,"email": string | null,"handled_at": string | null,"id": string,"replied_at": string | null,"reply_count": number,"staff_note": string | null,"status": string,"topic": string | null,"updated_at": string | null,"updated_by": string | null
+                  }
+                  Insert: {
+                    "body"?: string | null,"created_at"?: string | null,"email"?: string | null,"handled_at"?: string | null,"id"?: string,"replied_at"?: string | null,"reply_count"?: number,"staff_note"?: string | null,"status"?: string,"topic"?: string | null,"updated_at"?: string | null,"updated_by"?: string | null
+                  }
+                  Update: {
+                    "body"?: string | null,"created_at"?: string | null,"email"?: string | null,"handled_at"?: string | null,"id"?: string,"replied_at"?: string | null,"reply_count"?: number,"staff_note"?: string | null,"status"?: string,"topic"?: string | null,"updated_at"?: string | null,"updated_by"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"swipes": {
+                  Row: {
+                    "created_at": string | null,"dir": Database["public"]['Enums']["swipe_dir"],"dwell_ms": number | null,"listing_id": string,"user_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string | null,"dir": Database["public"]['Enums']["swipe_dir"],"dwell_ms"?: number | null,"listing_id": string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string | null,"dir"?: Database["public"]['Enums']["swipe_dir"],"dwell_ms"?: number | null,"listing_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "swipes_listing_id_fkey"
+      columns: ["listing_id"]
+isOneToOne: false
+      referencedRelation: "listings"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "swipes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "swipes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "swipes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "swipes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"waitlist_requests": {
+                  Row: {
+                    "created_at": string | null,"domain": string,"email_enc": string,"email_hash": string,"id": string,"notified_at": string | null,"school_guess": string | null
+                  }
+                  Insert: {
+                    "created_at"?: string | null,"domain": string,"email_enc": string,"email_hash": string,"id"?: string,"notified_at"?: string | null,"school_guess"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string | null,"domain"?: string,"email_enc"?: string,"email_hash"?: string,"id"?: string,"notified_at"?: string | null,"school_guess"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"watches": {
+                  Row: {
+                    "created_at": string | null,"listing_id": string,"user_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string | null,"listing_id": string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string | null,"listing_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "watches_listing_id_fkey"
+      columns: ["listing_id"]
+isOneToOne: false
+      referencedRelation: "listings"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "watches_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "watches_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "watches_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "watches_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                }
           }
-      admin_clear_strike: {
-        Args: { id: string; reason: string }
-        Returns: undefined
-      }
-      admin_create_announcement: {
-        Args: {
-          body: string
-          campus_id: string
-          pinned_hours?: number
-          reason?: string
-          send_push?: boolean
-          title: string
-          type: string
-        }
-        Returns: Json
-      }
-      admin_create_campus: {
-        Args: {
-          domain: string
-          name: string
-          reason?: string
-          short_name: string
-          slug: string
-          spot?: Json
-          status?: string
-          timezone: string
-        }
-        Returns: Json
-      }
-      admin_decide_appeal: {
-        Args: { decision: string; id: string; note: string }
-        Returns: undefined
-      }
-      admin_delete_banned_hash: {
-        Args: { email_hash: string; reason: string }
-        Returns: undefined
-      }
-      admin_delete_banned_word: {
-        Args: { id: string; reason: string }
-        Returns: undefined
-      }
-      admin_delete_domain: {
-        Args: { domain: string; reason: string }
-        Returns: undefined
-      }
-      admin_delete_review_account: {
-        Args: { email: string; reason: string }
-        Returns: undefined
-      }
-      admin_force_reverify: {
-        Args: { reason: string; user_id: string }
-        Returns: undefined
-      }
-      admin_get_config: { Args: never; Returns: Json }
-      admin_invite_admin: {
-        Args: {
-          campus_id?: string
-          email: string
-          reason?: string
-          role: string
-        }
-        Returns: Json
-      }
-      admin_list_admins: { Args: never; Returns: Json }
-      admin_list_announcements: {
-        Args: { campus_id?: string; cursor?: number }
-        Returns: Json
-      }
-      admin_list_appeals: {
-        Args: { cursor?: number; filters?: Json }
-        Returns: Json
-      }
-      admin_list_audit: {
-        Args: { cursor?: number; filters?: Json }
-        Returns: Json
-      }
-      admin_list_audit_v2: {
-        Args: { cursor?: number; filters?: Json }
-        Returns: Json
-      }
-      admin_list_banned_hashes: { Args: { cursor?: number }; Returns: Json }
-      admin_list_banned_words: {
-        Args: { cursor?: number; filters?: Json }
-        Returns: Json
-      }
-      admin_list_campuses: { Args: never; Returns: Json }
-      admin_list_deletions_exports: { Args: { cursor?: number }; Returns: Json }
-      admin_list_listings: {
-        Args: { cursor?: number; filters?: Json }
-        Returns: Json
-      }
-      admin_list_meetups: {
-        Args: { campus_id?: string; cursor?: number; when?: string }
-        Returns: Json
-      }
-      admin_list_quad: {
-        Args: { cursor?: number; filters?: Json }
-        Returns: Json
-      }
-      admin_list_reports: {
-        Args: { cursor?: number; filters?: Json }
-        Returns: Json
-      }
-      admin_list_review_accounts: { Args: never; Returns: Json }
-      admin_list_support: {
-        Args: { campus_id?: string; cursor?: number; status?: string }
-        Returns: Json
-      }
-      admin_list_users: {
-        Args: { cursor?: number; filters?: Json }
-        Returns: Json
-      }
-      admin_list_users_v2: {
-        Args: { cursor?: number; filters?: Json }
-        Returns: Json
-      }
-      admin_listing_activity: { Args: { listing_id: string }; Returns: Json }
-      admin_metrics_funnel: {
-        Args: { campus_id?: string; from_day?: string; to_day?: string }
-        Returns: Json
-      }
-      admin_metrics_liquidity: { Args: { campus_id?: string }; Returns: Json }
-      admin_metrics_retention: { Args: { campus_id?: string }; Returns: Json }
-      admin_metrics_safety: { Args: { campus_id?: string }; Returns: Json }
-      admin_moderate_quad: {
-        Args: {
-          action: string
-          id: string
-          reason: string
-          target_type: string
-        }
-        Returns: undefined
-      }
-      admin_noshow_summary: { Args: { campus_id?: string }; Returns: Json }
-      admin_open_campus: {
-        Args: { campus_id: string; reason: string }
-        Returns: Json
-      }
-      admin_overview: { Args: { campus_id?: string }; Returns: Json }
-      admin_overview_v2: { Args: { campus_id?: string }; Returns: Json }
-      admin_person: { Args: { user_id: string }; Returns: Json }
-      admin_person_access_log: {
-        Args: { cursor?: number; user_id: string }
-        Returns: Json
-      }
-      admin_person_chats: {
-        Args: { cursor?: number; user_id: string }
-        Returns: Json
-      }
-      admin_person_listings: {
-        Args: { cursor?: number; user_id: string }
-        Returns: Json
-      }
-      admin_person_meetups: {
-        Args: { cursor?: number; user_id: string }
-        Returns: Json
-      }
-      admin_person_offers: {
-        Args: { cursor?: number; user_id: string }
-        Returns: Json
-      }
-      admin_person_reports: { Args: { user_id: string }; Returns: Json }
-      admin_person_timeline: {
-        Args: {
-          cursor?: Json
-          kinds?: string[]
-          limit?: number
-          user_id: string
-        }
-        Returns: Json
-      }
-      admin_ratings_summary: { Args: { campus_id?: string }; Returns: Json }
-      admin_read_reported_chat: { Args: { report_id: string }; Returns: Json }
-      admin_remove_admin: {
-        Args: { reason: string; user_id: string }
-        Returns: undefined
-      }
-      admin_report_detail: { Args: { id: string }; Returns: Json }
-      admin_resolve_report: {
-        Args: {
-          action: string
-          id: string
-          note: string
-          suspend_days?: number
-        }
-        Returns: undefined
-      }
-      admin_reveal_quad_author: {
-        Args: {
-          case_ref: string
-          id: string
-          reason: string
-          target_type: string
-        }
-        Returns: Json
-      }
-      admin_search: { Args: { q: string }; Returns: Json }
-      admin_set_config: {
-        Args: { key: string; reason: string; value: Json }
-        Returns: undefined
-      }
-      admin_set_listing_status: {
-        Args: { id: string; reason: string; status: string }
-        Returns: undefined
-      }
-      admin_set_user_status: {
-        Args: { reason: string; status: string; until: string; user_id: string }
-        Returns: undefined
-      }
-      admin_support_detail: { Args: { id: string }; Returns: Json }
-      admin_system_health: { Args: never; Returns: Json }
-      admin_update_campus: {
-        Args: { id: string; patch: Json; reason: string }
-        Returns: undefined
-      }
-      admin_update_support: {
-        Args: {
-          id: string
-          note?: string
-          reason: string
-          reply?: string
-          status: string
-        }
-        Returns: Json
-      }
-      admin_upsert_banned_hash: {
-        Args: { email: string; reason: string }
-        Returns: Json
-      }
-      admin_upsert_banned_word: {
-        Args: {
-          action: string
-          match: string
-          pattern: string
-          reason: string
-          scopes: string[]
-        }
-        Returns: Json
-      }
-      admin_upsert_category: {
-        Args: {
-          id: number
-          name: string
-          parent_id?: number
-          reason: string
-          slug?: string
-          sort: number
-        }
-        Returns: Json
-      }
-      admin_upsert_domain: {
-        Args: {
-          campus_id: string
-          domain: string
-          kind: string
-          reason: string
-        }
-        Returns: undefined
-      }
-      admin_upsert_review_account: {
-        Args: { email: string; note: string; reason: string }
-        Returns: undefined
-      }
-      admin_upsert_safe_spot: {
-        Args: { reason: string; spot: Json }
-        Returns: Json
-      }
-      admin_user_detail: { Args: { id: string }; Returns: Json }
-      admin_waitlist_demand: { Args: never; Returns: Json }
-      admin_whoami: { Args: never; Returns: Json }
-      block_user: { Args: { user_id: string }; Returns: undefined }
-      cancel_meetup: {
-        Args: { meetup_id: string; reason?: string }
-        Returns: undefined
-      }
-      check_text: { Args: { scope: string; text: string }; Returns: Json }
-      checkin_meetup: { Args: { meetup_id: string }; Returns: undefined }
-      complete_reverify: { Args: never; Returns: Json }
-      confirm_age: {
-        Args: { birth_date?: string; is_adult?: boolean; method: string }
-        Returns: Json
-      }
-      confirm_age_v2: {
-        Args: { band?: string; birth_date?: string; method: string }
-        Returns: Json
-      }
-      confirm_deal: {
-        Args: { chat_id: string; outcome: string }
-        Returns: undefined
-      }
-      confirm_handoff: {
-        Args: { code: string; meetup_id: string }
-        Returns: Json
-      }
-      confirm_meetup: { Args: { meetup_id: string }; Returns: undefined }
-      counter_offer: {
-        Args: { amount_cents: number; note?: string; offer_id: string }
-        Returns: Json
-      }
-      create_appeal: {
-        Args: {
-          body?: string
-          reason_choice?: string
-          subject_id: string
-          subject_type: string
-        }
-        Returns: Json
-      }
-      create_listing: {
-        Args: {
-          availability?: string[]
-          category_id?: number
-          condition?: Database["public"]["Enums"]["item_condition"]
-          description?: string
-          food_minutes?: number
-          id: string
-          kind?: Database["public"]["Enums"]["listing_kind"]
-          meet_note?: string
-          meet_spot_ids?: string[]
-          open_to_offers?: boolean
-          photos?: Json
-          pickup_by?: string
-          price_cents?: number
-          title?: string
-          wanted_max_cents?: number
-          wanted_ref?: string
-        }
-        Returns: Json
-      }
-      create_listing_comment: {
-        Args: {
-          body: string
-          client_id?: string
-          listing_id: string
-          parent_id?: string
-        }
-        Returns: Json
-      }
-      create_meetup_share: { Args: { meetup_id: string }; Returns: Json }
-      create_news: {
-        Args: {
-          description?: string
-          event_at?: string
-          id: string
-          link_url?: string
-          photos?: Json
-          place?: string
-          title: string
-        }
-        Returns: Json
-      }
-      create_quad_post: {
-        Args: {
-          body: string
-          kind: string
-          photo_path?: string
-          place?: string
-          poll?: Json
-          post_id?: string
-        }
-        Returns: Json
-      }
-      create_quad_reply: {
-        Args: { body: string; post_id: string }
-        Returns: Json
-      }
-      create_report: {
-        Args: {
-          details?: string
-          reason: string
-          target_id: string
-          target_type: string
-        }
-        Returns: Json
-      }
-      create_saved_search: {
-        Args: { alerts?: boolean; filters?: Json; query?: string }
-        Returns: Json
-      }
-      decline_offer: {
-        Args: { offer_id: string; reason?: string }
-        Returns: undefined
-      }
-      delete_listing: { Args: { id: string }; Returns: undefined }
-      delete_listing_comment: {
-        Args: { comment_id: string }
-        Returns: undefined
-      }
-      delete_quad_post: { Args: { post_id: string }; Returns: undefined }
-      delete_quad_reply: { Args: { reply_id: string }; Returns: undefined }
-      delete_saved_search: { Args: { id: string }; Returns: undefined }
-      disable_push_token: { Args: { token: string }; Returns: undefined }
-      get_account_status: { Args: never; Returns: Json }
-      get_app_config: { Args: never; Returns: Json }
-      get_campus_feed: { Args: { cursor?: Json; kind?: string }; Returns: Json }
-      get_chat: { Args: { chat_id: string }; Returns: Json }
-      get_chat_meetup: { Args: { chat_id: string }; Returns: Json }
-      get_comment_replies: {
-        Args: { comment_id: string; cursor?: Json }
-        Returns: Json
-      }
-      get_feed: { Args: { cursor?: Json; limit?: number }; Returns: Json }
-      get_inbox: { Args: never; Returns: Json }
-      get_invite: { Args: { code: string }; Returns: Json }
-      get_listing: { Args: { id: string }; Returns: Json }
-      get_listing_comments: {
-        Args: { cursor?: Json; listing_id: string; sort?: string }
-        Returns: Json
-      }
-      get_listing_public_card: { Args: { id: string }; Returns: Json }
-      get_listings_by_ids: { Args: { ids: string[] }; Returns: Json }
-      get_me: { Args: never; Returns: Json }
-      get_meetup: { Args: { meetup_id: string }; Returns: Json }
-      get_meetup_share: { Args: { token: string }; Returns: Json }
-      get_messages: {
-        Args: {
-          after?: number
-          before?: number
-          chat_id: string
-          limit?: number
-        }
-        Returns: Json
-      }
-      get_my_quad: { Args: never; Returns: Json }
-      get_my_quad_hides: { Args: never; Returns: Json }
-      get_my_quad_mutes: { Args: never; Returns: Json }
-      get_my_rating: { Args: { chat_id: string }; Returns: Json }
-      get_my_report: { Args: { id: string }; Returns: Json }
-      get_notification_prefs: { Args: never; Returns: Json }
-      get_notifications: {
-        Args: { cursor?: number; limit?: number }
-        Returns: Json
-      }
-      get_offer: { Args: { offer_id: string }; Returns: Json }
-      get_profile: { Args: { user_id: string }; Returns: Json }
-      get_quad_feed: { Args: { cursor?: Json; sort?: string }; Returns: Json }
-      get_quad_status: { Args: never; Returns: Json }
-      get_quad_thread: { Args: { post_id: string }; Returns: Json }
-      get_saved: { Args: never; Returns: Json }
-      hide_chat: { Args: { chat_id: string }; Returns: undefined }
-      hide_listing: { Args: { listing_id: string }; Returns: undefined }
-      hide_quad_author: { Args: { post_id: string }; Returns: undefined }
-      hide_quad_reply_author: { Args: { reply_id: string }; Returns: undefined }
-      like_listing: {
-        Args: { liked: boolean; listing_id: string }
-        Returns: Json
-      }
-      like_listing_comment: {
-        Args: { comment_id: string; liked: boolean }
-        Returns: Json
-      }
-      link_app_transaction: {
-        Args: { app_transaction_id: string }
-        Returns: undefined
-      }
-      list_blocked: { Args: never; Returns: Json }
-      list_saved_searches: { Args: never; Returns: Json }
-      listing_offers: { Args: { id: string }; Returns: Json }
-      listing_stats: { Args: { id: string }; Returns: Json }
-      lookup_school: { Args: { domain: string }; Returns: Json }
-      make_bundle_offer: {
-        Args: {
-          amount_cents: number
-          bundle_ids: string[]
-          listing_id: string
-          note?: string
-          quick_notes?: string[]
-        }
-        Returns: Json
-      }
-      make_offer: {
-        Args: {
-          amount_cents: number
-          listing_id: string
-          note?: string
-          quick_notes?: string[]
-        }
-        Returns: Json
-      }
-      mark_chat_read: { Args: { chat_id: string }; Returns: undefined }
-      mark_notifications_read: { Args: { ids?: number[] }; Returns: undefined }
-      mark_sold: { Args: { buyer_id?: string; id: string }; Returns: undefined }
-      mark_unlock_seen: { Args: never; Returns: undefined }
-      mute_keyword: { Args: { keyword: string }; Returns: undefined }
-      my_listings: { Args: never; Returns: Json }
-      my_waitlist_position: { Args: never; Returns: Json }
-      price_hint:
-        | { Args: { category_id: number }; Returns: Json }
-        | { Args: { category_id: number; condition: string }; Returns: Json }
-      propose_meetup: {
-        Args: {
-          chat_id: string
-          custom_place?: string
-          spot_id?: string
-          starts_at: string
-        }
-        Returns: Json
-      }
-      public_campus_progress: { Args: never; Returns: Json }
-      public_safe_spots: { Args: { slug: string }; Returns: Json }
-      record_age_assurance: {
-        Args: { declaration?: string; regulated: boolean }
-        Returns: Json
-      }
-      record_swipes: { Args: { items: Json }; Returns: undefined }
-      record_view: { Args: { listing_id: string }; Returns: undefined }
-      register_push_token: {
-        Args: { app_version?: string; platform: string; token: string }
-        Returns: undefined
-      }
-      relist_listing: {
-        Args: { id: string; price_cents?: number }
-        Returns: Json
-      }
-      report_noshow: {
-        Args: { meetup_id: string; note?: string }
-        Returns: undefined
-      }
-      reserve_listing_id: { Args: never; Returns: string }
-      running_late: {
-        Args: { meetup_id: string; minutes: number }
-        Returns: undefined
-      }
-      save_listing: { Args: { listing_id: string }; Returns: Json }
-      saved_search_new_counts: { Args: never; Returns: Json }
-      search_listings: {
-        Args: { cursor?: Json; filters?: Json; q?: string }
-        Returns: Json
-      }
-      search_suggest: { Args: { q?: string }; Returns: Json }
-      send_message: {
-        Args: {
-          body: string
-          chat_id: string
-          client_id: string
-          kind?: string
-          photo_path?: string
-        }
-        Returns: Json
-      }
-      set_away: { Args: { away: boolean }; Returns: Json }
-      set_chat_mute: {
-        Args: { chat_id: string; muted: boolean }
-        Returns: undefined
-      }
-      set_listing_comments: {
-        Args: { enabled: boolean; listing_id: string }
-        Returns: Json
-      }
-      set_listing_share_image: { Args: { id: string }; Returns: Json }
-      set_moving_out: { Args: { by: string }; Returns: Json }
-      set_quad_replies: {
-        Args: { enabled: boolean; post_id: string }
-        Returns: undefined
-      }
-      set_wanted_prefs: {
-        Args: { alerts: boolean; id: string; need_by: string }
-        Returns: Json
-      }
-      similar_listings: { Args: { id: string }; Returns: Json }
-      start_wanted_chat: {
-        Args: { body?: string; client_id?: string; wanted_id: string }
-        Returns: Json
-      }
-      submit_rating: {
-        Args: {
-          chat_id: string
-          comment?: string
-          tags?: string[]
-          thumbs_up: boolean
-        }
-        Returns: undefined
-      }
-      track_events: {
-        Args: { app_version?: string; events: Json; platform?: string }
-        Returns: Json
-      }
-      unblock_user: { Args: { user_id: string }; Returns: undefined }
-      undo_swipe: { Args: { listing_id: string }; Returns: undefined }
-      unhide_quad: { Args: { source_post_id: string }; Returns: undefined }
-      unmute_keyword: { Args: { keyword: string }; Returns: undefined }
-      unread_count: { Args: never; Returns: number }
-      unsave_listing: { Args: { listing_id: string }; Returns: Json }
-      update_listing: {
-        Args: {
-          availability?: string[]
-          category_id?: number
-          condition?: Database["public"]["Enums"]["item_condition"]
-          description?: string
-          id: string
-          meet_note?: string
-          meet_spot_ids?: string[]
-          open_to_offers?: boolean
-          photos?: Json
-          price_cents?: number
-          title?: string
-        }
-        Returns: Json
-      }
-      update_notification_prefs: { Args: { prefs: Json }; Returns: Json }
-      update_profile: {
-        Args: {
-          areas?: string[]
-          avatar_path?: string
-          bio?: string
-          first_name: string
-          last_initial?: string
-          year?: Database["public"]["Enums"]["class_year"]
-        }
-        Returns: Json
-      }
-      update_profile_flags: {
-        Args: {
-          analytics_opt_in?: boolean
-          crash_reports_opt_in?: boolean
-          theme_mode?: string
-        }
-        Returns: undefined
-      }
-      update_saved_search: {
-        Args: { alerts?: boolean; id: string; seen?: boolean }
-        Returns: Json
-      }
-      vote_poll: { Args: { option_id: string; post_id: string }; Returns: Json }
-      vote_quad: {
-        Args: { target_id: string; target_type: string; value: number }
-        Returns: Json
-      }
-      watch_listing: { Args: { listing_id: string }; Returns: undefined }
-      withdraw_offer: { Args: { offer_id: string }; Returns: undefined }
+          Views: {
+            "admin_metrics_funnel": {
+                  Row: {
+                    "activated": number | null,"campus_id": string | null,"completed_swaps": number | null,"day": string | null,"meetups_confirmed": number | null,"offers": number | null,"offers_accepted": number | null,"signups": number | null,"swiped_10_24h": number | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"admin_metrics_liquidity": {
+                  Row: {
+                    "active_buyers": number | null,"campus_id": string | null,"feed_exhausted": number | null,"listings_created": number | null,"median_hours_to_first_offer": number | null,"sell_through_final": boolean | null,"sold_14d": number | null,"week": string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"admin_metrics_retention": {
+                  Row: {
+                    "campus_id": string | null,"cohort": number | null,"d1": number | null,"d1_eligible": number | null,"d30": number | null,"d30_eligible": number | null,"d7": number | null,"d7_eligible": number | null,"signup_week": string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "profiles_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campus_progress"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "profiles_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campuses"
+      referencedColumns: ["id"]
     }
-    Enums: {
-      admin_role: "owner" | "moderator"
-      age_method: "os_signal" | "self_declared" | "review"
-      campus_status: "waitlist" | "live" | "paused"
-      chat_status: "open" | "closed" | "blocked"
-      class_year:
-        | "freshman"
-        | "sophomore"
-        | "junior"
-        | "senior"
-        | "grad"
-        | "other"
-      item_condition: "new" | "like_new" | "good" | "fair"
-      listing_kind: "sale" | "free" | "wanted" | "food" | "news"
-      listing_status:
-        | "active"
-        | "hold"
-        | "sold"
-        | "expired"
-        | "held_review"
-        | "removed"
-        | "deleted"
-      meetup_status:
-        | "proposed"
-        | "confirmed"
-        | "cancelled"
-        | "completed"
-        | "no_show"
-      message_kind: "text" | "system" | "meetup" | "photo"
-      offer_status:
-        | "pending"
-        | "countered"
-        | "accepted"
-        | "declined"
-        | "expired"
-        | "withdrawn"
-        | "auto_declined"
-      push_state: "pending" | "sending" | "sent" | "skipped" | "failed"
-      report_status: "open" | "actioned" | "dismissed"
-      spot_designation: "public" | "police"
-      swipe_dir: "left" | "save" | "right"
-      user_status:
-        | "active"
-        | "waitlist"
-        | "reverify"
-        | "paused"
-        | "suspended"
-        | "banned"
+                  ]
+                },"admin_metrics_safety": {
+                  Row: {
+                    "campus_id": string | null,"completed_swaps": number | null,"meetups_completed": number | null,"meetups_confirmed": number | null,"meetups_no_show": number | null,"p90_hours_to_resolve": number | null,"reports": number | null,"week": string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"campus_progress": {
+                  Row: {
+                    "founding_left": number | null,"id": string | null,"members": number | null,"name": string | null,"slug": string | null,"status": Database["public"]['Enums']["campus_status"] | null,"threshold": number | null
+                  }
+                  Insert: {
+                           "founding_left"?: never,"id"?: string | null,"members"?: never,"name"?: string | null,"slug"?: string | null,"status"?: Database["public"]['Enums']["campus_status"] | null,"threshold"?: number | null
+                         }
+                        Update: {
+                           "founding_left"?: never,"id"?: string | null,"members"?: never,"name"?: string | null,"slug"?: string | null,"status"?: Database["public"]['Enums']["campus_status"] | null,"threshold"?: number | null
+                         }
+                        Relationships: [
+                    
+                  ]
+                },"campus_trending_terms": {
+                  Row: {
+                    "campus_id": string | null,"rank": number | null,"saves": number | null,"term": string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "listings_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campus_progress"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "listings_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campuses"
+      referencedColumns: ["id"]
     }
-    CompositeTypes: {
-      [_ in never]: never
+                  ]
+                },"my_reports": {
+                  Row: {
+                    "created_at": string | null,"id": string | null,"reason": string | null,"resolved_at": string | null,"status": Database["public"]['Enums']["report_status"] | null,"target_id": string | null,"target_type": string | null
+                  }
+                  Insert: {
+                           "created_at"?: string | null,"id"?: string | null,"reason"?: string | null,"resolved_at"?: string | null,"status"?: Database["public"]['Enums']["report_status"] | null,"target_id"?: string | null,"target_type"?: string | null
+                         }
+                        Update: {
+                           "created_at"?: string | null,"id"?: string | null,"reason"?: string | null,"resolved_at"?: string | null,"status"?: Database["public"]['Enums']["report_status"] | null,"target_id"?: string | null,"target_type"?: string | null
+                         }
+                        Relationships: [
+                    
+                  ]
+                },"price_hints": {
+                  Row: {
+                    "campus_id": string | null,"category_id": number | null,"n": number | null,"p25": number | null,"p50": number | null,"p75": number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "listings_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campus_progress"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "listings_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campuses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "listings_category_id_fkey"
+      columns: ["category_id"]
+isOneToOne: false
+      referencedRelation: "categories"
+      referencedColumns: ["id"]
     }
-  }
+                  ]
+                },"profile_stats": {
+                  Row: {
+                    "active_listings": number | null,"median_reply_minutes": number | null,"swaps_count": number | null,"thumbs_total": number | null,"thumbs_up": number | null,"user_id": string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"profile_stats_mv": {
+                  Row: {
+                    "active_listings": number | null,"campus_id": string | null,"median_reply_minutes": number | null,"swaps_count": number | null,"thumbs_total": number | null,"thumbs_up": number | null,"user_id": string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "profiles_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campus_progress"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "profiles_campus_id_fkey"
+      columns: ["campus_id"]
+isOneToOne: false
+      referencedRelation: "campuses"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"public_profiles": {
+                  Row: {
+                    "avatar_path": string | null,"created_at": string | null,"display_name": string | null,"founding_seller_until": string | null,"id": string | null,"year": Database["public"]['Enums']["class_year"] | null
+                  }
+                  Insert: {
+                           "avatar_path"?: string | null,"created_at"?: string | null,"display_name"?: string | null,"founding_seller_until"?: string | null,"id"?: string | null,"year"?: Database["public"]['Enums']["class_year"] | null
+                         }
+                        Update: {
+                           "avatar_path"?: string | null,"created_at"?: string | null,"display_name"?: string | null,"founding_seller_until"?: string | null,"id"?: string | null,"year"?: Database["public"]['Enums']["class_year"] | null
+                         }
+                        Relationships: [
+                    
+                  ]
+                },"ratings_visible": {
+                  Row: {
+                    "chat_id": string | null,"comment": string | null,"created_at": string | null,"id": string | null,"ratee_id": string | null,"rater_id": string | null,"rater_name": string | null,"tags": (string)[] | null,"thumbs_up": boolean | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "ratings_chat_id_fkey"
+      columns: ["chat_id"]
+isOneToOne: false
+      referencedRelation: "chats"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ratings_ratee_id_fkey"
+      columns: ["ratee_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "ratings_ratee_id_fkey"
+      columns: ["ratee_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "ratings_ratee_id_fkey"
+      columns: ["ratee_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ratings_ratee_id_fkey"
+      columns: ["ratee_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ratings_rater_id_fkey"
+      columns: ["rater_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "ratings_rater_id_fkey"
+      columns: ["rater_id"]
+isOneToOne: false
+      referencedRelation: "profile_stats_mv"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "ratings_rater_id_fkey"
+      columns: ["rater_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ratings_rater_id_fkey"
+      columns: ["rater_id"]
+isOneToOne: false
+      referencedRelation: "public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                }
+          }
+          Functions: {
+            "accept_offer":
+{ Args: { "offer_id": string }; Returns: Json
+                           },
+"accept_quad_rules":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"accept_rules":
+{ Args: { "version": string }; Returns: undefined
+                           },
+"admin_activity_feed":
+{ Args: { "campus_id"?: string,"cursor"?: Json,"kinds"?: (string)[],"limit"?: number,"listing_id"?: string,"since"?: string,"until"?: string,"user_id"?: string }; Returns: Json
+                           },
+"admin_age_blocks_summary":
+{ Args: { "campus_id"?: string,"days"?: number }; Returns: Json
+                           },
+"admin_bulk_set_listing_status":
+{ Args: { "ids": (string)[],"reason": string,"status": string }; Returns: Json
+                           },
+"admin_change_email":
+{ Args: { "new_email": string,"user_id": string }; Returns: Json
+                           } |
+{ Args: { "new_email": string,"reason": string,"user_id": string }; Returns: Json
+                           },
+"admin_clear_strike":
+{ Args: { "id": string,"reason": string }; Returns: undefined
+                           },
+"admin_create_announcement":
+{ Args: { "body": string,"campus_id": string,"pinned_hours"?: number,"reason"?: string,"send_push"?: boolean,"title": string,"type": string }; Returns: Json
+                           },
+"admin_create_campus":
+{ Args: { "domain": string,"name": string,"reason"?: string,"short_name": string,"slug": string,"spot"?: Json,"status"?: string,"timezone": string }; Returns: Json
+                           },
+"admin_decide_appeal":
+{ Args: { "decision": string,"id": string,"note": string }; Returns: undefined
+                           },
+"admin_delete_banned_hash":
+{ Args: { "email_hash": string,"reason": string }; Returns: undefined
+                           },
+"admin_delete_banned_word":
+{ Args: { "id": string,"reason": string }; Returns: undefined
+                           },
+"admin_delete_domain":
+{ Args: { "domain": string,"reason": string }; Returns: undefined
+                           },
+"admin_delete_review_account":
+{ Args: { "email": string,"reason": string }; Returns: undefined
+                           },
+"admin_force_reverify":
+{ Args: { "reason": string,"user_id": string }; Returns: undefined
+                           },
+"admin_get_config":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"admin_invite_admin":
+{ Args: { "campus_id"?: string,"email": string,"reason"?: string,"role": string }; Returns: Json
+                           },
+"admin_list_admins":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"admin_list_announcements":
+{ Args: { "campus_id"?: string,"cursor"?: number }; Returns: Json
+                           },
+"admin_list_appeals":
+{ Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
+                           },
+"admin_list_audit":
+{ Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
+                           },
+"admin_list_audit_v2":
+{ Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
+                           },
+"admin_list_banned_hashes":
+{ Args: { "cursor"?: number }; Returns: Json
+                           },
+"admin_list_banned_words":
+{ Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
+                           },
+"admin_list_campuses":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"admin_list_deletions_exports":
+{ Args: { "cursor"?: number }; Returns: Json
+                           },
+"admin_list_listings":
+{ Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
+                           },
+"admin_list_meetups":
+{ Args: { "campus_id"?: string,"cursor"?: number,"when"?: string }; Returns: Json
+                           },
+"admin_list_quad":
+{ Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
+                           },
+"admin_list_reports":
+{ Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
+                           },
+"admin_list_review_accounts":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"admin_list_support":
+{ Args: { "campus_id"?: string,"cursor"?: number,"status"?: string }; Returns: Json
+                           },
+"admin_list_users":
+{ Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
+                           },
+"admin_list_users_v2":
+{ Args: { "cursor"?: number,"filters"?: Json }; Returns: Json
+                           },
+"admin_listing_activity":
+{ Args: { "listing_id": string }; Returns: Json
+                           },
+"admin_metrics_funnel":
+{ Args: { "campus_id"?: string,"from_day"?: string,"to_day"?: string }; Returns: Json
+                           },
+"admin_metrics_liquidity":
+{ Args: { "campus_id"?: string }; Returns: Json
+                           },
+"admin_metrics_retention":
+{ Args: { "campus_id"?: string }; Returns: Json
+                           },
+"admin_metrics_safety":
+{ Args: { "campus_id"?: string }; Returns: Json
+                           },
+"admin_moderate_quad":
+{ Args: { "action": string,"id": string,"reason": string,"target_type": string }; Returns: undefined
+                           },
+"admin_noshow_summary":
+{ Args: { "campus_id"?: string }; Returns: Json
+                           },
+"admin_open_campus":
+{ Args: { "campus_id": string,"reason": string }; Returns: Json
+                           },
+"admin_overview":
+{ Args: { "campus_id"?: string }; Returns: Json
+                           },
+"admin_overview_v2":
+{ Args: { "campus_id"?: string }; Returns: Json
+                           },
+"admin_person":
+{ Args: { "user_id": string }; Returns: Json
+                           },
+"admin_person_access_log":
+{ Args: { "cursor"?: number,"user_id": string }; Returns: Json
+                           },
+"admin_person_chats":
+{ Args: { "cursor"?: number,"user_id": string }; Returns: Json
+                           },
+"admin_person_listings":
+{ Args: { "cursor"?: number,"user_id": string }; Returns: Json
+                           },
+"admin_person_meetups":
+{ Args: { "cursor"?: number,"user_id": string }; Returns: Json
+                           },
+"admin_person_offers":
+{ Args: { "cursor"?: number,"user_id": string }; Returns: Json
+                           },
+"admin_person_reports":
+{ Args: { "user_id": string }; Returns: Json
+                           },
+"admin_person_timeline":
+{ Args: { "cursor"?: Json,"kinds"?: (string)[],"limit"?: number,"user_id": string }; Returns: Json
+                           },
+"admin_ratings_summary":
+{ Args: { "campus_id"?: string }; Returns: Json
+                           },
+"admin_read_reported_chat":
+{ Args: { "report_id": string }; Returns: Json
+                           },
+"admin_remove_admin":
+{ Args: { "reason": string,"user_id": string }; Returns: undefined
+                           },
+"admin_report_detail":
+{ Args: { "id": string }; Returns: Json
+                           },
+"admin_resolve_report":
+{ Args: { "action": string,"id": string,"note": string,"suspend_days"?: number }; Returns: undefined
+                           },
+"admin_reveal_quad_author":
+{ Args: { "case_ref": string,"id": string,"reason": string,"target_type": string }; Returns: Json
+                           },
+"admin_search":
+{ Args: { "q": string }; Returns: Json
+                           },
+"admin_set_config":
+{ Args: { "key": string,"reason": string,"value": Json }; Returns: undefined
+                           },
+"admin_set_listing_status":
+{ Args: { "id": string,"reason": string,"status": string }; Returns: undefined
+                           },
+"admin_set_user_status":
+{ Args: { "reason": string,"status": string,"until": string,"user_id": string }; Returns: undefined
+                           },
+"admin_support_detail":
+{ Args: { "id": string }; Returns: Json
+                           },
+"admin_system_health":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"admin_update_campus":
+{ Args: { "id": string,"patch": Json,"reason": string }; Returns: undefined
+                           },
+"admin_update_support":
+{ Args: { "id": string,"note"?: string,"reason": string,"reply"?: string,"status": string }; Returns: Json
+                           },
+"admin_upsert_banned_hash":
+{ Args: { "email": string,"reason": string }; Returns: Json
+                           },
+"admin_upsert_banned_word":
+{ Args: { "action": string,"match": string,"pattern": string,"reason": string,"scopes": (string)[] }; Returns: Json
+                           },
+"admin_upsert_category":
+{ Args: { "id": number,"name": string,"parent_id"?: number,"reason": string,"slug"?: string,"sort": number }; Returns: Json
+                           },
+"admin_upsert_domain":
+{ Args: { "campus_id": string,"domain": string,"kind": string,"reason": string }; Returns: undefined
+                           },
+"admin_upsert_review_account":
+{ Args: { "email": string,"note": string,"reason": string }; Returns: undefined
+                           },
+"admin_upsert_safe_spot":
+{ Args: { "reason": string,"spot": Json }; Returns: Json
+                           },
+"admin_user_detail":
+{ Args: { "id": string }; Returns: Json
+                           },
+"admin_waitlist_demand":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"admin_whoami":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"block_user":
+{ Args: { "user_id": string }; Returns: undefined
+                           },
+"cancel_meetup":
+{ Args: { "meetup_id": string,"reason"?: string }; Returns: undefined
+                           },
+"check_text":
+{ Args: { "scope": string,"text": string }; Returns: Json
+                           },
+"checkin_meetup":
+{ Args: { "meetup_id": string }; Returns: undefined
+                           },
+"complete_reverify":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"confirm_age":
+{ Args: { "birth_date"?: string,"is_adult"?: boolean,"method": string }; Returns: Json
+                           },
+"confirm_age_v2":
+{ Args: { "band"?: string,"birth_date"?: string,"method": string }; Returns: Json
+                           },
+"confirm_deal":
+{ Args: { "chat_id": string,"outcome": string }; Returns: undefined
+                           },
+"confirm_handoff":
+{ Args: { "code": string,"meetup_id": string }; Returns: Json
+                           },
+"confirm_meetup":
+{ Args: { "meetup_id": string }; Returns: undefined
+                           },
+"counter_offer":
+{ Args: { "amount_cents": number,"note"?: string,"offer_id": string }; Returns: Json
+                           },
+"create_appeal":
+{ Args: { "body"?: string,"reason_choice"?: string,"subject_id": string,"subject_type": string }; Returns: Json
+                           },
+"create_listing":
+{ Args: { "availability"?: (string)[],"category_id"?: number,"condition"?: Database["public"]['Enums']["item_condition"],"description"?: string,"food_minutes"?: number,"id": string,"kind"?: Database["public"]['Enums']["listing_kind"],"meet_note"?: string,"meet_spot_ids"?: (string)[],"open_to_offers"?: boolean,"photos"?: Json,"pickup_by"?: string,"price_cents"?: number,"title"?: string,"wanted_max_cents"?: number,"wanted_ref"?: string }; Returns: Json
+                           },
+"create_listing_comment":
+{ Args: { "body": string,"client_id"?: string,"listing_id": string,"parent_id"?: string }; Returns: Json
+                           },
+"create_meetup_share":
+{ Args: { "meetup_id": string }; Returns: Json
+                           },
+"create_news":
+{ Args: { "description"?: string,"event_at"?: string,"id": string,"link_url"?: string,"photos"?: Json,"place"?: string,"title": string }; Returns: Json
+                           },
+"create_quad_post":
+{ Args: { "body": string,"kind": string,"photo_path"?: string,"place"?: string,"poll"?: Json,"post_id"?: string }; Returns: Json
+                           },
+"create_quad_reply":
+{ Args: { "body": string,"post_id": string }; Returns: Json
+                           },
+"create_report":
+{ Args: { "details"?: string,"reason": string,"target_id": string,"target_type": string }; Returns: Json
+                           },
+"create_saved_search":
+{ Args: { "alerts"?: boolean,"filters"?: Json,"query"?: string }; Returns: Json
+                           },
+"decline_offer":
+{ Args: { "offer_id": string,"reason"?: string }; Returns: undefined
+                           },
+"delete_listing":
+{ Args: { "id": string }; Returns: undefined
+                           },
+"delete_listing_comment":
+{ Args: { "comment_id": string }; Returns: undefined
+                           },
+"delete_quad_post":
+{ Args: { "post_id": string }; Returns: undefined
+                           },
+"delete_quad_reply":
+{ Args: { "reply_id": string }; Returns: undefined
+                           },
+"delete_saved_search":
+{ Args: { "id": string }; Returns: undefined
+                           },
+"disable_push_token":
+{ Args: { "token": string }; Returns: undefined
+                           },
+"get_account_status":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"get_app_config":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"get_campus_feed":
+{ Args: { "cursor"?: Json,"kind"?: string }; Returns: Json
+                           },
+"get_chat":
+{ Args: { "chat_id": string }; Returns: Json
+                           },
+"get_chat_meetup":
+{ Args: { "chat_id": string }; Returns: Json
+                           },
+"get_comment_replies":
+{ Args: { "comment_id": string,"cursor"?: Json }; Returns: Json
+                           },
+"get_feed":
+{ Args: { "cursor"?: Json,"limit"?: number }; Returns: Json
+                           },
+"get_inbox":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"get_invite":
+{ Args: { "code": string }; Returns: Json
+                           },
+"get_listing":
+{ Args: { "id": string }; Returns: Json
+                           },
+"get_listing_comments":
+{ Args: { "cursor"?: Json,"listing_id": string,"sort"?: string }; Returns: Json
+                           },
+"get_listing_public_card":
+{ Args: { "id": string }; Returns: Json
+                           },
+"get_listings_by_ids":
+{ Args: { "ids": (string)[] }; Returns: Json
+                           },
+"get_me":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"get_meetup":
+{ Args: { "meetup_id": string }; Returns: Json
+                           },
+"get_meetup_share":
+{ Args: { "token": string }; Returns: Json
+                           },
+"get_messages":
+{ Args: { "after"?: number,"before"?: number,"chat_id": string,"limit"?: number }; Returns: Json
+                           },
+"get_my_quad":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"get_my_quad_hides":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"get_my_quad_mutes":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"get_my_rating":
+{ Args: { "chat_id": string }; Returns: Json
+                           },
+"get_my_report":
+{ Args: { "id": string }; Returns: Json
+                           },
+"get_notification_prefs":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"get_notifications":
+{ Args: { "cursor"?: number,"limit"?: number }; Returns: Json
+                           },
+"get_offer":
+{ Args: { "offer_id": string }; Returns: Json
+                           },
+"get_profile":
+{ Args: { "user_id": string }; Returns: Json
+                           },
+"get_quad_feed":
+{ Args: { "cursor"?: Json,"sort"?: string }; Returns: Json
+                           },
+"get_quad_status":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"get_quad_thread":
+{ Args: { "post_id": string }; Returns: Json
+                           },
+"get_saved":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"hide_chat":
+{ Args: { "chat_id": string }; Returns: undefined
+                           },
+"hide_listing":
+{ Args: { "listing_id": string }; Returns: undefined
+                           },
+"hide_quad_author":
+{ Args: { "post_id": string }; Returns: undefined
+                           },
+"hide_quad_reply_author":
+{ Args: { "reply_id": string }; Returns: undefined
+                           },
+"like_listing":
+{ Args: { "liked": boolean,"listing_id": string }; Returns: Json
+                           },
+"like_listing_comment":
+{ Args: { "comment_id": string,"liked": boolean }; Returns: Json
+                           },
+"link_app_transaction":
+{ Args: { "app_transaction_id": string }; Returns: undefined
+                           },
+"list_blocked":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"list_saved_searches":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"listing_offers":
+{ Args: { "id": string }; Returns: Json
+                           },
+"listing_stats":
+{ Args: { "id": string }; Returns: Json
+                           },
+"lookup_school":
+{ Args: { "domain": string }; Returns: Json
+                           },
+"make_bundle_offer":
+{ Args: { "amount_cents": number,"bundle_ids": (string)[],"listing_id": string,"note"?: string,"quick_notes"?: (string)[] }; Returns: Json
+                           },
+"make_offer":
+{ Args: { "amount_cents": number,"listing_id": string,"note"?: string,"quick_notes"?: (string)[] }; Returns: Json
+                           },
+"mark_chat_read":
+{ Args: { "chat_id": string }; Returns: undefined
+                           },
+"mark_notifications_read":
+{ Args: { "ids"?: (number)[] }; Returns: undefined
+                           },
+"mark_sold":
+{ Args: { "buyer_id"?: string,"id": string }; Returns: undefined
+                           },
+"mark_unlock_seen":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"mute_keyword":
+{ Args: { "keyword": string }; Returns: undefined
+                           },
+"my_listings":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"my_waitlist_position":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"price_hint":
+{ Args: { "category_id": number }; Returns: Json
+                           } |
+{ Args: { "category_id": number,"condition": string }; Returns: Json
+                           },
+"propose_meetup":
+{ Args: { "chat_id": string,"custom_place"?: string,"spot_id"?: string,"starts_at": string }; Returns: Json
+                           },
+"public_campus_progress":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"public_safe_spots":
+{ Args: { "slug": string }; Returns: Json
+                           },
+"record_age_assurance":
+{ Args: { "declaration"?: string,"regulated": boolean }; Returns: Json
+                           },
+"record_swipes":
+{ Args: { "items": Json }; Returns: undefined
+                           },
+"record_view":
+{ Args: { "listing_id": string }; Returns: undefined
+                           },
+"register_push_token":
+{ Args: { "app_version"?: string,"platform": string,"token": string }; Returns: undefined
+                           },
+"relist_listing":
+{ Args: { "id": string,"price_cents"?: number }; Returns: Json
+                           },
+"report_noshow":
+{ Args: { "meetup_id": string,"note"?: string }; Returns: undefined
+                           },
+"reserve_listing_id":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           },
+"running_late":
+{ Args: { "meetup_id": string,"minutes": number }; Returns: undefined
+                           },
+"save_listing":
+{ Args: { "listing_id": string }; Returns: Json
+                           },
+"saved_search_new_counts":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"search_listings":
+{ Args: { "cursor"?: Json,"filters"?: Json,"q"?: string }; Returns: Json
+                           },
+"search_suggest":
+{ Args: { "q"?: string }; Returns: Json
+                           },
+"send_message":
+{ Args: { "body": string,"chat_id": string,"client_id": string,"kind"?: string,"photo_path"?: string }; Returns: Json
+                           },
+"set_away":
+{ Args: { "away": boolean }; Returns: Json
+                           },
+"set_chat_mute":
+{ Args: { "chat_id": string,"muted": boolean }; Returns: undefined
+                           },
+"set_listing_comments":
+{ Args: { "enabled": boolean,"listing_id": string }; Returns: Json
+                           },
+"set_listing_share_image":
+{ Args: { "id": string }; Returns: Json
+                           },
+"set_moving_out":
+{ Args: { "by": string }; Returns: Json
+                           },
+"set_quad_replies":
+{ Args: { "enabled": boolean,"post_id": string }; Returns: undefined
+                           },
+"set_wanted_prefs":
+{ Args: { "alerts": boolean,"id": string,"need_by": string }; Returns: Json
+                           },
+"similar_listings":
+{ Args: { "id": string }; Returns: Json
+                           },
+"start_wanted_chat":
+{ Args: { "body"?: string,"client_id"?: string,"wanted_id": string }; Returns: Json
+                           },
+"submit_rating":
+{ Args: { "chat_id": string,"comment"?: string,"tags"?: (string)[],"thumbs_up": boolean }; Returns: undefined
+                           },
+"track_events":
+{ Args: { "app_version"?: string,"events": Json,"platform"?: string }; Returns: Json
+                           },
+"unblock_user":
+{ Args: { "user_id": string }; Returns: undefined
+                           },
+"undo_swipe":
+{ Args: { "listing_id": string }; Returns: undefined
+                           },
+"unhide_quad":
+{ Args: { "source_post_id": string }; Returns: undefined
+                           },
+"unmute_keyword":
+{ Args: { "keyword": string }; Returns: undefined
+                           },
+"unread_count":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
+"unsave_listing":
+{ Args: { "listing_id": string }; Returns: Json
+                           },
+"update_listing":
+{ Args: { "availability"?: (string)[],"category_id"?: number,"condition"?: Database["public"]['Enums']["item_condition"],"description"?: string,"id": string,"meet_note"?: string,"meet_spot_ids"?: (string)[],"open_to_offers"?: boolean,"photos"?: Json,"price_cents"?: number,"title"?: string }; Returns: Json
+                           },
+"update_notification_prefs":
+{ Args: { "prefs": Json }; Returns: Json
+                           },
+"update_profile":
+{ Args: { "areas"?: (string)[],"avatar_path"?: string,"bio"?: string,"first_name": string,"last_initial"?: string,"year"?: Database["public"]['Enums']["class_year"] }; Returns: Json
+                           },
+"update_profile_flags":
+{ Args: { "analytics_opt_in"?: boolean,"crash_reports_opt_in"?: boolean,"theme_mode"?: string }; Returns: undefined
+                           },
+"update_saved_search":
+{ Args: { "alerts"?: boolean,"id": string,"seen"?: boolean }; Returns: Json
+                           },
+"vote_poll":
+{ Args: { "option_id": string,"post_id": string }; Returns: Json
+                           },
+"vote_quad":
+{ Args: { "target_id": string,"target_type": string,"value": number }; Returns: Json
+                           },
+"watch_listing":
+{ Args: { "listing_id": string }; Returns: undefined
+                           },
+"withdraw_offer":
+{ Args: { "offer_id": string }; Returns: undefined
+                           }
+          }
+          Enums: {
+            "admin_role": "owner"|"moderator","age_method": "os_signal"|"self_declared"|"review","campus_status": "waitlist"|"live"|"paused","chat_status": "open"|"closed"|"blocked","class_year": "freshman"|"sophomore"|"junior"|"senior"|"grad"|"other","item_condition": "new"|"like_new"|"good"|"fair","listing_kind": "sale"|"free"|"wanted"|"food"|"news","listing_status": "active"|"hold"|"sold"|"expired"|"held_review"|"removed"|"deleted","meetup_status": "proposed"|"confirmed"|"cancelled"|"completed"|"no_show","message_kind": "text"|"system"|"meetup"|"photo","offer_status": "pending"|"countered"|"accepted"|"declined"|"expired"|"withdrawn"|"auto_declined","push_state": "pending"|"sending"|"sent"|"skipped"|"failed","report_status": "open"|"actioned"|"dismissed","spot_designation": "public"|"police","swipe_dir": "left"|"save"|"right","user_status": "active"|"waitlist"|"reverify"|"paused"|"suspended"|"banned"
+          }
+          CompositeTypes: {
+            [_ in never]: never
+          }
+        }
 }
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>
 
 type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
@@ -4566,170 +2788,108 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
+  TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never) = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
+    : never = never
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
-      }
-      ? R
-      : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+  ? (DefaultSchema["Tables"] & DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+      Row: infer R
+    }
+    ? R
     : never
+  : never
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
+  TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never) = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
+    : never = never
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
-      }
-      ? I
-      : never
+  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+      Insert: infer I
+    }
+    ? I
     : never
+  : never
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
+  TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never) = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
+    : never = never
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
-      }
-      ? U
-      : never
+  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+      Update: infer U
+    }
+    ? U
     : never
+  : never
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never) = never,
-> = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
+    : never = never
+> = DefaultSchemaEnumNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
+  ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+  : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never) = never,
-> = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
+    : never = never
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
+  ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+  : never
 
 export const Constants = {
-  public: {
-    Enums: {
-      admin_role: ["owner", "moderator"],
-      age_method: ["os_signal", "self_declared", "review"],
-      campus_status: ["waitlist", "live", "paused"],
-      chat_status: ["open", "closed", "blocked"],
-      class_year: [
-        "freshman",
-        "sophomore",
-        "junior",
-        "senior",
-        "grad",
-        "other",
-      ],
-      item_condition: ["new", "like_new", "good", "fair"],
-      listing_kind: ["sale", "free", "wanted", "food", "news"],
-      listing_status: [
-        "active",
-        "hold",
-        "sold",
-        "expired",
-        "held_review",
-        "removed",
-        "deleted",
-      ],
-      meetup_status: [
-        "proposed",
-        "confirmed",
-        "cancelled",
-        "completed",
-        "no_show",
-      ],
-      message_kind: ["text", "system", "meetup", "photo"],
-      offer_status: [
-        "pending",
-        "countered",
-        "accepted",
-        "declined",
-        "expired",
-        "withdrawn",
-        "auto_declined",
-      ],
-      push_state: ["pending", "sending", "sent", "skipped", "failed"],
-      report_status: ["open", "actioned", "dismissed"],
-      spot_designation: ["public", "police"],
-      swipe_dir: ["left", "save", "right"],
-      user_status: [
-        "active",
-        "waitlist",
-        "reverify",
-        "paused",
-        "suspended",
-        "banned",
-      ],
-    },
-  },
+  "public": {
+          Enums: {
+            "admin_role": ["owner", "moderator"],"age_method": ["os_signal", "self_declared", "review"],"campus_status": ["waitlist", "live", "paused"],"chat_status": ["open", "closed", "blocked"],"class_year": ["freshman", "sophomore", "junior", "senior", "grad", "other"],"item_condition": ["new", "like_new", "good", "fair"],"listing_kind": ["sale", "free", "wanted", "food", "news"],"listing_status": ["active", "hold", "sold", "expired", "held_review", "removed", "deleted"],"meetup_status": ["proposed", "confirmed", "cancelled", "completed", "no_show"],"message_kind": ["text", "system", "meetup", "photo"],"offer_status": ["pending", "countered", "accepted", "declined", "expired", "withdrawn", "auto_declined"],"push_state": ["pending", "sending", "sent", "skipped", "failed"],"report_status": ["open", "actioned", "dismissed"],"spot_designation": ["public", "police"],"swipe_dir": ["left", "save", "right"],"user_status": ["active", "waitlist", "reverify", "paused", "suspended", "banned"]
+          }
+        }
 } as const
+
