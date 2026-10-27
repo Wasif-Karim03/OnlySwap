@@ -176,8 +176,8 @@ const EXPECTED_PLIST_KEYS = [
   'UISupportedInterfaceOrientations',
   'UIUserInterfaceStyle',
   'UIViewControllerBasedStatusBarAppearance',
-  // R2 (DEC 76, 84): iPad orientations, widgets and Live Activities.
-  'UISupportedInterfaceOrientations~ipad',
+  // R2 (DEC 76, 84): widgets and Live Activities. Phones only since DEC 146, so no
+  // UISupportedInterfaceOrientations~ipad.
   'NSSupportsLiveActivities',
   // Added by the expo-widgets plugin: widget push updates and the scene manifest
   // it needs (DEC 88).
@@ -278,8 +278,8 @@ check(
   String(plist.UISupportedInterfaceOrientations),
 );
 check(
-  'iPad: all four orientations (P17-FEAT-02)',
-  (plist['UISupportedInterfaceOrientations~ipad'] ?? []).length === 4,
+  'phones only: no iPad orientations (DEC 146)',
+  plist['UISupportedInterfaceOrientations~ipad'] === undefined,
   String(plist['UISupportedInterfaceOrientations~ipad']),
 );
 check('iPad multitasking (UIRequiresFullScreen false)', plist.UIRequiresFullScreen === false);
@@ -348,8 +348,8 @@ if (existsSync(join(iosDir, 'ExpoWidgetsTarget'))) {
 const pbx = readFileSync(join(iosDir, `${target}.xcodeproj`, 'project.pbxproj'), 'utf8');
 check('bundle id app.onlyswap', /PRODUCT_BUNDLE_IDENTIFIER = "?app\.onlyswap"?;/.test(pbx));
 check(
-  'iPhone and iPad (TARGETED_DEVICE_FAMILY = 1,2)',
-  /TARGETED_DEVICE_FAMILY = "?1,2"?;/.test(pbx),
+  'app target is iPhone only (TARGETED_DEVICE_FAMILY = 1, DEC 146)',
+  /TARGETED_DEVICE_FAMILY = "?1"?;/.test(pbx),
 );
 const podProps = JSON.parse(readFileSync(join(iosDir, 'Podfile.properties.json'), 'utf8'));
 check(

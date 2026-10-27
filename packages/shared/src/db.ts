@@ -2477,6 +2477,9 @@ isOneToOne: false
 "delete_quad_post":
 { Args: { "post_id": string }; Returns: undefined
                            },
+"delete_quad_reply":
+{ Args: { "reply_id": string }; Returns: undefined
+                           },
 "delete_saved_search":
 { Args: { "id": string }; Returns: undefined
                            },
@@ -2581,6 +2584,9 @@ isOneToOne: false
                            },
 "hide_quad_author":
 { Args: { "post_id": string }; Returns: undefined
+                           },
+"hide_quad_reply_author":
+{ Args: { "reply_id": string }; Returns: undefined
                            },
 "like_listing":
 { Args: { "liked": boolean,"listing_id": string }; Returns: Json

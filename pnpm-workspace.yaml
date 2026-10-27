@@ -13,6 +13,7 @@ auditConfig:
     - GHSA-ch52-4w7c-c8xp # http-cache-semantics, Astro build image fetch
     - GHSA-vfj7-8cjw-p6xm # braces, Jest file matching
     - GHSA-hp3w-g68c-fv3c # sprintf-js, Jest coverage config (moderate)
+    - GHSA-mrhx-c7xc-m3w5 # zod 3 inside Expo CLI (dev tool, validates its own config); no patched 3.x. zod 4 is overridden below
 
 onlyBuiltDependencies:
   - esbuild
@@ -26,6 +27,8 @@ onlyBuiltDependencies:
 overrides:
   shell-quote: ^1.11.0
   source-map-js: ^1.2.2
+  'zod@>=4.0.0 <4.6.6': ^4.6.6
+  'undici@>=8.0.0 <8.12.2': ^8.12.2
 
 # expo-alternate-app-icons' config plugin requires @expo/image-utils without
 # listing it, so it only worked while that package happened to be hoisted.

@@ -1010,6 +1010,16 @@
     ]
   },
   {
+    "name": "delete_quad_reply",
+    "args": "reply_id uuid",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
     "name": "delete_saved_search",
     "args": "id uuid",
     "returns": "void",
@@ -1356,6 +1366,16 @@
   {
     "name": "hide_quad_author",
     "args": "post_id uuid",
+    "returns": "void",
+    "security": "definer",
+    "grants": [
+      "authenticated",
+      "service_role"
+    ]
+  },
+  {
+    "name": "hide_quad_reply_author",
+    "args": "reply_id uuid",
     "returns": "void",
     "security": "definer",
     "grants": [
