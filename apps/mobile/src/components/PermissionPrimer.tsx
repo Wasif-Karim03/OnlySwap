@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { usePermissionPrimer, type PermissionKind } from '@/lib/permissions';
@@ -49,7 +49,14 @@ export function PermissionPrimerView({
   return (
     <View testID={testID} style={styles.screen}>
       <NavBar leading={onClose ? 'close' : 'none'} onLeading={onClose} />
-      <View style={styles.body}>
+      {/* Scrolls so the copy isn't clipped at large text on a small phone;
+          centered as before when it fits. */}
+      <ScrollView
+        style={styles.flex}
+        contentContainerStyle={styles.body}
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+      >
         <GlyphTile icon={ICON[kind]} tile={denied ? 'neutral' : 'accent'} />
         <View style={styles.copy}>
           <Text variant="heading" accessibilityRole="header" style={styles.center}>
@@ -59,7 +66,7 @@ export function PermissionPrimerView({
             {denied ? copy.deniedBody : copy.body}
           </Text>
         </View>
-      </View>
+      </ScrollView>
       <View style={styles.actions}>
         {denied ? (
           <Button
@@ -119,8 +126,9 @@ export function PermissionPrimer({ kind, onGranted, onAlternative, onClose, test
 
 const styles = StyleSheet.create((theme, rt) => ({
   screen: { flex: 1, backgroundColor: theme.colors.bg },
+  flex: { flex: 1 },
   body: {
-    flex: 1,
+    flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
     gap: theme.space.xl,

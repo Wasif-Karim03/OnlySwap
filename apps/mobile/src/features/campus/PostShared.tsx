@@ -334,12 +334,14 @@ export function PhotosField({
         <View style={styles.row} testID={`${testID}-photos`}>
           {items.map((x, i) => (
             <View key={x.key} style={styles.preview}>
-              <Photo
-                source={x.photo ? mediaUrl(mediaBase, x.photo.thumbPath) : x.uri}
-                blurhash={x.photo?.blurhash}
-                rounded="thumb"
-                accessibilityLabel={copy.photoLabel}
-              />
+              <View style={styles.previewPhoto}>
+                <Photo
+                  source={x.photo ? mediaUrl(mediaBase, x.photo.thumbPath) : x.uri}
+                  blurhash={x.photo?.blurhash}
+                  rounded="thumb"
+                  accessibilityLabel={copy.photoLabel}
+                />
+              </View>
               {x.photo ? (
                 <Button
                   label={copy.removePhoto}
@@ -513,7 +515,10 @@ const styles = StyleSheet.create((theme, rt) => ({
   fields: { gap: theme.space.lg },
   gap: { gap: theme.space.sm },
   row: { flexDirection: 'row', gap: theme.space.sm, flexWrap: 'wrap' },
-  preview: { width: theme.size.glyphTile * 1.5 },
+  // The photo stays a fixed tile; the column may grow wider than it so
+  // "Remove photo" is not squeezed into 132 pt at large text sizes.
+  preview: { minWidth: theme.size.glyphTile * 1.5, maxWidth: '100%' },
+  previewPhoto: { width: theme.size.glyphTile * 1.5 },
   posted: {
     flex: 1,
     justifyContent: 'space-between',

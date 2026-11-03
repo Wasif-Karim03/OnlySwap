@@ -12,6 +12,7 @@ import { PermissionPrimer } from '@/components/PermissionPrimer';
 import { Text } from '@/components/Text';
 import { useToastStore } from '@/components/Toast';
 import { sell as copy } from '@/strings';
+import { useLayout } from '@/theme/layout';
 
 import { getDraftStore } from './draft';
 import { bookListingTitle, isbnFromBarcode, lookupIsbn, TEXTBOOKS_CATEGORY } from './isbn';
@@ -38,6 +39,9 @@ export function SellScanScreen({
 }) {
   const router = useRouter();
   const { theme } = useUnistyles();
+  // Phones: the tab bar under this screen already pads for the home indicator.
+  // iPad sidebar (wide) has no bar below, so the panel pads for it itself.
+  const padsHomeIndicator = useLayout().wide;
   const net = useNetInfo();
   const [granted, setGranted] = useState(false);
   const [status, setStatus] = useState<Status>('scanning');
@@ -112,7 +116,7 @@ export function SellScanScreen({
           <View style={styles.guide} />
         </View>
       </View>
-      <View style={styles.panel}>
+      <View style={styles.panel(padsHomeIndicator)}>
         {problem ? (
           <>
             <View testID={`sell-scan-${status}`}>
@@ -162,10 +166,10 @@ const styles = StyleSheet.create((theme, rt) => ({
   },
   line: { flexDirection: 'row', alignItems: 'center', gap: theme.space.sm },
   flex: { flex: 1 },
-  panel: {
+  panel: (padsHomeIndicator: boolean) => ({
     gap: theme.space.sm,
     paddingHorizontal: theme.space.screen,
     paddingTop: theme.space.lg,
-    paddingBottom: rt.insets.bottom + theme.space.lg,
-  },
+    paddingBottom: (padsHomeIndicator ? rt.insets.bottom : 0) + theme.space.lg,
+  }),
 }));

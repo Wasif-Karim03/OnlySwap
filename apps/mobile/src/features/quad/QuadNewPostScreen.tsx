@@ -1,8 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Linking, ScrollView, View } from 'react-native';
-import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { Linking, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { Banner } from '@/components/Banner';
@@ -25,9 +24,9 @@ import { pickPhotos, type PickedPhoto } from '@/lib/media';
 import { osPermissions, primerStep, type OsApi } from '@/lib/permissions';
 import { uuid } from '@/lib/uuid';
 import { quad as copy } from '@/strings';
-import { readableColumn } from '@/theme/layout';
 
 import { mediaUrl } from '../sell/logic';
+import { DockedScroll } from '../sell/SellStep';
 import { PhotoSourceSheet, type PhotoSource } from '../campus/PostShared';
 
 import { quadApi, type NewQuadPost, type QuadApi } from './api';
@@ -206,8 +205,23 @@ export function QuadNewPostScreen({
   return (
     <View style={styles.root} testID="screen-quad-new">
       <NavBar title={copy.newTitle} leading="close" onLeading={close} />
-      <KeyboardAvoidingView behavior="padding" style={styles.flex}>
-        <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
+      {/* Keyboard-aware scroll (DockedScroll): the focused field, poll options
+          included, scrolls above the keyboard and the docked Post button, which
+          rides the keyboard and drops the home-indicator gap while it is up. */}
+      <DockedScroll
+        standalone
+        dock={
+          <Button
+            label={copy.post}
+            variant="dark"
+            disabled={!valid}
+            loading={posting}
+            onPress={() => void submit()}
+            testID="quad-post-submit"
+          />
+        }
+      >
+        <View style={styles.body}>
           {/* Who sees your name, first, above the keyboard (DEC 150: not anonymous). */}
           <View style={styles.anon}>
             <Icon name="user" size={16} tone="ink2" />
@@ -348,19 +362,8 @@ export function QuadNewPostScreen({
               <Banner kind="error" message={error} />
             </View>
           ) : null}
-        </ScrollView>
-        {/* The one primary action, docked where the thumb is; it rides the keyboard. */}
-        <View style={styles.dock}>
-          <Button
-            label={copy.post}
-            variant="dark"
-            disabled={!valid}
-            loading={posting}
-            onPress={() => void submit()}
-            testID="quad-post-submit"
-          />
         </View>
-      </KeyboardAvoidingView>
+      </DockedScroll>
       <ConfirmDialog
         visible={confirmDiscard}
         title={copy.discardTitle}
@@ -399,20 +402,12 @@ export function QuadNewPostScreen({
   );
 }
 
-const styles = StyleSheet.create((theme, rt) => ({
+const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   flex: { flex: 1 },
-  body: { ...readableColumn, gap: theme.space.lg, padding: theme.space.screen },
+  body: { gap: theme.space.lg, paddingTop: theme.space.md },
   gap: { gap: theme.space.sm },
   row: { flexDirection: 'row', gap: theme.space.sm, flexWrap: 'wrap' },
   optionRow: { flexDirection: 'row', alignItems: 'flex-end', gap: theme.space.xs },
   anon: { flexDirection: 'row', alignItems: 'center', gap: theme.space.xs },
-  dock: {
-    ...readableColumn,
-    paddingHorizontal: theme.space.screen,
-    paddingTop: theme.space.sm,
-    paddingBottom: Math.max(rt.insets.bottom, theme.space.sm),
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.line,
-  },
 }));

@@ -250,7 +250,7 @@ function PhotoTile({
           </View>
           {index === 0 ? (
             <View style={styles.cover}>
-              <Text variant="meta" tone="ink" style={styles.coverText}>
+              <Text variant="meta" tone="ink" overlay style={styles.coverText}>
                 {copy.cover}
               </Text>
             </View>

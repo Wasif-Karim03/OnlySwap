@@ -1,9 +1,9 @@
 import { useRouter } from 'expo-router';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 import { IconButton } from '@/components/IconButton';
 import { NavBar } from '@/components/NavBar';
@@ -21,7 +21,11 @@ type Props = {
   /** `back` for pushed steps; `none` when there is nowhere to go back to. */
   leading?: 'back' | 'none';
   onBack?: () => void;
-  /** Right side of the nav bar. */
+  /**
+   * A secondary text action ("Not you? Sign out"). Right side of the nav bar
+   * without `step`; with `step` it sits centered under the dock, since the
+   * step nav's side slot is too narrow for it.
+   */
   trailing?: ReactNode;
   /**
    * Sign-up position, 1 to SIGNUP_STEPS: "Step 2 of 5" centered in the nav
@@ -51,18 +55,26 @@ export function AuthStep({
   testID,
 }: Props) {
   const insets = useSafeAreaInsets();
+  const { theme } = useUnistyles();
   const router = useRouter();
+  // Height of the dock as it shows above the keyboard: the sticky view drops
+  // the bottom inset while the keyboard is up (offset `opened` below).
+  const [dockH, setDockH] = useState<number | null>(null);
+  // Keep the focused field (plus one feedback line under it) clear of the dock.
+  // 96 is the old fixed guess, used until the dock has been measured.
+  const bottomOffset = dockH === null ? 96 : dockH + theme.space.xl + theme.space['2xl'];
+  const dockedTrailing = step ? trailing : null;
   // With no history (opened by replace or a link) back still leaves for welcome.
   const back = onBack ?? (() => (router.canGoBack() ? router.back() : router.replace('/welcome')));
   return (
     <View style={styles.root} testID={testID}>
       {step ? (
-        <StepNav step={step} leading={leading} onBack={back} trailing={trailing} top={insets.top} />
+        <StepNav step={step} leading={leading} onBack={back} top={insets.top} />
       ) : (
         <NavBar leading={leading} onLeading={back} trailing={trailing} />
       )}
       <KeyboardAwareScrollView
-        bottomOffset={96}
+        bottomOffset={bottomOffset}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.content(!!step)}
       >
@@ -78,10 +90,14 @@ export function AuthStep({
         )}
         <View style={styles.children}>{children}</View>
       </KeyboardAwareScrollView>
-      {dock ? (
+      {dock || dockedTrailing ? (
         <KeyboardStickyView offset={{ closed: 0, opened: insets.bottom }}>
-          <View style={[styles.dock, { paddingBottom: insets.bottom + styles.dockGap.height }]}>
+          <View
+            onLayout={(e) => setDockH(Math.max(0, e.nativeEvent.layout.height - insets.bottom))}
+            style={[styles.dock, { paddingBottom: insets.bottom + styles.dockGap.height }]}
+          >
             {dock}
+            {dockedTrailing ? <View style={styles.dockTrailing}>{dockedTrailing}</View> : null}
           </View>
         </KeyboardStickyView>
       ) : null}
@@ -94,13 +110,11 @@ function StepNav({
   step,
   leading,
   onBack,
-  trailing,
   top,
 }: {
   step: number;
   leading: 'back' | 'none';
   onBack: () => void;
-  trailing?: ReactNode;
   top: number;
 }) {
   const current = Math.min(Math.max(Math.round(step), 1), SIGNUP_STEPS);
@@ -122,7 +136,8 @@ function StepNav({
         <Text variant="meta" tone="ink2" style={styles.stepText} testID="auth-step">
           {label}
         </Text>
-        <View style={[styles.side, styles.end]}>{trailing}</View>
+        {/* Empty, but the same width as the back side so the label stays centred. */}
+        <View style={styles.side} />
       </View>
       <View
         style={styles.track}
@@ -146,9 +161,16 @@ const styles = StyleSheet.create((theme) => ({
     minHeight: theme.size.navBar,
     paddingHorizontal: theme.space.md,
   },
-  side: { width: theme.size.hit, flexDirection: 'row', alignItems: 'center' },
-  end: { justifyContent: 'flex-end' },
-  stepText: { flex: 1, textAlign: 'center', fontWeight: '600' },
+  // Both sides share the leftover width equally, so the step label stays
+  // centred. Text actions go in the dock instead (see `trailing`): even half
+  // the bar wrapped "Not you? Sign out" to 2 to 4 lines.
+  side: {
+    flex: 1,
+    minWidth: theme.size.hit,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  stepText: { flexShrink: 0, textAlign: 'center', fontWeight: '600' },
   track: {
     height: theme.size.stepBar,
     marginHorizontal: theme.space.screen,
@@ -174,4 +196,5 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.bg,
   },
   dockGap: { height: theme.space.md },
+  dockTrailing: { alignItems: 'center' },
 }));

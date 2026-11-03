@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { track } from '@/lib/analytics';
@@ -37,6 +38,9 @@ import {
   type RatingTag,
   type RatingView,
 } from './logic';
+
+/** Gap kept between a focused field and the keyboard (space.lg). */
+const KEYBOARD_GAP = 16;
 
 /** E07 Did it sell? (P8-DEAL-02; board E16). */
 export function DidItSellScreen({
@@ -333,7 +337,11 @@ export function RateScreen({
   return (
     <View style={styles.root} testID="screen-rate-submit">
       <NavBar leading="close" onLeading={close} title={copy.rateTitle} />
-      <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.body}
+        keyboardShouldPersistTaps="handled"
+        bottomOffset={KEYBOARD_GAP}
+      >
         <Text variant="heading" accessibilityRole="header">
           {fill(copy.rateQuestion, { name })}
         </Text>
@@ -400,7 +408,7 @@ export function RateScreen({
           </>
         ) : null}
         {error ? <Banner kind="error" message={error} /> : null}
-      </ScrollView>
+      </KeyboardAwareScrollView>
       <View style={styles.dock}>
         <Button
           label={copy.submit}

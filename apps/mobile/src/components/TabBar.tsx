@@ -63,7 +63,8 @@ type Props = {
 
 /**
  * Bottom tabs (P2-CMP-09). Tabs never slide or buzz (haptics budget, UX-09).
- * Labels are capped at 1.4x Dynamic Type so four tabs always fit. DEC 90:
+ * Labels are capped at 1.4x Dynamic Type and shrink to fit (down to 0.8x) so
+ * five tabs fit on a 375 pt phone without "Disco…" truncation. DEC 90:
  * white bar with a hairline on top, ink when on and ink3 when off, and the
  * prominent (Sell) tab as an accent rounded rectangle in the middle.
  */
@@ -123,6 +124,8 @@ export function TabBar({
                     tone={active ? 'ink' : 'ink3'}
                     overlay
                     numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.8}
                     style={styles.label}
                   >
                     {item.label}

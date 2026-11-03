@@ -2,7 +2,7 @@ import { Image } from 'expo-image';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useState } from 'react';
-import { useWindowDimensions, View } from 'react-native';
+import { ScrollView, useWindowDimensions, View } from 'react-native';
 import Animated, {
   cancelAnimation,
   Easing,
@@ -130,36 +130,46 @@ export function WelcomeScreen() {
         <Fade color={theme.colors.accent} edge="bottom" height={Math.round(height * 0.56)} />
       </View>
 
-      <View style={[styles.brand, { paddingTop: insets.top }]}>
-        <Mark size={26} tone="onAccent" />
-        <Text variant="heading" tone="onAccent" style={styles.wordmark}>
-          {copy.wordmark}
-        </Text>
-      </View>
-
-      <View style={[styles.content, { paddingBottom: insets.bottom + theme.space.md }]}>
-        <Text variant="display" tone="onAccent" accessibilityRole="header">
-          {copy.title}
-        </Text>
-        <Text variant="body" tone="onAccent" style={styles.body}>
-          {copy.body}
-        </Text>
-        <View style={styles.actions}>
-          <Button
-            label={copy.continue}
-            variant="onAccent"
-            onPress={() => router.push('/email')}
-            testID="welcome-continue"
-          />
-          <Button
-            label={copy.signIn}
-            variant="textOnAccent"
-            accessibilityHint={copy.signInHint}
-            onPress={() => router.push('/email?mode=login')}
-            testID="welcome-sign-in"
-          />
+      {/* Scrolls only when it must (large text on a small phone), so the sign-up
+          buttons can always be reached; marginTop 'auto' still pins the content
+          to the bottom when it fits. */}
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={[styles.brand, { paddingTop: insets.top }]}>
+          <Mark size={26} tone="onAccent" />
+          <Text variant="heading" tone="onAccent" style={styles.wordmark}>
+            {copy.wordmark}
+          </Text>
         </View>
-      </View>
+
+        <View style={[styles.content, { paddingBottom: insets.bottom + theme.space.md }]}>
+          <Text variant="display" tone="onAccent" accessibilityRole="header">
+            {copy.title}
+          </Text>
+          <Text variant="body" tone="onAccent" style={styles.body}>
+            {copy.body}
+          </Text>
+          <View style={styles.actions}>
+            <Button
+              label={copy.continue}
+              variant="onAccent"
+              onPress={() => router.push('/email')}
+              testID="welcome-continue"
+            />
+            <Button
+              label={copy.signIn}
+              variant="textOnAccent"
+              accessibilityHint={copy.signInHint}
+              onPress={() => router.push('/email?mode=login')}
+              testID="welcome-sign-in"
+            />
+          </View>
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -307,6 +317,8 @@ const styles = StyleSheet.create((theme) => ({
   fade: { position: 'absolute', left: 0, right: 0 },
   fadeTop: { top: 0 },
   fadeBottom: { bottom: 0 },
+  scroll: { flex: 1 },
+  scrollContent: { flexGrow: 1 },
   brand: {
     flexDirection: 'row',
     alignItems: 'center',

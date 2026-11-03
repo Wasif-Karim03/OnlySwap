@@ -233,7 +233,11 @@ export function SellMeetupScreen({
                         .join(', ')}
                       onPress={() => toggle(spot)}
                       testID={`sell-spot-${spot.id}`}
-                      style={({ pressed }) => [styles.spotMain, pressed && styles.pressed]}
+                      style={({ pressed }) => [
+                        styles.spotMain,
+                        styles.spotBesideButton,
+                        pressed && styles.pressed,
+                      ]}
                     >
                       <CheckMark on={selected} />
                       <View style={styles.flex}>
@@ -250,14 +254,16 @@ export function SellMeetupScreen({
                         ) : null}
                       </View>
                     </Pressable>
-                    <Button
-                      label={copy.directions}
-                      variant="text"
-                      size="M"
-                      fullWidth={false}
-                      accessibilityHint={fill(copy.directionsLabel, { name: spot.name })}
-                      onPress={() => void openUrl(directionsUrl(spot, Platform.OS))}
-                    />
+                    <View style={styles.directions}>
+                      <Button
+                        label={copy.directions}
+                        variant="text"
+                        size="S"
+                        fullWidth={false}
+                        accessibilityHint={fill(copy.directionsLabel, { name: spot.name })}
+                        onPress={() => void openUrl(directionsUrl(spot, Platform.OS))}
+                      />
+                    </View>
                   </View>
                 );
               }),
@@ -320,7 +326,16 @@ const styles = StyleSheet.create((theme) => ({
   list: { gap: theme.space.sm },
   dockMessages: { gap: theme.space.xs },
   field: { gap: theme.space.xs },
-  spot: { flexDirection: 'row', alignItems: 'center', paddingRight: theme.space.xs },
+  // Wraps: at large text sizes Directions drops under the spot instead of
+  // squeezing the spot name to one letter per line (same bug as AuthStep).
+  spot: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    paddingRight: theme.space.xs,
+  },
+  // A spot beside Directions: at least 55% wide before Directions wraps.
+  spotBesideButton: { flexGrow: 1, flexShrink: 1, flexBasis: '55%' },
   spotMain: {
     flex: 1,
     minHeight: theme.space.rowMin,
@@ -330,6 +345,8 @@ const styles = StyleSheet.create((theme) => ({
     paddingVertical: theme.space.md,
     paddingHorizontal: theme.space.lg,
   },
+  // Right-aligned on its own line once it wraps.
+  directions: { marginLeft: 'auto' },
   pressed: { backgroundColor: theme.colors.bg3 },
   // Same mark as the shared Checkbox (OptionRow).
   box: (selected: boolean) => ({

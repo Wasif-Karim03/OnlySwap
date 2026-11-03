@@ -290,8 +290,9 @@ export function ReportSheet({
 }
 
 const styles = StyleSheet.create((theme) => ({
-  // The form scrolls inside the sheet so the Send button stays on screen.
-  scroll: (screenH: number) => ({ maxHeight: screenH * 0.6, flexGrow: 0 }),
+  // The form scrolls inside the sheet so the Send button stays on screen;
+  // flexShrink lets it give up more room when the keyboard is up.
+  scroll: (screenH: number) => ({ maxHeight: screenH * 0.6, flexShrink: 1 }),
   form: { gap: theme.space.md },
   done: { alignItems: 'center', gap: theme.space.md, paddingVertical: theme.space.lg },
   center: { textAlign: 'center' },

@@ -50,7 +50,14 @@ export function ListRow({
       {right ?? (
         <>
           {value ? (
-            <Text variant="body" tone={iconTile ? 'ink3' : 'ink2'}>
+            <Text
+              variant="body"
+              tone={iconTile ? 'ink3' : 'ink2'}
+              numberOfLines={1}
+              // Emails keep both ends readable ("wasif@…case.edu").
+              ellipsizeMode={value.includes('@') ? 'middle' : 'tail'}
+              style={styles.value}
+            >
               {value}
             </Text>
           ) : null}
@@ -123,7 +130,10 @@ const styles = StyleSheet.create((theme) => ({
     paddingHorizontal: theme.space.lg,
   },
   pressed: { backgroundColor: theme.colors.bg3 },
-  label: { flex: 1 },
+  // A long value (school email, Spanish copy) must not crush the label to one
+  // letter per line: the label keeps a floor, the value truncates instead.
+  label: { flex: 1, minWidth: '35%' },
+  value: { flexShrink: 1, maxWidth: '60%', textAlign: 'right' },
   section: { gap: theme.space.sm },
   header: { paddingHorizontal: theme.space.lg },
   group: (surface: 'bg2' | 'card') => ({

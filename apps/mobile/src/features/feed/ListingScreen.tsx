@@ -124,6 +124,8 @@ export function ListingScreen({
   const [options, setOptions] = useState(false);
   const [ownerOptions, setOwnerOptions] = useState(false);
   const [reporting, setReporting] = useState(false);
+  // The dock grows with larger text (~150pt); pad the page by its measured height.
+  const [dockHeight, setDockHeight] = useState<number | null>(null);
   const viewed = useRef(false);
   const data = query.data;
   const shoppable = data?.access === 'buyer' && (data.kind === 'sale' || data.kind === 'free');
@@ -345,7 +347,11 @@ export function ListingScreen({
     <View style={styles.root} testID="screen-listing">
       <ScrollView
         contentContainerStyle={[
-          docked ? styles.scroll : styles.scrollBare,
+          docked
+            ? dockHeight !== null
+              ? styles.scrollDocked(dockHeight)
+              : styles.scroll
+            : styles.scrollBare,
           wide ? styles.scrollWide : null,
         ]}
       >
@@ -623,7 +629,7 @@ export function ListingScreen({
       </View>
 
       {docked ? (
-        <View style={styles.dock}>
+        <View style={styles.dock} onLayout={(e) => setDockHeight(e.nativeEvent.layout.height)}>
           {owner ? (
             <>
               {item.status === 'active' || item.status === 'hold' ? (
@@ -816,7 +822,9 @@ const styles = StyleSheet.create((theme, rt) => ({
   photoButton: { borderRadius: theme.radius.chip },
   root: { flex: 1, backgroundColor: theme.colors.bg },
   pad: { flex: 1, padding: theme.space.screen },
+  // Fallback until the dock has been measured.
   scroll: { paddingBottom: theme.size.buttonL + theme.space['2xl'] * 2 },
+  scrollDocked: (dockHeight: number) => ({ paddingBottom: dockHeight + theme.space.xl }),
   scrollBare: { paddingBottom: theme.space['2xl'] + rt.insets.bottom },
   scrollWide: {
     flexDirection: 'row',

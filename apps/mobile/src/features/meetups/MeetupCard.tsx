@@ -82,7 +82,9 @@ export function MeetupCard({
           ) : null}
         </View>
         {m.spot?.police && (m.status === 'confirmed' || m.status === 'proposed') ? (
-          <Tag label={copy.police} tone="green" />
+          <View style={styles.tag}>
+            <Tag label={copy.police} tone="green" />
+          </View>
         ) : null}
         {set ? <Icon name="chev" size={16} tone="ink2" /> : null}
       </View>
@@ -148,4 +150,6 @@ const styles = StyleSheet.create((theme) => ({
   row: { flexDirection: 'row', alignItems: 'center', gap: theme.space.sm },
   actions: { flexDirection: 'row', gap: theme.space.sm },
   flex: { flex: 1 },
+  // Capped so at large text sizes the tag wraps instead of crushing the title.
+  tag: { flexShrink: 1, maxWidth: '45%' },
 }));

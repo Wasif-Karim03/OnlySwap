@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { StyleSheet } from 'react-native-unistyles';
 import type { StoreApi } from 'zustand';
@@ -294,42 +294,48 @@ export function DiscoverScreen({
   } else if (cards.length === 0 && ended) {
     const dayOne = total < DAY_ONE_MAX;
     const sell = { label: copy.endSell, onPress: () => router.push('/sell') };
-    body = dayOne ? (
-      <EmptyState
-        lead={
-          total > 0 ? (
-            <Text variant="label" tone="ink2" style={styles.eyebrow}>
-              {total === 1 ? copy.dayOneCountOne : fill(copy.dayOneCount, { n: total })}
-            </Text>
-          ) : undefined
-        }
-        title={campus ? fill(copy.dayOneTitleCampus, { campus }) : copy.dayOneTitle}
-        body={copy.dayOneBody}
-        action={sell}
-        testID="discover-day-one"
-      />
-    ) : (
-      <EmptyState
-        lead={savedHere.length > 0 ? <SavedThumbs cards={savedHere} /> : undefined}
-        title={campus ? fill(copy.endTitleCampus, { campus }) : copy.endTitle}
-        body={[
-          savedHere.length === 1
-            ? copy.endSavedOne
-            : savedHere.length > 1
-              ? fill(copy.endSaved, { n: savedHere.length })
-              : null,
-          copy.endBody,
-        ]
-          .filter(Boolean)
-          .join(' ')}
-        action={
-          savedHere.length > 0
-            ? { label: copy.seeSaved, onPress: () => router.push('/saved') }
-            : sell
-        }
-        secondaryAction={savedHere.length > 0 ? sell : undefined}
-        testID="discover-end"
-      />
+    // Scrolls only when too tall (larger text on an SE pushed the buttons under
+    // the tab bar); otherwise flexGrow keeps the block centered as before.
+    body = (
+      <ScrollView contentContainerStyle={styles.endScroll}>
+        {dayOne ? (
+          <EmptyState
+            lead={
+              total > 0 ? (
+                <Text variant="label" tone="ink2" style={styles.eyebrow}>
+                  {total === 1 ? copy.dayOneCountOne : fill(copy.dayOneCount, { n: total })}
+                </Text>
+              ) : undefined
+            }
+            title={campus ? fill(copy.dayOneTitleCampus, { campus }) : copy.dayOneTitle}
+            body={copy.dayOneBody}
+            action={sell}
+            testID="discover-day-one"
+          />
+        ) : (
+          <EmptyState
+            lead={savedHere.length > 0 ? <SavedThumbs cards={savedHere} /> : undefined}
+            title={campus ? fill(copy.endTitleCampus, { campus }) : copy.endTitle}
+            body={[
+              savedHere.length === 1
+                ? copy.endSavedOne
+                : savedHere.length > 1
+                  ? fill(copy.endSaved, { n: savedHere.length })
+                  : null,
+              copy.endBody,
+            ]
+              .filter(Boolean)
+              .join(' ')}
+            action={
+              savedHere.length > 0
+                ? { label: copy.seeSaved, onPress: () => router.push('/saved') }
+                : sell
+            }
+            secondaryAction={savedHere.length > 0 ? sell : undefined}
+            testID="discover-end"
+          />
+        )}
+      </ScrollView>
     );
   } else {
     // First time only: one quiet line, and the top card wiggles once.
@@ -404,6 +410,7 @@ function SavedThumbs({ cards }: { cards: DeckCard[] }) {
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   flex: { flex: 1 },
+  endScroll: { flexGrow: 1 },
   deck: { flex: 1, width: '100%', maxWidth: LAYOUT.deckMax, alignSelf: 'center' },
   stage: { flex: 1, margin: theme.space.screen },
   eyebrow: { textTransform: 'uppercase', letterSpacing: 0.4 },

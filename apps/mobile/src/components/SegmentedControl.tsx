@@ -48,7 +48,7 @@ export function SegmentedControl<T extends string>({
             onPress={() => onChange(s.value)}
             style={({ pressed }) => [styles.segment(selected), pressed && styles.pressed]}
           >
-            <Text variant="label" tone={selected ? 'inverse' : 'ink2'}>
+            <Text variant="label" tone={selected ? 'inverse' : 'ink2'} style={styles.label}>
               {s.label}
             </Text>
             <CountPill count={s.badge} hidden={false} />
@@ -73,6 +73,9 @@ const styles = StyleSheet.create((theme) => ({
     gap: theme.space.xs,
     // 44 pt target (3.08): the old 36 pt segment had no slop.
     minHeight: theme.size.buttonM,
+    // Keeps wrapped labels (4 segments, ~79 pt each on a 375 pt phone) clear
+    // of the pill's rounded ends.
+    paddingHorizontal: theme.space.sm,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: theme.radius.chip,
@@ -80,5 +83,7 @@ const styles = StyleSheet.create((theme) => ({
     // so the chosen segment couldn't be told apart (UX audit 2026-10-25).
     backgroundColor: selected ? theme.colors.ink : 'transparent',
   }),
+  // Wrapped lines center under each other and the label yields room to the badge.
+  label: { flexShrink: 1, textAlign: 'center' },
   pressed: { opacity: PRESSED_OPACITY },
 }));

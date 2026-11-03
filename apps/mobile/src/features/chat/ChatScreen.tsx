@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { FlatList, Linking, Modal, TextInput, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { KeyboardAvoidingView, useKeyboardState } from 'react-native-keyboard-controller';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import type { StoreApi } from 'zustand';
 
@@ -123,6 +123,9 @@ export function ChatScreen({
   const data = useMemo(() => [...state.items].reverse(), [state.items]);
   const spots = useMemo(() => bubbleSpots(data, now()), [data, now]);
   const meetupQ = useQuery({ queryKey: ['chat-meetup', id], queryFn: () => meetups.forChat(id) });
+  // While typing, the meetup card and deal actions step aside: on an iPhone SE
+  // they left only a few lines of messages between the header and the keyboard.
+  const keyboardOpen = useKeyboardState((s) => s.isVisible);
   // Every meetup change posts a `meetup` row; refetch the card when one arrives.
   useEffect(() => track('chat_opened'), []);
   const meetupRows = state.items.filter((m) => m.kind === 'meetup').length;
@@ -383,7 +386,7 @@ export function ChatScreen({
             <Text variant="bodyStrong" numberOfLines={1}>
               {c.listing_title}
             </Text>
-            <Text variant="meta" tone="ink3">
+            <Text variant="meta" tone="ink3" numberOfLines={2}>
               {dealPriceLine(c, money)}
             </Text>
             {c.bundle?.length ? (
@@ -393,13 +396,19 @@ export function ChatScreen({
             ) : null}
           </View>
           {c.status === 'open' && !readOnly && dealStatusLabel(c) ? (
-            <Text variant="label" tone="green" testID="chat-deal-status">
+            <Text
+              variant="label"
+              tone="green"
+              numberOfLines={1}
+              style={styles.dealStatus}
+              testID="chat-deal-status"
+            >
               {dealStatusLabel(c)}
             </Text>
           ) : null}
         </View>
       </View>
-      {meetupQ.data ? (
+      {meetupQ.data && !keyboardOpen ? (
         <MeetupCard
           meetup={meetupQ.data}
           chatId={id}
@@ -433,7 +442,7 @@ export function ChatScreen({
           testID="chat-list"
         />
         {/* One contextual action in thumb reach, right above the composer (P7). */}
-        {actions && !readOnly ? (
+        {actions && !readOnly && !keyboardOpen ? (
           <View style={styles.dealActions} testID="chat-deal-actions">
             {actions}
           </View>
@@ -598,6 +607,8 @@ const styles = StyleSheet.create((theme, rt) => ({
     borderRadius: theme.radius.card,
     backgroundColor: theme.colors.bg2,
   },
+  // Capped so a long status at larger text can't squeeze the title column away.
+  dealStatus: { maxWidth: '35%' },
   dealActions: {
     flexDirection: 'row',
     flexWrap: 'wrap',

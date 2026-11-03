@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Linking, Platform, ScrollView, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 
@@ -283,7 +284,13 @@ export function HelpScreen({
   return (
     <View style={styles.root} testID="screen-help">
       <NavBar title={copy.helpTitle} onLeading={leave} />
-      <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
+      {/* The email / message / Send fields close a long FAQ: scroll the focused
+          field above the keyboard instead of leaving it underneath. */}
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.body}
+        keyboardShouldPersistTaps="handled"
+        bottomOffset={16}
+      >
         <Text variant="heading" accessibilityRole="header">
           {copy.faqTitle}
         </Text>
@@ -374,7 +381,7 @@ export function HelpScreen({
             />
           </>
         )}
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </View>
   );
 }

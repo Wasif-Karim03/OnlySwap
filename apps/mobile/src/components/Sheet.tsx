@@ -104,7 +104,7 @@ export function Sheet({ visible, onClose, title, children, testID }: Props) {
               testID={testID}
               accessibilityViewIsModal
               onLayout={(e) => setPanelH(e.nativeEvent.layout.height)}
-              style={[floating ? styles.floatingSlot : null, panelStyle]}
+              style={[styles.slot, floating ? styles.floatingSlot : null, panelStyle]}
             >
               <View style={[styles.panel, floating ? styles.floatingPanel : null]}>
                 <View style={styles.grabber} accessible={false} />
@@ -126,7 +126,12 @@ export function Sheet({ visible, onClose, title, children, testID }: Props) {
 const styles = StyleSheet.create((theme, rt) => ({
   fill: FILL,
   scrim: { flex: 1, backgroundColor: theme.colors.overlay },
-  bottom: { flex: 1, justifyContent: 'flex-end' },
+  // The top inset keeps the grabber and title out from under the status bar
+  // and Dynamic Island when the keyboard pushes a tall sheet up.
+  bottom: { flex: 1, justifyContent: 'flex-end', paddingTop: rt.insets.top + theme.space.sm },
+  // Never taller than the space left; the panel then shrinks, and a ScrollView
+  // inside it (with flexShrink: 1) scrolls instead of the sheet running off screen.
+  slot: { maxHeight: '100%' },
   center: { flex: 1, justifyContent: 'center', padding: theme.space.xl },
   floatingSlot: { width: '100%', maxWidth: LAYOUT.sheetMax, alignSelf: 'center' },
   floatingPanel: {
@@ -135,6 +140,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     shadowOffset: { width: 0, height: theme.elevation.soft.offsetY },
   },
   panel: {
+    flexShrink: 1,
     backgroundColor: theme.colors.bg,
     borderTopLeftRadius: theme.radius.sheet,
     borderTopRightRadius: theme.radius.sheet,
