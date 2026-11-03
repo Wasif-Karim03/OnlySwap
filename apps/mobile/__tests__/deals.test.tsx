@@ -282,5 +282,8 @@ describe('QA-M11 Send rating stays above the keyboard', () => {
       });
     });
     expect(screen.UNSAFE_getByType(KeyboardAwareScrollView).props.bottomOffset).toBe(136);
+    // The dock rides up over the scroll view, so the scroll needs room for it
+    // too or the comment box stays half hidden behind Send rating.
+    expect(screen.UNSAFE_getByType(KeyboardAwareScrollView).props.extraKeyboardSpace).toBe(120);
   });
 });

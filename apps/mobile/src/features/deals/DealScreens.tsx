@@ -346,6 +346,8 @@ export function RateScreen({
         contentContainerStyle={styles.body}
         keyboardShouldPersistTaps="handled"
         bottomOffset={dockHeight + KEYBOARD_GAP}
+        // The sticky dock rides up over this view; leave room to scroll past it.
+        extraKeyboardSpace={dockHeight}
       >
         <Text variant="heading" accessibilityRole="header">
           {fill(copy.rateQuestion, { name })}
