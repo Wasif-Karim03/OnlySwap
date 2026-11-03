@@ -19,6 +19,7 @@ import { Button } from '@/components/Button';
 import { Mark } from '@/components/Mark';
 import { Text } from '@/components/Text';
 import { welcome as copy } from '@/strings';
+import { useLargeText } from '@/theme/largeText';
 import { useReducedMotion } from '@/theme/reducedMotion';
 
 import { WELCOME_ITEMS } from './welcomeAssets';
@@ -79,6 +80,7 @@ export function WelcomeScreen() {
   const { width, height } = useWindowDimensions();
   const { theme } = useUnistyles();
   const reduced = useReducedMotion();
+  const large = useLargeText();
   // The collage only moves while Welcome is on screen: under the email and
   // code screens it would keep the GPU busy for nothing (audit 2026-10-24).
   const [focused, setFocused] = useState(true);
@@ -146,8 +148,24 @@ export function WelcomeScreen() {
           </Text>
         </View>
 
-        <View style={[styles.content, { paddingBottom: insets.bottom + theme.space.md }]}>
-          <Text variant="display" tone="onAccent" accessibilityRole="header">
+        <View
+          style={[
+            styles.content,
+            large && styles.contentField,
+            { paddingBottom: insets.bottom + theme.space.md },
+          ]}
+        >
+          {/* At large text the copy outgrows the bottom fade and would sit on the
+              photos (QA recheck, SE ax-large): give it a solid accent field that
+              scrolls with it, with a short fade from the wall into it. */}
+          {large ? (
+            <View testID="welcome-copy-field" style={styles.fieldRamp} pointerEvents="none">
+              <Fade color={theme.colors.accent} edge="bottom" height={theme.space['2xl']} />
+            </View>
+          ) : null}
+          {/* Drawn over the photo wall: a photo overlay, capped at 1.4x (DESIGN_SYSTEM §3).
+              Uncapped, it broke mid-word at SE ax-large ("Everythin / g"). */}
+          <Text variant="display" tone="onAccent" overlay accessibilityRole="header">
             {copy.title}
           </Text>
           <Text variant="body" tone="onAccent" style={styles.body}>
@@ -331,6 +349,8 @@ const styles = StyleSheet.create((theme) => ({
     marginTop: 'auto',
     paddingHorizontal: theme.space.xl,
   },
+  contentField: { backgroundColor: theme.colors.accent, paddingTop: theme.space.lg },
+  fieldRamp: { position: 'absolute', left: 0, right: 0, bottom: '100%', height: theme.space['2xl'] },
   body: { marginTop: theme.space.sm },
   actions: { marginTop: theme.space.xl, gap: theme.space.xs },
 }));
