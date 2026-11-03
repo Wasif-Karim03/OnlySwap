@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { Platform } from 'react-native';
 
 import { isWebPlatform } from './platform';
+import { createPushRegistrar } from './pushRegistrar';
 import { createRpc, type RpcClient } from './rpc';
 import { getSupabase } from './supabase';
 
@@ -96,25 +97,39 @@ function projectId(): string | undefined {
   return extra?.eas?.projectId;
 }
 
-/** After permission is granted: get the Expo token and store it on the server. */
+/**
+ * One registrar per app run. It dedupes registrations so the token listener
+ * can't loop (QA H1: each `getExpoPushTokenAsync` call fires the listener again).
+ */
+const registrar = createPushRegistrar({
+  getToken: async () => {
+    await ensureChannels();
+    const perm = await Notifications.getPermissionsAsync();
+    if (!perm.granted) return null;
+    const { data } = await Notifications.getExpoPushTokenAsync({ projectId: projectId() });
+    return data;
+  },
+  getUserId: async () => (await getSupabase().auth.getSession()).data.session?.user.id ?? null,
+  send: async (token) => {
+    await rpc('register_push_token', {
+      token,
+      platform: Platform.OS === 'ios' ? 'ios' : 'android',
+      app_version: Constants.expoConfig?.version ?? null,
+    });
+  },
+});
+
+/** After permission is granted: get the Expo token and store it on the server (once). */
 export async function registerForPush(): Promise<string | null> {
   // The web app never registers for push (P13-WEB-07): no web push in R2.
   if (isWebPlatform()) return null;
-  await ensureChannels();
-  const perm = await Notifications.getPermissionsAsync();
-  if (!perm.granted) return null;
-  const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId: projectId() });
-  await rpc('register_push_token', {
-    token,
-    platform: Platform.OS === 'ios' ? 'ios' : 'android',
-    app_version: Constants.expoConfig?.version ?? null,
-  });
-  return token;
+  return registrar.register();
 }
 
 /** On sign-out: this device stops getting the account's pushes. */
 export async function unregisterPush(): Promise<void> {
   if (isWebPlatform()) return;
+  registrar.reset();
   try {
     const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId: projectId() });
     await rpc('disable_push_token', { token });
@@ -165,8 +180,10 @@ export function usePushHandling(enabled: boolean) {
         void qc.invalidateQueries({ queryKey: ['notifications'] });
       });
       if (typeof received?.remove === 'function') subs.push(received);
-      const rotate = Notifications.addPushTokenListener(() => {
-        void registerForPush().catch(() => {});
+      // Fires on OS rotation and also on our own token fetches: the registrar
+      // ignores repeats of the same device token, so this can't loop.
+      const rotate = Notifications.addPushTokenListener((t) => {
+        void registrar.onDeviceToken(String(t.data)).catch(() => {});
       });
       if (typeof rotate?.remove === 'function') subs.push(rotate);
       void Promise.resolve()
