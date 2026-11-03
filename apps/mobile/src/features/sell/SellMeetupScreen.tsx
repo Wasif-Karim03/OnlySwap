@@ -23,6 +23,7 @@ import { getEnv } from '@/lib/env';
 import { errorCopy, toAppError } from '@/lib/errors';
 import { fill } from '@/lib/format';
 import { sell as copy } from '@/strings';
+import { useLargeText } from '@/theme/largeText';
 
 import { sellApi, type SellApi } from './api';
 import { getDraftStore, useDraft, type DraftState } from './draft';
@@ -72,6 +73,7 @@ export function SellMeetupScreen({
   openUrl?: (url: string) => Promise<unknown>;
 }) {
   const router = useRouter();
+  const largeText = useLargeText();
   const draft = useDraft((s: DraftState) => s.draft, store);
   const { update, reset } = store.getState();
   const [maxHint, setMaxHint] = useState(false);
@@ -135,6 +137,20 @@ export function SellMeetupScreen({
   const coverSource =
     cover?.uri || (cover?.thumbPath ? mediaUrl(mediaBase(), cover.thumbPath) : null);
 
+  // Large text: the banned-items box scrolls with the form (it would eat the
+  // viewport as part of the pinned dock and push the spots off screen).
+  const bannedBox = (
+    <Checkbox
+      label={copy.notBanned}
+      selected={allowed}
+      testID="sell-allowed"
+      onPress={() => {
+        setAllowed((v) => !v);
+        setConfirmHint(false);
+      }}
+    />
+  );
+
   return (
     <SellStep
       testID="screen-sell-meetup"
@@ -149,15 +165,7 @@ export function SellMeetupScreen({
               hint and post errors. The wrapper is always mounted (not
               flattened) so messages appearing and leaving never re-insert
               views next to the button. */}
-          <Checkbox
-            label={copy.notBanned}
-            selected={allowed}
-            testID="sell-allowed"
-            onPress={() => {
-              setAllowed((v) => !v);
-              setConfirmHint(false);
-            }}
-          />
+          {largeText ? null : bannedBox}
           <View collapsable={false} style={styles.dockMessages}>
             {confirmHint ? (
               <Text
@@ -317,6 +325,7 @@ export function SellMeetupScreen({
           onChange={(availability) => update({ availability })}
         />
       </View>
+      {largeText ? bannedBox : null}
     </SellStep>
   );
 }
