@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
@@ -62,25 +63,7 @@ export function PollView({
             </Tappable>
           );
         }
-        return (
-          <View
-            key={o.id}
-            style={styles.result}
-            accessible
-            accessibilityLabel={
-              fill(copy.pollOption, { label: o.label, pct }) + (mine ? `. ${copy.pollMine}` : '')
-            }
-          >
-            <View style={[styles.bar(mine), { width: `${pct}%` }]} />
-            <View style={styles.resultRow}>
-              <Text variant={mine ? 'bodyStrong' : 'body'} style={styles.flex} numberOfLines={2}>
-                {o.label}
-              </Text>
-              {mine ? <Icon name="check" size={16} /> : null}
-              <Text variant="label" tone="ink2">{`${pct}%`}</Text>
-            </View>
-          </View>
-        );
+        return <PollResult key={o.id} label={o.label} pct={pct} mine={mine} />;
       })}
       <Text variant="meta" tone="ink2">
         {poll.total === 1 ? copy.pollVote1 : fill(copy.pollVotes, { n: poll.total })}
@@ -109,6 +92,47 @@ type Props = {
   variant?: 'row' | 'card';
   testID?: string;
 };
+
+type PollResultProps = { label: string; pct: number; mine: boolean };
+
+/**
+ * One poll result: a bar as wide as the share of votes behind the label.
+ * Your own option's bar is the accent; the part of the row over it is drawn a
+ * second time in on-accent ink and clipped to the bar, so the text stays
+ * readable in dark mode too (QA H7: white text on the lime fill).
+ */
+function PollResult({ label, pct, mine }: PollResultProps) {
+  const [rowWidth, setRowWidth] = useState(0);
+  const row = (onAccent: boolean) => (
+    <View style={[styles.resultRow, onAccent && rowWidth ? { width: rowWidth } : null]}>
+      <Text
+        variant={mine ? 'bodyStrong' : 'body'}
+        tone={onAccent ? 'onAccent' : 'ink'}
+        style={styles.flex}
+        numberOfLines={2}
+      >
+        {label}
+      </Text>
+      {mine ? <Icon name="check" size={16} tone={onAccent ? 'onAccent' : 'ink'} /> : null}
+      <Text variant="label" tone={onAccent ? 'onAccent' : 'ink2'}>{`${pct}%`}</Text>
+    </View>
+  );
+  return (
+    <View
+      style={styles.result}
+      accessible
+      accessibilityLabel={
+        fill(copy.pollOption, { label, pct }) + (mine ? `. ${copy.pollMine}` : '')
+      }
+      onLayout={(e) => setRowWidth(e.nativeEvent.layout.width)}
+    >
+      <View style={[styles.bar(mine), { width: `${pct}%` }]}>
+        {mine && rowWidth ? row(true) : null}
+      </View>
+      {row(false)}
+    </View>
+  );
+}
 
 /** "Poll · 12 replies · 2h": the quiet line under a feed card (kind only for polls and check-ins). */
 export function cardMetaLine(post: Pick<QuadPost, 'kind' | 'reply_count'>, time: string): string {
@@ -306,6 +330,10 @@ const styles = StyleSheet.create((theme) => ({
     top: 0,
     bottom: 0,
     left: 0,
+    // Only your option's bar sits over the row (it carries its own clipped copy).
+    zIndex: mine ? 1 : 0,
+    overflow: 'hidden',
+    justifyContent: 'center',
     backgroundColor: mine ? theme.colors.accent : theme.colors.bg3,
   }),
   resultRow: {
