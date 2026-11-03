@@ -227,7 +227,11 @@ export function SellMeetupScreen({
               ...spots.map((spot) => {
                 const selected = chosen.includes(spot.id);
                 return (
-                  <View key={spot.id} style={styles.spot}>
+                  <View
+                    key={spot.id}
+                    style={[styles.spot, largeText && styles.spotStacked]}
+                    testID={`sell-spot-row-${spot.id}`}
+                  >
                     <Pressable
                       accessibilityRole="checkbox"
                       {...a11yState({ checked: selected })}
@@ -243,7 +247,7 @@ export function SellMeetupScreen({
                       testID={`sell-spot-${spot.id}`}
                       style={({ pressed }) => [
                         styles.spotMain,
-                        styles.spotBesideButton,
+                        largeText ? styles.spotMainStacked : styles.spotBesideButton,
                         pressed && styles.pressed,
                       ]}
                     >
@@ -262,7 +266,7 @@ export function SellMeetupScreen({
                         ) : null}
                       </View>
                     </Pressable>
-                    <View style={styles.directions}>
+                    <View style={largeText ? styles.directionsStacked : styles.directions}>
                       <Button
                         label={copy.directions}
                         variant="text"
@@ -345,6 +349,12 @@ const styles = StyleSheet.create((theme) => ({
   },
   // A spot beside Directions: at least 55% wide before Directions wraps.
   spotBesideButton: { flexGrow: 1, flexShrink: 1, flexBasis: '55%' },
+  // Large text: the wrap above never fired (Directions fit beside 55%), so the
+  // name broke letter by letter (QA H6). Stack instead: spot, then Directions.
+  spotStacked: { flexDirection: 'column', alignItems: 'stretch', flexWrap: 'nowrap' },
+  // No flex 1 in a column without a height: it would collapse the row.
+  spotMainStacked: { flexGrow: 0, flexShrink: 0, flexBasis: 'auto' },
+  directionsStacked: { alignSelf: 'flex-end' },
   spotMain: {
     flex: 1,
     minHeight: theme.space.rowMin,

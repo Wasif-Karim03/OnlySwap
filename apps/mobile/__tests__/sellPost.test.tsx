@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 import type { ReactNode } from 'react';
-import { Dimensions, Text, View } from 'react-native';
+import { Dimensions, StyleSheet, Text, View } from 'react-native';
 
 import type { PostedListing, SellApi } from '../src/features/sell/api';
 import { createDraftStore } from '../src/features/sell/draft';
@@ -480,6 +480,27 @@ describe('QA-H6 Sell meetup at large text', () => {
     setFontScale(2);
     const { allowed, post, spots } = await open();
     expect(sharedDepth(allowed, spots)).toBeGreaterThan(sharedDepth(allowed, post));
+  });
+
+  /** Pressable styles can be a function of pressed state; resolve the idle style. */
+  const flat = (id: string) => {
+    const style = screen.getByTestId(id).props.style as unknown;
+    const idle = typeof style === 'function' ? style({ pressed: false }) : style;
+    return StyleSheet.flatten(idle) ?? {};
+  };
+
+  it('keeps Directions beside the spot at default size', async () => {
+    setFontScale(1);
+    await open();
+    expect(flat('sell-spot-row-rpac').flexDirection).toBe('row');
+  });
+
+  it('puts Directions under the spot at large text so its name never breaks mid-word', async () => {
+    setFontScale(2);
+    await open();
+    expect(flat('sell-spot-row-rpac').flexDirection).toBe('column');
+    // flex 1 in a column with no height would collapse the row (see QA H5 offer dock).
+    expect(flat('sell-spot-rpac').flexBasis).toBe('auto');
   });
 
   it('still needs the box ticked before Post goes through', async () => {
