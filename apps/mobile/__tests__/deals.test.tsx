@@ -286,4 +286,41 @@ describe('QA-M11 Send rating stays above the keyboard', () => {
     // too or the comment box stays half hidden behind Send rating.
     expect(screen.UNSAFE_getByType(KeyboardAwareScrollView).props.extraKeyboardSpace).toBe(120);
   });
+
+  it('lifts the whole comment box, not just its caret, past the dock while typing', async () => {
+    const a = api({
+      myRating: jest.fn(async () => ({ mine: null, theirs: null, theirs_waiting: false })),
+    });
+    render(
+      {
+        'deal/[chatId]/rate': () => (
+          <RateScreen
+            chatId="c1"
+            api={a}
+            chats={chats('buyer')}
+            people={{ getProfile: jest.fn() }}
+            askForReview={jest.fn()}
+          />
+        ),
+      },
+      '/deal/c1/rate',
+    );
+    fireEvent.press(await screen.findByTestId('rate-up'));
+    fireEvent.press(screen.getByTestId('rate-add-comment'));
+    act(() => {
+      fireEvent(screen.getByTestId('rate-dock'), 'layout', {
+        nativeEvent: { layout: { width: 375, height: 120 } },
+      });
+      fireEvent(screen.getByTestId('rate-comment'), 'layout', {
+        nativeEvent: { layout: { width: 343, height: 140 } },
+      });
+    });
+    const scroll = () => screen.UNSAFE_getByType(KeyboardAwareScrollView);
+    expect(scroll().props.bottomOffset).toBe(136);
+    fireEvent(screen.getByLabelText(deal.commentLabel), 'focus');
+    // The library scrolls to the caret; adding the box height clears the rest of it.
+    expect(scroll().props.bottomOffset).toBe(276);
+    fireEvent(screen.getByLabelText(deal.commentLabel), 'blur');
+    expect(scroll().props.bottomOffset).toBe(136);
+  });
 });

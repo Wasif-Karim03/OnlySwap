@@ -255,6 +255,8 @@ export function RateScreen({
   const [commentOpen, setCommentOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [dockHeight, setDockHeight] = useState(RATE_DOCK_FALLBACK);
+  const [commentHeight, setCommentHeight] = useState(0);
+  const [commentFocused, setCommentFocused] = useState(false);
   const insets = useSafeAreaInsets();
   const [error, setError] = useState<string | null>(null);
   const close = () =>
@@ -345,7 +347,9 @@ export function RateScreen({
       <KeyboardAwareScrollView
         contentContainerStyle={styles.body}
         keyboardShouldPersistTaps="handled"
-        bottomOffset={dockHeight + KEYBOARD_GAP}
+        // The library lifts the caret, not the field: while the comment is
+        // focused, add its height so the whole box clears Send rating.
+        bottomOffset={dockHeight + KEYBOARD_GAP + (commentFocused ? commentHeight : 0)}
         // The sticky dock rides up over this view; leave room to scroll past it.
         extraKeyboardSpace={dockHeight}
       >
@@ -395,14 +399,21 @@ export function RateScreen({
             </View>
             {/* The comment stays folded until asked for: one less field by default. */}
             {commentOpen || comment ? (
-              <TextArea
-                label={copy.commentLabel}
-                placeholder={copy.commentPlaceholder}
-                value={comment}
-                onChangeText={setComment}
-                maxLength={200}
-                autoFocus={commentOpen}
-              />
+              <View
+                testID="rate-comment"
+                onLayout={(e) => setCommentHeight(e.nativeEvent.layout.height)}
+              >
+                <TextArea
+                  label={copy.commentLabel}
+                  placeholder={copy.commentPlaceholder}
+                  value={comment}
+                  onChangeText={setComment}
+                  maxLength={200}
+                  autoFocus={commentOpen}
+                  onFocus={() => setCommentFocused(true)}
+                  onBlur={() => setCommentFocused(false)}
+                />
+              </View>
             ) : (
               <Button
                 label={copy.addComment}
