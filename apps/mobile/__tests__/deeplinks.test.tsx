@@ -32,6 +32,13 @@ describe('P11-STATE-02 deep links', () => {
     ['onlyswap://i/abcd2345', '/'],
     ['/i/ABCD2345/', '/'],
     ['/i/', '/'],
+    // QA-H3: the query string survives (search results, verify email, login mode).
+    ['onlyswap://search/results?q=lamp', '/search/results?q=lamp'],
+    ['onlyswap://auth/email?mode=login', '/auth/email?mode=login'],
+    ['/search/results?q=desk%20lamp', '/search/results?q=desk%20lamp'],
+    [`https://onlyswap.pages.dev/l/${ID}?utm_source=share`, `/listing/${ID}?from=link`],
+    ['https://onlyswap.pages.dev/m/abc123?x=1', '/inbox'],
+    ['https://onlyswap.pages.dev/i/ABCD2345?utm_source=share', '/'],
   ])('%s → %s', (input, out) => {
     expect(rewriteDeepLink(input)).toBe(out);
   });
