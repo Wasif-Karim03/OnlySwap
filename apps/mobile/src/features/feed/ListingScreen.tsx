@@ -26,6 +26,7 @@ import { useToastStore } from '@/components/Toast';
 import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
 import { useLayout } from '@/theme/layout';
+import { useLargeText } from '@/theme/largeText';
 import {
   campus as campusCopy,
   deal as dealCopy,
@@ -750,6 +751,24 @@ function LinkRow({
   onPress: () => void;
   testID?: string;
 }) {
+  const largeText = useLargeText();
+  const valueList = (
+    // One Text per value so each wraps whole at large text sizes.
+    <View style={[styles.values, largeText && styles.valuesStart]}>
+      {values.map((v, i) => (
+        <View key={`${i}-${v}`} style={styles.valueItem}>
+          {i > 0 ? (
+            <Text variant="body" tone="ink3">
+              {copy.metaSeparator}
+            </Text>
+          ) : null}
+          <Text variant="body" tone="ink2">
+            {v}
+          </Text>
+        </View>
+      ))}
+    </View>
+  );
   return (
     <Tappable
       accessibilityRole="button"
@@ -758,24 +777,12 @@ function LinkRow({
       testID={testID}
     >
       <View style={styles.listRow}>
-        <Text variant="body" style={styles.flex}>
-          {label}
-        </Text>
-        {/* One Text per value so each wraps whole at large text sizes. */}
-        <View style={styles.values}>
-          {values.map((v, i) => (
-            <View key={`${i}-${v}`} style={styles.valueItem}>
-              {i > 0 ? (
-                <Text variant="body" tone="ink3">
-                  {copy.metaSeparator}
-                </Text>
-              ) : null}
-              <Text variant="body" tone="ink2">
-                {v}
-              </Text>
-            </View>
-          ))}
+        {/* Large text: the label sits above its values, not squeezed beside them. */}
+        <View style={styles.flex} testID="link-row-body">
+          <Text variant="body">{label}</Text>
+          {largeText ? valueList : null}
         </View>
+        {largeText ? null : valueList}
         <Icon name="chev" size={18} tone="ink3" />
       </View>
     </Tappable>
@@ -883,6 +890,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     flexWrap: 'wrap',
     justifyContent: 'flex-end',
   },
+  valuesStart: { justifyContent: 'flex-start' },
   valueItem: { flexDirection: 'row' },
   glyph: { width: theme.size.avatarM, alignItems: 'center' },
   description: { marginTop: theme.space.md },

@@ -4,6 +4,7 @@ import { StyleSheet } from 'react-native-unistyles';
 
 import { Icon, type IconName } from './icons/Icon';
 import { Text } from './Text';
+import { useLargeText } from '@/theme/largeText';
 
 /** Fills for the small iOS-style icon tile on grouped settings lists (DEC 90). */
 export type IconTile = 'red' | 'sky' | 'ink' | 'green' | 'lilac' | 'ink3' | 'peach' | 'amber';
@@ -35,6 +36,30 @@ export function ListRow({
   right,
   accessibilityHint,
 }: RowProps) {
+  const largeText = useLargeText();
+  const valueText = value ? (
+    <Text
+      variant="body"
+      tone={iconTile ? 'ink3' : 'ink2'}
+      numberOfLines={largeText ? undefined : 1}
+      // Emails keep both ends readable ("wasif@…case.edu").
+      ellipsizeMode={value.includes('@') ? 'middle' : 'tail'}
+      style={largeText ? styles.valueStacked : styles.value}
+      testID="list-row-value"
+    >
+      {value}
+    </Text>
+  ) : null;
+  const stacked = largeText && !right;
+  const labelText = (
+    <Text
+      variant="body"
+      tone={destructive ? 'red' : 'ink'}
+      style={stacked ? undefined : styles.label}
+    >
+      {label}
+    </Text>
+  );
   const content = (
     <>
       {icon && iconTile ? (
@@ -44,23 +69,18 @@ export function ListRow({
       ) : icon ? (
         <Icon name={icon} size={20} tone={destructive ? 'red' : 'ink'} />
       ) : null}
-      <Text variant="body" tone={destructive ? 'red' : 'ink'} style={styles.label}>
-        {label}
-      </Text>
+      {stacked ? (
+        // Large text: the value sits under the label so neither is squeezed.
+        <View style={styles.stack} testID="list-row-stack">
+          {labelText}
+          {valueText}
+        </View>
+      ) : (
+        labelText
+      )}
       {right ?? (
         <>
-          {value ? (
-            <Text
-              variant="body"
-              tone={iconTile ? 'ink3' : 'ink2'}
-              numberOfLines={1}
-              // Emails keep both ends readable ("wasif@…case.edu").
-              ellipsizeMode={value.includes('@') ? 'middle' : 'tail'}
-              style={styles.value}
-            >
-              {value}
-            </Text>
-          ) : null}
+          {largeText ? null : valueText}
           {onPress ? <Icon name="chev" size={18} tone="ink3" /> : null}
         </>
       )}
@@ -134,6 +154,8 @@ const styles = StyleSheet.create((theme) => ({
   // letter per line: the label keeps a floor, the value truncates instead.
   label: { flex: 1, minWidth: '35%' },
   value: { flexShrink: 1, maxWidth: '60%', textAlign: 'right' },
+  stack: { flex: 1, paddingVertical: theme.space.sm },
+  valueStacked: { textAlign: 'left' },
   section: { gap: theme.space.sm },
   header: { paddingHorizontal: theme.space.lg },
   group: (surface: 'bg2' | 'card') => ({

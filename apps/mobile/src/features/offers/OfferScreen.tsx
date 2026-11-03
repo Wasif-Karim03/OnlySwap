@@ -24,6 +24,7 @@ import { haptic } from '@/lib/haptics';
 import { supabaseRealtime, useUserChannel, type RealtimeSource } from '@/lib/realtime';
 import { offers as copy } from '@/strings';
 import { readableColumn } from '@/theme/layout';
+import { useLargeText } from '@/theme/largeText';
 
 import { dollarsToCents } from '../search/logic';
 import { mediaUrl } from '../sell/logic';
@@ -68,6 +69,7 @@ export function OfferScreen({
   useUserChannel('inbox', () => void query.refetch(), realtime);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const largeText = useLargeText();
   const [counterOpen, setCounterOpen] = useState(false);
   const [counterAmount, setCounterAmount] = useState('');
   const [declineOpen, setDeclineOpen] = useState(false);
@@ -216,7 +218,7 @@ export function OfferScreen({
       {/* One filled action (P7): Accept, with Counter beside it; the rest are text buttons. */}
       <View style={styles.dock}>
         {has('accept') ? (
-          <View style={styles.pair}>
+          <View style={largeText ? styles.pairStacked : styles.pair} testID="offer-actions">
             <View style={styles.flex}>
               <Button
                 label={fill(copy.accept, { amount: money(o.amount_cents) })}
@@ -369,6 +371,8 @@ const styles = StyleSheet.create((theme, rt) => ({
   flex: { flex: 1 },
   row: { flexDirection: 'row', alignItems: 'center', gap: theme.space.sm },
   pair: { flexDirection: 'row', gap: theme.space.sm },
+  // Large text: full-width buttons, one per line, so labels never break mid-word.
+  pairStacked: { flexDirection: 'column', gap: theme.space.sm },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
   sheet: { gap: theme.space.lg, paddingBottom: theme.space.xl },
   dock: {

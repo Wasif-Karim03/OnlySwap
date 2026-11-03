@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 import type { ComponentProps, ReactNode } from 'react';
-import { AccessibilityInfo, Text } from 'react-native';
+import { AccessibilityInfo, Dimensions, Text } from 'react-native';
 
 import { useToastStore } from '../src/components/Toast';
 import type { FeedApi } from '../src/features/feed/api';
@@ -206,6 +206,12 @@ describe('T-UNIT-FEED-01 useSwipe batching', () => {
     expect(parseQueue([{ ...swipe('e', NOW), dwell_ms: 'x' }])).toEqual([swipe('e', NOW)]);
   });
 });
+
+/** Pretends the user picked a Dynamic Type size (fontScale 1 is the default). */
+function setFontScale(fontScale: number) {
+  const base = { width: 375, height: 667, scale: 2 };
+  act(() => Dimensions.set({ window: { ...base, fontScale }, screen: { ...base, fontScale } }));
+}
 
 describe('feed logic', () => {
   it('pages by the last card of a full page', () => {
@@ -442,6 +448,34 @@ describe('B02 Listing', () => {
     expect(await screen.findByTestId('listing-owner-stats')).toBeTruthy();
     expect(screen.getByText('7 views')).toBeTruthy();
     expect(api.recordView).not.toHaveBeenCalled();
+  });
+
+  describe('QA-H5 owner stats row', () => {
+    afterEach(() => setFontScale(1));
+    const ownerApi = () =>
+      fakeApi({
+        getListing: jest.fn(
+          async () => ({ ...item(1, { view_count: 7 }), access: 'owner' }) as ListingResult,
+        ),
+      });
+
+    it('keeps the values beside the Stats label at default size', async () => {
+      setFontScale(1);
+      listing(ownerApi());
+      await screen.findByTestId('listing-owner-stats');
+      const body = screen.getByTestId('link-row-body');
+      expect(body.findAllByType(Text).map((t) => t.props.children)).toEqual(['Stats']);
+    });
+
+    it('puts the values under the Stats label at large text', async () => {
+      setFontScale(2);
+      listing(ownerApi());
+      await screen.findByTestId('listing-owner-stats');
+      const body = screen.getByTestId('link-row-body');
+      const texts = body.findAllByType(Text).map((t) => t.props.children);
+      expect(texts[0]).toBe('Stats');
+      expect(texts).toContain('7 views');
+    });
   });
 
   it('owner: an admin removal shows the reason (DEC 96)', async () => {
