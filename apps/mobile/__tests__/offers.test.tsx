@@ -527,4 +527,18 @@ describe('QA-H5 Offer actions at large text', () => {
     expect(screen.getByTestId('offer-accept')).toBeTruthy();
     expect(screen.getByTestId('offer-counter')).toBeTruthy();
   });
+
+  it('gives each stacked button its own height (flex 1 in a column collapsed them on top of each other)', async () => {
+    setFontScale(2);
+    await direction();
+    const row = screen.getByTestId('offer-actions');
+    const wrappers = row.children.filter((c) => typeof c !== 'string') as {
+      props: { style?: unknown };
+    }[];
+    expect(wrappers.length).toBe(2);
+    for (const w of wrappers)
+      expect(
+        (StyleSheet.flatten(w.props.style as never) as { flex?: number } | undefined)?.flex,
+      ).toBeUndefined();
+  });
 });

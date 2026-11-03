@@ -219,7 +219,8 @@ export function OfferScreen({
       <View style={styles.dock}>
         {has('accept') ? (
           <View style={largeText ? styles.pairStacked : styles.pair} testID="offer-actions">
-            <View style={styles.flex}>
+            {/* No flex 1 when stacked: in a column it collapses each button to zero height. */}
+            <View style={largeText ? undefined : styles.flex}>
               <Button
                 label={fill(copy.accept, { amount: money(o.amount_cents) })}
                 loading={busy}
@@ -228,7 +229,7 @@ export function OfferScreen({
               />
             </View>
             {has('counter') ? (
-              <View style={styles.flex}>
+              <View style={largeText ? undefined : styles.flex}>
                 <Button
                   label={copy.counter}
                   variant="secondary"
