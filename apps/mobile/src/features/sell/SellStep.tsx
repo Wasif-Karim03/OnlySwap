@@ -140,6 +140,9 @@ export function DockedScroll({
     <>
       <KeyboardAwareScrollView
         bottomOffset={dock ? dockHeight + fieldGap : fieldGap}
+        // The dock rides up over this view with the keyboard; leave room to
+        // scroll past it, or the last field stays behind the raised dock.
+        extraKeyboardSpace={dock ? dockHeight : 0}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.content}
       >
@@ -150,6 +153,7 @@ export function DockedScroll({
           offset={padsHomeIndicator ? { closed: 0, opened: insets.bottom } : undefined}
         >
           <View
+            testID="sell-dock"
             style={[
               styles.dock,
               padsHomeIndicator ? { paddingBottom: insets.bottom + theme.space.md } : null,

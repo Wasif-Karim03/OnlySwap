@@ -75,6 +75,9 @@ export function AuthStep({
       )}
       <KeyboardAwareScrollView
         bottomOffset={bottomOffset}
+        // The dock rides up over this view with the keyboard; leave room to
+        // scroll past it, or a field under the focused one (Password) is out of reach.
+        extraKeyboardSpace={dockH ?? 0}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.content(!!step)}
       >
@@ -93,6 +96,7 @@ export function AuthStep({
       {dock || dockedTrailing ? (
         <KeyboardStickyView offset={{ closed: 0, opened: insets.bottom }}>
           <View
+            testID="auth-dock"
             onLayout={(e) => setDockH(Math.max(0, e.nativeEvent.layout.height - insets.bottom))}
             style={[styles.dock, { paddingBottom: insets.bottom + styles.dockGap.height }]}
           >
