@@ -1,8 +1,9 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 import type { ReactNode } from 'react';
 import { Text } from 'react-native';
+import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
 
 import type { ChatInfo } from '../src/features/chat/api';
 import { maybeAskForReview, type DealsApi } from '../src/features/deals/api';
@@ -250,5 +251,36 @@ describe('E08 Rate the swap', () => {
     );
     expect(await screen.findByTestId('screen-rate-revealed')).toBeTruthy();
     expect(screen.getByText('Smooth')).toBeTruthy();
+  });
+});
+
+describe('QA-M11 Send rating stays above the keyboard', () => {
+  it('docks Send rating in a keyboard-sticky view and lifts fields past it', async () => {
+    const a = api({
+      myRating: jest.fn(async () => ({ mine: null, theirs: null, theirs_waiting: false })),
+    });
+    render(
+      {
+        'deal/[chatId]/rate': () => (
+          <RateScreen
+            chatId="c1"
+            api={a}
+            chats={chats('buyer')}
+            people={{ getProfile: jest.fn() }}
+            askForReview={jest.fn()}
+          />
+        ),
+      },
+      '/deal/c1/rate',
+    );
+    await screen.findByTestId('rate-submit');
+    const sticky = screen.UNSAFE_getByType(KeyboardStickyView);
+    expect(within(sticky).getByTestId('rate-submit')).toBeTruthy();
+    act(() => {
+      fireEvent(screen.getByTestId('rate-dock'), 'layout', {
+        nativeEvent: { layout: { width: 375, height: 120 } },
+      });
+    });
+    expect(screen.UNSAFE_getByType(KeyboardAwareScrollView).props.bottomOffset).toBe(136);
   });
 });

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Linking, Platform, ScrollView, View } from 'react-native';
+import { Linking, Platform, ScrollView, View, useWindowDimensions } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
@@ -38,6 +38,11 @@ import { sellApi } from '../sell/api';
 import { directionsUrl, sortSpots, type Spot } from '../sell/logic';
 import { safetyApi, type SafetyApi } from './api';
 import { a11yState } from '@/lib/a11y';
+
+/** Gap between a focused field and the keyboard. */
+const KEYBOARD_GAP = 16;
+/** Never lift a field by more than this share of the window (large text). */
+const MAX_KEYBOARD_LIFT = 0.4;
 
 /** E21 Report update (P11-SAFE-02): received → reviewed, generic outcome only. */
 export function ReportUpdateScreen({ id, api = safetyApi }: { id: string; api?: SafetyApi }) {
@@ -260,6 +265,15 @@ export function HelpScreen({
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // QA M11: the scroll view lifts only the caret line above the keyboard, which
+  // left the rest of the message box and Send underneath. Lift by the height of
+  // the message-to-Send block, capped so a tall block can't push the caret off top.
+  const { height: windowHeight } = useWindowDimensions();
+  const [formTailHeight, setFormTailHeight] = useState(0);
+  const helpBottomOffset = Math.max(
+    KEYBOARD_GAP,
+    Math.min(formTailHeight, windowHeight * MAX_KEYBOARD_LIFT),
+  );
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/profile'));
 
   const send = async () => {
@@ -289,7 +303,7 @@ export function HelpScreen({
       <KeyboardAwareScrollView
         contentContainerStyle={styles.body}
         keyboardShouldPersistTaps="handled"
-        bottomOffset={16}
+        bottomOffset={helpBottomOffset}
       >
         <Text variant="heading" accessibilityRole="header">
           {copy.faqTitle}
@@ -363,22 +377,28 @@ export function HelpScreen({
               onChangeText={setEmail}
               testID="help-email"
             />
-            <TextArea
-              label={copy.contactBody}
-              value={message}
-              onChangeText={setMessage}
-              maxLength={2000}
-              testID="help-body"
-            />
-            {bot.element}
-            {error ? <Banner kind="error" message={error} /> : null}
-            <Button
-              label={copy.contactSend}
-              disabled={!email.trim() || !message.trim() || (bot.required && !bot.token)}
-              loading={busy}
-              onPress={send}
-              testID="help-send"
-            />
+            <View
+              style={styles.formTail}
+              testID="help-form-tail"
+              onLayout={(e) => setFormTailHeight(e.nativeEvent.layout.height)}
+            >
+              <TextArea
+                label={copy.contactBody}
+                value={message}
+                onChangeText={setMessage}
+                maxLength={2000}
+                testID="help-body"
+              />
+              {bot.element}
+              {error ? <Banner kind="error" message={error} /> : null}
+              <Button
+                label={copy.contactSend}
+                disabled={!email.trim() || !message.trim() || (bot.required && !bot.token)}
+                loading={busy}
+                onPress={send}
+                testID="help-send"
+              />
+            </View>
           </>
         )}
       </KeyboardAwareScrollView>
@@ -388,6 +408,7 @@ export function HelpScreen({
 
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
+  formTail: { gap: theme.space.md },
   body: {
     ...readableColumn,
     padding: theme.space.screen,

@@ -1,8 +1,9 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 import type { ReactNode } from 'react';
-import { Text } from 'react-native';
+import { Dimensions, Text } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { appealTarget, type AccountStatus, type SafetyApi } from '../src/features/safety/api';
 import {
@@ -239,5 +240,23 @@ describe('F19 safety center and F20 help', () => {
       }),
     );
     expect(await screen.findByTestId('help-sent')).toBeTruthy();
+  });
+});
+
+describe('QA-M11 Help message box and Send stay above the keyboard', () => {
+  it('lifts focused fields by the message-to-Send block, capped at 40% of the window', async () => {
+    const auth = { sendSupportRequest: jest.fn(async () => {}) };
+    render({ help: () => <HelpScreen auth={auth} email="a@osu.edu" /> }, '/help');
+    const tail = await screen.findByTestId('help-form-tail');
+    const scroll = () => screen.UNSAFE_getByType(KeyboardAwareScrollView);
+    act(() => {
+      fireEvent(tail, 'layout', { nativeEvent: { layout: { width: 375, height: 220 } } });
+    });
+    expect(scroll().props.bottomOffset).toBe(220);
+    act(() => {
+      fireEvent(tail, 'layout', { nativeEvent: { layout: { width: 375, height: 5000 } } });
+    });
+    const cap = Dimensions.get('window').height * 0.4;
+    expect(scroll().props.bottomOffset).toBe(cap);
   });
 });

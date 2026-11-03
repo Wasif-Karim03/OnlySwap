@@ -2,7 +2,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { track } from '@/lib/analytics';
@@ -41,6 +42,8 @@ import {
 
 /** Gap kept between a focused field and the keyboard (space.lg). */
 const KEYBOARD_GAP = 16;
+/** Rate dock height before it's measured (one button plus padding). */
+const RATE_DOCK_FALLBACK = 96;
 
 /** E07 Did it sell? (P8-DEAL-02; board E16). */
 export function DidItSellScreen({
@@ -251,6 +254,8 @@ export function RateScreen({
   const [comment, setComment] = useState('');
   const [commentOpen, setCommentOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [dockHeight, setDockHeight] = useState(RATE_DOCK_FALLBACK);
+  const insets = useSafeAreaInsets();
   const [error, setError] = useState<string | null>(null);
   const close = () =>
     router.canGoBack()
@@ -340,7 +345,7 @@ export function RateScreen({
       <KeyboardAwareScrollView
         contentContainerStyle={styles.body}
         keyboardShouldPersistTaps="handled"
-        bottomOffset={KEYBOARD_GAP}
+        bottomOffset={dockHeight + KEYBOARD_GAP}
       >
         <Text variant="heading" accessibilityRole="header">
           {fill(copy.rateQuestion, { name })}
@@ -409,15 +414,23 @@ export function RateScreen({
         ) : null}
         {error ? <Banner kind="error" message={error} /> : null}
       </KeyboardAwareScrollView>
-      <View style={styles.dock}>
-        <Button
-          label={copy.submit}
-          disabled={thumbs === null}
-          loading={busy}
-          onPress={submit}
-          testID="rate-submit"
-        />
-      </View>
+      {/* QA M11: the dock rides up with the keyboard (it sat under it, hiding
+          Send rating). Open, it drops the home-indicator padding it no longer needs. */}
+      <KeyboardStickyView offset={{ closed: 0, opened: insets.bottom }}>
+        <View
+          style={styles.dock}
+          testID="rate-dock"
+          onLayout={(e) => setDockHeight(e.nativeEvent.layout.height)}
+        >
+          <Button
+            label={copy.submit}
+            disabled={thumbs === null}
+            loading={busy}
+            onPress={submit}
+            testID="rate-submit"
+          />
+        </View>
+      </KeyboardStickyView>
     </View>
   );
 }
