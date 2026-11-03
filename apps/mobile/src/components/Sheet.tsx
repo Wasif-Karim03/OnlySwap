@@ -1,5 +1,6 @@
 import { motion } from '@onlyswap/tokens';
-import { useEffect, useState, type ReactNode } from 'react';
+import * as ExpoRouter from 'expo-router';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Modal, Pressable, View, useWindowDimensions } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
@@ -21,6 +22,35 @@ export function shouldCloseSheet(translationY: number, velocityY: number, height
   return translationY > height * 0.3 || velocityY > 800;
 }
 
+type BlurSource = { addListener?: (event: 'blur', cb: () => void) => () => void } | null;
+
+/** The screen's navigation, or null when the sheet renders outside a navigator (tests, root). */
+const useNavigationOrNull: () => BlurSource = ExpoRouter.useNavigation
+  ? () => {
+      try {
+        return ExpoRouter.useNavigation() as unknown as BlurSource;
+      } catch {
+        return null;
+      }
+    }
+  : () => null;
+
+/**
+ * QA H4: a sheet is a native Modal, so it stays on top when its screen is left
+ * (a push, a deep link, a notification tap). Close it when the screen blurs.
+ */
+function useCloseOnBlur(visible: boolean, onClose: () => void): void {
+  const navigation = useNavigationOrNull();
+  const close = useRef(onClose);
+  useEffect(() => {
+    close.current = onClose;
+  }, [onClose]);
+  useEffect(() => {
+    if (!visible || typeof navigation?.addListener !== 'function') return undefined;
+    return navigation.addListener('blur', () => close.current());
+  }, [visible, navigation]);
+}
+
 type Props = {
   visible: boolean;
   onClose: () => void;
@@ -39,6 +69,7 @@ export function Sheet({ visible, onClose, title, children, testID }: Props) {
   const { height: screenH } = useWindowDimensions();
   const floating = useLayout().tablet;
   const reduced = useReducedMotion();
+  useCloseOnBlur(visible, onClose);
   const [mounted, setMounted] = useState(visible);
   const [panelH, setPanelH] = useState(screenH);
   const y = useSharedValue(screenH);
