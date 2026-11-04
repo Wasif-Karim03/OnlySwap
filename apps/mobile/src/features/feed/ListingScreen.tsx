@@ -442,8 +442,9 @@ export function ListingScreen({
           ) : null}
           {news && item.event_at ? (
             <View style={styles.event} testID="listing-event">
-              <Icon name="cal" size={18} tone="sky" />
-              <Text variant="bodyStrong" tone="sky" style={styles.flex}>
+              {/* Ink, not sky: sky text is only for its own tinted chip (QA-L14). */}
+              <Icon name="cal" size={18} tone="ink" />
+              <Text variant="bodyStrong" style={styles.flex}>
                 {eventLabel(item.event_at, now())}
               </Text>
             </View>
@@ -545,7 +546,7 @@ export function ListingScreen({
             {meetupNote ? (
               <View style={[styles.listRow, !owner ? styles.divider : null]}>
                 <View style={styles.glyph}>
-                  <Icon name="pin" size={22} tone="sky" />
+                  <Icon name="pin" size={22} tone="ink2" />
                 </View>
                 <Text variant="body" tone="ink2" style={styles.flex}>
                   {copy.meetupDecide}
@@ -560,7 +561,7 @@ export function ListingScreen({
                 accessibilityLabel={`${s.name}, ${s.police ? sellCopy.police : copy.meetupSpot}`}
               >
                 <View style={styles.glyph}>
-                  <Icon name="pin" size={22} tone="sky" />
+                  <Icon name="pin" size={22} tone="ink2" />
                 </View>
                 <View style={styles.flex}>
                   <Text variant="bodyStrong">{s.name}</Text>
@@ -575,7 +576,7 @@ export function ListingScreen({
                 style={[styles.listRow, !owner || chosenSpots.length > 0 ? styles.divider : null]}
               >
                 <View style={styles.glyph}>
-                  <Icon name="pin" size={22} tone="sky" />
+                  <Icon name="pin" size={22} tone="ink2" />
                 </View>
                 <Text variant="body" style={styles.flex}>
                   {item.meet_note}

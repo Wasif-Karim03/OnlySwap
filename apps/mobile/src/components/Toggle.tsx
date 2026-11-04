@@ -19,6 +19,14 @@ type Props = {
 
 /** Gap between the track edge and the knob. */
 const KNOB_INSET = 2;
+/**
+ * Track outline. The off track was `bg3` on the dark card (#262629 on
+ * #2A2A2D), so an off switch was only a grey dot (QA-M9). The outline is
+ * `ink3` off (5:1 on the card) and `ink` on.
+ */
+const TRACK_BORDER = 2;
+/** The knob fills the track height inside the outline and the inset. */
+const KNOB_SIZE = size.toggleH - (KNOB_INSET + TRACK_BORDER) * 2;
 /** How far the knob slides from off to on. */
 const KNOB_TRAVEL = size.toggleW - size.toggleH;
 /** Pressed rows dim; nothing moves (DESIGN_REVIEW 3.08). */
@@ -71,6 +79,8 @@ const styles = StyleSheet.create((theme) => ({
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.space.md,
+    // Rows with a caption were edge to edge with their neighbours (QA-M9).
+    paddingVertical: theme.space.md,
     opacity: disabled ? 0.35 : 1,
   }),
   pressed: { opacity: PRESSED_OPACITY },
@@ -80,13 +90,15 @@ const styles = StyleSheet.create((theme) => ({
     height: theme.size.toggleH,
     borderRadius: theme.radius.chip,
     padding: KNOB_INSET,
+    borderWidth: TRACK_BORDER,
+    borderColor: on ? theme.colors.ink : theme.colors.ink3,
     justifyContent: 'center',
     alignItems: 'flex-start',
     backgroundColor: on ? theme.colors.ink : theme.colors.bg3,
   }),
   knob: (on: boolean) => ({
-    width: theme.size.toggleH - KNOB_INSET * 2,
-    height: theme.size.toggleH - KNOB_INSET * 2,
+    width: KNOB_SIZE,
+    height: KNOB_SIZE,
     borderRadius: theme.radius.chip,
     // Off: a grey knob on the light track. The white knob was 1.23:1 (1.05:1
     // in dark), so an off switch looked like empty space (UX audit 2026-10-25).
