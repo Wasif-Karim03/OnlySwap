@@ -249,7 +249,8 @@ export const motion = {
 } as const;
 
 export const fontScale = {
-  "overlayMax": 1.4
+  "overlayMax": 1.4,
+  "tabLabelMax": 1.2
 } as const;
 
 /** Builds one Unistyles theme: palette for the mode plus the chosen accent. */

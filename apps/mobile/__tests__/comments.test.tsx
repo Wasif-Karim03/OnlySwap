@@ -1,8 +1,8 @@
 import { QueryClient, QueryClientProvider, type InfiniteData } from '@tanstack/react-query';
-import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 import type { ReactNode } from 'react';
-import { AccessibilityInfo, Text } from 'react-native';
+import { AccessibilityInfo, StyleSheet, Text } from 'react-native';
 
 import { canBlock, reportReasons } from '../src/components/ReportSheet';
 import { useToastStore } from '../src/components/Toast';
@@ -15,6 +15,7 @@ import type {
   FeedComment,
   LikeResult,
 } from '../src/features/comments/api';
+import { CommentRow } from '../src/features/comments/components/CommentRow';
 import { CommentsScreen } from '../src/features/comments/CommentsScreen';
 import {
   addComment,
@@ -621,5 +622,29 @@ describe('T-UNIT-COMMENTS-06 Feed like and comment', () => {
     expect(await screen.findByTestId('campus-item-w1-social-like')).toBeTruthy();
     fireEvent.press(screen.getByTestId('campus-item-w1-social-comment'));
     expect(await screen.findByTestId('screen-comments')).toBeTruthy();
+  });
+});
+
+describe('QA-L13 comment actions at large text', () => {
+  it('wraps the time, Like and Reply row instead of running off the edge', () => {
+    render(
+      <CommentRow
+        comment={comment('k1')}
+        ago="2 min"
+        avatarUri={null}
+        canReply
+        onLike={() => {}}
+        onReply={() => {}}
+        onOptions={() => {}}
+        testID="row"
+      />,
+    );
+    const reply = screen.getByTestId('row-reply');
+    expect(reply).toBeTruthy();
+    // The meta row is the Reply button's nearest wrapping row.
+    let node = reply.parent;
+    while (node && StyleSheet.flatten(node.props.style)?.flexDirection !== 'row')
+      node = node.parent;
+    expect(StyleSheet.flatten(node?.props.style)?.flexWrap).toBe('wrap');
   });
 });

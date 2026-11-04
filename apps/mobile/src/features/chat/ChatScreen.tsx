@@ -29,6 +29,7 @@ import { osPermissions, primerStep, type OsApi } from '@/lib/permissions';
 import { enterSends } from '@/lib/platform';
 import type { RealtimeSource } from '@/lib/realtime';
 import { chat as copy } from '@/strings';
+import { useLargeText } from '@/theme/largeText';
 
 import { authApi, type AuthApi } from '../auth/api';
 import { useSession } from '../auth/useSession';
@@ -127,6 +128,7 @@ export function ChatScreen({
   // While typing, the meetup card and deal actions step aside: on an iPhone SE
   // they left only a few lines of messages between the header and the keyboard.
   const keyboardOpen = useKeyboardState((s) => s.isVisible);
+  const largeText = useLargeText();
   // Every meetup change posts a `meetup` row; refetch the card when one arrives.
   useEffect(() => track('chat_opened'), []);
   const meetupRows = state.items.filter((m) => m.kind === 'meetup').length;
@@ -154,6 +156,7 @@ export function ChatScreen({
   const c = info.data;
   const name = c.other_deleted ? copy.deletedUser : (c.other?.display_name ?? copy.deletedUser);
   const readOnly = c.status === 'closed' || c.blocked || c.other_deleted;
+  const statusLabel = c.status === 'open' && !readOnly ? dealStatusLabel(c) : null;
   const base = mediaBase();
   const photosOn = appConfig.data?.chatPhotosEnabled === true && c.status === 'open' && !readOnly;
   const newContact = newContactFromItems(state.items, now(), c.created_at);
@@ -384,19 +387,27 @@ export function ChatScreen({
             />
           </View>
           <View style={styles.flex}>
-            <Text variant="bodyStrong" numberOfLines={1}>
+            {/* Two lines so "[demo] Desk lamp..." keeps its name (QA M10). */}
+            <Text variant="bodyStrong" numberOfLines={2}>
               {c.listing_title}
             </Text>
             <Text variant="meta" tone="ink3" numberOfLines={2}>
               {dealPriceLine(c, money)}
             </Text>
+            {/* Large text: the status moves under the price instead of
+                squeezing the title into a third of the row (QA M10). */}
+            {statusLabel && largeText ? (
+              <Text variant="label" tone="green" testID="chat-deal-status">
+                {statusLabel}
+              </Text>
+            ) : null}
             {c.bundle?.length ? (
               <Text variant="meta" tone="ink2" numberOfLines={2} testID="chat-bundle">
                 {fill(copy.bundleAlso, { items: c.bundle.map((b) => b.title).join(', ') })}
               </Text>
             ) : null}
           </View>
-          {c.status === 'open' && !readOnly && dealStatusLabel(c) ? (
+          {statusLabel && !largeText ? (
             <Text
               variant="label"
               tone="green"
@@ -404,7 +415,7 @@ export function ChatScreen({
               style={styles.dealStatus}
               testID="chat-deal-status"
             >
-              {dealStatusLabel(c)}
+              {statusLabel}
             </Text>
           ) : null}
         </View>

@@ -38,12 +38,13 @@ export function TextArea({
   return (
     <View style={styles.wrap}>
       <View style={styles.header}>
-        <Text variant="label" tone="ink2">
+        <Text variant="label" tone="ink2" style={styles.label}>
           {label}
         </Text>
         <Text
           variant="meta"
           tone={counterTone(length, maxLength)}
+          style={styles.counter}
           accessibilityLabel={`${length} / ${maxLength}`}
         >
           {`${length}/${maxLength}`}
@@ -87,7 +88,16 @@ type FieldState = 'default' | 'focus' | 'error' | 'disabled';
 
 const styles = StyleSheet.create((theme) => ({
   wrap: { gap: theme.space.xs },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
+  // At large text the counter wraps under the label, right-aligned, instead of
+  // being cut ("0/5") or touching it (QA L12).
+  header: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'baseline',
+    columnGap: theme.space.sm,
+  },
+  label: { flexShrink: 1 },
+  counter: { flexShrink: 0, marginLeft: 'auto' },
   field: (state: FieldState) => ({
     minHeight: theme.size.buttonL * 2,
     paddingHorizontal: theme.space.lg,

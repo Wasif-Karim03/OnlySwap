@@ -16,7 +16,7 @@ import { normalizeCode, OTPInput } from '../src/components/OTPInput';
 import { SegmentedControl } from '../src/components/SegmentedControl';
 import { shouldCloseSheet, Sheet } from '../src/components/Sheet';
 import { clampStep, Stepper } from '../src/components/Stepper';
-import { counterTone } from '../src/components/TextArea';
+import { counterTone, TextArea } from '../src/components/TextArea';
 import { TOAST_MS, ToastHost, UNDO_MS, useToastStore } from '../src/components/Toast';
 import { Toggle } from '../src/components/Toggle';
 
@@ -138,6 +138,22 @@ describe('P2-CMP-02 Input, TextArea, OTPInput', () => {
     expect(counterTone(35, 40)).toBe('ink2');
     expect(counterTone(36, 40)).toBe('amber');
     expect(counterTone(40, 40)).toBe('red');
+  });
+
+  it('QA-L12 counter wraps under a long label instead of being cut', () => {
+    render(
+      <TextArea label="What's on your mind?" value="" onChangeText={() => {}} maxLength={500} />,
+    );
+    const counter = screen.getByText('0/500');
+    expect(StyleSheet.flatten(counter.props.style)).toMatchObject({
+      flexShrink: 0,
+      marginLeft: 'auto',
+    });
+    let header = counter.parent;
+    while (header && StyleSheet.flatten(header.props.style)?.flexDirection !== 'row') {
+      header = header.parent;
+    }
+    expect(StyleSheet.flatten(header?.props.style)?.flexWrap).toBe('wrap');
   });
 
   it('OTP keeps digits only and completes at 6', () => {

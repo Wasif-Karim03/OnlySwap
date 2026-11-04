@@ -256,6 +256,8 @@ describe('P2-CMP-09 NavBar, TabBar, StepIndicator, ProgressBar', () => {
     fireEvent.press(screen.getByRole('tab', { name: 'Inbox, 2 new' }));
     expect(onSelect).toHaveBeenCalledWith('inbox');
     expect(tabAccessibilityLabel(items[0]!)).toBe('Discover');
+    // QA L7: tab labels stop growing at 1.2x so "Discover" fits its pill on SE.
+    expect(screen.getByText('Discover').props.maxFontSizeMultiplier).toBe(1.2);
   });
 
   it('StepIndicator and ProgressBar report their value', () => {

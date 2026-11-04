@@ -6,6 +6,7 @@ import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { spotsMap as copy } from '@/strings';
+import { useLargeText } from '@/theme/largeText';
 import { useReducedMotion } from '@/theme/reducedMotion';
 
 import type { Spot } from '../sell/logic';
@@ -37,7 +38,10 @@ export function SpotsMap({
 }) {
   const { theme } = useUnistyles();
   const reduced = useReducedMotion();
-  const [open, setOpen] = useState(true);
+  // At large text the map took more than half the screen and pushed the spot
+  // list (the accessible UI) out of view, so it starts folded there (QA M18).
+  const largeText = useLargeText();
+  const [open, setOpen] = useState(!largeText);
   const [failed, setFailed] = useState(false);
 
   const shown = spots.filter(validCoord);

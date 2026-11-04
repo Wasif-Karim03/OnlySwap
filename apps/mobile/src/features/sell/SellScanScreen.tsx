@@ -12,6 +12,7 @@ import { PermissionPrimer } from '@/components/PermissionPrimer';
 import { Text } from '@/components/Text';
 import { useToastStore } from '@/components/Toast';
 import { sell as copy } from '@/strings';
+import { useHidesTabBar } from '@/lib/tabBarVisibility';
 import { useLayout } from '@/theme/layout';
 
 import { getDraftStore } from './draft';
@@ -41,7 +42,9 @@ export function SellScanScreen({
   const { theme } = useUnistyles();
   // Phones: the tab bar under this screen already pads for the home indicator.
   // iPad sidebar (wide) has no bar below, so the panel pads for it itself.
-  const padsHomeIndicator = useLayout().wide;
+  // The tab bar hides here (QA M1), so pad for the home indicator.
+  const hidesTabBar = useHidesTabBar();
+  const padsHomeIndicator = useLayout().wide || hidesTabBar;
   const net = useNetInfo();
   const [granted, setGranted] = useState(false);
   const [status, setStatus] = useState<Status>('scanning');

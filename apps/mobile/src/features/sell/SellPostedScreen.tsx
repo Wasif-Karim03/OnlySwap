@@ -17,6 +17,7 @@ import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
 import { sell as copy } from '@/strings';
+import { useHidesTabBar } from '@/lib/tabBarVisibility';
 import { useLayout } from '@/theme/layout';
 
 import { sellApi, type SellApi } from './api';
@@ -57,7 +58,9 @@ export function SellPostedScreen({
   const router = useRouter();
   // Phones: the tab bar below already pads for the home indicator; only the
   // iPad sidebar (wide) leaves the dock to pad for it.
-  const padsHomeIndicator = useLayout().wide;
+  // The tab bar hides here (QA M1), so pad for the home indicator.
+  const hidesTabBar = useHidesTabBar();
+  const padsHomeIndicator = useLayout().wide || hidesTabBar;
   const listing = usePostedStore((s) => s.listing);
   const coverUri = usePostedStore((s) => s.coverUri);
   const [card, setCard] = useState<CardState>('preparing');

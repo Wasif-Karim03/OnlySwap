@@ -14,6 +14,7 @@ import { NavBar } from '@/components/NavBar';
 import { StepIndicator } from '@/components/Progress';
 import { Text } from '@/components/Text';
 import { haptic } from '@/lib/haptics';
+import { useHidesTabBar } from '@/lib/tabBarVisibility';
 import { sell as copy } from '@/strings';
 import { readableColumn, useLayout } from '@/theme/layout';
 import { animateTo, resolveMotion } from '@/theme/motion';
@@ -83,6 +84,9 @@ export function SellStep({
   overlay,
   testID,
 }: Props) {
+  // Steps after the first hide the tab bar (QA M1), so the dock pads for the
+  // home indicator itself there.
+  const standalone = useHidesTabBar();
   return (
     <View style={styles.root} testID={testID}>
       {/* The step count is read out by the bar below ("Step 1 of 3"); no extra label (DEC 90). */}
@@ -90,7 +94,7 @@ export function SellStep({
       <View style={styles.steps}>
         <StepIndicator step={step} total={SELL_STEPS} />
       </View>
-      <DockedScroll dock={dock}>
+      <DockedScroll dock={dock} standalone={standalone}>
         {title ? (
           <Text variant="title" accessibilityRole="header">
             {title}

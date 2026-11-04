@@ -168,10 +168,13 @@ const styles = StyleSheet.create((theme) => ({
   deleted: { backgroundColor: 'transparent', borderWidth: 1, borderColor: theme.colors.line },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: theme.space.sm },
   note: { paddingHorizontal: theme.space.md, paddingTop: theme.space.xs },
+  // Wraps at large text so "Reply" moves to the next line instead of running
+  // off the edge (QA L13). Rows keep the 44 pt hit height, so no row gap.
   meta: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
-    gap: theme.space.md,
+    columnGap: theme.space.md,
     paddingHorizontal: theme.space.md,
   },
   metaHit: { minHeight: theme.size.hit, justifyContent: 'center' },

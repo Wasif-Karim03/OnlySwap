@@ -510,7 +510,9 @@ export function EditProfileScreen({
 
   return (
     <Screen title={copy.editTitle} testID="screen-edit-profile" onBack={back}>
+      {/* No tab bar here (QA M1): the dock pads for the home indicator. */}
       <DockedScroll
+        standalone
         dock={
           <>
             {error ? <Banner kind="error" message={error} /> : null}

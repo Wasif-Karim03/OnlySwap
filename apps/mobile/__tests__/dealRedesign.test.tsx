@@ -1,8 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 import type { ReactNode } from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { Dimensions, StyleSheet, Text } from 'react-native';
 
 import type { ChatApi, ChatInfo } from '../src/features/chat/api';
 import { ChatScreen } from '../src/features/chat/ChatScreen';
@@ -365,6 +365,55 @@ describe('DEC 90 Chat', () => {
     expect(screen.getByTestId('chat-deal-status').props.children).toBe(chat.accepted);
     expect(await screen.findByText('You accepted $55')).toBeTruthy();
     expect(await screen.findByTestId('meetup-card-confirmed')).toBeTruthy();
+  });
+
+  describe('QA-M10 header card at each text size', () => {
+    const base = Dimensions.get('window');
+    const setScale = (fontScale: number) =>
+      act(() => Dimensions.set({ window: { ...base, fontScale }, screen: { ...base, fontScale } }));
+    afterEach(() => setScale(base.fontScale));
+
+    const renderChat = () => {
+      const api = {
+        chat: jest.fn(async () => info()),
+        messages: jest.fn(async () => []),
+        markRead: jest.fn(async () => {}),
+      } as unknown as ChatApi;
+      renderAt(
+        {
+          'chat/[id]/index': () => (
+            <ChatScreen
+              id="c1"
+              me="me"
+              api={api}
+              meetups={meetupsApi({ forChat: jest.fn(async () => null) })}
+              realtime={quiet}
+              store={createChatStore('c1', { api, me: () => 'me' })}
+              now={() => NOW}
+            />
+          ),
+        },
+        '/chat/c1',
+      );
+    };
+
+    it('default size: two-line title, status beside the item', async () => {
+      setScale(1);
+      renderChat();
+      const status = await screen.findByTestId('chat-deal-status');
+      expect(screen.getByText(info().listing_title).props.numberOfLines).toBe(2);
+      // Beside the item: capped to a third of the row.
+      expect(StyleSheet.flatten(status.props.style).maxWidth).toBe('35%');
+    });
+
+    it('large text: the status moves under the price', async () => {
+      setScale(2);
+      renderChat();
+      const status = await screen.findByTestId('chat-deal-status');
+      // Under the price: full column width, wraps instead of truncating.
+      expect(status.props.numberOfLines).toBeUndefined();
+      expect(StyleSheet.flatten(status.props.style).maxWidth).toBeUndefined();
+    });
   });
 });
 
