@@ -14,6 +14,7 @@ auditConfig:
     - GHSA-vfj7-8cjw-p6xm # braces, Jest file matching
     - GHSA-hp3w-g68c-fv3c # sprintf-js, Jest coverage config (moderate)
     - GHSA-mrhx-c7xc-m3w5 # zod 3 inside Expo CLI (dev tool, validates its own config); no patched 3.x. zod 4 is overridden below
+    - GHSA-qr28-fpjm-wq7f # decode-uri-component 0.2 in expo-router's query-string (slow decode of a long crafted link on the user's own phone). The fix (0.5.1) is ESM-only and query-string 7 require()s it, so overriding would break link parsing
 
 onlyBuiltDependencies:
   - esbuild
@@ -29,6 +30,8 @@ overrides:
   source-map-js: ^1.2.2
   'zod@>=4.0.0 <4.6.6': ^4.6.6
   'undici@>=8.0.0 <8.12.2': ^8.12.2
+  'seroval@<1.6.8': ^1.6.8
+  'node-forge@<1.4.1': ^1.4.1
 
 # expo-alternate-app-icons' config plugin requires @expo/image-utils without
 # listing it, so it only worked while that package happened to be hoisted.
