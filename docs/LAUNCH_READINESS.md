@@ -166,6 +166,8 @@ Tags: [OWNER] needs the owner's accounts or dashboards; [CODE] is repo work or C
 
 ## 5. Open questions for the owner
 
+Answered 2026-11-04 (DEC 155 to 160). The working plan is now `docs/LAUNCH_PLAN.md`.
+
 1. Pause or delete `intention` to free the second Supabase slot for production?
 2. Buy the domain (REVIEW Q2, about $10.46 a year)? It likely unlocks CSAM scanning for public listing photos. It does not lift the Workers Free limit of 100,000 requests a day, which applies to custom domains too. Without it, how will DEC 137 be met?
 3. Lawyer review (REVIEW Q7) or a recorded self-review risk acceptance?

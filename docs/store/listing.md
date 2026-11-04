@@ -64,10 +64,6 @@ automatically. Every feature is turned on there.
   has a menu with Report and "Hide posts from this person"; posts voted down to
   -5 are hidden and reviewed. New posts are filtered for names, phone numbers,
   emails, handles, rooms and banned words before they go live.
-- **Photos in chat** (only if turned on when you review; see OWNER_TODO 16):
-  in a chat, tap the photo button to send one. Photos are private (signed links,
-  2 hours), blurred from new chats until tapped, and reportable with a long
-  press.
 - **Safety:** report and block from any listing, chat, message or profile;
   report from any Quad post or reply; a person reviews reports within 24 hours.
   Age check at sign-up (13 or older; under 13 is blocked and the account deleted;
@@ -80,7 +76,7 @@ automatically. Every feature is turned on there.
 
 | 1.2 requires | Where it is in OnlySwap |
 |---|---|
-| A way to filter objectionable material | Banned-words check on listings, Wanted, food, Quad posts, replies and polls; Quad blocks phone, email, URL, handle and room numbers; posts naming a student are held for review; Quad photos from accounts under 7 days are held; incoming chat photos are blurred in new chats |
+| A way to filter objectionable material | Banned-words check on listings, Wanted, food, Quad posts, replies and polls; Quad blocks phone, email, URL, handle and room numbers; posts naming a student are held for review; Quad photos from accounts under 7 days are held |
 | A way to report offensive content, with timely responses | Report on every listing, profile, chat, message (long press), Quad post and Quad reply; a person reviews within 24 hours (RELEASE §7 daily queue); minor-safety reports are priority 1 |
 | A way to block abusive users | Block on profiles and chats; in the Quad, "Hide posts from this person" (authors are anonymous, so we hide without telling you who) plus keyword mutes |
 | Published contact information | Help page `/help` (linked in Settings), support email in App Store Connect |
