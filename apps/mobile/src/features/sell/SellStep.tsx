@@ -17,6 +17,7 @@ import { haptic } from '@/lib/haptics';
 import { useHidesTabBar } from '@/lib/tabBarVisibility';
 import { sell as copy } from '@/strings';
 import { readableColumn, useLayout } from '@/theme/layout';
+import { useLargeText } from '@/theme/largeText';
 import { animateTo, resolveMotion } from '@/theme/motion';
 import { useReducedMotion } from '@/theme/reducedMotion';
 
@@ -140,6 +141,8 @@ export function DockedScroll({
   // indicator itself and drops that padding while the keyboard is up.
   const padsHomeIndicator = useLayout().wide || standalone;
   const insets = useSafeAreaInsets();
+  // QA-M2: the dock is tall at large text; a hairline shows content scrolls under it.
+  const largeText = useLargeText();
   return (
     <>
       <KeyboardAwareScrollView
@@ -160,6 +163,7 @@ export function DockedScroll({
             testID="sell-dock"
             style={[
               styles.dock,
+              largeText ? styles.dockLine : null,
               padsHomeIndicator ? { paddingBottom: insets.bottom + theme.space.md } : null,
             ]}
             onLayout={(e) => setDockHeight(e.nativeEvent.layout.height)}
@@ -195,4 +199,5 @@ const styles = StyleSheet.create((theme) => ({
     gap: theme.space.xs,
     backgroundColor: theme.colors.bg,
   },
+  dockLine: { borderTopWidth: 1, borderTopColor: theme.colors.line },
 }));

@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { FlatList, View } from 'react-native';
+import { FlatList, ScrollView, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -112,13 +112,16 @@ export function SavedScreen({
       body = <ErrorState error={itemsQ.error} onRetry={() => itemsQ.refetch()} />;
     else if (itemsQ.data.length === 0)
       body = (
-        <EmptyState
-          icon="bookmark"
-          title={copy.emptyItemsTitle}
-          body={copy.emptyItemsBody}
-          action={{ label: copy.goDiscover, onPress: () => router.replace('/discover') }}
-          testID="saved-items-empty"
-        />
+        // Scrolls at large text so the action never runs off screen (QA-M2).
+        <ScrollView contentContainerStyle={styles.grow}>
+          <EmptyState
+            icon="bookmark"
+            title={copy.emptyItemsTitle}
+            body={copy.emptyItemsBody}
+            action={{ label: copy.goDiscover, onPress: () => router.replace('/discover') }}
+            testID="saved-items-empty"
+          />
+        </ScrollView>
       );
     else
       body = (
@@ -202,13 +205,16 @@ export function SavedScreen({
       body = <ErrorState error={searchesQ.error} onRetry={() => searchesQ.refetch()} />;
     else if (searchesQ.data.length === 0)
       body = (
-        <EmptyState
-          icon="search"
-          title={copy.emptySearchesTitle}
-          body={copy.emptySearchesBody}
-          action={{ label: copy.goSearch, onPress: () => router.push('/search') }}
-          testID="saved-searches-empty"
-        />
+        // Scrolls at large text so the action never runs off screen (QA-M2).
+        <ScrollView contentContainerStyle={styles.grow}>
+          <EmptyState
+            icon="search"
+            title={copy.emptySearchesTitle}
+            body={copy.emptySearchesBody}
+            action={{ label: copy.goSearch, onPress: () => router.push('/search') }}
+            testID="saved-searches-empty"
+          />
+        </ScrollView>
       );
     else
       body = (
@@ -303,6 +309,7 @@ export function SavedScreen({
 
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
+  grow: { flexGrow: 1 },
   tabs: {
     ...readableColumn,
     gap: theme.space.md,

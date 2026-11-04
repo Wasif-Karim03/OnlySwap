@@ -22,6 +22,7 @@ import { errorText } from '@/lib/errors';
 import { fill } from '@/lib/format';
 import { chat as chatCopy, meetup as copy } from '@/strings';
 import { readableColumn } from '@/theme/layout';
+import { useLargeText } from '@/theme/largeText';
 
 import { chatApi, type ChatApi } from '../chat/api';
 import { chatKey } from '../chat/logic';
@@ -98,6 +99,8 @@ export function MeetupDayScreen({
   const [clock, setClock] = useState(() => now());
   const [error, setError] = useState<string | null>(null);
   const [cancelOpen, setCancelOpen] = useState(false);
+  // At large text the dock keeps only 911; the safety link scrolls (QA-M2).
+  const large = useLargeText();
   const [noShowOpen, setNoShowOpen] = useState(false);
   const [lateOpen, setLateOpen] = useState(false);
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/inbox'));
@@ -130,6 +133,22 @@ export function MeetupDayScreen({
   const avatar = c?.other?.avatar_path ? mediaUrl(mediaBase(), c.other.avatar_path) : null;
   const parts = whenParts(m.starts_at, clock);
   const confirmed = m.status === 'confirmed';
+  // The safety center one tap from the meetup (UX audit 2026-10-25).
+  const safetyLink = (
+    <Tappable
+      accessibilityRole="link"
+      accessibilityLabel={copy.safetyTips}
+      onPress={() => router.push('/safety')}
+      style={styles.safetyHit}
+      testID="meetup-safety"
+    >
+      <View style={styles.safety}>
+        <Text variant="label" tone="ink2">
+          {copy.safetyTips}
+        </Text>
+      </View>
+    </Tappable>
+  );
   const refresh = () => qc.invalidateQueries({ queryKey: meetupKey(id) });
   const run = async (fn: () => Promise<unknown>) => {
     setError(null);
@@ -185,7 +204,9 @@ export function MeetupDayScreen({
           <Text variant="label" tone="ink3">
             {parts.dayTitle}
           </Text>
-          <Text style={styles.time}>{parts.time}</Text>
+          <Text style={styles.time} numberOfLines={1} adjustsFontSizeToFit>
+            {parts.time}
+          </Text>
         </View>
         {confirmed ? (
           <Text variant="body" tone="ink2" testID="meetup-countdown">
@@ -339,9 +360,10 @@ export function MeetupDayScreen({
             />
           ) : null}
         </View>
+        {large ? safetyLink : null}
       </KeyboardAwareScrollView>
 
-      <View style={styles.dock}>
+      <View style={styles.dock} testID="meetup-dock">
         {can.checkIn ? (
           <Button
             label={copy.imHere}
@@ -365,20 +387,7 @@ export function MeetupDayScreen({
               </Text>
             </View>
           </Tappable>
-          {/* The safety center one tap from the meetup (UX audit 2026-10-25). */}
-          <Tappable
-            accessibilityRole="link"
-            accessibilityLabel={copy.safetyTips}
-            onPress={() => router.push('/safety')}
-            style={styles.safetyHit}
-            testID="meetup-safety"
-          >
-            <View style={styles.safety}>
-              <Text variant="label" tone="ink2">
-                {copy.safetyTips}
-              </Text>
-            </View>
-          </Tappable>
+          {large ? null : safetyLink}
         </View>
       </View>
 

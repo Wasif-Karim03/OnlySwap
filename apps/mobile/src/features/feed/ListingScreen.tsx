@@ -134,10 +134,12 @@ export function ListingScreen({
   const wide = useLayout().wide;
   // QA-M6: light status bar while the square photo is under it.
   const { width: windowWidth } = useWindowDimensions();
+  // QA-M2: at large text a shorter photo keeps the price and title above the dock.
+  const photoRatio = useLargeText() && !wide ? LARGE_TEXT_PHOTO_RATIO : 1;
   const insets = useSafeAreaInsets();
   const [overPhoto, setOverPhoto] = useState(true);
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const next = e.nativeEvent.contentOffset.y < windowWidth - insets.top;
+    const next = e.nativeEvent.contentOffset.y < windowWidth / photoRatio - insets.top;
     if (next !== overPhoto) setOverPhoto(next);
   };
   const query = useQuery({ queryKey: listingKey(id), queryFn: () => api.getListing(id) });
@@ -392,7 +394,7 @@ export function ListingScreen({
                 blurhash: p.blurhash,
               }))}
               label={item.title}
-              aspectRatio={1}
+              aspectRatio={photoRatio}
               onPressPhoto={(i) =>
                 router.push({ pathname: '/listing/[id]/photos', params: { id, i: String(i) } })
               }
@@ -855,6 +857,8 @@ function Unavailable({ result, onBack }: { result: { access: string }; onBack: (
 /** A button over the photo, on the clear material (DEC 143). */
 const SCROLL_THROTTLE_MS = 16;
 const NO_PHOTO_ICON = 32;
+/** Width over height of the hero photo at large text (QA-M2); 1 (square) otherwise. */
+const LARGE_TEXT_PHOTO_RATIO = 4 / 3;
 
 /** The icon on the short band a no-photo listing shows instead of a photo (QA-M7). */
 export function kindIcon(kind: string): IconName {
