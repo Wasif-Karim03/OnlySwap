@@ -461,7 +461,9 @@ export function ListingScreen({
                 values={[
                   fill(copy.statViews, { n: item.view_count }),
                   fill(copy.statSaves, { n: item.save_count }),
-                  fill(copy.statOffers, { n: item.offer_count }),
+                  item.offer_count === 1
+                    ? copy.statOffersOne
+                    : fill(copy.statOffers, { n: item.offer_count }),
                 ]}
                 onPress={openStats}
                 testID="listing-stats"

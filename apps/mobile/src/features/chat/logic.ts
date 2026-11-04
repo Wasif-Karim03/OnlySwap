@@ -1,17 +1,22 @@
 import { chat as copy } from '@/strings';
 
+export interface DealState {
+  listing_status: string | null;
+  buyer_outcome: string | null;
+  seller_outcome: string | null;
+}
+
+/** The listing sold, or both sides said the deal is done (QA-M3: no more meetups). */
+export function isDealDone(c: DealState): boolean {
+  return c.listing_status === 'sold' || (c.buyer_outcome === 'done' && c.seller_outcome === 'done');
+}
+
 /**
  * The green label in the chat's item bar while the chat is open: "Sold" once
  * the listing sold or both sides said the deal is done, else "Accepted".
  */
-export function dealStatusLabel(c: {
-  offer_id?: string | null;
-  listing_status: string | null;
-  buyer_outcome: string | null;
-  seller_outcome: string | null;
-}): string | null {
-  const done = c.buyer_outcome === 'done' && c.seller_outcome === 'done';
-  if (c.listing_status === 'sold' || done) return copy.soldStatus;
+export function dealStatusLabel(c: DealState & { offer_id?: string | null }): string | null {
+  if (isDealDone(c)) return copy.soldStatus;
   // A chat from "I have this" (DEC 149) has no accepted offer yet.
   return c.offer_id === null ? null : copy.accepted;
 }

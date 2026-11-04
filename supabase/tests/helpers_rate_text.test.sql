@@ -1,6 +1,6 @@
 -- P3-DB-07: rate limits, banned-word check, PII check, names_student.
 begin;
-select plan(26);
+select plan(30);
 select tests.create_fixtures();
 
 -- hit(): fixed windows, retry time in the message (API §0 RATE_LIMITED:<action>:<retry_at>)
@@ -51,6 +51,12 @@ select is(private.pii_check('call me 614-555-0199'), 'pii:phone', 'phone number'
 select is(private.pii_check('mail maya@osu.edu'), 'pii:email', 'email address');
 select is(private.pii_check('see www.example.com'), 'pii:url', 'link');
 select is(private.pii_check('in room 214 of Baker'), 'pii:room', 'room number');
+
+-- QA-M17: rideshare terms match as phrases, so a bike that "rides great" posts.
+select is(private.check_text('Trek bike, rides great', 'listing'), 'ok', 'rides great is not held');
+select is(private.check_text('Need a ride to Columbus Friday', 'listing'), 'review:need a ride', 'need a ride is held');
+select is(private.check_text('Giving rides to the airport', 'quad'), 'review:giving rides', 'giving rides is held');
+select is(private.check_text('ride share to CMH', 'listing'), 'review:ride share', 'ride share is still held');
 
 select * from finish();
 rollback;

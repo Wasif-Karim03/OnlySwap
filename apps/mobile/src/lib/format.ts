@@ -3,11 +3,14 @@ import { intlLocale } from '@/strings';
 /**
  * Fills `{name}` placeholders in a copy template from `@/strings`.
  * Unknown placeholders are left as they are so a missing value is visible in QA.
+ * A value that ends in "." before a template "." keeps one ("Riley M.", QA-M4).
  */
 export function fill(template: string, values: Record<string, string | number>): string {
-  return template.replace(/\{(\w+)\}/g, (match, key: string) =>
-    key in values ? String(values[key]) : match,
-  );
+  return template.replace(/\{(\w+)\}(\.?)/g, (match, key: string, dot: string) => {
+    if (!(key in values)) return match;
+    const value = String(values[key]);
+    return dot && value.endsWith('.') ? value : value + dot;
+  });
 }
 
 /**
@@ -25,7 +28,9 @@ export function formatTime(date: Date, timeZone?: string, tag: string = intlLoca
     hour: 'numeric',
     minute: '2-digit',
     ...(timeZone ? { timeZone } : {}),
-  }).format(date);
+  })
+    .format(date)
+    .replace(/\s/g, '\u00a0'); // "12:42 AM" never splits across lines (QA-L8)
 }
 
 /** Any date pattern in the active locale, e.g. `{ month: 'short', day: 'numeric' }`. */

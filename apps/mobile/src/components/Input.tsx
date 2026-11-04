@@ -42,7 +42,7 @@ const KIND_PROPS: Record<InputKind, Partial<TextInputProps>> = {
     textContentType: 'emailAddress',
   },
   price: { keyboardType: 'decimal-pad' },
-  search: { returnKeyType: 'search', autoCorrect: false },
+  search: { returnKeyType: 'search', autoCorrect: false, autoCapitalize: 'none' },
 };
 
 /** Input (DESIGN_SYSTEM §6): focus ring 2 px ink, error redBg + red ring + message. */

@@ -359,6 +359,14 @@ describe('P5-SELL-05 D04 Posted + share card', () => {
     'sell/index': () => <Stub id="screen-sell-stub" />,
   });
 
+  it('QA-M14 opened without a fresh post: goes to My listings', async () => {
+    setup('/sell/posted', {
+      ...routes({ api: fakeApi() }),
+      'profile/listings': () => <Stub id="screen-my-listings" />,
+    });
+    expect(await screen.findByTestId('screen-my-listings')).toBeTruthy();
+  });
+
   it('makes the share card, records it, and shares the listing link', async () => {
     usePostedStore.getState().set(POSTED, null);
     const api = fakeApi();

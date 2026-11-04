@@ -45,6 +45,7 @@ import {
   chatPhotoUrl,
   dealPriceLine,
   dealStatusLabel,
+  isDealDone,
   newContactFromItems,
   scamHint,
   type BubbleSpot,
@@ -217,7 +218,7 @@ export function ChatScreen({
     !lastMeetup || lastMeetup.status === 'cancelled' || lastMeetup.status === 'no_show';
   const canChange = !!lastMeetup && lastMeetup.status === 'proposed' && lastMeetup.proposed_by_me;
   const planButton =
-    !readOnly && (canPlan || canChange) ? (
+    !readOnly && !isDealDone(c) && (canPlan || canChange) ? (
       <Button
         label={canChange ? copy.changeMeetup : copy.planMeetup}
         size="M"
