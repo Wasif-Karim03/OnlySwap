@@ -12,29 +12,10 @@ const FORM_ROUTES: Readonly<Record<string, readonly string[]>> = {
   profile: ['edit'],
 };
 
-/** The minimal shape of a React Navigation tab route with its nested stack. */
-export type TabRouteLike = {
-  name: string;
-  state?: { index?: number; routes: readonly { name: string }[] };
-};
-
-/** The focused screen inside a tab's stack, or undefined on its first screen. */
-function focusedChild(route: TabRouteLike): string | undefined {
-  const nested = route.state;
-  if (!nested || nested.routes.length === 0) return undefined;
-  const index = nested.index ?? nested.routes.length - 1;
-  return nested.routes[index]?.name;
-}
-
 /** True when `child` inside tab `tab` is a form route that hides the bar. */
 export function isFormRoute(tab: string | undefined, child: string | undefined): boolean {
   if (!tab || !child) return false;
   return FORM_ROUTES[tab]?.includes(child) ?? false;
-}
-
-/** True when the focused tab is showing one of its form routes. */
-export function hidesTabBar(route: TabRouteLike): boolean {
-  return isFormRoute(route.name, focusedChild(route));
 }
 
 /**
