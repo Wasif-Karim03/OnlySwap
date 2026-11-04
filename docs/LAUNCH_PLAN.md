@@ -1,6 +1,7 @@
 # LAUNCH_PLAN.md: OnlySwap iOS launch at Ohio Wesleyan (2026-11-04)
 
 Status was re-checked on 2026-11-04 against `docs/LAUNCH_READINESS.md` (Oct 17; "LR n" below = its item n) and the QA report `sim-shots/qa/REPORT.md`.
+Owner steps only, in order: `docs/launch/OWNER_CHECKLIST.md`. Drafts for review: `docs/launch/OWU_SPOTS.md` (phase 5), `docs/launch/LEGAL_SELF_REVIEW.md` (phase 8).
 Each phase ends with a gate. The next phase starts only when the gate is green, and no step is ticked without proof.
 
 ## Owner decisions (2026-11-04; recorded in DECISIONS_LOG in phase 0)
@@ -34,7 +35,7 @@ QA MED/LOW still open (36 items; full list in `sim-shots/qa/TRIAGE-MEDLOW.md`):
 - B3 large text and layout: M1, M2, M10, M18, L7, L12, L13, L15, and the email-dock pattern elsewhere.
 - B4 theme and tokens: M15, L14, M9.
 - B5 the rest: M5, M8, M12, M13, L2, L4, L5, L10, L11, L18, L20.
-Code items from LAUNCH_READINESS: LR 42 (stale Discover on web), LR 45 (close direct SELECT on listings via rate-limited RPCs, with pgTAP), LR 50 (teen significant-change holdback: decide on in or out for R1.0).
+Code items from LAUNCH_READINESS: LR 42 (stale Discover on web), LR 45 (close direct SELECT on listings via rate-limited RPCs, with pgTAP), LR 50 (teen significant-change holdback: out of R1.0 per DEC 161; the Quad stays off for every campus until it lands). LR 42 and LR 45 are done in code (2026-11-04).
 Each batch: tests first, then the fix, all gates, a sim recheck (SE at ax-large, Pro Max in dark mode, keyboard states), then a PR.
 Gate: every QA item is fixed or deliberately deferred with a reason. A full SE and Max sim pass shows no HIGH or MED items.
 
