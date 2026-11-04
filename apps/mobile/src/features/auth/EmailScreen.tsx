@@ -52,6 +52,7 @@ export function EmailScreen({
 
   const login = params.mode === 'login';
   const [noAccountFor, setNoAccountFor] = useState<string | null>(null);
+  const [unknownBox, setUnknownBox] = useState<{ y: number; height: number } | null>(null);
 
   const goToVerify = (normalized: string) => {
     verifyStore.set(normalized, {
@@ -144,6 +145,7 @@ export function EmailScreen({
     !send.isPending &&
     !createAccount.isPending;
   const domain = emailDomain(email);
+  const showUnknown = lookup.kind === 'unknown' && !!domain;
 
   return (
     <AuthStep
@@ -151,6 +153,7 @@ export function EmailScreen({
       title={login ? copy.titleSignIn : copy.titleSignUp}
       body={copy.body}
       step={login ? undefined : 1}
+      reveal={showUnknown ? unknownBox : null}
       dock={
         // One docked action that follows the state (3.01): login with no
         // account offers "Create an account" in place of "Send code".
@@ -221,8 +224,13 @@ export function EmailScreen({
         />
       ) : null}
 
-      {lookup.kind === 'unknown' && domain ? (
-        <View style={styles.card} testID="email-unknown">
+      {showUnknown && domain ? (
+        <View
+          style={styles.card}
+          testID="email-unknown"
+          // Scrolled into view: with the keyboard up it lands behind the dock.
+          onLayout={(e) => setUnknownBox(e.nativeEvent.layout)}
+        >
           <Text variant="bodyStrong">{copy.unknownTitle.replace('{domain}', domain)}</Text>
           <Text variant="meta" tone="ink2">
             {copy.unknownBody}

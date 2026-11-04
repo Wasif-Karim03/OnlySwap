@@ -1,7 +1,12 @@
 import { useRouter } from 'expo-router';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { View } from 'react-native';
-import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
+import {
+  KeyboardAwareScrollView,
+  KeyboardStickyView,
+  useKeyboardState,
+  type KeyboardAwareScrollViewRef,
+} from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
@@ -11,6 +16,9 @@ import { stepLabel } from '@/components/Progress';
 import { Text } from '@/components/Text';
 import { nav as navCopy } from '@/strings';
 import { readableColumn } from '@/theme/layout';
+import { useReducedMotion } from '@/theme/reducedMotion';
+
+import { revealScrollY } from './revealScroll';
 
 /** Sign-up steps: email, code, birthday, profile, rules (A03 to A07). */
 export const SIGNUP_STEPS = 5;
@@ -35,6 +43,12 @@ type Props = {
   children?: ReactNode;
   /** Buttons pinned above the keyboard (board `dock`). */
   dock?: ReactNode;
+  /**
+   * A box that just appeared under the field (its onLayout frame, relative to
+   * the children). The step scrolls it into view above the dock and keyboard,
+   * keeping the first field on screen.
+   */
+  reveal?: { y: number; height: number } | null;
   testID: string;
 };
 
@@ -52,6 +66,7 @@ export function AuthStep({
   step,
   children,
   dock,
+  reveal,
   testID,
 }: Props) {
   const insets = useSafeAreaInsets();
@@ -64,6 +79,25 @@ export function AuthStep({
   // 96 is the old fixed guess, used until the dock has been measured.
   const bottomOffset = dockH === null ? 96 : dockH + theme.space.xl + theme.space['2xl'];
   const dockedTrailing = step ? trailing : null;
+  const scrollRef = useRef<KeyboardAwareScrollViewRef>(null);
+  const scrollY = useRef(0);
+  const reduced = useReducedMotion();
+  const [viewH, setViewH] = useState(0);
+  const [childrenY, setChildrenY] = useState(0);
+  const keyboardH = useKeyboardState((s) => (s.isVisible ? s.height : 0));
+  // The raised dock sits on the keyboard; its own bottom inset is dropped then.
+  const coveredH = keyboardH > 0 ? Math.max(0, keyboardH - insets.bottom) : 0;
+  // Keyed on the object: a new layout of the box (shown again) scrolls again.
+  useEffect(() => {
+    if (!reveal) return;
+    const target = revealScrollY({
+      boxBottom: childrenY + reveal.y + reveal.height + theme.space.md,
+      anchorTop: childrenY - theme.space.sm,
+      scrollY: scrollY.current,
+      viewportH: viewH - coveredH,
+    });
+    if (target !== null) scrollRef.current?.scrollTo({ y: target, animated: !reduced });
+  }, [reveal, childrenY, viewH, coveredH, reduced, theme.space.md, theme.space.sm]);
   // With no history (opened by replace or a link) back still leaves for welcome.
   const back = onBack ?? (() => (router.canGoBack() ? router.back() : router.replace('/welcome')));
   return (
@@ -74,6 +108,11 @@ export function AuthStep({
         <NavBar leading={leading} onLeading={back} trailing={trailing} />
       )}
       <KeyboardAwareScrollView
+        ref={scrollRef}
+        onLayout={(e) => setViewH(e.nativeEvent.layout.height)}
+        onScroll={(e) => {
+          scrollY.current = e.nativeEvent.contentOffset.y;
+        }}
         bottomOffset={bottomOffset}
         // The dock rides up over this view with the keyboard; leave room to
         // scroll past it, or a field under the focused one (Password) is out of reach.
@@ -91,7 +130,13 @@ export function AuthStep({
         ) : (
           body
         )}
-        <View style={styles.children}>{children}</View>
+        <View
+          style={styles.children}
+          testID="auth-children"
+          onLayout={(e) => setChildrenY(e.nativeEvent.layout.y)}
+        >
+          {children}
+        </View>
       </KeyboardAwareScrollView>
       {dock || dockedTrailing ? (
         <KeyboardStickyView offset={{ closed: 0, opened: insets.bottom }}>
