@@ -3,6 +3,7 @@ import type { ComponentProps } from 'react';
 import { useKeyboardState } from 'react-native-keyboard-controller';
 
 import { TabBar, type TabItem } from '@/components/TabBar';
+import { useAccountEpoch } from '@/features/auth/accountEpoch';
 import { useTabPrefetch } from '@/features/me/useTabPrefetch';
 import { usePushHandling } from '@/lib/push';
 import { useHidesTabBar } from '@/lib/tabBarVisibility';
@@ -65,8 +66,11 @@ export default function TabsLayout() {
   useTabPrefetch();
   // iPad, wide window: a sidebar on the left instead of bottom tabs (board N5/N6).
   const rail = useLayout().wide;
+  // A new session remounts every tab, so none shows the last one's state (LR 42).
+  const epoch = useAccountEpoch((s) => s.epoch);
   return (
     <Tabs
+      key={epoch}
       initialRouteName="discover"
       tabBar={(props) => <AppTabBar {...props} rail={rail} />}
       // No freezeOnBlur: Unistyles applies styles natively, and a frozen tab
