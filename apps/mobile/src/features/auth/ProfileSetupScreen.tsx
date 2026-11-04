@@ -210,7 +210,9 @@ export function ProfileSetupScreen({
         <View style={styles.photoCopy}>
           {/* The hint stays the button's accessibility hint only (3.01). */}
           <Text variant="bodyStrong">{hasPhoto ? copy.changePhoto : copy.addPhoto}</Text>
-          {hasPhoto && !uploading ? (
+          {/* Also while uploading: the photo is optional, so a stuck upload
+              must not hold Continue for the 60 s timeout (QA-L20). */}
+          {hasPhoto ? (
             <Tappable
               accessibilityRole="button"
               accessibilityLabel={copy.removePhoto}
@@ -227,11 +229,22 @@ export function ProfileSetupScreen({
       </View>
 
       {photo.state === 'uploading' ? (
-        <ProgressBar
-          value={photo.progress}
-          label={copy.uploading}
-          testID="profile-photo-progress"
-        />
+        <View style={styles.progress}>
+          {/* A visible label: a bare bar at 0% read as a stray line (QA-L20). */}
+          <Text
+            variant="meta"
+            tone="ink2"
+            importantForAccessibility="no"
+            accessibilityElementsHidden
+          >
+            {copy.uploading}
+          </Text>
+          <ProgressBar
+            value={photo.progress}
+            label={copy.uploading}
+            testID="profile-photo-progress"
+          />
+        </View>
       ) : null}
       {photo.state === 'done' ? (
         <Text
@@ -298,6 +311,7 @@ export function ProfileSetupScreen({
 }
 
 const styles = StyleSheet.create((theme) => ({
+  progress: { gap: theme.space.xs },
   photoRow: { flexDirection: 'row', alignItems: 'center', gap: theme.space.lg },
   avatar: {
     width: theme.size.avatarL,

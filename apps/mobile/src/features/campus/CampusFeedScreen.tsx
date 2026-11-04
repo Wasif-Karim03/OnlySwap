@@ -364,10 +364,12 @@ export function CampusFeedScreen({
                 <View style={styles.dayOneAction}>
                   <Button
                     label={copy.dayOneAction}
-                    variant="text"
-                    size="M"
+                    // A real button, not bare text (QA-M8).
+                    variant="secondary"
+                    size="S"
                     fullWidth={false}
                     onPress={sell}
+                    testID="campus-day-one-sell"
                   />
                 </View>
               </View>

@@ -1010,7 +1010,8 @@ export const feed = {
 
 export const search = {
   title: 'Search',
-  placeholder: 'Search your campus',
+  // Short so it fits the SE search field at large text (QA-L2).
+  placeholder: 'Search',
   inputLabel: 'Search',
   cancel: 'Cancel',
   /** DEC 128: kept on the phone only. */
@@ -1661,6 +1662,8 @@ export const me = {
   statsSold: '{n} sold',
   statsSoldOne: '{n} sold',
   statsSwaps: '{n} swaps',
+  // A no-break space before the dot keeps it with the stat before it (QA-M5).
+  statSeparator: '\u00A0\u00B7 ',
   statsSwapsOne: '{n} swap',
   activeEmpty: 'Nothing listed yet.',
   postsEmpty: 'What you post in Feed shows up here.',
@@ -2097,7 +2100,7 @@ export const campus = {
   askFor: 'Ask for something',
   postNews: 'Post news',
   newPost: 'New post',
-  composer: "What's happening on campus?",
+  composer: "What's happening?",
   composerLabel: 'Write a post for your campus',
   // Feed posts (DEC 98)
   save: 'Save',
@@ -2184,7 +2187,8 @@ export const campus = {
   // C02 Post free food
   foodTitle: 'Post free food',
   foodWhat: 'What is it?',
-  foodWhatPlaceholder: 'For example, leftover pizza from a club meeting',
+  // Short placeholders: they are one line and were cut off (QA-L10).
+  foodWhatPlaceholder: 'For example, leftover pizza',
   foodWhere: 'Where exactly?',
   foodWhereBody: 'Pick a meetup spot or type the place.',
   foodOther: 'Somewhere else',
@@ -2202,7 +2206,7 @@ export const campus = {
   // Post news (DEC 98)
   newsTitle: 'Post news',
   newsWhat: 'Headline',
-  newsWhatPlaceholder: 'For example, Club fair on the lawn Friday',
+  newsWhatPlaceholder: 'For example, a club fair',
   newsDetails: 'Details (optional)',
   newsDetailsPlaceholder: 'What it is, who it is for, anything to bring.',
   newsPhotos: 'Photos (optional, up to 4)',

@@ -90,7 +90,7 @@ export function AppIconPicker({
                   />
                 </View>
               </View>
-              <Text variant="meta" tone={on ? 'ink' : 'ink2'}>
+              <Text variant="meta" tone={on ? 'ink' : 'ink2'} style={styles.name}>
                 {copy.appIcons[choice]}
               </Text>
             </Pressable>
@@ -140,25 +140,37 @@ export function LiveActivityToggle({
   );
 }
 
+/** The selected ring around an icon. */
+const RING_WIDTH = 2;
+
 const styles = StyleSheet.create((theme) => ({
   section: { gap: theme.space.md, marginTop: theme.space.xl },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.lg },
+  // One row of four equal columns: fixed 84 pt tiles wrapped to 3 + 1 on an
+  // SE and a Pro Max (QA-L5). The icon shrinks to fit, never past avatarL.
+  grid: { flexDirection: 'row', gap: theme.space.sm },
   tile: {
+    flex: 1,
     alignItems: 'center',
     gap: theme.space.xs,
     minWidth: theme.size.hit,
     minHeight: theme.size.hit,
   },
   ring: (on: boolean) => ({
+    width: '100%',
+    maxWidth: theme.size.avatarL + (theme.space.xs + RING_WIDTH) * 2,
     padding: theme.space.xs,
     borderRadius: theme.radius.card,
-    borderWidth: 2,
+    borderWidth: RING_WIDTH,
     borderColor: on ? theme.colors.ink : 'transparent',
   }),
   icon: {
-    width: theme.size.avatarL,
-    height: theme.size.avatarL,
+    width: '100%',
+    aspectRatio: 1,
     borderRadius: theme.radius.thumb + theme.space.xs,
+    // A hairline so the white Paper icon has an edge on a white page (QA-L5).
+    borderWidth: 1,
+    borderColor: theme.colors.line2,
     overflow: 'hidden',
   },
+  name: { textAlign: 'center' },
 }));

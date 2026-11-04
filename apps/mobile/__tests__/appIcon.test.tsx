@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { existsSync } from 'fs';
 import { join } from 'path';
+import { StyleSheet } from 'react-native';
 import type { ExpoConfig } from 'expo/config';
 
 import buildConfig, { ALT_APP_ICONS, WIDGET_APP_GROUP, WIDGET_NAME } from '../app.config';
@@ -71,6 +72,23 @@ describe('T-UNIT-ICON-01 app icon choice (R2-ICON-01)', () => {
     expect(icons.setAlternateAppIcon).toHaveBeenCalledWith('Night');
     fireEvent.press(screen.getByLabelText(settings.appIcons.default));
     await waitFor(() => expect(icons.setAlternateAppIcon).toHaveBeenLastCalledWith(null));
+  });
+
+  it('QA-L5: four equal columns on one row, each icon with an edge', () => {
+    render(<AppIconPicker store={memStore()} />);
+    const tile = screen.getByLabelText(settings.appIcons.paper);
+    const tileStyle = StyleSheet.flatten(
+      typeof tile.props.style === 'function'
+        ? tile.props.style({ pressed: false })
+        : tile.props.style,
+    );
+    expect(tileStyle?.flex).toBe(1);
+    const grid = screen
+      .getByTestId('app-icon-picker')
+      .findAll((n) => n.props.accessibilityRole === 'radiogroup')[0];
+    expect(StyleSheet.flatten(grid?.props.style)?.flexWrap).toBeUndefined();
+    const edged = tile.findAll((n) => StyleSheet.flatten(n.props.style)?.aspectRatio === 1);
+    expect(StyleSheet.flatten(edged[0]?.props.style)?.borderWidth).toBe(1);
   });
 
   it('reads the current icon from the OS and reverts on failure', async () => {

@@ -312,7 +312,7 @@ export function ProfileTabScreen({
               </Text>
               {school ? (
                 <View style={styles.school} testID="profile-school">
-                  <Text variant="label" tone="ink2" style={styles.regular}>
+                  <Text variant="label" tone="ink2" style={styles.schoolText}>
                     {school}
                   </Text>
                   <Icon name="check" size={14} tone="green" strokeWidth={2.4} />
@@ -339,7 +339,7 @@ export function ProfileTabScreen({
             const [before, after] = st.name ? splitAround(st.template, st.name) : [st.template, ''];
             return (
               <Text key={st.key} variant="label" tone="ink2" style={styles.regular}>
-                {i > 0 ? '   ' : ''}
+                {i > 0 ? copy.statSeparator : ''}
                 {before}
                 {st.value ? (
                   <Text variant="label" tone="ink">
@@ -1121,7 +1121,9 @@ export function RelistScreen({ id, api = meApi }: { id: string; api?: MeApi }) {
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   regular: { fontWeight: '400' },
-  school: { flexDirection: 'row', alignItems: 'center', gap: theme.space.xs, flexWrap: 'wrap' },
+  // The tick sits after the school on the same row; the text wraps, not the tick (QA-M5).
+  school: { flexDirection: 'row', alignItems: 'center', gap: theme.space.xs },
+  schoolText: { fontWeight: '400', flexShrink: 1 },
   segment: { marginTop: theme.space.xs },
   links: { marginTop: theme.space.md },
   emptyGrid: { gap: theme.space.sm, paddingVertical: theme.space.md, alignItems: 'flex-start' },

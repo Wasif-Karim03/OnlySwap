@@ -111,6 +111,28 @@ describe('P4-AUTH-08 A06 profile setup', () => {
     expect(client.getQueryData(['profile', 'u1', 'gate'])).toBeUndefined();
   });
 
+  it('QA-L20: a stuck upload can be removed, which frees Continue', async () => {
+    const api = fakeApi();
+    const avatar: AvatarDeps = {
+      pick: jest.fn(async () => photo),
+      upload: jest.fn(() => new Promise<string>(() => {})),
+    };
+    const { router } = setup('/profile-setup', {
+      'profile-setup': () => <ProfileSetupScreen api={api} avatar={avatar} />,
+    });
+    fireEvent.press(await screen.findByTestId('profile-photo'));
+    expect(await screen.findByTestId('profile-photo-progress')).toBeTruthy();
+    expect(screen.getByText(profileSetup.uploading, { includeHiddenElements: true })).toBeTruthy();
+    fireEvent.changeText(screen.getByTestId('profile-first'), 'Ana');
+    expect(screen.getByTestId('profile-continue')).toBeDisabled();
+    fireEvent.press(screen.getByTestId('profile-photo-remove'));
+    expect(screen.queryByTestId('profile-photo-progress')).toBeNull();
+    expect(screen.getByTestId('profile-continue')).not.toBeDisabled();
+    fireEvent.press(screen.getByTestId('profile-continue'));
+    await waitFor(() => expect(router.getPathname()).toBe('/'));
+    expect(api.updateProfile).toHaveBeenCalledWith(expect.objectContaining({ avatarPath: null }));
+  });
+
   it('the photo uploads with progress; Continue waits for it and sends the key', async () => {
     const api = fakeApi();
     const upload = deferred<string>();

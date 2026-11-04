@@ -165,6 +165,15 @@ describe('F01-F08 profile', () => {
     const stats = profileStats(ME, 'en-US');
     expect(stats.map((st) => st.key)).toEqual(['sold', 'swaps', 'thumbs', 'joined']);
     expect(stats[2]!.value).toBe('100');
+    // QA-M5: stats are split by a dot that stays with the stat before it.
+    const statsText = (function flat(n: unknown): string {
+      if (typeof n === 'string') return n;
+      if (Array.isArray(n)) return n.map(flat).join('');
+      const kids = (n as { props?: { children?: unknown } })?.props?.children;
+      return kids === undefined ? '' : flat(kids);
+    })(screen.getByTestId('profile-stats'));
+    expect(statsText).toContain('2 swaps\u00A0\u00B7 ');
+    expect(statsText).not.toContain('   ');
     // Active and Sold as a photo grid with price tags.
     expect(await screen.findByTestId('profile-listing-a')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Item a, $15' })).toBeTruthy();
