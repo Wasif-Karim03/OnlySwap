@@ -1,7 +1,19 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { AppState, Linking, Platform, ScrollView, Share, View } from 'react-native';
+import {
+  AppState,
+  Linking,
+  Platform,
+  ScrollView,
+  Share,
+  View,
+  useWindowDimensions,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { track as trackActivity, type ActivitySource } from '@/lib/activity';
@@ -19,7 +31,7 @@ import { PhotoCarousel } from '@/components/PhotoCarousel';
 import { ReportSheet } from '@/components/ReportSheet';
 import { Sheet } from '@/components/Sheet';
 import { SkeletonCard } from '@/components/Skeleton';
-import { Icon } from '@/components/icons/Icon';
+import { Icon, type IconName } from '@/components/icons/Icon';
 import { Tappable } from '@/components/Tappable';
 import { Text } from '@/components/Text';
 import { useToastStore } from '@/components/Toast';
@@ -120,6 +132,14 @@ export function ListingScreen({
   const qc = useQueryClient();
   // iPad, wide window: photos on the left, details on the right.
   const wide = useLayout().wide;
+  // QA-M6: light status bar while the square photo is under it.
+  const { width: windowWidth } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const [overPhoto, setOverPhoto] = useState(true);
+  const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const next = e.nativeEvent.contentOffset.y < windowWidth - insets.top;
+    if (next !== overPhoto) setOverPhoto(next);
+  };
   const query = useQuery({ queryKey: listingKey(id), queryFn: () => api.getListing(id) });
   const spotsQuery = useQuery({ queryKey: ['spots'], queryFn: spots, staleTime: 3600_000 });
   const [options, setOptions] = useState(false);
@@ -344,9 +364,13 @@ export function ListingScreen({
   const commentsRow = !owner && item.comments_enabled === true;
   const openStats = () => router.push({ pathname: '/listing/[id]/stats', params: { id } });
 
+  const photoHero = item.photos.length > 0 && !wide;
   return (
     <View style={styles.root} testID="screen-listing">
+      <StatusBar style={photoHero && overPhoto ? 'light' : 'auto'} />
       <ScrollView
+        onScroll={photoHero ? onScroll : undefined}
+        scrollEventThrottle={photoHero ? SCROLL_THROTTLE_MS : undefined}
         contentContainerStyle={[
           docked
             ? dockHeight !== null
@@ -360,19 +384,29 @@ export function ListingScreen({
           style={wide ? styles.photoPane : null}
           testID={wide ? 'listing-photo-pane' : undefined}
         >
-          <PhotoCarousel
-            photos={item.photos.map((p, i) => ({
-              key: `${p.path}-${i}`,
-              source: mediaUrl(base, p.path),
-              blurhash: p.blurhash,
-            }))}
-            label={item.title}
-            aspectRatio={1}
-            onPressPhoto={(i) =>
-              router.push({ pathname: '/listing/[id]/photos', params: { id, i: String(i) } })
-            }
-            testID="listing-photos"
-          />
+          {item.photos.length > 0 ? (
+            <PhotoCarousel
+              photos={item.photos.map((p, i) => ({
+                key: `${p.path}-${i}`,
+                source: mediaUrl(base, p.path),
+                blurhash: p.blurhash,
+              }))}
+              label={item.title}
+              aspectRatio={1}
+              onPressPhoto={(i) =>
+                router.push({ pathname: '/listing/[id]/photos', params: { id, i: String(i) } })
+              }
+              testID="listing-photos"
+            />
+          ) : (
+            // QA-M7: wanted, news and food posts have no photo; a short band, not a grey square.
+            <View style={styles.noPhoto(wide)} testID="listing-no-photo">
+              <Icon name={kindIcon(item.kind)} size={NO_PHOTO_ICON} tone="ink2" />
+            </View>
+          )}
+          {photoHero ? (
+            <View style={styles.topScrim} pointerEvents="none" testID="listing-top-scrim" />
+          ) : null}
         </View>
         <View style={[styles.body, wide ? styles.infoPane : null]}>
           <View style={styles.priceRow}>
@@ -819,6 +853,25 @@ function Unavailable({ result, onBack }: { result: { access: string }; onBack: (
 }
 
 /** A button over the photo, on the clear material (DEC 143). */
+const SCROLL_THROTTLE_MS = 16;
+const NO_PHOTO_ICON = 32;
+
+/** The icon on the short band a no-photo listing shows instead of a photo (QA-M7). */
+export function kindIcon(kind: string): IconName {
+  switch (kind) {
+    case 'food':
+      return 'food';
+    case 'wanted':
+      return 'search';
+    case 'news':
+      return 'quad';
+    case 'free':
+      return 'gift';
+    default:
+      return 'tag';
+  }
+}
+
 function PhotoButton({ children }: { children: ReactNode }) {
   return (
     <Material variant="clear" style={styles.photoButton}>
@@ -829,6 +882,27 @@ function PhotoButton({ children }: { children: ReactNode }) {
 
 const styles = StyleSheet.create((theme, rt) => ({
   photoButton: { borderRadius: theme.radius.chip },
+  // The photo scrim (DESIGN_SYSTEM §8), top edge: keeps the buttons and status bar readable.
+  topScrim: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: rt.insets.top + theme.size.navBar + theme.space.lg,
+    experimental_backgroundImage: `linear-gradient(to top, transparent, ${theme.colors.overlay})`,
+    ...(Platform.OS === 'web'
+      ? ({
+          backgroundImage: `linear-gradient(to top, transparent, ${theme.colors.overlay})`,
+        } as object)
+      : null),
+  },
+  noPhoto: (wide: boolean) => ({
+    height: (wide ? 0 : rt.insets.top) + theme.size.navBar + theme.space['2xl'],
+    paddingTop: wide ? 0 : rt.insets.top,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.bg2,
+  }),
   root: { flex: 1, backgroundColor: theme.colors.bg },
   pad: { flex: 1, padding: theme.space.screen },
   // Fallback until the dock has been measured.

@@ -474,6 +474,39 @@ describe('DEC 98 news on the listing screen', () => {
     fireEvent.press(screen.getByTestId('listing-open-link'));
     expect(openUrl).toHaveBeenCalledWith('https://www.forms.example.com/fair');
   });
+
+  it.each([
+    ['no photo: a short band, no carousel, no scrim (QA-M7)', [], false],
+    ['photos: the carousel with a top scrim (QA-M6)', NEWS.photos, true],
+  ])('%s', async (_name, photos, hasPhotos) => {
+    const api = {
+      getListing: jest.fn(async () => ({ ...NEWS, photos, access: 'buyer' }) as ListingResult),
+      recordView: jest.fn(async () => {}),
+      save: jest.fn(async () => 1),
+      unsave: jest.fn(async () => 0),
+    } as unknown as FeedApi;
+    renderAt(
+      {
+        'listing/[id]/index': () => (
+          <ListingScreen
+            id="N1"
+            api={api}
+            spots={async () => []}
+            mediaBase={() => 'http://m'}
+            site={() => 'https://site'}
+            share={jest.fn(async () => {})}
+            openUrl={jest.fn(async () => {})}
+            now={() => NOW}
+          />
+        ),
+      },
+      '/listing/N1',
+    );
+    expect(await screen.findByText(campus.listingNews)).toBeTruthy();
+    expect(screen.queryByTestId('listing-no-photo') !== null).toBe(!hasPhotos);
+    expect(screen.queryByTestId('listing-photos') !== null).toBe(hasPhotos);
+    expect(screen.queryByTestId('listing-top-scrim') !== null).toBe(hasPhotos);
+  });
 });
 
 // ---------------------------------------------------------------------------------------------

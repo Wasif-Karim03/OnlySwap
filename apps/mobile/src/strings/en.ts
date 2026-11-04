@@ -1158,6 +1158,9 @@ export const offers = {
   keepSwiping: 'Keep swiping',
   close: 'Close',
   unavailableTitle: "This item isn't taking offers",
+  unavailableBody: 'It may have sold, or the seller took it down.',
+  holdTitle: 'On hold right now',
+  holdBody: 'Try again later.',
   pausedTitle: 'Offers are paused',
   // Inbox (E01)
   inboxTitle: 'Inbox',
