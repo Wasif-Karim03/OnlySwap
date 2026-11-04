@@ -471,10 +471,12 @@ describe('DEC 98 news on the listing screen', () => {
     expect(screen.getByTestId('listing-event')).toBeTruthy();
     // QA-L14: the event date is ink, not sky (sky text only on its own chip).
     const { lightTheme } = jest.requireActual('../src/theme/themes');
-    const eventText = screen.getByTestId('listing-event').findAll(
-      (n) =>
-        typeof n.props.children === 'string' && Boolean(StyleSheet.flatten(n.props.style)?.color),
-    )[0];
+    const eventText = screen
+      .getByTestId('listing-event')
+      .findAll(
+        (n) =>
+          typeof n.props.children === 'string' && Boolean(StyleSheet.flatten(n.props.style)?.color),
+      )[0];
     expect(StyleSheet.flatten(eventText?.props.style)?.color).toBe(lightTheme.colors.ink);
     expect(screen.queryByTestId('listing-offer')).toBeNull();
     expect(screen.queryByText(/meetup/i)).toBeNull();

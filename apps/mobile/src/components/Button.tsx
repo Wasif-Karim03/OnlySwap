@@ -196,16 +196,16 @@ const styles = StyleSheet.create((theme) => ({
       disabled && FILLED.has(variant)
         ? theme.colors.bg3
         : variant === 'accent'
-        ? theme.colors.accent
-        : variant === 'primary' || variant === 'dark'
-          ? theme.colors.ink
-          : variant === 'secondary'
-            ? theme.colors.bg2
-            : variant === 'destructive'
-              ? theme.colors.red
-              : variant === 'onAccent'
-                ? theme.colors.onAccent
-                : 'transparent',
+          ? theme.colors.accent
+          : variant === 'primary' || variant === 'dark'
+            ? theme.colors.ink
+            : variant === 'secondary'
+              ? theme.colors.bg2
+              : variant === 'destructive'
+                ? theme.colors.red
+                : variant === 'onAccent'
+                  ? theme.colors.onAccent
+                  : 'transparent',
   }),
   hidden: { opacity: 0 },
   shown: { opacity: 1 },
