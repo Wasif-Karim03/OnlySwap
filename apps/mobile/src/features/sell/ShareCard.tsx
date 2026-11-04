@@ -58,12 +58,7 @@ export const ShareCard = forwardRef<View, Props>(function ShareCard(
             </Text>
           </View>
           <View style={styles.bottom}>
-            <Text
-              variant="display"
-              numberOfLines={1}
-              allowFontScaling={false}
-              style={styles.price}
-            >
+            <Text variant="display" numberOfLines={1} allowFontScaling={false} style={styles.price}>
               {price}
             </Text>
             <Text variant="heading" numberOfLines={2} allowFontScaling={false}>

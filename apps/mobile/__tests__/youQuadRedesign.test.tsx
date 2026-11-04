@@ -131,9 +131,7 @@ describe('DEC 90 Getting in', () => {
   it('QA recheck: the scroll leaves room to reach fields behind the raised dock', async () => {
     renderAt(
       {
-        step: () => (
-          <AuthStep title="Title" testID="screen-step" dock={<Text>Sign in</Text>} />
-        ),
+        step: () => <AuthStep title="Title" testID="screen-step" dock={<Text>Sign in</Text>} />,
       },
       '/step',
     );

@@ -350,7 +350,13 @@ const styles = StyleSheet.create((theme) => ({
     paddingHorizontal: theme.space.xl,
   },
   contentField: { backgroundColor: theme.colors.accent, paddingTop: theme.space.lg },
-  fieldRamp: { position: 'absolute', left: 0, right: 0, bottom: '100%', height: theme.space['2xl'] },
+  fieldRamp: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: '100%',
+    height: theme.space['2xl'],
+  },
   body: { marginTop: theme.space.sm },
   actions: { marginTop: theme.space.xl, gap: theme.space.xs },
 }));
