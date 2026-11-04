@@ -10,6 +10,7 @@ import { useToastStore } from '@/components/Toast';
 import { isWebPlatform } from '@/lib/platform';
 import { getStorage, type TypedStorage } from '@/lib/storage';
 import { settings as copy } from '@/strings';
+import { useLargeText } from '@/theme/largeText';
 
 import { getWidgetSync, liveActivitiesEnabled } from '../widgets/sync';
 import { appIconApi, type AppIconApi } from './api';
@@ -41,6 +42,7 @@ export function AppIconPicker({
   store?: Store;
   os?: string;
 }) {
+  const large = useLargeText();
   const [selected, setSelected] = useState<AppIconChoice>(() => {
     const fromOs = api.current();
     if (fromOs) return choiceFromNative(fromOs);
@@ -78,7 +80,7 @@ export function AppIconPicker({
               accessibilityLabel={copy.appIcons[choice]}
               {...a11yState({ checked: on })}
               onPress={() => void choose(choice)}
-              style={styles.tile}
+              style={styles.tile(large)}
               testID={`app-icon-${choice}`}
             >
               <View style={styles.ring(on)}>
@@ -140,21 +142,25 @@ export function LiveActivityToggle({
   );
 }
 
+/** Just under half, so two tiles and the gap share a row. */
+const TWO_COLUMNS = '45%';
 /** The selected ring around an icon. */
 const RING_WIDTH = 2;
 
 const styles = StyleSheet.create((theme) => ({
   section: { gap: theme.space.md, marginTop: theme.space.xl },
-  // One row of four equal columns: fixed 84 pt tiles wrapped to 3 + 1 on an
-  // SE and a Pro Max (QA-L5). The icon shrinks to fit, never past avatarL.
-  grid: { flexDirection: 'row', gap: theme.space.sm },
-  tile: {
-    flex: 1,
+  // Four equal columns: fixed 84 pt tiles wrapped to 3 + 1 on an SE and a Pro
+  // Max (QA-L5). At large text, two columns so "Default" fits on its line.
+  // The icon shrinks to fit, never past avatarL.
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
+  tile: (large: boolean) => ({
+    flexBasis: large ? TWO_COLUMNS : 0,
+    flexGrow: 1,
     alignItems: 'center',
     gap: theme.space.xs,
     minWidth: theme.size.hit,
     minHeight: theme.size.hit,
-  },
+  }),
   ring: (on: boolean) => ({
     width: '100%',
     maxWidth: theme.size.avatarL + (theme.space.xs + RING_WIDTH) * 2,

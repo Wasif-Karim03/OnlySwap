@@ -1,7 +1,7 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { existsSync } from 'fs';
 import { join } from 'path';
-import { StyleSheet } from 'react-native';
+import { Dimensions, StyleSheet } from 'react-native';
 import type { ExpoConfig } from 'expo/config';
 
 import buildConfig, { ALT_APP_ICONS, WIDGET_APP_GROUP, WIDGET_NAME } from '../app.config';
@@ -74,21 +74,37 @@ describe('T-UNIT-ICON-01 app icon choice (R2-ICON-01)', () => {
     await waitFor(() => expect(icons.setAlternateAppIcon).toHaveBeenLastCalledWith(null));
   });
 
-  it('QA-L5: four equal columns on one row, each icon with an edge', () => {
-    render(<AppIconPicker store={memStore()} />);
-    const tile = screen.getByLabelText(settings.appIcons.paper);
-    const tileStyle = StyleSheet.flatten(
+  const tileStyle = (label: string) => {
+    const tile = screen.getByLabelText(label);
+    return StyleSheet.flatten(
       typeof tile.props.style === 'function'
         ? tile.props.style({ pressed: false })
         : tile.props.style,
     );
-    expect(tileStyle?.flex).toBe(1);
-    const grid = screen
-      .getByTestId('app-icon-picker')
-      .findAll((n) => n.props.accessibilityRole === 'radiogroup')[0];
-    expect(StyleSheet.flatten(grid?.props.style)?.flexWrap).toBeUndefined();
-    const edged = tile.findAll((n) => StyleSheet.flatten(n.props.style)?.aspectRatio === 1);
-    expect(StyleSheet.flatten(edged[0]?.props.style)?.borderWidth).toBe(1);
+  };
+  const setFontScale = (fontScale: number) => {
+    const base = { width: 375, height: 667, scale: 2 };
+    act(() => Dimensions.set({ window: { ...base, fontScale }, screen: { ...base, fontScale } }));
+  };
+
+  it('QA-L5: four equal columns on one row, each icon with an edge', () => {
+    // The Jest Dimensions mock defaults to fontScale 2, so set default text here.
+    setFontScale(1);
+    try {
+      render(<AppIconPicker store={memStore()} />);
+      expect(tileStyle(settings.appIcons.paper)).toMatchObject({ flexBasis: 0, flexGrow: 1 });
+      const tile = screen.getByLabelText(settings.appIcons.paper);
+      const edged = tile.findAll((n) => StyleSheet.flatten(n.props.style)?.aspectRatio === 1);
+      expect(StyleSheet.flatten(edged[0]?.props.style)?.borderWidth).toBe(1);
+    } finally {
+      setFontScale(2);
+    }
+  });
+
+  it('QA-L5: two columns at large text, so labels keep whole words', () => {
+    setFontScale(2);
+    render(<AppIconPicker store={memStore()} />);
+    expect(tileStyle(settings.appIcons.default)).toMatchObject({ flexBasis: '45%' });
   });
 
   it('reads the current icon from the OS and reverts on failure', async () => {

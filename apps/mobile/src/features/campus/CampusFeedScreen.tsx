@@ -339,7 +339,7 @@ export function CampusFeedScreen({
               >
                 <View style={styles.composerTap}>
                   <Avatar name={myName} uri={myAvatar} size="M" />
-                  <Text variant="body" tone="ink3" numberOfLines={1} style={styles.composerText}>
+                  <Text variant="body" tone="ink3" numberOfLines={2} style={styles.composerText}>
                     {copy.composer}
                   </Text>
                 </View>
