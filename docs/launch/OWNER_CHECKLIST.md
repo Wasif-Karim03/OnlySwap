@@ -13,9 +13,9 @@ Your steps only, in order. Claude's steps sit between them in `docs/LAUNCH_PLAN.
 - [ ] Then run, and paste values at the hidden prompts: `bash scripts/deploy/prod-supabase.command`. Tell Claude when it finishes; Claude checks the gate (health, migrations, functions, scheduled jobs, restore drill).
 
 ## Domain and scanning (phase 4)
-- [ ] Buy the domain in Cloudflare (about $10.46 a year, approved) and switch the nameservers.
-- [ ] Cloudflare: a Turnstile widget for the domain (Managed) and an R2 token scoped to `onlyswap-media` and `onlyswap-private`.
-- [ ] Turn on the Cloudflare CSAM Scanning Tool for the media host. The legal review lists it as a submission blocker (LR 31).
+- [ ] Skip the custom domain for R1.0 (DEC 164). Add it before any campus beyond Ohio Wesleyan.
+- [ ] Cloudflare: a Turnstile widget for the site (Managed) and an R2 token scoped to `onlyswap-media` and `onlyswap-private`.
+- [ ] No CSAM scan at first launch (DEC 164). Turn on the Cloudflare CSAM Scanning Tool before any campus beyond Ohio Wesleyan.
 - [ ] Run `bash scripts/deploy/cloudflare-prod.command` (R2, media Worker, site, admin and web on prod). Do not use `site.command`; it deploys staging.
 
 ## Ohio Wesleyan data (phase 5)

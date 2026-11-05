@@ -6,7 +6,7 @@ Each phase ends with a gate. The next phase starts only when the gate is green, 
 
 ## Owner decisions (2026-11-04; recorded in DECISIONS_LOG in phase 0)
 - Pause `intention` to free a Supabase slot for `onlyswap-prod` ($0).
-- Buy a domain (about $10.46 a year) for CSAM scanning and real URLs. Chat photos stay **off** at launch.
+- No custom domain for R1.0 (DEC 164). Public URLs use onlyswap.pages.dev. Chat photos stay **off** at launch.
 - Legal: a recorded self-review against RELEASE §6 (no lawyer).
 - Merge the PR stack one PR at a time, in order. Phones only (already `supportsTablet: false`).
 - Launch: iOS first, at Ohio Wesleyan (`owu.edu`). The web app moves to prod with iOS. Android follows.
@@ -50,8 +50,8 @@ Claude:
 6. GitHub secrets and variables so Backup, Keepalive and Usage report go green, then a restore drill (LR 24, 29).
 Gate: prod `health` is OK, migrations match, every function is listed, the 3 scheduled jobs are green once, and the restore drill is done.
 
-## Phase 4: Domain, CSAM scanning, site, admin and web on prod
-Owner: buy the domain in Cloudflare and sign up for the CSAM Scanning Tool.
+## Phase 4: Site, admin and web on prod (domain and CSAM scanning come after launch, DEC 164)
+Owner: nothing for R1.0. Later, before any campus beyond OWU: buy the domain and sign up for the CSAM Scanning Tool.
 Claude: point media, site, admin and web at the domain; set CF_ZONE_ID and the purge token; deploy `apps/site` (APPLE_TEAM_ID set for Universal Links), `apps/admin` and the web app against prod (LR 27, 30, 31, 41).
 Gate: web deletion, support, the waitlist, and share and invite links work end to end on prod. Scanning is enabled on the media host. A deleted photo URL returns 404.
 

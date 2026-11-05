@@ -60,7 +60,7 @@ The expected total is about 900 of 2,000 free minutes a month.
 7. URLs: Privacy Policy `https://onlyswap.pages.dev/privacy`, Support `https://onlyswap.pages.dev/help`, Marketing `https://onlyswap.pages.dev`. Open each one first.
 8. App Review Information: the review account and notes from `docs/store/listing.md` (the account skips the age check, AR-07). Sign-in required: yes.
 9. Screenshots: iPhone 6.9-inch 1320×2868 and, because `supportsTablet` is on, iPad 13-inch 2064×2752 (fictional school, no university names or marks).
-10. Legal review before submitting: a lawyer has read the 13+ terms, privacy (teen section) and child safety pages, and the plan for minors meeting adults in person (DEC 136, DEC 137). CSAM scanning is live (OWNER_TODO 19).
+10. Legal review before submitting: the owner has self-reviewed the 13+ terms, privacy (teen section) and child safety pages, and the plan for minors meeting adults in person (DEC 136, DEC 137; `docs/launch/LEGAL_SELF_REVIEW.md`), and accepts the risk of no lawyer review (DEC 164). No CSAM scan runs at first launch (DEC 164). The controls are automatic photo screening (DEC 152), report and block, and chat photos off (DEC 159).
 11. Release: manual release, phased 7 days.
 
 **Apple (App Store Connect):**
