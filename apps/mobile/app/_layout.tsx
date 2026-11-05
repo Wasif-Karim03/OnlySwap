@@ -23,6 +23,8 @@ import { CrashScreen } from '@/components/CrashScreen';
 import { ToastHost } from '@/components/Toast';
 import { watchAccountEpoch } from '@/features/auth/accountEpoch';
 import { watchAccountReset } from '@/features/auth/accountReset';
+import { useAppGate } from '@/features/auth/useAppGate';
+import { isSignedOutPath } from '@/features/auth/signedOutPaths';
 import { LaunchIntro } from '@/features/auth/LaunchIntro';
 import { launchStartedAt } from '@/features/auth/launchTiming';
 import { SessionExpiredSheet } from '@/features/auth/SessionExpiredSheet';
@@ -117,6 +119,7 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <ThemeProvider value={dark ? DarkTheme : DefaultTheme}>
             <Stack screenOptions={{ headerShown: false }} />
+            <SignedOutGuard />
             <SessionExpiredSheet />
             <OfflineBanner />
             <ToastHost />
@@ -142,6 +145,22 @@ function useDevRouteLog() {
       console.log(`[route] ${pathname}`);
     }
   }, [pathname]);
+}
+
+/**
+ * A signed-out person who opens a deep link to a protected screen goes to Welcome
+ * (launch item 4). Uses the same gate as the launch screen, so both agree.
+ */
+function SignedOutGuard() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { route } = useAppGate();
+  useEffect(() => {
+    if (route !== 'welcome') return;
+    if (isSignedOutPath(pathname)) return;
+    router.replace('/welcome');
+  }, [route, pathname, router]);
+  return null;
 }
 
 function useSystemWatch(queryClient: ReturnType<typeof createQueryClient>) {
