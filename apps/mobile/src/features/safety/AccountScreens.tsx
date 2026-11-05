@@ -19,6 +19,7 @@ import { TextArea } from '@/components/TextArea';
 import { useToastStore } from '@/components/Toast';
 import { getEnv } from '@/lib/env';
 import { errorText } from '@/lib/errors';
+import { unregisterPush } from '@/lib/push';
 import { fill } from '@/lib/format';
 import { safety as copy, intlLocale } from '@/strings';
 import { readableColumn } from '@/theme/layout';
@@ -266,8 +267,11 @@ export function BlockedScreen({
 /** F16 Delete account: type DELETE (P11-ACC-01). */
 export function DeleteAccountScreen({
   auth = authApi,
+  beforeDelete = unregisterPush,
 }: {
   auth?: Pick<AuthApi, 'deleteAccount' | 'signOut'>;
+  /** Stops this phone getting the account's pushes. Runs while still signed in. */
+  beforeDelete?: () => Promise<void>;
 }) {
   const router = useRouter();
   const [typed, setTyped] = useState('');
@@ -279,6 +283,7 @@ export function DeleteAccountScreen({
     setBusy(true);
     setError(null);
     try {
+      await beforeDelete();
       await auth.deleteAccount();
       await auth.signOut('local').catch(() => {});
       router.replace('/welcome');
