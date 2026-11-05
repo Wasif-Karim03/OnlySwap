@@ -220,6 +220,8 @@ const report: Strings['report'] = {
   sentBody: 'Gracias por avisarnos. Lo revisaremos, normalmente en menos de un día.',
   sentBodyBlocked:
     'Gracias por avisarnos. Bloqueaste a {name} y lo revisaremos, normalmente en menos de un día.',
+  blockFailedAfterReport:
+    'Reporte enviado, pero no pudimos bloquearlos. Vuelve a tocar Bloquear desde su perfil.',
   duplicateTitle: 'Ya lo reportaste',
   duplicateBody: 'Ya reportaste esto. Lo estamos revisando.',
   done: 'Listo',
@@ -1262,6 +1264,7 @@ const chat: Strings['chat'] = {
   block: 'Bloquear a {name}',
   hide: 'Ocultar chat',
   hideDone: 'Chat oculto. Vuelve si te escriben.',
+  hideFailed: 'No pudimos ocultar este chat. Inténtalo de nuevo.',
   addPhoto: 'Agregar foto',
   photoSheetTitle: 'Enviar una foto',
   dayToday: 'Hoy',

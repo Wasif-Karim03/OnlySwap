@@ -225,6 +225,7 @@ export const report = {
   sentBody: "Thanks for telling us. We'll look into it, usually within a day.",
   sentBodyBlocked:
     "Thanks for telling us. You blocked {name}, and we'll look into it, usually within a day.",
+  blockFailedAfterReport: "Report sent, but we couldn't block them. Try Block again from their profile.",
   duplicateTitle: 'Already reported',
   duplicateBody: "You've already reported this. We're on it.",
   done: 'Done',
@@ -1305,6 +1306,7 @@ export const chat = {
   block: 'Block {name}',
   hide: 'Hide chat',
   hideDone: 'Chat hidden. It comes back if they message you.',
+  hideFailed: "Couldn't hide this chat. Try again.",
   // Photos in chat (P8-CHAT-04, R11-PHOTO-GATE)
   addPhoto: 'Add a photo',
   photoSheetTitle: 'Send a photo',

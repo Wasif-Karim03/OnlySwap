@@ -4,6 +4,7 @@ import { StyleSheet } from 'react-native-unistyles';
 
 import { fill } from '@/lib/format';
 import { errorCopy, toAppError } from '@/lib/errors';
+import type { ReportOutcome } from '@/features/safety/reportWithBlock';
 import { report as reportCopy } from '@/strings';
 
 import { Button } from './Button';
@@ -111,8 +112,11 @@ type Props = {
   target: ReportTarget;
   /** First name and initial of the person, e.g. "Ben O.". */
   name?: string;
-  /** Calls `create_report` (and `block_user`) in P11. Throw to show the error. */
-  onSubmit: (input: ReportInput) => Promise<void>;
+  /**
+   * Calls `create_report` (and `block_user`). Throw to show the error. Return
+   * `{ blocked }` when the block may not have applied, so the sent message is accurate.
+   */
+  onSubmit: (input: ReportInput) => Promise<ReportOutcome | void>;
   campusTimeZone?: string;
   testID?: string;
 };
@@ -136,6 +140,7 @@ export function ReportSheet({
   const [details, setDetails] = useState('');
   const [block, setBlock] = useState(false);
   const [blockTouched, setBlockTouched] = useState(false);
+  const [blockApplied, setBlockApplied] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [wasVisible, setWasVisible] = useState(visible);
   const { height: screenH } = useWindowDimensions();
@@ -178,7 +183,12 @@ export function ReportSheet({
     setPhase('submitting');
     setError(null);
     try {
-      await onSubmit({ reason, details: details.trim(), block: canBlock(target) && block });
+      const outcome = await onSubmit({
+        reason,
+        details: details.trim(),
+        block: canBlock(target) && block,
+      });
+      setBlockApplied(outcome ? outcome.blocked : canBlock(target) && block);
       setPhase('sent');
     } catch (e) {
       const next = phaseAfterError(e);
@@ -201,7 +211,7 @@ export function ReportSheet({
           </Text>
           <Text variant="body" tone="ink2" style={styles.center}>
             {phase === 'sent'
-              ? block
+              ? blockApplied
                 ? fill(reportCopy.sentBodyBlocked, { name: who })
                 : reportCopy.sentBody
               : reportCopy.duplicateBody}
