@@ -7,6 +7,8 @@ order: 2
 
 OnlySwap is a campus marketplace for verified students. We collect only what we need to run it. We don't sell your data, we don't show ads, and we don't track you across other apps or sites.
 
+Effective November 4, 2026.
+
 ## 1. What we collect
 
 | Data | Why |
@@ -21,6 +23,7 @@ OnlySwap is a campus marketplace for verified students. We collect only what we 
 | Around campus posts (free food, free items, Wanted) | To show them to students at your school. They're listings, so they follow the listing rules. |
 | Invite code and who invited you | To credit the person who invited you and to show campus progress. |
 | Data export requests | To build your download and send you the link. |
+| Waitlist request (school email and school) | To tell you when your school opens. Kept until we email you or 12 months, whichever comes first. |
 | Reports, blocks, strikes and appeals | To keep people safe and enforce the rules. |
 | Push token and notification settings | To send the notifications you chose. |
 | Activity in the app: listings shown to you, listings you open and for how long, where you opened them from, searches, swipes, saves and offers, your device type and app version, and when you were last active | To run and protect the service: find problems, spot scams and spam, and see what works. Kept in our own database, never sold or shared for ads. See section 2. |
@@ -45,22 +48,23 @@ These processors handle data only to provide their service to us:
 - Sentry (crash reports)
 - PostHog (usage events)
 - Our email provider (sign-in codes and account emails)
+- OpenFreeMap (map pictures on the Meetup spots map; it sees your device's IP address when the map loads, but not who you are)
 
-We share information with authorities only when the law requires it or someone's safety is at serious risk. That includes, in those cases only, who wrote a Quad post (section 4).
+We share information with authorities only when the law requires it or someone's safety is at serious risk. That includes, in those cases only, the account details of the person who wrote a Quad post (section 4).
 
 ## 4. Features with extra details
 
 ### The Quad
 
-The Quad is a board for students at your school. Posts and replies show your first name, last initial and profile photo, like the rest of OnlySwap, and are linked to your account.
+The Quad is a board for students at your school. Posts and replies show your first name, last initial and profile photo, like the rest of OnlySwap, and are linked to your account. Other students at your school can see them. We keep that link so we can act on reports and, when the law requires it or someone's safety is at serious risk, tell the authorities the account details of who wrote a post.
 
-Only the owner of OnlySwap can do this. Each time, they need a case reference and a fresh two-step sign-in check, the action is written to our audit log, and we email the account that wrote the post to say it happened.
+Looking up the account details behind a Quad post (like the school email) is limited. Only the owner of OnlySwap can do this. Each time, they need a case reference and a fresh two-step sign-in check, the action is written to our audit log, and we email the account that wrote the post to say it happened.
 
 We also store your votes on posts, replies and polls (so you can't vote twice and so posts that drop to a score of -5 can be hidden for review), the people you hide (so you stop seeing them, without us telling you who they are) and the words you mute. Photos in Quad posts have location data (EXIF) removed before upload, and photos from accounts newer than 7 days wait for a person to review them.
 
 ### Photos in chat
 
-When photos in chat are on, photos you send are stored privately, not on a public link. The app gets a signed link that works for up to 2 hours and only for people in that chat. Location data (EXIF) is removed before upload. Photos may be checked automatically for illegal content, like child sexual abuse material, and a person reviews any photo that's reported. Photos are kept with the chat and deleted with it.
+When photos in chat are on, photos you send are stored privately, not on a public link. The app gets a signed link that works for up to 2 hours and only for people in that chat. Location data (EXIF) is removed before upload. Photos in chat are not scanned automatically, so reports are how we find problems, and a person reviews any photo that's reported. Photos are kept with the chat and deleted with it.
 
 ### Around campus
 
@@ -90,7 +94,7 @@ When you plan a meetup you can create a link to send a friend. Anyone with the l
 
 | Data | How long |
 |---|---|
-| Account, listings, messages | Until you delete your account. Chats closed for 90 days move to private archive storage, which is deleted with your account. |
+| Account, listings, messages | Until you delete your account. When you delete, the people you chatted with keep their copy of the chat, and your name on it becomes "Deleted user". Chats closed for 90 days move to private archive storage, which is deleted with your account. |
 | Chat photos | Kept with the chat: until you delete your account. |
 | Around campus posts | Like other listings: until you delete your account. Free food posts leave the app after at most 3 hours. |
 | Quad posts and replies | Until you delete your account. A post you delete or that we remove leaves the Quad right away; we keep a private copy until then so we can act on reports. |
@@ -112,7 +116,7 @@ When you plan a meetup you can create a link to send a friend. Anyone with the l
 
 - **See your data:** Profile, Settings, Download your data (section 4).
 - **Change it:** edit your profile any time.
-- **Delete it:** in the app (Profile, Settings, Delete account) or on the web at [/delete](/delete). Deletion is complete except the retention above (reports, hashes and backups).
+- **Delete it:** in the app (Profile, Settings, Delete account) or on the web at [/delete](/delete). Your profile, listings, photos and saves are removed. Other people keep their copy of any chat with you, without your name. Reports, one-way hashes and backups stay as described in section 5.
 - **Notifications and analytics:** turn them off in Settings.
 
 ## 7. Age
@@ -122,7 +126,7 @@ OnlySwap is for people 13 and older. We don't knowingly collect data from childr
 If you're 13 to 17:
 
 - We store only your age range, never your birthday.
-- A parent or guardian can ask to see or delete your data through the [Help page](/help).
+- A parent or guardian can ask to see or delete your data. Use the [Help page](/help), pick "Other" and start with "Parent or guardian request". We check that it's a real request before we act on it.
 - In some states your app store asks a parent to approve the account. If a parent withdraws that approval, we lock the account. Deal records are kept as described in section 5.
 
 ## 8. Security
@@ -131,7 +135,7 @@ We use encrypted connections, row-level access rules in our database, two-step s
 
 ## 9. Changes
 
-If this policy changes in a way that matters, we'll tell you in the app. The version and date are at the top.
+If this policy changes in a way that matters, we'll tell you in the app. The version and effective date are at the top.
 
 ## 10. Contact
 

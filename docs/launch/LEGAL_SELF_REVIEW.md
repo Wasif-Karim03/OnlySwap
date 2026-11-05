@@ -213,6 +213,16 @@ After edits: run `node scripts/sync-legal.mjs`, bump `version` in each edited pa
 
 G4 to G7 and G9 to G11 are not blockers. They should land in the same text change.
 
+## Applied 2026-11-04 (under "do whatever best")
+
+Applied to the site texts, synced to the app (`sync-legal.mjs --check` passes, `pnpm test:scripts` 206/206, mobile Jest 19609/19609):
+
+- G1, G2 (the reveal wording was checked against `admin_reveal_quad_author` in migration 0202: owner only, case reference, TOTP in the last 10 minutes, audit row, email to the author), G3a, G3b, G4, G5, G8 (the review notes also say the Quad is off in this version, DEC 161), G10 effective date, G11 (b).
+- G6 and G7: option A without a migration. The texts point to the Help form's "Other" topic with a stated first line, because new topics need a DB check change (migration 0005/0015).
+- Version stays `2026-11`: no public accounts have accepted an earlier text yet, so no re-accept is needed.
+
+Still open for the owner: G3c (the one-year evidence duty: confirm with NCMEC, then change the R2 `evidence/` lifecycle and the text together), G9 (optional), the support email (G10), the DMCA agent choice (G6 B), NCMEC registration, and the CSAM tool (LR 31).
+
 ## Owner sign-off
 
 I have read this review and the drafted fixes. My decisions:

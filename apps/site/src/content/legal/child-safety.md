@@ -7,6 +7,8 @@ order: 7
 
 OnlySwap is only for verified students who are 13 or older. Some of them are teens, so we hold everyone to these standards. We have zero tolerance for child sexual abuse and exploitation (CSAE) and child sexual abuse material (CSAM).
 
+Effective November 4, 2026.
+
 ## Our standards
 
 - Every account confirms their age and verifies a school email. Accounts found to belong to someone under 13 are deleted.
@@ -16,8 +18,8 @@ OnlySwap is only for verified students who are 13 or older. Some of them are tee
 
 ## Photos and posts
 
-- Photos in listings, chats and Quad posts have location data removed and can be reported by anyone who sees them.
-- Photos sent in chat are stored privately and may be checked automatically for known child sexual abuse material. Photos in chat from people you've just started talking to stay blurred until you tap them.
+- Photos in listings, Quad posts and profiles have location data removed and can be reported by anyone who sees them.
+- Sending photos in chat is off for now. If we turn it on, photos are stored privately, are not scanned automatically, and a person reviews any photo that is reported. Photos in chat from people you've just started talking to stay blurred until you tap them.
 - Quad posts show the author's name, like the rest of OnlySwap, and stay linked to their account so we can act on reports and report to the authorities.
 - Every listing, Quad and profile photo is checked automatically. A photo flagged for nudity or sexual content, especially anything involving a minor, is held at once for a person to review.
 - Quad photos from accounts newer than 7 days wait for a person to review them before anyone sees them.

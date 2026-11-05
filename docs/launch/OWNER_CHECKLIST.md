@@ -24,8 +24,8 @@ Your steps only, in order. Claude's steps sit between them in `docs/LAUNCH_PLAN.
 - [ ] Then: `bash scripts/deploy/add-campus.command owu prod`.
 
 ## Legal sign-off (phase 8, LR 34, start now: no dependencies)
-- [ ] Read `docs/launch/LEGAL_SELF_REVIEW.md`: 30 PASS, 10 GAP, 6 CHECK, each GAP with drafted text. Tell Claude which drafts to apply.
-- [ ] Must fix before submitting: the Quad is described as anonymous in Terms and the store listing, but names are shown (DEC 150), and the child-safety page says chat photos are scanned, but chat photos are off and unscanned (DEC 159).
+- [x] Claude applied the drafted text fixes on 2026-11-04 (see "Applied" in `docs/launch/LEGAL_SELF_REVIEW.md`), including both must-fix items: the Quad is no longer called anonymous, and the child-safety page no longer says chat photos are scanned.
+- [ ] Read the applied changes and the "Still open" list there. Decide G3c (one-year evidence retention) after checking NCMEC guidance.
 - [ ] Confirm the NCMEC CyberTipline registration, and the support email shown on the legal pages.
 - [ ] Sign the block at the end of that file and add the DECISIONS_LOG row.
 
@@ -41,7 +41,7 @@ Your steps only, in order. Claude's steps sit between them in `docs/LAUNCH_PLAN.
 
 ## Submit (phase 8)
 - [ ] App Store Connect: the App Privacy label with age range, and the age rating questionnaire with no override (LR 35).
-- [ ] Metadata from `docs/store/listing.md` (after the Quad fix above), 6.9-inch screenshots, review notes with the review account (LR 36).
+- [ ] Metadata from `docs/store/listing.md` (Quad wording fixed), 6.9-inch screenshots, review notes with the review account (LR 36).
 - [ ] Submit. Send any rejection text to Claude.
 
 ## Decided for you (2026-11-04, under "do whatever best")

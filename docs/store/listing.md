@@ -58,9 +58,10 @@ automatically. Every feature is turned on there.
   Around campus. It shows free items and Wanted posts; "I have this" on a
   Wanted post starts a listing. Free food posts last at most 3 hours, so post
   one yourself to see it (Around campus → Post free food).
-- **The Quad** (anonymous campus board): the Quad tab. The first visit shows
-  the four Quad rules; tap "I agree to the Quad rules". Posts are anonymous to
-  other students but always tied to a verified, age-checked account. Each post and reply
+- **The Quad** (campus board): turned off for every school in this version
+  (DEC 161), so you won't see it. When it is on, it is a chip in the Feed; the
+  first visit shows the four Quad rules. Posts show the author's first name,
+  last initial and photo, and are tied to a verified, age-checked account. Each post and reply
   has a menu with Report and "Hide posts from this person"; posts voted down to
   -5 are hidden and reviewed. New posts are filtered for names, phone numbers,
   emails, handles, rooms and banned words before they go live.
@@ -78,10 +79,10 @@ automatically. Every feature is turned on there.
 |---|---|
 | A way to filter objectionable material | Banned-words check on listings, Wanted, food, Quad posts, replies and polls; Quad blocks phone, email, URL, handle and room numbers; posts naming a student are held for review; Quad photos from accounts under 7 days are held |
 | A way to report offensive content, with timely responses | Report on every listing, profile, chat, message (long press), Quad post and Quad reply; a person reviews within 24 hours (RELEASE §7 daily queue); minor-safety reports are priority 1 |
-| A way to block abusive users | Block on profiles and chats; in the Quad, "Hide posts from this person" (authors are anonymous, so we hide without telling you who) plus keyword mutes |
+| A way to block abusive users | Block on profiles and chats; in the Quad, "Hide posts from this person" plus keyword mutes |
 | Published contact information | Help page `/help` (linked in Settings), support email in App Store Connect |
 | Users agree to terms before posting | Terms, Privacy and Community Rules accepted at sign-up; Quad rules accepted before the first Quad post; updated rules must be accepted again |
-| No anonymous bullying | The Quad is anonymous only to students: every post is tied to a verified, age-checked school account; calling out students is against the rules and filtered; strikes and bans apply |
+| No anonymous bullying | Quad posts show the author's name and are tied to a verified, age-checked school account; calling out students is against the rules and filtered; strikes and bans apply |
 
 ## Age rating answers (R1.1 content present)
 
