@@ -12,7 +12,12 @@ describe('reportWithBlock reportThenBlock', () => {
     const report = jest.fn().mockResolvedValue(undefined);
     const blockUser = jest.fn().mockResolvedValue(undefined);
 
-    const outcome = await reportThenBlock({ report, block: true, blockUser, blockFailedMessage: BLOCK_FAILED });
+    const outcome = await reportThenBlock({
+      report,
+      block: true,
+      blockUser,
+      blockFailedMessage: BLOCK_FAILED,
+    });
 
     expect(report).toHaveBeenCalledTimes(1);
     expect(blockUser).toHaveBeenCalledTimes(1);
@@ -23,7 +28,12 @@ describe('reportWithBlock reportThenBlock', () => {
     const report = jest.fn().mockResolvedValue(undefined);
     const blockUser = jest.fn().mockRejectedValue(new Error('network'));
 
-    const outcome = await reportThenBlock({ report, block: true, blockUser, blockFailedMessage: BLOCK_FAILED });
+    const outcome = await reportThenBlock({
+      report,
+      block: true,
+      blockUser,
+      blockFailedMessage: BLOCK_FAILED,
+    });
 
     expect(report).toHaveBeenCalledTimes(1);
     expect(outcome).toEqual({ blocked: false });

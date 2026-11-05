@@ -38,7 +38,11 @@ export type SwipeState = {
 
 type QueueStorage = { get: () => unknown; set: (q: QueuedSwipe[]) => void };
 
-const RETRYABLE_SWIPE_CODES: ReadonlySet<string> = new Set(['ERR_OFFLINE', 'SESSION_EXPIRED', 'UNKNOWN']);
+const RETRYABLE_SWIPE_CODES: ReadonlySet<string> = new Set([
+  'ERR_OFFLINE',
+  'SESSION_EXPIRED',
+  'UNKNOWN',
+]);
 
 const swipeKey = (q: Pick<QueuedSwipe, 'listing_id' | 'at'>): string => `${q.listing_id}@${q.at}`;
 

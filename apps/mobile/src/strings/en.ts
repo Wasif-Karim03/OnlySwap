@@ -225,7 +225,8 @@ export const report = {
   sentBody: "Thanks for telling us. We'll look into it, usually within a day.",
   sentBodyBlocked:
     "Thanks for telling us. You blocked {name}, and we'll look into it, usually within a day.",
-  blockFailedAfterReport: "Report sent, but we couldn't block them. Try Block again from their profile.",
+  blockFailedAfterReport:
+    "Report sent, but we couldn't block them. Try Block again from their profile.",
   duplicateTitle: 'Already reported',
   duplicateBody: "You've already reported this. We're on it.",
   done: 'Done',
