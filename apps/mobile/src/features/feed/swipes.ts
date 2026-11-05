@@ -4,6 +4,7 @@ import { useCallback, useEffect } from 'react';
 import { AppState } from 'react-native';
 import { createStore, type StoreApi } from 'zustand';
 
+import { toAppError } from '@/lib/errors';
 import { getStorage } from '@/lib/storage';
 
 import type { FeedApi } from './api';
@@ -37,6 +38,16 @@ export type SwipeState = {
 
 type QueueStorage = { get: () => unknown; set: (q: QueuedSwipe[]) => void };
 
+const RETRYABLE_SWIPE_CODES: ReadonlySet<string> = new Set(['ERR_OFFLINE', 'SESSION_EXPIRED', 'UNKNOWN']);
+
+const swipeKey = (q: Pick<QueuedSwipe, 'listing_id' | 'at'>): string => `${q.listing_id}@${q.at}`;
+
+/** True when resending the same swipes later can succeed (offline, expired session, server outage). */
+export function isRetryableSwipeError(error: unknown): boolean {
+  const { code } = toAppError(error);
+  return RETRYABLE_SWIPE_CODES.has(code) || code.startsWith('RATE_LIMITED');
+}
+
 export function createSwipeStore(
   storage: QueueStorage,
   api: Pick<FeedApi, 'recordSwipes' | 'undoSwipe'>,
@@ -53,12 +64,15 @@ export function createSwipeStore(
       const batch = get().queue.slice(0, BATCH_MAX);
       if (batch.length === 0) return;
       inflight = (async () => {
+        const batchKeys = new Set(batch.map(swipeKey));
+        const dropBatch = () => save(get().queue.filter((q) => !batchKeys.has(swipeKey(q))));
         try {
           await api.recordSwipes(batch.map(toServer));
-          const sent = new Set(batch.map((b) => `${b.listing_id}@${b.at}`));
-          save(get().queue.filter((q) => !sent.has(`${q.listing_id}@${q.at}`)));
-        } catch {
-          // Offline or failing: keep the queue for the next trigger.
+          dropBatch();
+        } catch (error) {
+          // A permanent rejection (listing gone, bad row) would be resent forever and block
+          // every later swipe, so only keep the batch when a retry can succeed.
+          if (!isRetryableSwipeError(error)) dropBatch();
         } finally {
           inflight = null;
         }
