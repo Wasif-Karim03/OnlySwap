@@ -1,10 +1,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import type { ReactNode } from 'react';
 import { Platform, StyleSheet, Text } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { appFocusRing, Input } from '../src/components/Input';
 import { otpCellState } from '../src/components/OTPInput';
@@ -125,6 +126,22 @@ describe('DEC 90 Getting in', () => {
     expect(bar.props.accessibilityValue).toEqual({ min: 1, max: 5, now: 2 });
     expect(screen.getByRole('button', { name: nav.back })).toBeTruthy();
     expect(screen.getByRole('header', { name: 'Title' })).toBeTruthy();
+  });
+
+  it('QA recheck: the scroll leaves room to reach fields behind the raised dock', async () => {
+    renderAt(
+      {
+        step: () => <AuthStep title="Title" testID="screen-step" dock={<Text>Sign in</Text>} />,
+      },
+      '/step',
+    );
+    const dock = await screen.findByTestId('auth-dock');
+    act(() => {
+      fireEvent(dock, 'layout', { nativeEvent: { layout: { width: 375, height: 88 } } });
+    });
+    // The dock rides up over the scroll view with the keyboard; without this the
+    // Password field under the email sat behind Sign in, out of reach (SE ax-large).
+    expect(screen.UNSAFE_getByType(KeyboardAwareScrollView).props.extraKeyboardSpace).toBe(88);
   });
 
   it('no step: the plain nav bar', async () => {

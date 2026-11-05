@@ -29,6 +29,7 @@ import { isVisible, movingOutLine, sellerName, trustLine } from '../feed/logic';
 import { profileApi, type ProfileApi } from '../profiles/api';
 import { dollarsToCents } from '../search/logic';
 import { centsToPrice, cleanPrice, mediaUrl } from '../sell/logic';
+import { DockedScroll } from '../sell/SellStep';
 import { offersApi, type OffersApi } from './api';
 import { isLowOffer, money, quickAmounts } from './logic';
 import { markOfferSent } from './sentOffers';
@@ -186,170 +187,184 @@ export function OfferSheetScreen({
   return (
     <View style={styles.root} testID="screen-offer">
       <NavBar leading="close" onLeading={close} title={free ? copy.askTitle : copy.sheetTitle} />
-      <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-        <View style={styles.item}>
-          <View style={styles.thumb}>
-            <Photo source={thumb ? mediaUrl(mediaBase(), thumb) : null} rounded="thumb" />
+      {/* DockedScroll keeps Send above the decimal pad and scrolls the note
+          field clear of it (the old fixed dock sat under the keyboard). */}
+      <DockedScroll
+        standalone
+        dock={
+          <>
+            {/* The main trust message sits right above Send, never below the fold. */}
+            <Text variant="meta" tone="ink2" style={styles.lead} testID="offer-pay-in-person">
+              {copy.payInPerson}
+            </Text>
+            <Button
+              label={free ? copy.sendAsk : copy.send}
+              variant="dark"
+              accessibilityHint={free ? undefined : money(cents)}
+              loading={sending}
+              disabled={!valid}
+              onPress={send}
+              testID="offer-send"
+            />
+          </>
+        }
+      >
+        <View style={styles.body}>
+          <View style={styles.item}>
+            <View style={styles.thumb}>
+              <Photo source={thumb ? mediaUrl(mediaBase(), thumb) : null} rounded="thumb" />
+            </View>
+            <View style={styles.flex}>
+              <Text variant="bodyStrong" numberOfLines={2}>
+                {item.title}
+              </Text>
+              <Text variant="meta" tone="ink3" numberOfLines={1}>
+                {free ? name : `${fill(copy.asking, { price: money(ask) })} · ${name}`}
+              </Text>
+              {/* P5: who you are dealing with, at the moment you decide. */}
+              <Text variant="meta" tone="ink2" numberOfLines={2} testID="offer-trust">
+                {trustLine(item.seller)}
+              </Text>
+            </View>
           </View>
-          <View style={styles.flex}>
-            <Text variant="bodyStrong" numberOfLines={2}>
-              {item.title}
+          {pool.length > 0 ? (
+            <View style={styles.bundle} testID="offer-bundle">
+              <Text variant="label">{movingOutLine(movingBy)}</Text>
+              <Text variant="meta" tone="ink2">
+                {copy.bundleBody}
+              </Text>
+              <View style={styles.chips}>
+                {pool.map((l) => (
+                  <Chip
+                    key={l.id}
+                    label={`${l.title} · ${l.kind === 'free' ? feedCopy.free : money(l.price_cents)}`}
+                    selected={extra.includes(l.id)}
+                    disabled={!extra.includes(l.id) && extra.length >= 10}
+                    onPress={() =>
+                      setExtra((prev) =>
+                        prev.includes(l.id) ? prev.filter((x) => x !== l.id) : [...prev, l.id],
+                      )
+                    }
+                    testID={`offer-bundle-${l.id}`}
+                  />
+                ))}
+              </View>
+              {bundle ? (
+                <Text variant="meta" tone="ink2" testID="offer-bundle-ask">
+                  {fill(copy.bundleAsk, { price: money(ask), n: picked.length + 1 })}
+                </Text>
+              ) : null}
+            </View>
+          ) : null}
+          {free ? (
+            <Text variant="body" tone="ink2" style={styles.lead}>
+              {copy.askBody}
             </Text>
-            <Text variant="meta" tone="ink3" numberOfLines={1}>
-              {free ? name : `${fill(copy.asking, { price: money(ask) })} · ${name}`}
-            </Text>
-            {/* P5: who you are dealing with, at the moment you decide. */}
-            <Text variant="meta" tone="ink2" numberOfLines={2} testID="offer-trust">
-              {trustLine(item.seller)}
-            </Text>
-          </View>
-        </View>
-        {pool.length > 0 ? (
-          <View style={styles.bundle} testID="offer-bundle">
-            <Text variant="label">{movingOutLine(movingBy)}</Text>
-            <Text variant="meta" tone="ink2">
-              {copy.bundleBody}
-            </Text>
-            <View style={styles.chips}>
-              {pool.map((l) => (
+          ) : (
+            <View style={styles.amountBlock}>
+              <Text variant="label" tone="ink3" style={styles.lead}>
+                {copy.amountLabel}
+              </Text>
+              {firm ? (
+                <>
+                  {/* 56pt uncapped clipped around 1.8x: cap the scale, shrink to fit one line. */}
+                  <Text
+                    style={[styles.lead, styles.big]}
+                    maxFontSizeMultiplier={1.4}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    accessibilityLabel={`${copy.amountLabel}: ${money(ask)}`}
+                  >
+                    {money(ask)}
+                  </Text>
+                  <Text variant="meta" tone="ink2" style={styles.lead}>
+                    {copy.firmNote}
+                  </Text>
+                </>
+              ) : (
+                <>
+                  {/* The number itself is the field (DEC 90): big, centered, the $ kept in front. */}
+                  <TextInput
+                    value={`$${shown}`}
+                    onChangeText={(t) => setAmount(cleanPrice(t))}
+                    keyboardType="decimal-pad"
+                    maxFontSizeMultiplier={1.4}
+                    accessibilityLabel={copy.amountLabel}
+                    selectionColor={theme.colors.ink}
+                    // Enter sends from the keyboard on the web app (P13-WEB-07).
+                    onSubmitEditing={() => valid && void send()}
+                    style={[styles.big, styles.bigInput]}
+                    testID="offer-amount"
+                  />
+                  <View style={styles.quick}>
+                    {[...quickAmounts(ask)].reverse().map((q) => (
+                      <Chip
+                        key={q.cents}
+                        label={
+                          q.label === 'ask'
+                            ? fill(copy.asking, { price: money(q.cents) })
+                            : money(q.cents)
+                        }
+                        selected={cents === q.cents}
+                        onPress={() => setAmount(centsToPrice(q.cents))}
+                      />
+                    ))}
+                  </View>
+                  {isLowOffer(cents, ask) ? (
+                    <Text
+                      variant="meta"
+                      tone="amber"
+                      style={styles.lead}
+                      accessibilityLiveRegion="polite"
+                    >
+                      {copy.lowWarning}
+                    </Text>
+                  ) : null}
+                </>
+              )}
+            </View>
+          )}
+          {/* The note is one line; the quick notes scroll sideways under it. */}
+          <View style={styles.noteBlock}>
+            <Input
+              label={copy.notesLabel}
+              placeholder={copy.notePlaceholder}
+              value={note}
+              onChangeText={setNote}
+              maxLength={140}
+              testID="offer-note"
+            />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={styles.noteChips}
+            >
+              {QUICK_NOTES.map((n) => (
                 <Chip
-                  key={l.id}
-                  label={`${l.title} · ${l.kind === 'free' ? feedCopy.free : money(l.price_cents)}`}
-                  selected={extra.includes(l.id)}
-                  disabled={!extra.includes(l.id) && extra.length >= 10}
+                  key={n}
+                  label={copy.quickNotes[n]}
+                  selected={notes.includes(n)}
                   onPress={() =>
-                    setExtra((prev) =>
-                      prev.includes(l.id) ? prev.filter((x) => x !== l.id) : [...prev, l.id],
+                    setNotes((prev) =>
+                      prev.includes(n) ? prev.filter((x) => x !== n) : [...prev, n],
                     )
                   }
-                  testID={`offer-bundle-${l.id}`}
                 />
               ))}
-            </View>
-            {bundle ? (
-              <Text variant="meta" tone="ink2" testID="offer-bundle-ask">
-                {fill(copy.bundleAsk, { price: money(ask), n: picked.length + 1 })}
-              </Text>
-            ) : null}
+            </ScrollView>
           </View>
-        ) : null}
-        {free ? (
-          <Text variant="body" tone="ink2" style={styles.lead}>
-            {copy.askBody}
-          </Text>
-        ) : (
-          <View style={styles.amountBlock}>
-            <Text variant="label" tone="ink3" style={styles.lead}>
-              {copy.amountLabel}
-            </Text>
-            {firm ? (
-              <>
-                <Text
-                  style={[styles.lead, styles.big]}
-                  accessibilityLabel={`${copy.amountLabel}: ${money(ask)}`}
-                >
-                  {money(ask)}
-                </Text>
-                <Text variant="meta" tone="ink2" style={styles.lead}>
-                  {copy.firmNote}
-                </Text>
-              </>
-            ) : (
-              <>
-                {/* The number itself is the field (DEC 90): big, centered, the $ kept in front. */}
-                <TextInput
-                  value={`$${shown}`}
-                  onChangeText={(t) => setAmount(cleanPrice(t))}
-                  keyboardType="decimal-pad"
-                  accessibilityLabel={copy.amountLabel}
-                  selectionColor={theme.colors.ink}
-                  // Enter sends from the keyboard on the web app (P13-WEB-07).
-                  onSubmitEditing={() => valid && void send()}
-                  style={[styles.big, styles.bigInput]}
-                  testID="offer-amount"
-                />
-                <View style={styles.quick}>
-                  {[...quickAmounts(ask)].reverse().map((q) => (
-                    <Chip
-                      key={q.cents}
-                      label={
-                        q.label === 'ask'
-                          ? fill(copy.asking, { price: money(q.cents) })
-                          : money(q.cents)
-                      }
-                      selected={cents === q.cents}
-                      onPress={() => setAmount(centsToPrice(q.cents))}
-                    />
-                  ))}
-                </View>
-                {isLowOffer(cents, ask) ? (
-                  <Text
-                    variant="meta"
-                    tone="amber"
-                    style={styles.lead}
-                    accessibilityLiveRegion="polite"
-                  >
-                    {copy.lowWarning}
-                  </Text>
-                ) : null}
-              </>
-            )}
-          </View>
-        )}
-        {/* The note is one line; the quick notes scroll sideways under it. */}
-        <View style={styles.noteBlock}>
-          <Input
-            label={copy.notesLabel}
-            placeholder={copy.notePlaceholder}
-            value={note}
-            onChangeText={setNote}
-            maxLength={140}
-            testID="offer-note"
-          />
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={styles.noteChips}
-          >
-            {QUICK_NOTES.map((n) => (
-              <Chip
-                key={n}
-                label={copy.quickNotes[n]}
-                selected={notes.includes(n)}
-                onPress={() =>
-                  setNotes((prev) =>
-                    prev.includes(n) ? prev.filter((x) => x !== n) : [...prev, n],
-                  )
-                }
-              />
-            ))}
-          </ScrollView>
+          {error ? <Banner kind="error" message={error} /> : null}
         </View>
-        {error ? <Banner kind="error" message={error} /> : null}
-      </ScrollView>
-      <View style={styles.dock}>
-        {/* The main trust message sits right above Send, never below the fold. */}
-        <Text variant="meta" tone="ink2" style={styles.lead} testID="offer-pay-in-person">
-          {copy.payInPerson}
-        </Text>
-        <Button
-          label={free ? copy.sendAsk : copy.send}
-          variant="dark"
-          accessibilityHint={free ? undefined : money(cents)}
-          loading={sending}
-          disabled={!valid}
-          onPress={send}
-          testID="offer-send"
-        />
-      </View>
+      </DockedScroll>
     </View>
   );
 }
 
 const styles = StyleSheet.create((theme, rt) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
-  body: { ...readableColumn, padding: theme.space.screen, gap: theme.space.lg },
+  // DockedScroll supplies the column, side and bottom padding; sm + md = the old screen top.
+  body: { paddingTop: theme.space.md, gap: theme.space.lg },
   flex: { flex: 1 },
   // Round 2: the item sits on a soft tile, so it reads as context, not content.
   item: {
@@ -397,6 +412,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     padding: theme.space.screen,
     paddingBottom: theme.space['2xl'] * 2,
   },
+  // The "sent" state's two buttons (the form itself docks through DockedScroll).
   dock: {
     ...readableColumn,
     gap: theme.space.sm,

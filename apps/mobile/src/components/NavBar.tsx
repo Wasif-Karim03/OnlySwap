@@ -50,7 +50,16 @@ export function NavBar({
   if (variant === 'large') {
     return (
       <View testID={testID} style={styles.large(safeTop)}>
-        <Text variant="display" accessibilityRole="header" style={styles.flex}>
+        {/* One line, shrinking to fit: at large text next to icon buttons the
+            display title otherwise breaks mid-word ("Profil/e"). */}
+        <Text
+          variant="display"
+          accessibilityRole="header"
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.6}
+          style={styles.flex}
+        >
           {title}
         </Text>
         {trailing ? <View style={styles.trailing}>{trailing}</View> : null}
@@ -119,7 +128,14 @@ const styles = StyleSheet.create((theme, rt) => ({
     alignItems: 'center',
     gap: theme.space.xs,
   },
-  end: { justifyContent: 'flex-end', paddingRight: theme.space.xs },
+  // A long text Button (Spanish "Marcar todo como leído", large text) may
+  // shrink and wrap instead of pushing past the right edge.
+  end: {
+    justifyContent: 'flex-end',
+    paddingRight: theme.space.xs,
+    flexShrink: 1,
+    maxWidth: '65%',
+  },
   titleWrap: { flex: 1, paddingVertical: theme.space.xs },
   center: { textAlign: 'center' },
   round: { borderRadius: theme.radius.chip },

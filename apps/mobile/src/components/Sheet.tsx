@@ -1,5 +1,6 @@
 import { motion } from '@onlyswap/tokens';
-import { useEffect, useState, type ReactNode } from 'react';
+import * as ExpoRouter from 'expo-router';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Modal, Pressable, View, useWindowDimensions } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
@@ -21,6 +22,35 @@ export function shouldCloseSheet(translationY: number, velocityY: number, height
   return translationY > height * 0.3 || velocityY > 800;
 }
 
+type BlurSource = { addListener?: (event: 'blur', cb: () => void) => () => void } | null;
+
+/** The screen's navigation, or null when the sheet renders outside a navigator (tests, root). */
+const useNavigationOrNull: () => BlurSource = ExpoRouter.useNavigation
+  ? () => {
+      try {
+        return ExpoRouter.useNavigation() as unknown as BlurSource;
+      } catch {
+        return null;
+      }
+    }
+  : () => null;
+
+/**
+ * QA H4: a sheet is a native Modal, so it stays on top when its screen is left
+ * (a push, a deep link, a notification tap). Close it when the screen blurs.
+ */
+function useCloseOnBlur(visible: boolean, onClose: () => void): void {
+  const navigation = useNavigationOrNull();
+  const close = useRef(onClose);
+  useEffect(() => {
+    close.current = onClose;
+  }, [onClose]);
+  useEffect(() => {
+    if (!visible || typeof navigation?.addListener !== 'function') return undefined;
+    return navigation.addListener('blur', () => close.current());
+  }, [visible, navigation]);
+}
+
 type Props = {
   visible: boolean;
   onClose: () => void;
@@ -39,6 +69,7 @@ export function Sheet({ visible, onClose, title, children, testID }: Props) {
   const { height: screenH } = useWindowDimensions();
   const floating = useLayout().tablet;
   const reduced = useReducedMotion();
+  useCloseOnBlur(visible, onClose);
   const [mounted, setMounted] = useState(visible);
   const [panelH, setPanelH] = useState(screenH);
   const y = useSharedValue(screenH);
@@ -104,7 +135,7 @@ export function Sheet({ visible, onClose, title, children, testID }: Props) {
               testID={testID}
               accessibilityViewIsModal
               onLayout={(e) => setPanelH(e.nativeEvent.layout.height)}
-              style={[floating ? styles.floatingSlot : null, panelStyle]}
+              style={[styles.slot, floating ? styles.floatingSlot : null, panelStyle]}
             >
               <View style={[styles.panel, floating ? styles.floatingPanel : null]}>
                 <View style={styles.grabber} accessible={false} />
@@ -126,7 +157,12 @@ export function Sheet({ visible, onClose, title, children, testID }: Props) {
 const styles = StyleSheet.create((theme, rt) => ({
   fill: FILL,
   scrim: { flex: 1, backgroundColor: theme.colors.overlay },
-  bottom: { flex: 1, justifyContent: 'flex-end' },
+  // The top inset keeps the grabber and title out from under the status bar
+  // and Dynamic Island when the keyboard pushes a tall sheet up.
+  bottom: { flex: 1, justifyContent: 'flex-end', paddingTop: rt.insets.top + theme.space.sm },
+  // Never taller than the space left; the panel then shrinks, and a ScrollView
+  // inside it (with flexShrink: 1) scrolls instead of the sheet running off screen.
+  slot: { maxHeight: '100%' },
   center: { flex: 1, justifyContent: 'center', padding: theme.space.xl },
   floatingSlot: { width: '100%', maxWidth: LAYOUT.sheetMax, alignSelf: 'center' },
   floatingPanel: {
@@ -135,6 +171,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     shadowOffset: { width: 0, height: theme.elevation.soft.offsetY },
   },
   panel: {
+    flexShrink: 1,
     backgroundColor: theme.colors.bg,
     borderTopLeftRadius: theme.radius.sheet,
     borderTopRightRadius: theme.radius.sheet,

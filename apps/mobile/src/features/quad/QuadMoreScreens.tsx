@@ -2,6 +2,7 @@ import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-quer
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, ScrollView, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { PullToRefresh } from '@/components/PullToRefresh';
@@ -30,6 +31,9 @@ import { quadApi, type MyQuadReply, type QuadApi, type QuadPost } from './api';
 import { quadKeys } from './cache';
 import { pointsLabel } from './components/VoteControl';
 import { canAppeal, keywordValid } from './logic';
+
+/** Gap kept between a focused field and the keyboard (space.lg). */
+const KEYBOARD_GAP = 16;
 
 function useLeave() {
   const router = useRouter();
@@ -97,7 +101,7 @@ export function QuadMineScreen({
         <View style={styles.itemBody}>
           <View style={styles.meta}>
             <StatusWord status={p.status} />
-            <Text variant="meta" tone="ink2">
+            <Text variant="meta" tone="ink2" style={styles.metaText}>
               {`${agoLabel(new Date(p.created_at), t)}, ${pointsLabel(p.score)}`}
             </Text>
           </View>
@@ -140,7 +144,7 @@ export function QuadMineScreen({
       <View style={[styles.item, styles.itemBody]}>
         <View style={styles.meta}>
           <StatusWord status={r.status} />
-          <Text variant="meta" tone="ink2">
+          <Text variant="meta" tone="ink2" style={styles.metaText}>
             {`${agoLabel(new Date(r.created_at), t)}, ${pointsLabel(r.score)}`}
           </Text>
         </View>
@@ -434,7 +438,11 @@ export function QuadMutedScreen({ api = quadApi }: { api?: QuadApi }) {
   return (
     <View style={styles.root} testID="screen-quad-muted">
       <NavBar title={copy.mutedTitle} onLeading={leave} />
-      <ScrollView contentContainerStyle={styles.sections} keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.sections}
+        keyboardShouldPersistTaps="handled"
+        bottomOffset={KEYBOARD_GAP}
+      >
         <View style={styles.section}>
           <Text variant="heading" accessibilityRole="header">
             {copy.hiddenPeople}
@@ -472,7 +480,7 @@ export function QuadMutedScreen({ api = quadApi }: { api?: QuadApi }) {
           />
           {words}
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </View>
   );
 }
@@ -494,7 +502,10 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: 'flex-start',
   },
   itemBody: { gap: theme.space.xs },
-  meta: { flexDirection: 'row', alignItems: 'center', gap: theme.space.sm },
+  // Wraps so the time and points drop to a new line at large text sizes
+  // instead of running off the right edge on an SE.
+  meta: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: theme.space.sm },
+  metaText: { flexShrink: 1 },
   sheet: { gap: theme.space.md },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
   activity: {

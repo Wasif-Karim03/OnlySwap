@@ -38,6 +38,7 @@ import {
 } from '@/strings';
 import { a11yState } from '@/lib/a11y';
 import { readableColumn } from '@/theme/layout';
+import { useLargeText } from '@/theme/largeText';
 
 import { avatarDeps, type AvatarDeps } from '../auth/avatar';
 import { feedApi, type FeedApi } from '../feed/api';
@@ -139,6 +140,7 @@ export function ProfileTabScreen({
   const q = useQuery({ queryKey: meKey, queryFn: () => api.me() });
   const mine = useQuery({ queryKey: ['my-listings'], queryFn: () => api.listings() });
   const qc = useQueryClient();
+  const largeText = useLargeText();
   const [tab, setTab] = useState<'active' | 'sold' | 'posts'>('active');
   const [deleting, setDeleting] = useState<string | null>(null);
   let body;
@@ -288,13 +290,13 @@ export function ProfileTabScreen({
       );
     body = (
       <ScrollView contentContainerStyle={styles.body}>
-        <View style={styles.head}>
+        <View style={[styles.head, largeText && styles.headStacked]} testID="profile-head">
           <Tappable
             accessibilityRole="button"
             accessibilityLabel={school ? `${name}, ${school}` : name}
             accessibilityHint={copy.viewProfile}
             onPress={() => router.push({ pathname: '/user/[id]', params: { id: m.id } })}
-            style={styles.headMain}
+            style={[styles.headMain, largeText && styles.headMainStacked]}
             testID="profile-view-public"
           >
             <Avatar
@@ -1162,6 +1164,9 @@ const styles = StyleSheet.create((theme) => ({
   },
   head: { flexDirection: 'row', alignItems: 'center', gap: theme.space.md },
   avatarPick: { alignSelf: 'center', alignItems: 'center', gap: theme.space.sm },
+  // Large text: Edit profile drops below the name so the name keeps the full width.
+  headStacked: { flexDirection: 'column', alignItems: 'flex-start' },
+  headMainStacked: { flexGrow: 0, flexBasis: 'auto', alignSelf: 'stretch' },
   headMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: theme.space.md },
   flex: { flex: 1 },
   tagRow: { flexDirection: 'row', marginTop: theme.space.xs },

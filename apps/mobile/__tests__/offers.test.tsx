@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 import type { ReactNode } from 'react';
-import { Text } from 'react-native';
+import { Dimensions, StyleSheet, Text } from 'react-native';
 
 import type { FeedApi } from '../src/features/feed/api';
 import type { FeedItem, ListingResult } from '../src/features/feed/logic';
@@ -498,5 +498,47 @@ describe('F05 Offers on a listing', () => {
     expect(await screen.findByTestId('listing-offer-x1')).toBeTruthy();
     fireEvent.press(screen.getByTestId('listing-offer-x2'));
     expect(await screen.findByTestId('screen-offer-stub')).toBeTruthy();
+  });
+});
+
+/** Pretends the user picked a Dynamic Type size (fontScale 1 is the default). */
+function setFontScale(fontScale: number) {
+  const base = { width: 375, height: 667, scale: 2 };
+  act(() => Dimensions.set({ window: { ...base, fontScale }, screen: { ...base, fontScale } }));
+}
+
+describe('QA-H5 Offer actions at large text', () => {
+  afterEach(() => setFontScale(1));
+  const direction = async () => {
+    const a = api();
+    render({ 'offer/[id]': () => <OfferScreen id="o1" api={a} /> }, '/offer/o1');
+    const row = await screen.findByTestId('offer-actions');
+    return StyleSheet.flatten(row.props.style).flexDirection;
+  };
+
+  it('keeps Accept and Counter side by side at default size', async () => {
+    setFontScale(1);
+    expect(await direction()).toBe('row');
+  });
+
+  it('stacks Accept and Counter at large text so labels never break mid-word', async () => {
+    setFontScale(2);
+    expect(await direction()).toBe('column');
+    expect(screen.getByTestId('offer-accept')).toBeTruthy();
+    expect(screen.getByTestId('offer-counter')).toBeTruthy();
+  });
+
+  it('gives each stacked button its own height (flex 1 in a column collapsed them on top of each other)', async () => {
+    setFontScale(2);
+    await direction();
+    const row = screen.getByTestId('offer-actions');
+    const wrappers = row.children.filter((c) => typeof c !== 'string') as {
+      props: { style?: unknown };
+    }[];
+    expect(wrappers.length).toBe(2);
+    for (const w of wrappers)
+      expect(
+        (StyleSheet.flatten(w.props.style as never) as { flex?: number } | undefined)?.flex,
+      ).toBeUndefined();
   });
 });

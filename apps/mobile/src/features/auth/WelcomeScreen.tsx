@@ -2,7 +2,7 @@ import { Image } from 'expo-image';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useState } from 'react';
-import { useWindowDimensions, View } from 'react-native';
+import { ScrollView, useWindowDimensions, View } from 'react-native';
 import Animated, {
   cancelAnimation,
   Easing,
@@ -19,6 +19,7 @@ import { Button } from '@/components/Button';
 import { Mark } from '@/components/Mark';
 import { Text } from '@/components/Text';
 import { welcome as copy } from '@/strings';
+import { useLargeText } from '@/theme/largeText';
 import { useReducedMotion } from '@/theme/reducedMotion';
 
 import { WELCOME_ITEMS } from './welcomeAssets';
@@ -79,6 +80,7 @@ export function WelcomeScreen() {
   const { width, height } = useWindowDimensions();
   const { theme } = useUnistyles();
   const reduced = useReducedMotion();
+  const large = useLargeText();
   // The collage only moves while Welcome is on screen: under the email and
   // code screens it would keep the GPU busy for nothing (audit 2026-10-24).
   const [focused, setFocused] = useState(true);
@@ -130,36 +132,62 @@ export function WelcomeScreen() {
         <Fade color={theme.colors.accent} edge="bottom" height={Math.round(height * 0.56)} />
       </View>
 
-      <View style={[styles.brand, { paddingTop: insets.top }]}>
-        <Mark size={26} tone="onAccent" />
-        <Text variant="heading" tone="onAccent" style={styles.wordmark}>
-          {copy.wordmark}
-        </Text>
-      </View>
-
-      <View style={[styles.content, { paddingBottom: insets.bottom + theme.space.md }]}>
-        <Text variant="display" tone="onAccent" accessibilityRole="header">
-          {copy.title}
-        </Text>
-        <Text variant="body" tone="onAccent" style={styles.body}>
-          {copy.body}
-        </Text>
-        <View style={styles.actions}>
-          <Button
-            label={copy.continue}
-            variant="onAccent"
-            onPress={() => router.push('/email')}
-            testID="welcome-continue"
-          />
-          <Button
-            label={copy.signIn}
-            variant="textOnAccent"
-            accessibilityHint={copy.signInHint}
-            onPress={() => router.push('/email?mode=login')}
-            testID="welcome-sign-in"
-          />
+      {/* Scrolls only when it must (large text on a small phone), so the sign-up
+          buttons can always be reached; marginTop 'auto' still pins the content
+          to the bottom when it fits. */}
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={[styles.brand, { paddingTop: insets.top }]}>
+          <Mark size={26} tone="onAccent" />
+          <Text variant="heading" tone="onAccent" style={styles.wordmark}>
+            {copy.wordmark}
+          </Text>
         </View>
-      </View>
+
+        <View
+          style={[
+            styles.content,
+            large && styles.contentField,
+            { paddingBottom: insets.bottom + theme.space.md },
+          ]}
+        >
+          {/* At large text the copy outgrows the bottom fade and would sit on the
+              photos (QA recheck, SE ax-large): give it a solid accent field that
+              scrolls with it, with a short fade from the wall into it. */}
+          {large ? (
+            <View testID="welcome-copy-field" style={styles.fieldRamp} pointerEvents="none">
+              <Fade color={theme.colors.accent} edge="bottom" height={theme.space['2xl']} />
+            </View>
+          ) : null}
+          {/* Drawn over the photo wall: a photo overlay, capped at 1.4x (DESIGN_SYSTEM §3).
+              Uncapped, it broke mid-word at SE ax-large ("Everythin / g"). */}
+          <Text variant="display" tone="onAccent" overlay accessibilityRole="header">
+            {copy.title}
+          </Text>
+          <Text variant="body" tone="onAccent" style={styles.body}>
+            {copy.body}
+          </Text>
+          <View style={styles.actions}>
+            <Button
+              label={copy.continue}
+              variant="onAccent"
+              onPress={() => router.push('/email')}
+              testID="welcome-continue"
+            />
+            <Button
+              label={copy.signIn}
+              variant="textOnAccent"
+              accessibilityHint={copy.signInHint}
+              onPress={() => router.push('/email?mode=login')}
+              testID="welcome-sign-in"
+            />
+          </View>
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -307,6 +335,8 @@ const styles = StyleSheet.create((theme) => ({
   fade: { position: 'absolute', left: 0, right: 0 },
   fadeTop: { top: 0 },
   fadeBottom: { bottom: 0 },
+  scroll: { flex: 1 },
+  scrollContent: { flexGrow: 1 },
   brand: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -318,6 +348,14 @@ const styles = StyleSheet.create((theme) => ({
   content: {
     marginTop: 'auto',
     paddingHorizontal: theme.space.xl,
+  },
+  contentField: { backgroundColor: theme.colors.accent, paddingTop: theme.space.lg },
+  fieldRamp: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: '100%',
+    height: theme.space['2xl'],
   },
   body: { marginTop: theme.space.sm },
   actions: { marginTop: theme.space.xl, gap: theme.space.xs },

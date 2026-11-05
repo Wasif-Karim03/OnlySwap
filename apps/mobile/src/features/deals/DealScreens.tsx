@@ -2,6 +2,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
+import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { track } from '@/lib/analytics';
@@ -37,6 +39,11 @@ import {
   type RatingTag,
   type RatingView,
 } from './logic';
+
+/** Gap kept between a focused field and the keyboard (space.lg). */
+const KEYBOARD_GAP = 16;
+/** Rate dock height before it's measured (one button plus padding). */
+const RATE_DOCK_FALLBACK = 96;
 
 /** E07 Did it sell? (P8-DEAL-02; board E16). */
 export function DidItSellScreen({
@@ -247,6 +254,10 @@ export function RateScreen({
   const [comment, setComment] = useState('');
   const [commentOpen, setCommentOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [dockHeight, setDockHeight] = useState(RATE_DOCK_FALLBACK);
+  const [commentHeight, setCommentHeight] = useState(0);
+  const [commentFocused, setCommentFocused] = useState(false);
+  const insets = useSafeAreaInsets();
   const [error, setError] = useState<string | null>(null);
   const close = () =>
     router.canGoBack()
@@ -333,7 +344,15 @@ export function RateScreen({
   return (
     <View style={styles.root} testID="screen-rate-submit">
       <NavBar leading="close" onLeading={close} title={copy.rateTitle} />
-      <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.body}
+        keyboardShouldPersistTaps="handled"
+        // The library lifts the caret, not the field: while the comment is
+        // focused, add its height so the whole box clears Send rating.
+        bottomOffset={dockHeight + KEYBOARD_GAP + (commentFocused ? commentHeight : 0)}
+        // The sticky dock rides up over this view; leave room to scroll past it.
+        extraKeyboardSpace={dockHeight}
+      >
         <Text variant="heading" accessibilityRole="header">
           {fill(copy.rateQuestion, { name })}
         </Text>
@@ -380,14 +399,21 @@ export function RateScreen({
             </View>
             {/* The comment stays folded until asked for: one less field by default. */}
             {commentOpen || comment ? (
-              <TextArea
-                label={copy.commentLabel}
-                placeholder={copy.commentPlaceholder}
-                value={comment}
-                onChangeText={setComment}
-                maxLength={200}
-                autoFocus={commentOpen}
-              />
+              <View
+                testID="rate-comment"
+                onLayout={(e) => setCommentHeight(e.nativeEvent.layout.height)}
+              >
+                <TextArea
+                  label={copy.commentLabel}
+                  placeholder={copy.commentPlaceholder}
+                  value={comment}
+                  onChangeText={setComment}
+                  maxLength={200}
+                  autoFocus={commentOpen}
+                  onFocus={() => setCommentFocused(true)}
+                  onBlur={() => setCommentFocused(false)}
+                />
+              </View>
             ) : (
               <Button
                 label={copy.addComment}
@@ -400,16 +426,24 @@ export function RateScreen({
           </>
         ) : null}
         {error ? <Banner kind="error" message={error} /> : null}
-      </ScrollView>
-      <View style={styles.dock}>
-        <Button
-          label={copy.submit}
-          disabled={thumbs === null}
-          loading={busy}
-          onPress={submit}
-          testID="rate-submit"
-        />
-      </View>
+      </KeyboardAwareScrollView>
+      {/* QA M11: the dock rides up with the keyboard (it sat under it, hiding
+          Send rating). Open, it drops the home-indicator padding it no longer needs. */}
+      <KeyboardStickyView offset={{ closed: 0, opened: insets.bottom }}>
+        <View
+          style={styles.dock}
+          testID="rate-dock"
+          onLayout={(e) => setDockHeight(e.nativeEvent.layout.height)}
+        >
+          <Button
+            label={copy.submit}
+            disabled={thumbs === null}
+            loading={busy}
+            onPress={submit}
+            testID="rate-submit"
+          />
+        </View>
+      </KeyboardStickyView>
     </View>
   );
 }

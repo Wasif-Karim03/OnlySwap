@@ -8,12 +8,17 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 /** Same shape the site's /i/[code] page accepts (apps/site/src/lib/invite.ts INVITE_RE). */
 const INVITE = /^[A-Za-z0-9]{4,16}$/;
 
-/** The path of a link: full URLs keep only the path; onlyswap://x/y becomes /x/y. Null when unreadable. */
+/**
+ * The path of a link, with its query: full URLs drop the origin, and
+ * onlyswap://x/y?q=1 becomes /x/y?q=1. The query is kept (QA H3: search results,
+ * verify-email and login-mode links need their params). Null when unreadable.
+ */
 export function linkPath(path: string): string | null {
   try {
     if (/^[a-z]+:\/\//i.test(path)) {
       const u = new URL(path);
-      return u.protocol.startsWith('http') ? u.pathname : `/${u.host}${u.pathname}`;
+      const base = u.protocol.startsWith('http') ? u.pathname : `/${u.host}${u.pathname}`;
+      return `${base}${u.search}`;
     }
   } catch {
     return null;
@@ -33,10 +38,11 @@ export function rewriteDeepLink(path: string): string {
   if (p === null) return '/';
   // Invites open the launch gate: signed out it goes to Welcome (the code is
   // kept for the sign-up by +native-intent), signed in it goes home.
-  if (/^\/i(\/|$)/.test(p)) return '/';
-  const listing = /^\/l\/([^/?#]+)\/?$/.exec(p);
+  const pathOnly = p.split(/[?#]/)[0]!;
+  if (/^\/i(\/|$)/.test(pathOnly)) return '/';
+  const listing = /^\/l\/([^/?#]+)\/?$/.exec(pathOnly);
   if (listing) return UUID.test(listing[1]!) ? `/listing/${listing[1]}?from=link` : '/link-error';
   // /m/{token} is the friend's web status page; in the app it opens nothing special.
-  if (/^\/m\//.test(p)) return '/inbox';
+  if (/^\/m\//.test(pathOnly)) return '/inbox';
   return p || '/';
 }

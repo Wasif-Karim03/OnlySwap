@@ -37,6 +37,19 @@ describe('T-UNIT-LIB-01 lib/errors.toAppError', () => {
     expect(toAppError({ message: 'Failed to fetch' }).code).toBe('ERR_OFFLINE');
   });
 
+  it.each([
+    'Could not connect to the server.',
+    'The Internet connection appears to be offline.',
+    'The network connection was lost.',
+    'A server with the specified hostname could not be found.',
+    'The request timed out.',
+    'Unable to resolve host "fdr.supabase.co": No address associated with hostname',
+    'Failed to connect to /192.168.1.5:54321',
+    'connect ECONNREFUSED 127.0.0.1:54321',
+  ])('QA-H2: maps the platform connection error %p to ERR_OFFLINE', (message) => {
+    expect(toAppError({ name: 'AuthRetryableFetchError', message }).code).toBe('ERR_OFFLINE');
+  });
+
   it('maps 401 and expired JWTs to SESSION_EXPIRED', () => {
     expect(toAppError({ status: 401, message: 'Unauthorized' }).code).toBe('SESSION_EXPIRED');
     expect(toAppError({ code: 'PGRST301', message: 'JWT expired' }).code).toBe('SESSION_EXPIRED');

@@ -124,7 +124,14 @@ export function SearchScreen({
         </View>
         <Button label={copy.cancel} variant="text" size="S" onPress={() => router.back()} />
       </View>
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.body}>
+      {/* The input opens focused: inset the list by the keyboard so every row can
+          scroll into view, and let a drag put the keyboard away. */}
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        automaticallyAdjustKeyboardInsets
+        contentContainerStyle={styles.body}
+      >
         {typing ? (
           <View style={styles.section} testID="search-suggestions">
             <Text variant="label" tone="ink3" accessibilityRole="header">

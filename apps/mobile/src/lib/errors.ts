@@ -95,6 +95,16 @@ const OFFLINE_PATTERNS = [
   /failed to fetch/i,
   /network ?error/i,
   /timeout/i,
+  // QA H2: what iOS (NSURLError) and Android (OkHttp) say when the server can't
+  // be reached; without these, sign-up showed "Something went wrong".
+  /could not connect to the server/i,
+  /internet connection appears to be offline/i,
+  /network connection was lost/i,
+  /hostname could not be found/i,
+  /request timed out/i,
+  /unable to resolve host/i,
+  /failed to connect to/i,
+  /connection refused|econnrefused/i,
 ];
 
 /**

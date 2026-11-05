@@ -1,7 +1,8 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Linking, Platform, ScrollView, Share, View } from 'react-native';
+import { Linking, Platform, Share, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { track } from '@/lib/analytics';
@@ -41,6 +42,9 @@ import {
 } from './logic';
 import { Handoff } from './Handoff';
 import { SpotsMap } from './SpotsMap';
+
+/** Gap kept between a focused field and the keyboard (space.lg). */
+const KEYBOARD_GAP = 16;
 
 export const meetupKey = (id: string) => ['meetup', id] as const;
 
@@ -168,7 +172,11 @@ export function MeetupDayScreen({
           ) : null
         }
       />
-      <ScrollView contentContainerStyle={styles.body}>
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.body}
+        keyboardShouldPersistTaps="handled"
+        bottomOffset={KEYBOARD_GAP}
+      >
         <View
           accessible
           accessibilityRole="header"
@@ -226,6 +234,7 @@ export function MeetupDayScreen({
               <Text
                 variant="label"
                 tone={m.other_here_at ? 'green' : 'ink3'}
+                style={styles.status}
                 accessibilityLabel={
                   m.other_here_at
                     ? fill(copy.theyreHere, { name })
@@ -330,7 +339,7 @@ export function MeetupDayScreen({
             />
           ) : null}
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       <View style={styles.dock}>
         {can.checkIn ? (
@@ -409,6 +418,8 @@ const styles = StyleSheet.create((theme, rt) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   body: { ...readableColumn, padding: theme.space.screen, gap: theme.space.md },
   flex: { flex: 1 },
+  // "Not here yet" wraps at large text sizes instead of crushing the name.
+  status: { flexShrink: 1, maxWidth: '45%', textAlign: 'right' },
   // The meetup time: the display style a little larger (DEC 90).
   time: {
     fontSize: theme.type.display.fontSize * 1.2,

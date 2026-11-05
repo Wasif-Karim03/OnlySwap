@@ -1,9 +1,10 @@
-import { Pressable, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { CountPill } from './Badge';
 import { Text } from './Text';
 import { a11yState } from '@/lib/a11y';
+import { useLargeText } from '@/theme/largeText';
 
 type Props<T extends string> = {
   label: string;
@@ -32,8 +33,9 @@ export function SegmentedControl<T extends string>({
   if (segments.length < 2 || segments.length > 4) {
     throw new Error('SegmentedControl takes 2 to 4 segments');
   }
-  return (
-    <View accessibilityRole="tablist" accessibilityLabel={label} style={styles.track(surface)}>
+  const largeText = useLargeText();
+  const items = (
+    <>
       {segments.map((s) => {
         const selected = s.value === value;
         const badge = s.badge && s.badge > 0 ? s.badge : null;
@@ -46,15 +48,44 @@ export function SegmentedControl<T extends string>({
             }
             {...a11yState({ selected })}
             onPress={() => onChange(s.value)}
-            style={({ pressed }) => [styles.segment(selected), pressed && styles.pressed]}
+            style={({ pressed }) => [
+              styles.segment(selected, largeText),
+              pressed && styles.pressed,
+            ]}
           >
-            <Text variant="label" tone={selected ? 'inverse' : 'ink2'}>
+            <Text
+              variant="label"
+              tone={selected ? 'inverse' : 'ink2'}
+              style={largeText ? styles.labelScroll : styles.label}
+            >
               {s.label}
             </Text>
             <CountPill count={s.badge} hidden={false} />
           </Pressable>
         );
       })}
+    </>
+  );
+  // Large text: segments keep their full width and the row scrolls sideways,
+  // so a label never breaks mid-word (QA-H5).
+  if (largeText) {
+    return (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        accessibilityRole="tablist"
+        accessibilityLabel={label}
+        style={styles.scrollTrack(surface)}
+        contentContainerStyle={styles.scrollContent}
+        testID="segmented-scroll"
+      >
+        {items}
+      </ScrollView>
+    );
+  }
+  return (
+    <View accessibilityRole="tablist" accessibilityLabel={label} style={styles.track(surface)}>
+      {items}
     </View>
   );
 }
@@ -67,12 +98,21 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: theme.radius.chip,
     backgroundColor: theme.colors[surface],
   }),
-  segment: (selected: boolean) => ({
-    flex: 1,
+  scrollTrack: (surface: 'bg2' | 'bg3') => ({
+    flexGrow: 0,
+    borderRadius: theme.radius.chip,
+    backgroundColor: theme.colors[surface],
+  }),
+  scrollContent: { flexGrow: 1, padding: theme.space.xs, gap: theme.space.xs },
+  segment: (selected: boolean, scroll: boolean) => ({
+    ...(scroll ? { flexGrow: 1, flexShrink: 0 } : { flex: 1 }),
     flexDirection: 'row',
     gap: theme.space.xs,
     // 44 pt target (3.08): the old 36 pt segment had no slop.
     minHeight: theme.size.buttonM,
+    // Keeps wrapped labels (4 segments, ~79 pt each on a 375 pt phone) clear
+    // of the pill's rounded ends.
+    paddingHorizontal: theme.space.sm,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: theme.radius.chip,
@@ -80,5 +120,8 @@ const styles = StyleSheet.create((theme) => ({
     // so the chosen segment couldn't be told apart (UX audit 2026-10-25).
     backgroundColor: selected ? theme.colors.ink : 'transparent',
   }),
+  // Wrapped lines center under each other and the label yields room to the badge.
+  label: { flexShrink: 1, textAlign: 'center' },
+  labelScroll: { flexShrink: 0, textAlign: 'center' },
   pressed: { opacity: PRESSED_OPACITY },
 }));

@@ -72,8 +72,10 @@ export function ReplyRow({ reply, now, onVote, onOptions, mediaBase, testID }: P
       )}
       <View style={styles.flex}>
         <View style={styles.meta}>
-          <Text variant="label">{reply.is_mine ? `${name} (${copy.you})` : name}</Text>
-          <Text variant="meta" tone="ink2" style={styles.flex}>
+          <Text variant="label" numberOfLines={1} style={styles.name}>
+            {reply.is_mine ? `${name} (${copy.you})` : name}
+          </Text>
+          <Text variant="meta" tone="ink2" numberOfLines={1} style={styles.time}>
             {agoLabel(new Date(reply.created_at), now)}
           </Text>
           <IconButton
@@ -111,6 +113,10 @@ const styles = StyleSheet.create((theme) => ({
     borderBottomColor: theme.colors.line,
   },
   flex: { flex: 1 },
+  // Name and time share the row and both truncate, so a long name or large
+  // text never squeezes the time to one letter per line or pushes "more" out.
+  name: { flexShrink: 1 },
+  time: { flexGrow: 1, flexShrink: 1 },
   meta: { flexDirection: 'row', alignItems: 'center', gap: theme.space.sm },
   badge: (op: boolean) => ({
     width: theme.size.avatarS,

@@ -23,7 +23,8 @@ type Props = {
  * The link preview for a shared listing: the cover photo, the price, the
  * title and the campus. Never the seller's name. It sits on screen at
  * opacity 0 (view-shot needs a laid-out view) and is hidden from screen
- * readers.
+ * readers. A fixed 600 × 315 image, so its text ignores the seller's
+ * Dynamic Type (allowFontScaling={false}); scaled text overflowed the card.
  */
 export const ShareCard = forwardRef<View, Props>(function ShareCard(
   { photo, price, title, tags, onReady },
@@ -52,19 +53,25 @@ export const ShareCard = forwardRef<View, Props>(function ShareCard(
         <View style={styles.side}>
           <View style={styles.brand}>
             <Mark size={22} tone="accent" />
-            <Text variant="heading">onlyswap</Text>
+            <Text variant="heading" allowFontScaling={false}>
+              onlyswap
+            </Text>
           </View>
           <View style={styles.bottom}>
-            <Text variant="display" numberOfLines={1} style={styles.price}>
+            <Text variant="display" numberOfLines={1} allowFontScaling={false} style={styles.price}>
               {price}
             </Text>
-            <Text variant="heading" numberOfLines={2}>
+            <Text variant="heading" numberOfLines={2} allowFontScaling={false}>
               {title}
             </Text>
             <View style={styles.tags}>
               {tags.map((t, i) => (
                 <View key={t} style={styles.tag(i === tags.length - 1)}>
-                  <Text variant="meta" tone={i === tags.length - 1 ? 'onAccent' : 'ink2'}>
+                  <Text
+                    variant="meta"
+                    tone={i === tags.length - 1 ? 'onAccent' : 'ink2'}
+                    allowFontScaling={false}
+                  >
                     {t}
                   </Text>
                 </View>

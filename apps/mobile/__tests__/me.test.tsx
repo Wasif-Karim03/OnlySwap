@@ -1,8 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 import type { ReactNode } from 'react';
-import { Text } from 'react-native';
+import { Dimensions, StyleSheet, Text } from 'react-native';
 
 import LegalRoute from '../app/legal/[doc]';
 import type { ListingResult } from '../src/features/feed/logic';
@@ -539,5 +539,34 @@ describe('T-UNIT-MOVING-02 moving out (DEC 133)', () => {
     );
     // The date shows in place of the explainer.
     expect(await screen.findByText(/^Moving out by /)).toBeTruthy();
+  });
+});
+
+/** Pretends the user picked a Dynamic Type size (fontScale 1 is the default). */
+function setFontScale(fontScale: number) {
+  const base = { width: 375, height: 667, scale: 2 };
+  act(() => Dimensions.set({ window: { ...base, fontScale }, screen: { ...base, fontScale } }));
+}
+
+describe('QA-H5 Profile header at large text', () => {
+  afterEach(() => setFontScale(1));
+  const head = async () => {
+    render(
+      { profile: () => <ProfileTabScreen api={api()} mediaBase={() => 'http://m'} /> },
+      '/profile',
+    );
+    await screen.findByText('Aisha A.');
+    return StyleSheet.flatten(screen.getByTestId('profile-head').props.style);
+  };
+
+  it('keeps Edit profile beside the name at default size', async () => {
+    setFontScale(1);
+    expect((await head()).flexDirection).toBe('row');
+  });
+
+  it('moves Edit profile below the name at large text', async () => {
+    setFontScale(2);
+    expect((await head()).flexDirection).toBe('column');
+    expect(screen.getByTestId('profile-edit')).toBeTruthy();
   });
 });

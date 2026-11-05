@@ -313,7 +313,7 @@ function ProgressRing({
   );
 }
 
-const styles = StyleSheet.create((theme) => ({
+const styles = StyleSheet.create((theme, rt) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg2 },
   pad: { padding: theme.space.screen },
   body: {
@@ -342,7 +342,11 @@ const styles = StyleSheet.create((theme) => ({
   },
   invite: { gap: theme.space.md, paddingTop: theme.space.sm },
   flexFill: { flex: 1 },
-  errorOut: { paddingHorizontal: theme.space.screen, paddingBottom: theme.space.lg },
+  // Clear of the home indicator on Face ID phones.
+  errorOut: {
+    paddingHorizontal: theme.space.screen,
+    paddingBottom: rt.insets.bottom + theme.space.lg,
+  },
   dock: {
     ...readableColumn,
     paddingHorizontal: theme.space.screen,

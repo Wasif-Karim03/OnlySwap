@@ -23,6 +23,7 @@ import { getEnv } from '@/lib/env';
 import { errorCopy, toAppError } from '@/lib/errors';
 import { fill } from '@/lib/format';
 import { sell as copy } from '@/strings';
+import { useLargeText } from '@/theme/largeText';
 
 import { sellApi, type SellApi } from './api';
 import { getDraftStore, useDraft, type DraftState } from './draft';
@@ -72,6 +73,7 @@ export function SellMeetupScreen({
   openUrl?: (url: string) => Promise<unknown>;
 }) {
   const router = useRouter();
+  const largeText = useLargeText();
   const draft = useDraft((s: DraftState) => s.draft, store);
   const { update, reset } = store.getState();
   const [maxHint, setMaxHint] = useState(false);
@@ -135,6 +137,20 @@ export function SellMeetupScreen({
   const coverSource =
     cover?.uri || (cover?.thumbPath ? mediaUrl(mediaBase(), cover.thumbPath) : null);
 
+  // Large text: the banned-items box scrolls with the form (it would eat the
+  // viewport as part of the pinned dock and push the spots off screen).
+  const bannedBox = (
+    <Checkbox
+      label={copy.notBanned}
+      selected={allowed}
+      testID="sell-allowed"
+      onPress={() => {
+        setAllowed((v) => !v);
+        setConfirmHint(false);
+      }}
+    />
+  );
+
   return (
     <SellStep
       testID="screen-sell-meetup"
@@ -149,15 +165,7 @@ export function SellMeetupScreen({
               hint and post errors. The wrapper is always mounted (not
               flattened) so messages appearing and leaving never re-insert
               views next to the button. */}
-          <Checkbox
-            label={copy.notBanned}
-            selected={allowed}
-            testID="sell-allowed"
-            onPress={() => {
-              setAllowed((v) => !v);
-              setConfirmHint(false);
-            }}
-          />
+          {largeText ? null : bannedBox}
           <View collapsable={false} style={styles.dockMessages}>
             {confirmHint ? (
               <Text
@@ -219,7 +227,11 @@ export function SellMeetupScreen({
               ...spots.map((spot) => {
                 const selected = chosen.includes(spot.id);
                 return (
-                  <View key={spot.id} style={styles.spot}>
+                  <View
+                    key={spot.id}
+                    style={[styles.spot, largeText && styles.spotStacked]}
+                    testID={`sell-spot-row-${spot.id}`}
+                  >
                     <Pressable
                       accessibilityRole="checkbox"
                       {...a11yState({ checked: selected })}
@@ -233,7 +245,11 @@ export function SellMeetupScreen({
                         .join(', ')}
                       onPress={() => toggle(spot)}
                       testID={`sell-spot-${spot.id}`}
-                      style={({ pressed }) => [styles.spotMain, pressed && styles.pressed]}
+                      style={({ pressed }) => [
+                        styles.spotMain,
+                        largeText ? styles.spotMainStacked : styles.spotBesideButton,
+                        pressed && styles.pressed,
+                      ]}
                     >
                       <CheckMark on={selected} />
                       <View style={styles.flex}>
@@ -250,14 +266,16 @@ export function SellMeetupScreen({
                         ) : null}
                       </View>
                     </Pressable>
-                    <Button
-                      label={copy.directions}
-                      variant="text"
-                      size="M"
-                      fullWidth={false}
-                      accessibilityHint={fill(copy.directionsLabel, { name: spot.name })}
-                      onPress={() => void openUrl(directionsUrl(spot, Platform.OS))}
-                    />
+                    <View style={largeText ? styles.directionsStacked : styles.directions}>
+                      <Button
+                        label={copy.directions}
+                        variant="text"
+                        size="S"
+                        fullWidth={false}
+                        accessibilityHint={fill(copy.directionsLabel, { name: spot.name })}
+                        onPress={() => void openUrl(directionsUrl(spot, Platform.OS))}
+                      />
+                    </View>
                   </View>
                 );
               }),
@@ -311,6 +329,7 @@ export function SellMeetupScreen({
           onChange={(availability) => update({ availability })}
         />
       </View>
+      {largeText ? bannedBox : null}
     </SellStep>
   );
 }
@@ -320,7 +339,22 @@ const styles = StyleSheet.create((theme) => ({
   list: { gap: theme.space.sm },
   dockMessages: { gap: theme.space.xs },
   field: { gap: theme.space.xs },
-  spot: { flexDirection: 'row', alignItems: 'center', paddingRight: theme.space.xs },
+  // Wraps: at large text sizes Directions drops under the spot instead of
+  // squeezing the spot name to one letter per line (same bug as AuthStep).
+  spot: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    paddingRight: theme.space.xs,
+  },
+  // A spot beside Directions: at least 55% wide before Directions wraps.
+  spotBesideButton: { flexGrow: 1, flexShrink: 1, flexBasis: '55%' },
+  // Large text: the wrap above never fired (Directions fit beside 55%), so the
+  // name broke letter by letter (QA H6). Stack instead: spot, then Directions.
+  spotStacked: { flexDirection: 'column', alignItems: 'stretch', flexWrap: 'nowrap' },
+  // No flex 1 in a column without a height: it would collapse the row.
+  spotMainStacked: { flexGrow: 0, flexShrink: 0, flexBasis: 'auto' },
+  directionsStacked: { alignSelf: 'flex-end' },
   spotMain: {
     flex: 1,
     minHeight: theme.space.rowMin,
@@ -330,6 +364,8 @@ const styles = StyleSheet.create((theme) => ({
     paddingVertical: theme.space.md,
     paddingHorizontal: theme.space.lg,
   },
+  // Right-aligned on its own line once it wraps.
+  directions: { marginLeft: 'auto' },
   pressed: { backgroundColor: theme.colors.bg3 },
   // Same mark as the shared Checkbox (OptionRow).
   box: (selected: boolean) => ({

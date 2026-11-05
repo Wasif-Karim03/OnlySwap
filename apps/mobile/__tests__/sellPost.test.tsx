@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 import type { ReactNode } from 'react';
-import { Text, View } from 'react-native';
+import { Dimensions, StyleSheet, Text, View } from 'react-native';
 
 import type { PostedListing, SellApi } from '../src/features/sell/api';
 import { createDraftStore } from '../src/features/sell/draft';
@@ -424,5 +424,89 @@ describe('P5-SELL-05 D04 Posted + share card', () => {
     expect(d.pickupBy).toBe('sunday');
     expect(d.title).toBe('');
     expect(d.photos).toEqual([]);
+  });
+});
+
+/** Pretends the user picked a Dynamic Type size (fontScale 1 is the default). */
+function setFontScale(fontScale: number) {
+  const base = { width: 375, height: 667, scale: 2 };
+  act(() => Dimensions.set({ window: { ...base, fontScale }, screen: { ...base, fontScale } }));
+}
+
+describe('QA-H6 Sell meetup at large text', () => {
+  afterEach(() => setFontScale(1));
+
+  const depth = (n: ReturnType<typeof screen.getByTestId>) => {
+    let d = 0;
+    for (let p = n.parent; p; p = p.parent) d += 1;
+    return d;
+  };
+  /** Depth of the closest container the two nodes share (deeper = closer). */
+  const sharedDepth = (
+    a: ReturnType<typeof screen.getByTestId>,
+    b: ReturnType<typeof screen.getByTestId>,
+  ) => {
+    const up = new Set<unknown>();
+    for (let p = a.parent; p; p = p.parent) up.add(p);
+    for (let p = b.parent; p; p = p.parent) if (up.has(p)) return depth(p as never) + 1;
+    return 0;
+  };
+
+  const open = async () => {
+    setup('/sell/meetup', {
+      'sell/meetup': () => (
+        <SellMeetupScreen
+          api={fakeApi()}
+          store={storeWith(draftWith())}
+          mediaBase={() => 'http://media.test'}
+        />
+      ),
+    });
+    await screen.findByText('RPAC entrance');
+    return {
+      allowed: screen.getByTestId('sell-allowed'),
+      post: screen.getByTestId('sell-post'),
+      spots: screen.getByTestId('sell-spots'),
+    };
+  };
+
+  it('keeps the banned-items box in the pinned dock at default size', async () => {
+    setFontScale(1);
+    const { allowed, post, spots } = await open();
+    expect(sharedDepth(allowed, post)).toBeGreaterThan(sharedDepth(allowed, spots));
+  });
+
+  it('moves the banned-items box into the scroll content at large text', async () => {
+    setFontScale(2);
+    const { allowed, post, spots } = await open();
+    expect(sharedDepth(allowed, spots)).toBeGreaterThan(sharedDepth(allowed, post));
+  });
+
+  /** Pressable styles can be a function of pressed state; resolve the idle style. */
+  const flat = (id: string) => {
+    const style = screen.getByTestId(id).props.style as unknown;
+    const idle = typeof style === 'function' ? style({ pressed: false }) : style;
+    return StyleSheet.flatten(idle) ?? {};
+  };
+
+  it('keeps Directions beside the spot at default size', async () => {
+    setFontScale(1);
+    await open();
+    expect(flat('sell-spot-row-rpac').flexDirection).toBe('row');
+  });
+
+  it('puts Directions under the spot at large text so its name never breaks mid-word', async () => {
+    setFontScale(2);
+    await open();
+    expect(flat('sell-spot-row-rpac').flexDirection).toBe('column');
+    // flex 1 in a column with no height would collapse the row (see QA H5 offer dock).
+    expect(flat('sell-spot-rpac').flexBasis).toBe('auto');
+  });
+
+  it('still needs the box ticked before Post goes through', async () => {
+    setFontScale(2);
+    await open();
+    fireEvent.press(screen.getByTestId('sell-post'));
+    expect(await screen.findByTestId('sell-confirm-hint')).toBeTruthy();
   });
 });

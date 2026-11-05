@@ -2,7 +2,7 @@
 import { dealPriceLine, dealStatusLabel } from '../src/features/chat/logic';
 import { isFeedPost } from '../src/features/me/api';
 import { authorName } from '../src/features/quad/components/QuadAuthor';
-import { profileStats } from '../src/features/me/MeScreens';
+import { profileStats, splitAround } from '../src/features/me/MeScreens';
 import { priceInput, validateDetails } from '../src/features/sell/logic';
 import { chat, me, quad, saved } from '../src/strings';
 import { es } from '../src/strings/es';
@@ -32,6 +32,21 @@ describe('audit fixes', () => {
       'en-US',
     );
     expect(two[1]!.template).toBe(me.statsSwaps);
+  });
+
+  it('profile stats print the number once, even for exactly one (no "1 swap1")', () => {
+    const one = profileStats(
+      { counts: { ...counts, sold: 1, swaps: 1 }, created_at: '2026-10-01' } as never,
+      'en-US',
+    );
+    const line = one.slice(0, 2).map((st) => {
+      const [before, after] = splitAround(st.template, st.name);
+      return `${before}${st.value}${after}`;
+    });
+    expect(line).toEqual(['1 sold', '1 swap']);
+    for (const t of [me.statsSoldOne, me.statsSwapsOne, es.me.statsSoldOne, es.me.statsSwapsOne]) {
+      expect(t).toContain('{n}');
+    }
   });
 
   it('Saved points people at the bookmark, not the heart (DEC 144)', () => {

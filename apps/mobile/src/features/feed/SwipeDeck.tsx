@@ -236,7 +236,11 @@ function DeckActions({
         testID={`${testID}-offer`}
       >
         <View style={styles.offerPill(size, !!disabled)}>
-          <Text variant={size === 'L' ? 'bodyStrong' : 'label'} tone="onAccent" numberOfLines={1}>
+          <Text
+            variant={size === 'L' ? 'bodyStrong' : 'label'}
+            tone="onAccent"
+            numberOfLines={size === 'L' ? 1 : 2}
+          >
             {short ? copy.offerShort : copy.offer}
           </Text>
         </View>
@@ -453,7 +457,7 @@ function TopCard({ card, size, drag, wiggle, register, onDone, onOpen, onToggleS
             style={[styles.sticker, styles.stickerOffer, offerStamp]}
             pointerEvents="none"
           >
-            <Text variant="title" tone="onAccent">
+            <Text variant="title" tone="onAccent" overlay>
               {offerSticker(card)}
             </Text>
           </Animated.View>
@@ -461,7 +465,7 @@ function TopCard({ card, size, drag, wiggle, register, onDone, onOpen, onToggleS
             style={[styles.sticker, styles.stickerPass, passStamp]}
             pointerEvents="none"
           >
-            <Text variant="title" style={styles.passText}>
+            <Text variant="title" style={styles.passText} overlay>
               {copy.stampSkip}
             </Text>
           </Animated.View>
@@ -647,8 +651,13 @@ const styles = StyleSheet.create((theme) => ({
     opacity: disabled ? 0.35 : 1,
   }),
   offerFlex: { flex: 1 },
+  // The deck pill (L) stays a fixed height: the deck row overlaps the card by
+  // exactly that much. The list/grid pill (M) grows to a second line at larger
+  // text instead of clipping "Make an offer".
   offerPill: (size: 'L' | 'M', disabled: boolean) => ({
-    height: size === 'L' ? theme.size.buttonL : theme.size.hit,
+    ...(size === 'L'
+      ? { height: theme.size.buttonL }
+      : { minHeight: theme.size.hit, paddingVertical: theme.space.xs }),
     paddingHorizontal: size === 'L' ? theme.space.xl : theme.space.md,
     borderRadius: theme.radius.chip,
     alignItems: 'center',

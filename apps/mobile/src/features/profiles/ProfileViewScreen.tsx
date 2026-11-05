@@ -289,9 +289,15 @@ export function ProfileViewScreen({
   );
 }
 
-const styles = StyleSheet.create((theme) => ({
+const styles = StyleSheet.create((theme, rt) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
-  body: { ...readableColumn, padding: theme.space.screen, gap: theme.space.md },
+  // No tab bar on this route: keep the last review clear of the home indicator.
+  body: {
+    ...readableColumn,
+    padding: theme.space.screen,
+    paddingBottom: theme.space.screen + rt.insets.bottom,
+    gap: theme.space.md,
+  },
   head: { alignItems: 'flex-start', gap: theme.space.xs, paddingBottom: theme.space.lg },
   tags: {
     flexDirection: 'row',

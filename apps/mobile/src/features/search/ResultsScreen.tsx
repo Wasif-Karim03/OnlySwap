@@ -206,6 +206,8 @@ const styles = StyleSheet.create((theme) => ({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    // Larger text on an SE: "Save search" drops to a second line instead of off screen.
+    flexWrap: 'wrap',
     gap: theme.space.md,
     paddingHorizontal: theme.space.screen,
     paddingBottom: theme.space.sm,

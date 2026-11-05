@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Platform, Share, View } from 'react-native';
+import { Platform, ScrollView, Share, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { captureRef } from 'react-native-view-shot';
 import type { StoreApi } from 'zustand';
@@ -17,6 +17,7 @@ import { getEnv } from '@/lib/env';
 import { fill } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
 import { sell as copy } from '@/strings';
+import { useLayout } from '@/theme/layout';
 
 import { sellApi, type SellApi } from './api';
 import { listingLink, mediaUrl, priceLabel, type Condition, type ListingKind } from './logic';
@@ -54,6 +55,9 @@ export function SellPostedScreen({
   cardTimeoutMs?: number;
 }) {
   const router = useRouter();
+  // Phones: the tab bar below already pads for the home indicator; only the
+  // iPad sidebar (wide) leaves the dock to pad for it.
+  const padsHomeIndicator = useLayout().wide;
   const listing = usePostedStore((s) => s.listing);
   const coverUri = usePostedStore((s) => s.coverUri);
   const [card, setCard] = useState<CardState>('preparing');
@@ -169,7 +173,8 @@ export function SellPostedScreen({
           router.navigate('/discover');
         }}
       />
-      <View style={styles.body}>
+      {/* Scrolls so large text on an SE never runs under the dock. */}
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.body}>
         <SuccessCheck visible accessibilityLabel={copy.postedCheck} />
         <Text variant="title" accessibilityRole="header">
           {inReview ? copy.reviewTitle : copy.postedTitle}
@@ -191,8 +196,8 @@ export function SellPostedScreen({
             </Text>
           </View>
         </View>
-      </View>
-      <View style={styles.dock}>
+      </ScrollView>
+      <View style={styles.dock(padsHomeIndicator)}>
         {inReview ? (
           // In review there is nothing to share yet: List another is the main action.
           <Button label={copy.listAnother} onPress={listAnother} testID="sell-list-another" />
@@ -224,8 +229,9 @@ export function SellPostedScreen({
 
 const styles = StyleSheet.create((theme, rt) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
+  scroll: { flex: 1 },
   body: {
-    flex: 1,
+    flexGrow: 1,
     paddingHorizontal: theme.space.screen,
     paddingTop: theme.space.md,
     gap: theme.space.md,
@@ -245,9 +251,9 @@ const styles = StyleSheet.create((theme, rt) => ({
   // 64 pt thumbnail (3.03).
   thumb: { width: theme.space['2xl'] * 2, height: theme.space['2xl'] * 2 },
   flex: { flex: 1, gap: theme.space.xs },
-  dock: {
+  dock: (padsHomeIndicator: boolean) => ({
     paddingHorizontal: theme.space.screen,
-    paddingBottom: rt.insets.bottom + theme.space.md,
+    paddingBottom: (padsHomeIndicator ? rt.insets.bottom : 0) + theme.space.md,
     gap: theme.space.xs,
-  },
+  }),
 }));
