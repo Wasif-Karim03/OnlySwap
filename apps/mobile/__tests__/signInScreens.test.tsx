@@ -234,7 +234,7 @@ describe('P4-AUTH-06 S-A04 verify code: wrong, expired, locked', () => {
   it('a wrong code says how many tries are left; the fifth locks for 5 minutes', async () => {
     const api = fakeApi({
       verifyCode: jest.fn(async () =>
-        Promise.reject({ status: 403, message: 'Token has expired or is invalid' }),
+        Promise.reject({ code: 'P0001', message: 'INVALID:code' }),
       ),
     });
     setup(`/verify?email=${email}`, api, { now });
