@@ -14,8 +14,8 @@
 //     seeded because it expires within 3 hours). Everything uses fixed ids, so a
 //     second run updates rows instead of adding more.
 // The Quad also needs the global kill switch app_config.quad_enabled. This
-// script never changes app_config: it only warns when the switch is off. The
-// owner turns it on in admin Config (it's audited there).
+// script never changes app_config. The switch stays off at launch for every
+// campus, Demo University included (DEC 161), so reviewers do not see the Quad.
 //
 //   SUPABASE_URL=https://<ref>.supabase.co SERVICE_KEY=... REVIEW_PASSWORD=... \
 //     node --experimental-strip-types scripts/seed-review.ts
@@ -329,7 +329,7 @@ export async function seedReview(
   if (quadSwitch !== true && quadSwitch !== 'true') {
     log(
       'note: app_config.quad_enabled (the global Quad switch) is off, so reviewers will not see the Quad. ' +
-        'Turn it on in admin Config before you submit.',
+        'Leave it off at launch (DEC 161).',
     );
   }
 }
