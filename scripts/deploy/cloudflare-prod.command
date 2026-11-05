@@ -41,7 +41,7 @@ MEDIA_URL=https://$MEDIA_HOST
 
 say "1/6 Cloudflare login"
 WR whoami >/dev/null 2>&1 || WR login || die "login failed"
-ACCOUNT_ID=$(WR whoami 2>/dev/null | grep -oE '[0-9a-f]{32}' | head -1)
+ACCOUNT_ID=${CF_ACCOUNT_ID:-$(WR whoami 2>/dev/null | grep -oE '[0-9a-f]{32}' | head -1)}
 [ -n "$ACCOUNT_ID" ] || die "no Cloudflare account id"
 echo "account: $ACCOUNT_ID (not a secret)" | tee -a "$LOG"
 

@@ -3,8 +3,8 @@
 Your steps only, in order. Claude's steps sit between them in `docs/LAUNCH_PLAN.md`; each phase gate there must be green before you start the next block. Tick here as you go.
 
 ## Now: merge the PR stack (phase 1)
-- [ ] Merge in order, one at a time, waiting for green CI after each retarget: #55, #56, #57, #58, #59, #60, then the LR 42 PR stacked on #60.
-- [ ] After the stack: merge or close Dependabot #31 to #34 and #50 (LR 43).
+- [x] Done 2026-11-05 by Claude (delegated): #55, #57, #59 and #61 merged; #56, #58 and #60 closed when their bases were deleted, and their commits reached main through the PR above (main 97d831b).
+- [x] Dependabot (LR 43): Claude rolled #31 to #34 into #62 and closed #51 (it bumps majors).
 
 ## Accounts and keys (phase 3; table in `docs/runbooks/production.md` §0, about 1 to 2 hours)
 - [ ] Supabase: pause `intention`, so the free plan has a slot for `onlyswap-prod`.
@@ -13,14 +13,14 @@ Your steps only, in order. Claude's steps sit between them in `docs/LAUNCH_PLAN.
 - [ ] Then run, and paste values at the hidden prompts: `bash scripts/deploy/prod-supabase.command`. Tell Claude when it finishes; Claude checks the gate (health, migrations, functions, scheduled jobs, restore drill).
 
 ## Domain and scanning (phase 4)
-- [ ] Buy the domain in Cloudflare (about $10.46 a year, approved) and switch the nameservers.
-- [ ] Cloudflare: a Turnstile widget for the domain (Managed) and an R2 token scoped to `onlyswap-media` and `onlyswap-private`.
-- [ ] Turn on the Cloudflare CSAM Scanning Tool for the media host. The legal review lists it as a submission blocker (LR 31).
+- [ ] Skip the custom domain for R1.0 (DEC 164). Add it before any campus beyond Ohio Wesleyan.
+- [ ] Cloudflare: a Turnstile widget for the site (Managed) and an R2 token scoped to `onlyswap-media` and `onlyswap-private`.
+- [ ] No CSAM scan at first launch (DEC 164). Turn on the Cloudflare CSAM Scanning Tool before any campus beyond Ohio Wesleyan.
 - [ ] Run `bash scripts/deploy/cloudflare-prod.command` (R2, media Worker, site, admin and web on prod). Do not use `site.command`; it deploys staging.
 
 ## Ohio Wesleyan data (phase 5)
 - [ ] Read `docs/launch/OWU_SPOTS.md` (6 draft spots; none is police-designated). Walk them or confirm with campus, and fix any "verify on site" coordinates.
-- [ ] Note: `supabase/campuses/owu.sql` puts the Campus Center at 61 S. Sandusky St (40.2970, -83.0672); the research says 40 Rowland Ave (40.296626, -83.069990). Say which is right; Claude updates `owu.sql` with the approved list.
+- [x] Settled: the Campus Center is at 40 Rowland Ave (61 S. Sandusky St is the mailing address). `owu.sql` has 5 spots, 2 live and 3 inactive until you check them; turn them on in admin after the walk.
 - [ ] Then: `bash scripts/deploy/add-campus.command owu prod`.
 
 ## Legal sign-off (phase 8, LR 34, start now: no dependencies)

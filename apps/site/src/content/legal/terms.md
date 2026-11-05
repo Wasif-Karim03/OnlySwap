@@ -65,7 +65,7 @@ The Quad is a board for students at your school. Posts and replies show your fir
 
 Posts and replies that other students vote down to a score of -5 are hidden and sent to a person for review. Posts that break these rules are removed and can lead to a strike, a suspension or a ban, like any other rule break (section 6).
 
-When photos in chat are on, you must not send nudity or sexual images, photos of other people without their consent, or photos of ID cards, student IDs or other documents. Photos may be checked automatically for illegal content.
+When photos in chat are on, you must not send nudity or sexual images, photos of other people without their consent, or photos of ID cards, student IDs or other documents. Photos may be checked automatically for nudity and other harmful content, and a person reviews any flagged photo.
 
 ## 9. Ending your account
 

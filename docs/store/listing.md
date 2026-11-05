@@ -38,9 +38,9 @@ college,student,marketplace,textbooks,dorm,sell,buy,campus,used,furniture
 Output: `store-assets/ios` (1320×2868 ×5), `store-assets/android` (1080×1920 ×5,
 feature graphic 1024×500, icon 512). Captions show features every campus has
 (swipe, offer, chat, meetup, Around campus). The Quad stays out of screenshots
-and the description: it's on only at campuses with 300+ active users (DEC 76),
-so most people who install wouldn't see it (2.3 accurate metadata). Reviewers
-still see it on Demo University (2.3.1, notes below). Demo University and the
+and the description: it is off for every campus in this version, Demo
+University included (DEC 161), so no one who installs sees it (2.3 accurate
+metadata). The review notes say so (2.3.1, notes below). Demo University and the
 bot posts are fictional; no real school names or marks in any asset.
 
 ## App Review notes (Apple; reuse for Play "App access")

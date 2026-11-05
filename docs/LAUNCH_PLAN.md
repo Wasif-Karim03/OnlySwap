@@ -6,7 +6,7 @@ Each phase ends with a gate. The next phase starts only when the gate is green, 
 
 ## Owner decisions (2026-11-04; recorded in DECISIONS_LOG in phase 0)
 - Pause `intention` to free a Supabase slot for `onlyswap-prod` ($0).
-- Buy a domain (about $10.46 a year) for CSAM scanning and real URLs. Chat photos stay **off** at launch.
+- No custom domain for R1.0 (DEC 164). Public URLs use onlyswap.pages.dev. Chat photos stay **off** at launch.
 - Legal: a recorded self-review against RELEASE §6 (no lawyer).
 - Merge the PR stack one PR at a time, in order. Phones only (already `supportsTablet: false`).
 - Launch: iOS first, at Ohio Wesleyan (`owu.edu`). The web app moves to prod with iOS. Android follows.
@@ -43,15 +43,15 @@ Gate: every QA item is fixed or deliberately deferred with a reason. A full SE a
 Owner: pause `intention` -> create `onlyswap-prod` (US East, free). Create the prod Gmail sender + app password and a Turnstile widget. Create the Sentry and PostHog prod projects.
 Claude:
 1. Add `[remotes.prod]` to `supabase/config.toml`, then run `scripts/deploy/prod-supabase.command` (LR 3).
-2. Push migrations 0001-0257 from `supabase/migrations/` only; set app.env to prod; run `pnpm db:types` (LR 4).
+2. Push migrations 0001-0257 from `supabase/migrations/` only; app.env cannot be set on hosted Supabase (DEC 165); skip it; run `pnpm db:types` (LR 4).
 3. Set Vault and Edge secrets (owner pastes values) and deploy every function except `test-inbox` (LR 5, 8, 9).
 4. Push the Auth settings and read every one back (LR 11). Set `mfa_required = true` and the admin row (LR 32).
 5. R2 prod buckets, CORS, exports lifecycle, and the media Worker on prod (LR 7, 10).
 6. GitHub secrets and variables so Backup, Keepalive and Usage report go green, then a restore drill (LR 24, 29).
 Gate: prod `health` is OK, migrations match, every function is listed, the 3 scheduled jobs are green once, and the restore drill is done.
 
-## Phase 4: Domain, CSAM scanning, site, admin and web on prod
-Owner: buy the domain in Cloudflare and sign up for the CSAM Scanning Tool.
+## Phase 4: Site, admin and web on prod (domain and CSAM scanning come after launch, DEC 164)
+Owner: nothing for R1.0. Later, before any campus beyond OWU: buy the domain and sign up for the CSAM Scanning Tool.
 Claude: point media, site, admin and web at the domain; set CF_ZONE_ID and the purge token; deploy `apps/site` (APPLE_TEAM_ID set for Universal Links), `apps/admin` and the web app against prod (LR 27, 30, 31, 41).
 Gate: web deletion, support, the waitlist, and share and invite links work end to end on prod. Scanning is enabled on the media host. A deleted photo URL returns 404.
 
