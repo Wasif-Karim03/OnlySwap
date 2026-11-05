@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { states as statesCopy } from '@/strings';
+import { useLargeText } from '@/theme/largeText';
 
 import { Button } from './Button';
 import { Icon, type IconName } from './icons/Icon';
@@ -64,8 +65,11 @@ export function EmptyState({
   inline = false,
   testID,
 }: EmptyStateProps) {
+  // QA-M2: at large text the block is taller than the screen, so drop the
+  // extra air that pushes the action off the bottom.
+  const largeText = useLargeText();
   return (
-    <View testID={testID} style={styles.wrap(inline)}>
+    <View testID={testID} style={[styles.wrap(inline), !inline && largeText ? styles.tight : null]}>
       <View style={styles.block}>
         <View style={styles.top}>
           {lead}
@@ -132,6 +136,7 @@ const styles = StyleSheet.create((theme) => ({
           paddingTop: theme.space['2xl'],
           paddingBottom: theme.space['2xl'] * 3,
         },
+  tight: { paddingTop: theme.space.lg, paddingBottom: theme.space['2xl'] },
   block: { gap: theme.space.xl, alignItems: 'center' },
   top: { gap: theme.space.lg, alignItems: 'center' },
   tile: { alignItems: 'center', justifyContent: 'center' },

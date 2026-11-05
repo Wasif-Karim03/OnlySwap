@@ -1,8 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 import type { ReactNode } from 'react';
-import { Text } from 'react-native';
+import { Dimensions, Text } from 'react-native';
 
 import type { MeetupsApi } from '../src/features/meetups/api';
 import {
@@ -421,5 +421,46 @@ describe('T-UNIT-HANDOFF-01 handoff code (DEC 132)', () => {
     );
     await screen.findByTestId('meetup-other-name');
     expect(screen.queryByTestId('meetup-handoff-code')).toBeNull();
+  });
+});
+
+describe('QA-M2 meetup day dock at each text size', () => {
+  const base = Dimensions.get('window');
+  const setScale = (fontScale: number) =>
+    act(() => Dimensions.set({ window: { ...base, fontScale }, screen: { ...base, fontScale } }));
+  afterEach(() => setScale(base.fontScale));
+  const renderDay = () =>
+    render(
+      {
+        'meetup/[id]': () => (
+          <MeetupDayScreen id="m1" otherName="Aisha" api={api()} now={() => NOW} />
+        ),
+      },
+      '/meetup/m1',
+    );
+
+  it('keeps 911 and the safety link in the dock at default size', async () => {
+    setScale(1);
+    renderDay();
+    const dock = await screen.findByTestId('meetup-dock');
+    expect(within(dock).getByTestId('meetup-911')).toBeTruthy();
+    expect(within(dock).getByTestId('meetup-safety')).toBeTruthy();
+  });
+
+  it('docks only 911 at large text; the safety link scrolls with the page', async () => {
+    setScale(2);
+    renderDay();
+    const dock = await screen.findByTestId('meetup-dock');
+    expect(within(dock).getByTestId('meetup-911')).toBeTruthy();
+    expect(within(dock).queryByTestId('meetup-safety')).toBeNull();
+    expect(screen.getByTestId('meetup-safety')).toBeTruthy();
+  });
+
+  it('QA-L8 the big time stays on one line and shrinks to fit', async () => {
+    renderDay();
+    await screen.findByTestId('meetup-dock');
+    const time = screen.getByText(/\d:\d\d/, { exact: false });
+    expect(time.props.numberOfLines).toBe(1);
+    expect(time.props.adjustsFontSizeToFit).toBe(true);
   });
 });

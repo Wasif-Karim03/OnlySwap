@@ -52,6 +52,29 @@ const TONE: Record<ButtonVariant, TextTone> = {
 };
 
 /**
+ * Variants that sit on an accent-filled screen keep the old 35% dim: the
+ * accent is the same in light and dark, so the dim reads on both.
+ */
+const ON_ACCENT: ReadonlySet<ButtonVariant> = new Set(['onAccent', 'textOnAccent']);
+/** Variants with a fill; disabled swaps the fill for a neutral one. */
+const FILLED: ReadonlySet<ButtonVariant> = new Set([
+  'primary',
+  'accent',
+  'dark',
+  'secondary',
+  'destructive',
+]);
+
+/**
+ * Disabled label tone (QA-M15). Opacity left a dark label on dim maroon in dark
+ * mode (about 1.5:1); `ink2` on `bg3` is 5.6:1 light and 6.2:1 dark.
+ */
+export function buttonLabelTone(variant: ButtonVariant, disabled: boolean): TextTone {
+  if (!disabled || ON_ACCENT.has(variant)) return TONE[variant];
+  return 'ink2';
+}
+
+/**
  * Web only: true when focus came from the keyboard (`:focus-visible`), so a
  * mouse click does not leave a ring behind. Native never shows the ring.
  */
@@ -82,7 +105,8 @@ function useWebFocusRing() {
 
 /**
  * Button (DESIGN_SYSTEM §6). Loading keeps the width and shows a spinner;
- * disabled is 35% opacity and not pressable; 500 ms double-tap guard. On web,
+ * disabled is a neutral `bg3` fill with an `ink2` label (35% opacity only on
+ * the accent screen) and not pressable; 500 ms double-tap guard. On web,
  * keyboard focus draws a 2 px ink ring, the same ring Input uses.
  */
 export function Button({
@@ -135,7 +159,7 @@ export function Button({
         <View collapsable={false} style={loading ? styles.hidden : styles.shown}>
           <Text
             variant={size === 'S' ? 'label' : 'bodyStrong'}
-            tone={TONE[variant]}
+            tone={buttonLabelTone(variant, disabled)}
             style={styles.label}
           >
             {label}
@@ -154,6 +178,8 @@ export function Button({
   );
 }
 
+const DISABLED_ON_ACCENT_OPACITY = 0.35;
+
 const styles = StyleSheet.create((theme) => ({
   full: { alignSelf: 'stretch' },
   hug: { alignSelf: 'flex-start' },
@@ -165,19 +191,21 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: theme.space.sm,
-    opacity: disabled ? 0.35 : 1,
+    opacity: disabled && ON_ACCENT.has(variant) ? DISABLED_ON_ACCENT_OPACITY : 1,
     backgroundColor:
-      variant === 'accent'
-        ? theme.colors.accent
-        : variant === 'primary' || variant === 'dark'
-          ? theme.colors.ink
-          : variant === 'secondary'
-            ? theme.colors.bg2
-            : variant === 'destructive'
-              ? theme.colors.red
-              : variant === 'onAccent'
-                ? theme.colors.onAccent
-                : 'transparent',
+      disabled && FILLED.has(variant)
+        ? theme.colors.bg3
+        : variant === 'accent'
+          ? theme.colors.accent
+          : variant === 'primary' || variant === 'dark'
+            ? theme.colors.ink
+            : variant === 'secondary'
+              ? theme.colors.bg2
+              : variant === 'destructive'
+                ? theme.colors.red
+                : variant === 'onAccent'
+                  ? theme.colors.onAccent
+                  : 'transparent',
   }),
   hidden: { opacity: 0 },
   shown: { opacity: 1 },

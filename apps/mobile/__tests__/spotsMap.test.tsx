@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 import type { ReactElement, ReactNode } from 'react';
-import { AccessibilityInfo } from 'react-native';
+import { AccessibilityInfo, Dimensions } from 'react-native';
 
 import type { MeetupsApi } from '../src/features/meetups/api';
 import {
@@ -33,7 +33,21 @@ const fullSpots: Spot[] = SPOTS.map((s, i) => ({
   sort: i,
 }));
 
-afterEach(() => jest.restoreAllMocks());
+// Jest's default fontScale is 2 (large text, map folded); these tests check
+// the default size unless they set it themselves (QA M18).
+const baseWindow = Dimensions.get('window');
+const setFontScale = (fontScale: number) =>
+  act(() =>
+    Dimensions.set({
+      window: { ...baseWindow, fontScale },
+      screen: { ...baseWindow, fontScale },
+    }),
+  );
+beforeEach(() => setFontScale(1));
+afterEach(() => {
+  setFontScale(baseWindow.fontScale);
+  jest.restoreAllMocks();
+});
 
 /** Renders and lets the reduce-motion lookup settle inside act. */
 async function renderMap(ui: ReactElement) {
@@ -196,5 +210,17 @@ describe('T-UNIT-MAP-03 map and list stay in sync', () => {
     expect(screen.getByTestId('spot-pin-a-public-selected', HIDDEN)).toBeTruthy();
     fireEvent.press(screen.getByLabelText('Directions to Union lobby'));
     expect(openUrl).toHaveBeenCalled();
+  });
+});
+
+describe('QA-M18 map at large text', () => {
+  it('starts folded so the spot list stays in view, and opens on tap', async () => {
+    setFontScale(2);
+    await renderMap(<SpotsMap spots={SPOTS} />);
+    const toggle = screen.getByTestId('spots-map-toggle');
+    expect(toggle.props.accessibilityState).toMatchObject({ expanded: false });
+    expect(screen.getByText(spotsMap.show)).toBeTruthy();
+    fireEvent.press(toggle);
+    expect(screen.getByText(spotsMap.hide)).toBeTruthy();
   });
 });

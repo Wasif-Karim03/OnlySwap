@@ -5,6 +5,7 @@ import { useKeyboardState } from 'react-native-keyboard-controller';
 import { TabBar, type TabItem } from '@/components/TabBar';
 import { useTabPrefetch } from '@/features/me/useTabPrefetch';
 import { usePushHandling } from '@/lib/push';
+import { useHidesTabBar } from '@/lib/tabBarVisibility';
 import { tabs } from '@/strings';
 import { useLayout } from '@/theme/layout';
 
@@ -29,7 +30,12 @@ function AppTabBar({ state, navigation, rail }: TabBarProps & { rail: boolean })
   // bar's height higher over the fields (owner testing on Android). The iPad
   // sidebar takes no height, so it stays.
   const keyboardOpen = useKeyboardState((s) => s.isVisible);
-  if (keyboardOpen && !rail) return null;
+  // Form flows pushed inside a tab (Sell steps, Edit profile) get the full
+  // height for their fields and pinned button (QA M1). Read from the URL
+  // segments: a tab opened straight on a form by a deep link has no nested
+  // navigation state yet, so the bar stayed on the first visit.
+  const formRoute = useHidesTabBar();
+  if ((keyboardOpen || formRoute) && !rail) return null;
   const items = state.routes
     .filter((route) => route.name in ITEMS)
     .map((route) => ({ key: route.key, ...ITEMS[route.name]! }));

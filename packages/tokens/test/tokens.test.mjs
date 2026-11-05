@@ -87,6 +87,8 @@ test('P2-TOK-01 space, radius and motion match DESIGN_SYSTEM §4-5', () => {
   assert.equal(tokens.motion.success.duration, 400);
   assert.equal(tokens.motion.fade.duration, 150);
   assert.equal(tokens.fontScale.overlayMax, 1.4);
+  // QA L7: tab labels cap lower so "Discover" fits its pill on SE.
+  assert.equal(tokens.fontScale.tabLabelMax, 1.2);
 });
 
 test('T-UNIT-TOK-01 required contrast pairs pass in light and dark for every accent', () => {

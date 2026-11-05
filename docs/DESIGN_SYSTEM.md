@@ -110,7 +110,7 @@ Components live in `apps/mobile/src/components/`. Each is built with every state
 
 | Component | Variants | States | Notes |
 |---|---|---|---|
-| Button | primary (accent), dark (ink), secondary (bg2), text, destructive (red) · sizes L 54 / M 44 / S 36 | default, pressed, loading (spinner, width kept), disabled (35% opacity + non-interactive), focus ring 2 px ink | double-tap guard 500 ms |
+| Button | primary (accent), dark (ink), secondary (bg2), text, destructive (red) · sizes L 54 / M 44 / S 36 | default, pressed, loading (spinner, width kept), disabled (neutral bg3 fill + ink2 label, non-interactive; 35% opacity only on the accent screen, QA-M15), focus ring 2 px ink | double-tap guard 500 ms |
 | IconButton | 44 hit area | same | a11y label required |
 | Input | text, email, price, search | default, focus (2 px ink ring), error (redBg + red ring + message), disabled, loading (right spinner) | keyboard-controller aware |
 | TextArea | counter | + counter turns amber at 90%, red at 100% | |
@@ -118,7 +118,7 @@ Components live in `apps/mobile/src/components/`. Each is built with every state
 | DateField | native picker (UX-06) | empty ("Pick a date"), set, error | iOS wheels in a sheet; Android dialog |
 | Chip | filter, choice, removable | off, on (ink fill), disabled | |
 | SegmentedControl | 2–4 segments | selected | |
-| Toggle | — | off, on (ink), disabled | |
+| Toggle | — | off (ink3 outline, ink3 knob), on (ink), disabled | |
 | OptionRow | radio / checkbox | off, on, disabled | whole row pressable |
 | Sheet / ActionSheet | snap points | open, dragging, closing | focus trap; Android back closes |
 | Toast / ToastUndo | info, success, error | visible, countdown | auto-dismiss 4 s / undo 5 s |

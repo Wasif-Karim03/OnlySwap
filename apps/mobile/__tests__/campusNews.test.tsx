@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 import type { ReactNode } from 'react';
-import { AccessibilityInfo, Text } from 'react-native';
+import { AccessibilityInfo, StyleSheet, Text } from 'react-native';
 
 import { useToastStore } from '../src/components/Toast';
 import type { CampusApi, NewsApi } from '../src/features/campus/api';
@@ -469,6 +469,15 @@ describe('DEC 98 news on the listing screen', () => {
     );
     expect(await screen.findByText(campus.listingNews)).toBeTruthy();
     expect(screen.getByTestId('listing-event')).toBeTruthy();
+    // QA-L14: the event date is ink, not sky (sky text only on its own chip).
+    const { lightTheme } = jest.requireActual('../src/theme/themes');
+    const eventText = screen
+      .getByTestId('listing-event')
+      .findAll(
+        (n) =>
+          typeof n.props.children === 'string' && Boolean(StyleSheet.flatten(n.props.style)?.color),
+      )[0];
+    expect(StyleSheet.flatten(eventText?.props.style)?.color).toBe(lightTheme.colors.ink);
     expect(screen.queryByTestId('listing-offer')).toBeNull();
     expect(screen.queryByText(/meetup/i)).toBeNull();
     fireEvent.press(screen.getByTestId('listing-open-link'));

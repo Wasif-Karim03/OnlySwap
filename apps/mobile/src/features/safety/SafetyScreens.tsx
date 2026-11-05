@@ -31,6 +31,7 @@ import {
   intlLocale,
 } from '@/strings';
 import { readableColumn } from '@/theme/layout';
+import { useLargeText } from '@/theme/largeText';
 
 import { authApi, type AuthApi } from '../auth/api';
 import { SpotsMap } from '../meetups/SpotsMap';
@@ -121,6 +122,19 @@ export function SafetyCenterScreen({
   const [selected, setSelected] = useState<string | null>(null);
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/profile'));
   const list = sortSpots(q.data ?? []);
+  // At large text the dock keeps only the button; its heading and line move
+  // into the scroll so the spot list stays visible (QA-M2).
+  const large = useLargeText();
+  const emergencyText = (
+    <>
+      <Text variant="label" accessibilityRole="header">
+        {copy.emergencyTitle}
+      </Text>
+      <Text variant="meta" tone="ink2">
+        {copy.emergencyBody}
+      </Text>
+    </>
+  );
   // Meetup spots first (P5), then tips, then what can't be listed. "Call 911"
   // leaves the tinted card for a docked button in the thumb zone (3.07).
   return (
@@ -210,18 +224,14 @@ export function SafetyCenterScreen({
             {`• ${b}`}
           </Text>
         ))}
+        {large ? <View style={styles.section}>{emergencyText}</View> : null}
       </ScrollView>
       {/* No campus police number is on file, so 911 is the one call button. */}
       <View
         style={[styles.dock, { paddingBottom: insets.bottom + styles.dockGap.height }]}
         testID="safety-emergency"
       >
-        <Text variant="label" accessibilityRole="header">
-          {copy.emergencyTitle}
-        </Text>
-        <Text variant="meta" tone="ink2">
-          {copy.emergencyBody}
-        </Text>
+        {large ? null : emergencyText}
         <Button
           label={copy.emergency}
           variant="destructive"

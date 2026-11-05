@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 import type { ReactNode } from 'react';
 import { Dimensions, Text } from 'react-native';
@@ -222,6 +222,33 @@ describe('F19 safety center and F20 help', () => {
     fireEvent.press(screen.getByTestId('safety-911'));
     expect(openUrl).toHaveBeenLastCalledWith('tel:911');
     expect(screen.getByText(`• ${safety.banned[0]}`)).toBeTruthy();
+  });
+
+  describe('QA-M2 the 911 dock at each text size', () => {
+    const base = Dimensions.get('window');
+    const setScale = (fontScale: number) =>
+      act(() => Dimensions.set({ window: { ...base, fontScale }, screen: { ...base, fontScale } }));
+    afterEach(() => setScale(base.fontScale));
+    const renderCenter = () =>
+      render({ safety: () => <SafetyCenterScreen spots={async () => []} /> }, '/safety');
+
+    it('keeps the heading and line in the dock at default size', async () => {
+      setScale(1);
+      renderCenter();
+      const dock = await screen.findByTestId('safety-emergency');
+      expect(within(dock).getByText(safety.emergencyTitle)).toBeTruthy();
+      expect(within(dock).getByTestId('safety-911')).toBeTruthy();
+    });
+
+    it('docks only the button at large text and scrolls the heading', async () => {
+      setScale(2);
+      renderCenter();
+      const dock = await screen.findByTestId('safety-emergency');
+      expect(within(dock).queryByText(safety.emergencyTitle)).toBeNull();
+      expect(within(dock).getByTestId('safety-911')).toBeTruthy();
+      expect(screen.getByText(safety.emergencyTitle)).toBeTruthy();
+      expect(screen.getByText(safety.emergencyBody)).toBeTruthy();
+    });
   });
 
   it('FAQ opens and the contact form sends', async () => {

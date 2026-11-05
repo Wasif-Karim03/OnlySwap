@@ -192,20 +192,23 @@ export function SellMeetupScreen({
         </>
       }
     >
-      {/* What buyers will see, up top (P1, trust): photo, title, price. */}
-      <View style={styles.preview} testID="sell-preview">
-        <View style={styles.thumb}>
-          <Photo source={coverSource} blurhash={cover?.blurhash} rounded="thumb" />
+      {/* What buyers will see, up top (P1, trust): photo, title, price. Hidden
+          for an empty draft (a deep link straight to this step, QA-M13). */}
+      {draft.title.trim() ? (
+        <View style={styles.preview} testID="sell-preview">
+          <View style={styles.thumb}>
+            <Photo source={coverSource} blurhash={cover?.blurhash} rounded="thumb" />
+          </View>
+          <View style={styles.flex}>
+            <Text variant="bodyStrong" numberOfLines={1}>
+              {draft.title.trim()}
+            </Text>
+            <Text variant="body" tone="ink2">
+              {priceLabel(draft.kind, listingPriceCents(draft), copy.free)}
+            </Text>
+          </View>
         </View>
-        <View style={styles.flex}>
-          <Text variant="bodyStrong" numberOfLines={1}>
-            {draft.title.trim()}
-          </Text>
-          <Text variant="body" tone="ink2">
-            {priceLabel(draft.kind, listingPriceCents(draft), copy.free)}
-          </Text>
-        </View>
-      </View>
+      ) : null}
 
       {spotsQuery.isPending ? (
         <SkeletonList rows={3} />

@@ -1,7 +1,7 @@
 import { act, fireEvent, render, renderHook, screen } from '@testing-library/react-native';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { AppState, Linking } from 'react-native';
+import { AppState, Dimensions, Linking, StyleSheet } from 'react-native';
 
 import { ConfirmDialog } from '../src/components/ConfirmDialog';
 import { EmptyState } from '../src/components/EmptyState';
@@ -256,6 +256,8 @@ describe('P2-CMP-09 NavBar, TabBar, StepIndicator, ProgressBar', () => {
     fireEvent.press(screen.getByRole('tab', { name: 'Inbox, 2 new' }));
     expect(onSelect).toHaveBeenCalledWith('inbox');
     expect(tabAccessibilityLabel(items[0]!)).toBe('Discover');
+    // QA L7: tab labels stop growing at 1.2x so "Discover" fits its pill on SE.
+    expect(screen.getByText('Discover').props.maxFontSizeMultiplier).toBe(1.2);
   });
 
   it('StepIndicator and ProgressBar report their value', () => {
@@ -497,5 +499,25 @@ describe('IconButton badge (bell, DEC 120)', () => {
     rerender(<IconButton icon="bell" accessibilityLabel="Notifications" badge={0} testID="bell" />);
     expect(screen.queryByTestId('bell-badge', { includeHiddenElements: true })).toBeNull();
     expect(screen.getByLabelText('Notifications')).toBeTruthy();
+  });
+});
+
+describe('QA-M2 EmptyState at each text size', () => {
+  const base = Dimensions.get('window');
+  const setScale = (fontScale: number) =>
+    act(() => Dimensions.set({ window: { ...base, fontScale }, screen: { ...base, fontScale } }));
+  afterEach(() => setScale(base.fontScale));
+  const bottom = () =>
+    (StyleSheet.flatten(screen.getByTestId('empty').props.style) as { paddingBottom: number })
+      .paddingBottom;
+
+  it('drops the extra bottom air at large text so the action stays on screen', () => {
+    setScale(1);
+    const view = render(<EmptyState title="Nothing yet" testID="empty" />);
+    const roomy = bottom();
+    view.unmount();
+    setScale(2);
+    render(<EmptyState title="Nothing yet" testID="empty" />);
+    expect(bottom()).toBeLessThan(roomy);
   });
 });

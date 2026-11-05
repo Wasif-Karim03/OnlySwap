@@ -241,6 +241,15 @@ describe('P5-SELL-04 D03 Sell · meetup', () => {
     'sell/posted': () => <Stub id="screen-posted-stub" />,
   });
 
+  it('QA-M13 shows the preview for a titled draft and hides it for an empty one', async () => {
+    const view = setup('/sell/meetup', routes(fakeApi(), storeWith(draftWith())));
+    expect(await screen.findByTestId('sell-preview')).toBeTruthy();
+    view.unmount();
+    setup('/sell/meetup', routes(fakeApi(), storeWith(draftWith({ title: ' ' }))));
+    expect(await screen.findByText('OSU Police lobby')).toBeTruthy();
+    expect(screen.queryByTestId('sell-preview')).toBeNull();
+  });
+
   it('lists spots police-designated first, with the tag and Directions', async () => {
     const openUrl = jest.fn(async () => true);
     setup('/sell/meetup', routes(fakeApi(), storeWith(draftWith()), openUrl));

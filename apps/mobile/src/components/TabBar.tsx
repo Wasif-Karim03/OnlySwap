@@ -1,4 +1,4 @@
-import { size } from '@onlyswap/tokens';
+import { fontScale as fontScaleTokens, size } from '@onlyswap/tokens';
 import { Pressable, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
@@ -122,7 +122,9 @@ export function TabBar({
                   <Text
                     variant="meta"
                     tone={active ? 'ink' : 'ink3'}
-                    overlay
+                    // Tighter than the 1.4x overlay cap: "Discover" clipped its
+                    // pill on SE at the largest sizes (QA L7).
+                    maxFontSizeMultiplier={fontScaleTokens.tabLabelMax}
                     numberOfLines={1}
                     adjustsFontSizeToFit
                     minimumFontScale={0.8}
