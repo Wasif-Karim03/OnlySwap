@@ -40,12 +40,7 @@ bash scripts/seed-review.sh https://<prod-ref>.supabase.co            # review a
 
 `seed-review.sh` asks for the service key: Supabase dashboard, Project Settings, API keys, the secret key. Keep the reviewer password for the App Review notes.
 
-Then in the SQL editor:
-
-```sql
--- Global Quad switch. Only campuses with their own switch on (Demo University) get the Quad.
-update public.app_config set value = 'true'::jsonb where key = 'quad_enabled';
-```
+Leave the global Quad switch (`app_config.quad_enabled`) at false. The Quad stays off for every campus, Demo University included, until LR 50 ships (DEC 161).
 
 Add more Meetup spots for Ohio Wesleyan in the admin console if you want more than the Campus Center.
 
