@@ -43,7 +43,7 @@ Gate: every QA item is fixed or deliberately deferred with a reason. A full SE a
 Owner: pause `intention` -> create `onlyswap-prod` (US East, free). Create the prod Gmail sender + app password and a Turnstile widget. Create the Sentry and PostHog prod projects.
 Claude:
 1. Add `[remotes.prod]` to `supabase/config.toml`, then run `scripts/deploy/prod-supabase.command` (LR 3).
-2. Push migrations 0001-0257 from `supabase/migrations/` only; set app.env to prod; run `pnpm db:types` (LR 4).
+2. Push migrations 0001-0257 from `supabase/migrations/` only; app.env cannot be set on hosted Supabase (DEC 165); skip it; run `pnpm db:types` (LR 4).
 3. Set Vault and Edge secrets (owner pastes values) and deploy every function except `test-inbox` (LR 5, 8, 9).
 4. Push the Auth settings and read every one back (LR 11). Set `mfa_required = true` and the admin row (LR 32).
 5. R2 prod buckets, CORS, exports lifecycle, and the media Worker on prod (LR 7, 10).

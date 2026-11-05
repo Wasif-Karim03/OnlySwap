@@ -48,7 +48,11 @@ DOMAIN=$(ask_plain onlyswap-domain "Your domain on Cloudflare, no https (for exa
 DOMAIN=${DOMAIN#https://}; DOMAIN=${DOMAIN%/}
 case "$DOMAIN" in *.*) ;; *) die "a domain like onlyswap.app is needed (buy it first, see the runbook)";; esac
 SITE_URL=https://$DOMAIN
-MEDIA_URL=https://media.$DOMAIN
+case "$DOMAIN" in
+  *.pages.dev) # no custom domain (DEC 164): media Worker lives on workers.dev, its URL is known after deploy
+    MEDIA_URL=$(ask_plain onlyswap-media-url "Media Worker URL (https://onlyswap-media-prod.<your-subdomain>.workers.dev, Enter to fill in after the Worker deploys)") ;;
+  *) MEDIA_URL=https://media.$DOMAIN ;;
+esac
 echo "site: $SITE_URL  media: $MEDIA_URL" | tee -a "$LOG"
 
 say "1/8 Supabase login"
@@ -89,7 +93,7 @@ ENVF=$(mktemp)
 echo "alter database postgres set app.env = 'prod';" > "$ENVF"
 SB db query --linked -f "$ENVF" >>"$LOG" 2>&1 \
   && echo "app.env = prod" | tee -a "$LOG" \
-  || echo "WARNING: could not set app.env (see $LOG). Run in the SQL editor: alter database postgres set app.env = 'prod';" | tee -a "$LOG"
+  || echo "NOTE: app.env is blocked on hosted Supabase (DEC 165); mock-data stays safe via its linked-project check. (see $LOG)" | tee -a "$LOG"
 rm -f "$ENVF"
 
 say "4/8 Email sender (Gmail) for login codes"
