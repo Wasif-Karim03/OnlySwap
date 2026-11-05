@@ -14,8 +14,10 @@ complete everything so that we can send it to publish".
   PASS, M12 keyboard PASS. The PR #59 and #60 test plans are ticked.
 - LR 42 (#61): an account epoch (src/features/auth/accountEpoch.ts) remounts the tabs for a new session.
 - LR 45: already done by migration 0254 (pgTAP 2159/2159 locally). Ticked.
-- Drafts for the owner: docs/launch/OWU_SPOTS.md (6 spots, none police-designated) and
-  docs/launch/LEGAL_SELF_REVIEW.md (30 PASS / 10 GAP with drafted text / 6 CHECK).
+- Legal fixes applied (f62228f): Terms, Privacy, Child safety and the store review notes match DEC 150/159/161.
+  sync-legal check, test:scripts 206/206 and Jest 19609 pass. Open: G3c, support email, DMCA, NCMEC, CSAM tool.
+- owu.sql (109b0c9): Campus Center moved to 40 Rowland Ave (61 S. Sandusky is the mailing address). It has 5 spots:
+  2 live and 3 inactive until the owner checks them on site. It ran twice on local Supabase without errors.
 - Staging cleaned again after the sim pass: the QA campus, users and listings are deleted, and quad_enabled is back
   to false (its prior value). qa-secrets are deleted and both sims are reset.
 
@@ -25,6 +27,8 @@ complete everything so that we can send it to publish".
 - L4 won't fix: the chip cut off at the edge is the scroll cue. L14 parts won't fix: placeholders are ink3 at 6:1,
   and the dark map and attribution are OpenFreeMap's. M8 nudge below 10 listings is by design.
 - App icon picker: 4 columns at default text, 2 at large text (useLargeText).
+- Legal: Help-form "Other" topic used for takedown and parent requests (no migration); version stays 2026-11
+  because no public accounts exist yet; G11 (b) softer parent line.
 - Earlier: L15 won't fix (DEC 90); the offer pay-in-person line stays docked; decode-uri-component is ignored.
 
 ## Current state
@@ -34,16 +38,12 @@ complete everything so that we can send it to publish".
   - account_deletions 'done' rows in staging from the QA user deletes.
   - Any R2 photos the seeder uploaded.
   - The QA shadow Metro on 8081 is still running.
-  - Docker Desktop is running, with the local Supabase stopped.
+  - Docker Desktop is running, with the local Supabase stopped (its DB has the OWU seed rows).
   - Local branch worktree-agent-ad51152546f575193 is spare and can be deleted.
 
 ## Next steps
 1. Owner: merge #55 -> #61 in order, then the accounts in OWNER_CHECKLIST (phase 3).
-2. Claude, after the owner picks drafts:
-   - apply the legal GAP fixes. The must-fix items are the Quad "anonymous" wording in terms.md, privacy.md and
-     docs/store/listing.md, and the chat-photo CSAM claim in child-safety.md.
-   - update supabase/campuses/owu.sql with the approved spots. Its Campus Center address and coordinates differ
-     from the research.
+2. Owner: walk the OWU spots and turn on the checked ones in admin; review the legal "Still open" list.
 3. Claude, after prod-supabase.command runs: the phase 3 gate checks, then phases 4-6 per LAUNCH_PLAN.
 
 ## Key files and commands
