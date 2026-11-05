@@ -180,7 +180,7 @@ describe('E03 Chat', () => {
   it.each([
     [{ status: 'closed' as const }, chat.closed],
     [{ blocked: true }, chat.blocked],
-    [{ blocked: true, i_blocked: true }, 'You blocked Aisha A..'],
+    [{ blocked: true, i_blocked: true }, 'You blocked Aisha A.'],
   ])('read-only %o', async (patch, text) => {
     render(chatRoute(fakeApi({ chat: jest.fn(async () => info(patch)) })), '/chat/c1');
     expect(await screen.findByTestId('chat-read-only')).toBeTruthy();
@@ -231,6 +231,18 @@ describe('Mark sold from the chat (DEC 97)', () => {
     render(chatRoute(fakeApi({ chat: jest.fn(async () => info(patch)) })), '/chat/c1');
     expect(await screen.findByText('Mini fridge')).toBeTruthy();
     expect(screen.queryByTestId('chat-mark-sold')).toBeNull();
+  });
+});
+
+describe('QA-M3 Plan meetup after the deal', () => {
+  it.each([
+    ['an open deal', { listing_status: 'active' }, true],
+    ['a sold listing', { listing_status: 'sold' }, false],
+    ['both sides said done', { buyer_outcome: 'done', seller_outcome: 'done' }, false],
+  ])('%s: Plan meetup shown is %s', async (_name, patch, shown) => {
+    render(chatRoute(fakeApi({ chat: jest.fn(async () => info(patch)) })), '/chat/c1');
+    expect(await screen.findByText('Mini fridge')).toBeTruthy();
+    expect(screen.queryByTestId('chat-plan-meetup') !== null).toBe(shown);
   });
 });
 

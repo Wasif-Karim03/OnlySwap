@@ -114,8 +114,15 @@ export function SellPostedScreen({
     return () => clearTimeout(t);
   }, [listing, photoReady, cover, capture, api, cardTimeoutMs]);
 
+  // QA-M14: opened without a fresh post (a reload or an old link): go to My listings.
+  // Only when it opened empty: "List another" clears the listing on purpose.
+  const openedEmpty = useRef(!listing);
+  useEffect(() => {
+    if (openedEmpty.current) router.replace('/profile/listings');
+  }, [router]);
+
   if (!listing) {
-    // Opened without a fresh post (e.g. after a reload): say so and offer the start.
+    // Shown only for the frame before the redirect lands.
     return (
       <View style={styles.root} testID="screen-sell-posted-empty">
         <NavBar leading="close" onLeading={() => router.replace('/sell')} />

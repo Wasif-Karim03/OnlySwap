@@ -972,6 +972,7 @@ export const feed = {
   statViews: '{n} views',
   statSaves: '{n} saves',
   statOffers: '{n} offers',
+  statOffersOne: '1 offer',
   edit: 'Edit',
   seeOffers: 'See offers',
   comments: 'Comments',
@@ -1088,8 +1089,9 @@ export const profileView = {
   thumbs: '{pct}% thumbs up',
   noRatings: 'No ratings yet',
   replies: 'Usually replies in {time}',
-  minutes: '{n} min',
-  hours: '{n} h',
+  // NBSP keeps the number on the unit's line (QA-L9).
+  minutes: '{n}\u00a0min',
+  hours: '{n}\u00a0h',
   newSeller: 'New seller',
   away: 'Away',
   newSellerBody: 'No finished swaps yet. Meet at a Meetup spot and check the item first.',
@@ -1156,6 +1158,9 @@ export const offers = {
   keepSwiping: 'Keep swiping',
   close: 'Close',
   unavailableTitle: "This item isn't taking offers",
+  unavailableBody: 'It may have sold, or the seller took it down.',
+  holdTitle: 'On hold right now',
+  holdBody: 'Try again later.',
   pausedTitle: 'Offers are paused',
   // Inbox (E01)
   inboxTitle: 'Inbox',
@@ -1859,8 +1864,8 @@ export const system = {
   // X31 link errors
   linkErrorTitle: "That link didn't work",
   linkErrorBody: 'It may be old, or the listing is gone.',
-  notFoundTitle: 'Nothing here',
-  notFoundBody: "We couldn't find that page in the app.",
+  notFoundTitle: "We couldn't find that page",
+  notFoundBody: 'The link may be old. Start again from Discover.',
   goHome: 'Go to Discover',
   // X14 under review
   underReview:

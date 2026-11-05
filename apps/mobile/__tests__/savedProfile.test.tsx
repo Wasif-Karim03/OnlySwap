@@ -187,8 +187,8 @@ describe('B10 Seller profile', () => {
     expect(thumbsLabel(0, 0)).toBe(profileView.noRatings);
     expect(thumbsLabel(9, 10)).toBe('90% thumbs up');
     expect(replyLabel(null)).toBeNull();
-    expect(replyLabel(12)).toBe('Usually replies in 12 min');
-    expect(replyLabel(150)).toBe('Usually replies in 3 h');
+    expect(replyLabel(12)).toBe('Usually replies in 12\u00a0min');
+    expect(replyLabel(150)).toBe('Usually replies in 3\u00a0h');
     expect(joinedLabel('2026-09-15T12:00:00Z')).toContain('2026');
   });
 

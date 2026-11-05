@@ -81,7 +81,7 @@ type Props = Omit<ViewProps, 'style'> & {
  * per stack: what sits on it uses fills or plain ink, never another Material.
  */
 export function Material({ children, variant = 'regular', style, solid = false, ...rest }: Props) {
-  const { rt } = useUnistyles();
+  const { rt, theme } = useUnistyles();
   const reduceTransparency = useReduceTransparency();
   const tier = materialTier({
     os: Platform.OS,
@@ -95,6 +95,8 @@ export function Material({ children, variant = 'regular', style, solid = false, 
       <GlassView
         glassEffectStyle={variant}
         colorScheme={dark ? 'dark' : 'light'}
+        // QA-M6: clear glass over a pale photo vanished; tint it like the solid tier.
+        tintColor={variant === 'clear' ? theme.colors.materialClear : undefined}
         style={[styles.clip, style]}
         {...rest}
       >

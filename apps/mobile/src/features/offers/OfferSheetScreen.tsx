@@ -105,12 +105,7 @@ export function OfferSheetScreen({
         <NavBar leading="close" onLeading={close} />
         <EmptyState
           icon={blocked === 'paused' ? 'lock' : 'tag'}
-          title={blocked === 'paused' ? copy.pausedTitle : copy.unavailableTitle}
-          body={
-            blocked === 'paused'
-              ? errorText({ message: 'OFFERS_PAUSED' })
-              : errorText({ message: 'LISTING_UNAVAILABLE' })
-          }
+          {...unavailableCopy(blocked, isVisible(item) ? item.status : null)}
           action={{ label: copy.close, onPress: close }}
         />
       </View>
@@ -421,3 +416,15 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingBottom: Math.max(rt.insets.bottom, theme.space.md),
   },
 }));
+
+/** Title and body for an offer sheet that can't take an offer; the body never repeats the title (QA-M16). */
+export function unavailableCopy(
+  blocked: 'paused' | 'unavailable' | null,
+  status: string | null,
+): { title: string; body: string } {
+  if (blocked === 'paused') {
+    return { title: copy.pausedTitle, body: errorText({ message: 'OFFERS_PAUSED' }) };
+  }
+  if (status === 'hold') return { title: copy.holdTitle, body: copy.holdBody };
+  return { title: copy.unavailableTitle, body: copy.unavailableBody };
+}

@@ -61,21 +61,11 @@ export function ReportUpdateScreen({ id, api = safetyApi }: { id: string; api?: 
         ? new Date(at).toLocaleDateString(intlLocale, { month: 'short', day: 'numeric' })
         : null;
     };
-    const currentDay = dayOf(reviewed ? 'reviewed' : 'received');
-    // The current status first in plain words, then both steps with the
-    // pending one in ink3 so the reporter sees what comes next (3.07).
+    // The status in plain words, then both steps with the pending one in ink3
+    // so the reporter sees what comes next (3.07). No separate status heading:
+    // it repeated the first step's "Received" (QA-L16).
     body = (
       <ScrollView contentContainerStyle={styles.body}>
-        <View style={styles.status}>
-          <Text variant="heading" accessibilityRole="header">
-            {reviewed ? copy.reportReviewed : copy.reportReceived}
-          </Text>
-          {currentDay ? (
-            <Text variant="label" tone="ink2" style={styles.regular}>
-              {currentDay}
-            </Text>
-          ) : null}
-        </View>
         <Text variant="body" tone="ink2" testID={`report-${q.data.status}`}>
           {reviewed ? copy.reportReviewedBody : copy.reportReceivedBody}
         </Text>
@@ -415,7 +405,6 @@ const styles = StyleSheet.create((theme) => ({
     gap: theme.space.md,
     paddingBottom: theme.space['2xl'],
   },
-  status: { gap: theme.space.xs },
   step: (divided: boolean) => ({
     flexDirection: 'row',
     alignItems: 'center',
