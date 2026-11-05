@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 import type { ReactNode } from 'react';
-import { AccessibilityInfo, Text } from 'react-native';
+import { AccessibilityInfo, StyleSheet, Text } from 'react-native';
 
 import { useToastStore } from '../src/components/Toast';
 import type { CampusApi } from '../src/features/campus/api';
@@ -551,6 +551,13 @@ describe('C01 Around campus', () => {
     );
     expect(await screen.findByTestId('campus-day-one')).toBeTruthy();
     expect(screen.getByText(/3 listings so far/)).toBeTruthy();
+    // QA-M8: "List something" is a filled secondary button, not bare text.
+    const { lightTheme } = jest.requireActual('../src/theme/themes');
+    const sell = screen.getByTestId('campus-day-one-sell');
+    const filled = sell.findAll(
+      (n) => StyleSheet.flatten(n.props.style)?.backgroundColor === lightTheme.colors.bg2,
+    );
+    expect(filled.length).toBeGreaterThan(0);
     expect(screen.queryByTestId('campus-founding-open')).toBeNull();
     expect(screen.queryByTestId('campus-founding-mine')).toBeNull();
   });

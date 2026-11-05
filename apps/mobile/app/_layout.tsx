@@ -21,6 +21,7 @@ import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { OfflineBanner } from '@/components/Banner';
 import { CrashScreen } from '@/components/CrashScreen';
 import { ToastHost } from '@/components/Toast';
+import { watchAccountEpoch } from '@/features/auth/accountEpoch';
 import { watchAccountReset } from '@/features/auth/accountReset';
 import { LaunchIntro } from '@/features/auth/LaunchIntro';
 import { launchStartedAt } from '@/features/auth/launchTiming';
@@ -85,6 +86,8 @@ export default function RootLayout() {
       ]),
     [queryClient],
   );
+  // A new session gets freshly mounted tabs, not the last one's screens (LR 42).
+  useEffect(() => watchAccountEpoch(getSupabase().auth), []);
   // Inbox, Profile and the bell open with the last data, then refresh (lib/queryPersist.ts).
   useEffect(() => startQueryPersist(queryClient, getSupabase().auth), [queryClient]);
   // Home screen widget + meetup Live Activity follow the meetups the app loads (P17-FEAT-01).

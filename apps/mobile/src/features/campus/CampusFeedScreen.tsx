@@ -339,7 +339,7 @@ export function CampusFeedScreen({
               >
                 <View style={styles.composerTap}>
                   <Avatar name={myName} uri={myAvatar} size="M" />
-                  <Text variant="body" tone="ink3" numberOfLines={1} style={styles.composerText}>
+                  <Text variant="body" tone="ink3" numberOfLines={2} style={styles.composerText}>
                     {copy.composer}
                   </Text>
                 </View>
@@ -364,10 +364,12 @@ export function CampusFeedScreen({
                 <View style={styles.dayOneAction}>
                   <Button
                     label={copy.dayOneAction}
-                    variant="text"
-                    size="M"
+                    // A real button, not bare text (QA-M8).
+                    variant="secondary"
+                    size="S"
                     fullWidth={false}
                     onPress={sell}
+                    testID="campus-day-one-sell"
                   />
                 </View>
               </View>

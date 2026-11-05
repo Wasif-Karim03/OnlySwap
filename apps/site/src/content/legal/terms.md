@@ -7,10 +7,12 @@ order: 1
 
 These terms are an agreement between you and OnlySwap ("we", "us"). By creating an account or using the app or this site, you agree to them. If you don't agree, don't use OnlySwap.
 
+Effective November 4, 2026.
+
 ## 1. Who can use OnlySwap
 
 - You must be 13 or older. If you're under 13, you can't use OnlySwap.
-- If you're 13 to 17, a parent or guardian must agree to these terms with you, and they're responsible for how you use OnlySwap.
+- If you're 13 to 17, make sure a parent or guardian is OK with you using OnlySwap and these terms.
 - You must be a current student at a supported school and verify with your school email.
 - One account per person. Don't share, sell or transfer your account.
 - You must not have been banned from OnlySwap before.
@@ -33,7 +35,7 @@ You promise you have the rights to what you post and that it's accurate.
 
 ## 5. Takedown requests
 
-If you believe content on OnlySwap infringes your copyright or other rights, send a notice through the [Help page](/help) with: your contact details, what the work is, where it appears on OnlySwap, a statement that you believe in good faith the use isn't authorized, and a statement that your notice is accurate. We review notices and remove content where appropriate. The person who posted it can send a counter-notice the same way.
+If you believe content on OnlySwap infringes your copyright or other rights, send a notice through the [Help page](/help) (pick "Other" and start with "Copyright or takedown") with: your contact details, what the work is, where it appears on OnlySwap, a statement that you believe in good faith the use isn't authorized, and a statement that your notice is accurate. We review notices and remove content where appropriate. The person who posted it can send a counter-notice the same way.
 
 ## 6. Community rules and enforcement
 
@@ -53,7 +55,7 @@ Meet only in public places. OnlySwap suggests Meetup spots on campus. Some are m
 
 ## 8. The Quad and photos in chat
 
-The Quad is a board for students at your school. Other students don't see who wrote a post or reply, but OnlySwap keeps that link to enforce these terms. We may reveal who wrote something only when the law requires it or someone's safety is at serious risk, as described in the [Privacy Policy](/privacy). In the Quad you must not:
+The Quad is a board for students at your school. Posts and replies show your first name, last initial and profile photo, like the rest of OnlySwap, and stay linked to your account so we can enforce these terms. We share the account details of who wrote something with the authorities only when the law requires it or someone's safety is at serious risk, as described in the [Privacy Policy](/privacy). In the Quad you must not:
 
 - name, describe or target another student, or post anything that could identify them,
 - threaten, harass, bully or post hate about anyone,
@@ -87,7 +89,7 @@ These terms are governed by the laws of the State of Ohio, USA, without regard t
 
 ## 14. Changes to these terms
 
-We may update these terms. When the change matters, the app will ask you to read and accept the new version before you keep using OnlySwap. The version and date are at the top of this page.
+We may update these terms. When the change matters, the app will ask you to read and accept the new version before you keep using OnlySwap. The version and effective date are at the top of this page.
 
 ## 15. Contact
 

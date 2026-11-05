@@ -11,7 +11,7 @@ import { LEGAL, type LegalSlug } from '@/legal/generated';
 import { legal as copy } from '@/strings';
 import { readableColumn } from '@/theme/layout';
 
-import { parseMarkdown } from './markdown';
+import { parseMarkdown, stackTables } from './markdown';
 
 export function isLegalSlug(s: string | undefined): s is LegalSlug {
   return !!s && Object.prototype.hasOwnProperty.call(LEGAL, s);
@@ -22,7 +22,7 @@ export function LegalScreen({ doc }: { doc: string | undefined }) {
   const router = useRouter();
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/'));
   const page = isLegalSlug(doc) ? LEGAL[doc] : null;
-  const blocks = useMemo(() => (page ? parseMarkdown(page.body) : []), [page]);
+  const blocks = useMemo(() => (page ? stackTables(parseMarkdown(page.body)) : []), [page]);
   if (!page) {
     return (
       <View style={styles.root} testID="screen-legal-missing">
@@ -67,18 +67,18 @@ export function LegalScreen({ doc }: { doc: string | undefined }) {
               </View>
             );
           }
-          if (b.kind === 'row') {
+          if (b.kind === 'record') {
             return (
-              <View key={i} style={styles.row}>
-                {b.cells.map((c, j) => (
-                  <Text
-                    key={j}
-                    variant={b.header ? 'label' : 'meta'}
-                    tone={b.header ? 'ink' : 'ink2'}
-                    style={styles.flex}
-                  >
-                    {c}
-                  </Text>
+              <View key={i} style={styles.record}>
+                {b.fields.map((f, j) => (
+                  <View key={j}>
+                    {f.label ? (
+                      <Text variant="label" tone="ink2">
+                        {f.label}
+                      </Text>
+                    ) : null}
+                    <Text variant="body">{f.value}</Text>
+                  </View>
                 ))}
               </View>
             );
@@ -105,10 +105,9 @@ const styles = StyleSheet.create((theme) => ({
   // Tighter section spacing (3.07): the column gap plus a small step.
   heading: { marginTop: theme.space.xs },
   li: { flexDirection: 'row', gap: theme.space.sm, paddingLeft: theme.space.xs },
-  row: {
-    flexDirection: 'row',
+  record: {
     gap: theme.space.sm,
-    paddingVertical: theme.space.xs,
+    paddingVertical: theme.space.md,
     borderBottomWidth: 1,
     borderColor: theme.colors.line,
   },

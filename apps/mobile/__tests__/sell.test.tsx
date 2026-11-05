@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 import type { ReactNode } from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import type { SellApi } from '../src/features/sell/api';
 import { createDraftStore, DRAFT_SAVE_MS } from '../src/features/sell/draft';
@@ -505,6 +505,15 @@ describe('P5-SELL-03 D02 Sell · details', () => {
       'sell/scan': () => <Stub id="screen-scan-stub" />,
     });
     await screen.findByTestId('sell-scan-book');
+    // QA-L18: a filled secondary button, not bare text.
+    const { lightTheme } = jest.requireActual('../src/theme/themes');
+    expect(
+      screen
+        .getByTestId('sell-scan-book')
+        .findAll(
+          (n) => StyleSheet.flatten(n.props.style)?.backgroundColor === lightTheme.colors.bg2,
+        ).length,
+    ).toBeGreaterThan(0);
     tap('sell-scan-book');
     await waitFor(() => expect(router.getPathname()).toBe('/sell/scan'));
     act(() => jest.requireActual('expo-router').router.back());

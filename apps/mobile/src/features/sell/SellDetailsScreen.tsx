@@ -345,7 +345,8 @@ export function SellDetailsScreen({
           <View style={styles.start}>
             <Button
               label={copy.scanBook}
-              variant="text"
+              // A real button, not bare text (QA-L18).
+              variant="secondary"
               size="S"
               fullWidth={false}
               onPress={() => router.push('/sell/scan')}

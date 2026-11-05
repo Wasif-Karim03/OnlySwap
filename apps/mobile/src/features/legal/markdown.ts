@@ -8,6 +8,33 @@ export type Block =
   | { kind: 'li'; text: string; marker: string }
   | { kind: 'row'; cells: string[]; header: boolean };
 
+/** A table row shown stacked: each cell under its column header. */
+export type RecordBlock = { kind: 'record'; fields: { label: string; value: string }[] };
+export type PhoneBlock = Exclude<Block, { kind: 'row' }> | RecordBlock;
+
+/**
+ * Tables as stacked records for a phone (QA-L11): a two-column table at
+ * `meta` size was tiny and cramped. The header row becomes the labels of the
+ * rows under it; a row with no header keeps its cells without labels.
+ */
+export function stackTables(blocks: readonly Block[]): PhoneBlock[] {
+  let header: string[] = [];
+  return blocks.flatMap((b): PhoneBlock[] => {
+    if (b.kind !== 'row') {
+      header = [];
+      return [b];
+    }
+    if (b.header) {
+      header = b.cells;
+      return [];
+    }
+    const fields = b.cells
+      .map((value, j) => ({ label: header[j] ?? '', value }))
+      .filter((f) => f.value !== '');
+    return [{ kind: 'record', fields }];
+  });
+}
+
 export function inline(s: string): string {
   return s
     .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')

@@ -311,12 +311,13 @@ export function ProfileTabScreen({
                 {name}
               </Text>
               {school ? (
-                <View style={styles.school} testID="profile-school">
-                  <Text variant="label" tone="ink2" style={styles.regular}>
-                    {school}
-                  </Text>
+                // The tick is inline, so it follows the last word when the
+                // school wraps instead of sitting alone at the edge (QA-M5).
+                <Text variant="label" tone="ink2" style={styles.regular} testID="profile-school">
+                  {school}
+                  {'\u00A0'}
                   <Icon name="check" size={14} tone="green" strokeWidth={2.4} />
-                </View>
+                </Text>
               ) : null}
               {m.founding_seller ? (
                 <View style={styles.tagRow}>
@@ -339,7 +340,7 @@ export function ProfileTabScreen({
             const [before, after] = st.name ? splitAround(st.template, st.name) : [st.template, ''];
             return (
               <Text key={st.key} variant="label" tone="ink2" style={styles.regular}>
-                {i > 0 ? '   ' : ''}
+                {i > 0 ? copy.statSeparator : ''}
                 {before}
                 {st.value ? (
                   <Text variant="label" tone="ink">
@@ -1121,7 +1122,6 @@ export function RelistScreen({ id, api = meApi }: { id: string; api?: MeApi }) {
 const styles = StyleSheet.create((theme) => ({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   regular: { fontWeight: '400' },
-  school: { flexDirection: 'row', alignItems: 'center', gap: theme.space.xs, flexWrap: 'wrap' },
   segment: { marginTop: theme.space.xs },
   links: { marginTop: theme.space.md },
   emptyGrid: { gap: theme.space.sm, paddingVertical: theme.space.md, alignItems: 'flex-start' },
