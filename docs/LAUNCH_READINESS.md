@@ -1,5 +1,30 @@
 # LAUNCH_READINESS.md: App Store launch readiness audit (2026-10-17)
 
+## Status update 2026-11-06 (supersedes the matrix and TODO list below where they differ)
+
+Done since 2026-10-17:
+- Production Supabase `onlyswap-prod` exists. All 258 migrations match the repo. `health` returns 200.
+- OWU campus is live in prod. R2 media and the media Worker are live. Gmail SMTP sends the sign-in codes.
+- The EAS `production` environment has the five public values. Sentry and PostHog keys are still not set.
+- The six launch-blocker fixes are on `fix/launch-blockers` (PR #63). CI is green at `e57e841`.
+- The device smoke test passed. The production iOS build finished on EAS and was uploaded to App Store Connect, so it is in TestFlight processing.
+- Stacked drafts #36 to #49 are no longer open. Open PRs are #63, #62 and Dependabot #31 to #34.
+- `supportsTablet` is false. Export compliance is `usesNonExemptEncryption: false`.
+- Scheduled jobs fixed in repo (2026-11-06): `backup.yml` and `usage-report.yml` now fail with the missing secret names instead of a socket error (the cause was unset `BACKUP_DB_URL` and `USAGE_DB_URL`). `keepalive.yml` now pings production, not staging, and needs no variable.
+
+Still open, owner only (cannot be done from the repo):
+1. **Secrets for backups and usage:** add `BACKUP_DB_URL`, `BACKUP_AGE_RECIPIENT`, `R2_ACCOUNT_ID`, `R2_BACKUP_ACCESS_KEY_ID`, `R2_BACKUP_SECRET_ACCESS_KEY`, `USAGE_DB_URL`, `R2_USAGE_ACCESS_KEY_ID`, `R2_USAGE_SECRET_ACCESS_KEY` in GitHub Actions secrets. Then run each workflow once by hand and confirm it is green. Restore drill (P14-BAK-02) after the first backup lands.
+2. **CSAM decision conflict:** DEC 137 requires scanning before launch. DEC 164 says no scan at R1.0. Decide which stands and record it in `docs/DECISIONS_LOG.md`.
+3. **Quad off:** confirm `quad_enabled` is false on prod and every campus switch is off. Quad needs the regulated-teen holdback first (DEC 161).
+4. **Chat photos off:** confirm `chat_photos_enabled` is off on prod.
+5. **Admin MFA:** enrol TOTP on two devices, then set `mfa_required = true` on prod. Do it in that order or the owner is locked out.
+6. **Review account:** seed on prod with `scripts/seed-review.sh` and save the password for the review notes.
+7. **Sentry and PostHog:** create the prod projects and set `EXPO_PUBLIC_SENTRY_DSN`, `EXPO_PUBLIC_POSTHOG_KEY`, `EXPO_PUBLIC_POSTHOG_HOST` in EAS production. Also set `SENTRY_DSN` as an Edge Function secret. Those values only reach the next build, so this build has no crash reporting.
+8. **UptimeRobot** monitors on prod `health`, the site and the Worker.
+9. **Age assurance** test on a real iOS 26.4 device.
+10. **App Store Connect:** App Privacy label (with age range), age rating (13+, no override), metadata from `docs/store/listing.md`, 6.9-inch screenshots (phone only, no iPad), review notes with the review account, and the App Store Server Notifications URL pointed at prod `app-store-notifications`.
+11. **Legal review** of terms, privacy, rules and child safety. The free option is a recorded owner self-review (risk acceptance).
+
 This is an audit only. It changes no code, config or spec. The spec stays LOCKED; nothing here is a decision until the owner adds a row to `docs/DECISIONS_LOG.md`.
 
 How facts were checked:
