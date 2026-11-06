@@ -28,7 +28,8 @@ import { pickPhotos, type PickedPhoto } from '@/lib/media';
 import { osPermissions, primerStep, type OsApi } from '@/lib/permissions';
 import { enterSends } from '@/lib/platform';
 import type { RealtimeSource } from '@/lib/realtime';
-import { chat as copy } from '@/strings';
+import { chat as copy, report as reportCopy } from '@/strings';
+import { reportThenBlock } from '@/features/safety/reportWithBlock';
 import { useLargeText } from '@/theme/largeText';
 
 import { authApi, type AuthApi } from '../auth/api';
@@ -584,12 +585,16 @@ export function ChatScreen({
         name={name}
         onSubmit={async ({ reason, details, block }) => {
           if (reportId === null) return;
-          await api.reportMessage(reportId, reason, details);
+          const other = c.other;
+          const outcome = await reportThenBlock({
+            report: () => api.reportMessage(reportId, reason, details),
+            block,
+            blockUser: other ? () => people.block(other.id) : undefined,
+            blockFailedMessage: reportCopy.blockFailedAfterReport,
+          });
           track('report_submitted', { target_type: 'message' });
-          if (block && c.other) {
-            await people.block(c.other.id);
-            await qc.invalidateQueries({ queryKey: chatKey(id) });
-          }
+          await qc.invalidateQueries({ queryKey: chatKey(id) });
+          return outcome;
         }}
         testID="chat-report-message"
       />

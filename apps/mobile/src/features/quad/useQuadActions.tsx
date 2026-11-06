@@ -9,7 +9,8 @@ import { useToastStore } from '@/components/Toast';
 import { track } from '@/lib/analytics';
 import { errorText, toAppError } from '@/lib/errors';
 import { fill } from '@/lib/format';
-import { profileView, quad as copy } from '@/strings';
+import { profileView, quad as copy, report as reportCopy } from '@/strings';
+import { reportThenBlock } from '@/features/safety/reportWithBlock';
 
 import type { QuadApi, QuadPoll, QuadPost, QuadReply, QuadReportReason } from './api';
 import { dropPost, patchPost, patchReply, quadKeys } from './cache';
@@ -237,12 +238,16 @@ export function useQuadActions({
         target={reportType}
         name={reportWho?.name}
         onSubmit={async ({ reason, details, block }) => {
-          await api.report(reportType, reportId, reason as QuadReportReason, details);
+          const who = reportWho;
+          const outcome = await reportThenBlock({
+            report: () => api.report(reportType, reportId, reason as QuadReportReason, details),
+            block,
+            blockUser: who ? () => api.blockUser(who.id) : undefined,
+            blockFailedMessage: reportCopy.blockFailedAfterReport,
+          });
           track('report_submitted', { target_type: reportType });
-          if (block && reportWho) {
-            await api.blockUser(reportWho.id);
-            await afterBlock();
-          }
+          if (outcome.blocked) await afterBlock();
+          return outcome;
         }}
         testID="quad-report"
       />

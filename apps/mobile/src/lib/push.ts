@@ -126,6 +126,21 @@ export async function registerForPush(): Promise<string | null> {
   return registrar.register();
 }
 
+/** The last tap this process opened. Expo replays it on every mount (launch item 3). */
+let lastOpenedResponseId: string | null = null;
+
+/**
+ * True the first time a tapped notification id is seen, false for a repeat.
+ * Without it, the last tap was opened again each time the tabs mounted, which
+ * could reopen a chat or offer after an account switch.
+ */
+export function claimNotificationResponse(identifier: string | undefined): boolean {
+  if (!identifier) return true;
+  if (identifier === lastOpenedResponseId) return false;
+  lastOpenedResponseId = identifier;
+  return true;
+}
+
 /** On sign-out: this device stops getting the account's pushes. */
 export async function unregisterPush(): Promise<void> {
   if (isWebPlatform()) return;
@@ -164,6 +179,7 @@ export function usePushHandling(enabled: boolean) {
         }),
       });
       const open = (r: Notifications.NotificationResponse | null | undefined) => {
+        if (!claimNotificationResponse(r?.notification.request.identifier)) return;
         const href = routeForNotification(
           r?.notification.request.content.data as Record<string, unknown>,
         );

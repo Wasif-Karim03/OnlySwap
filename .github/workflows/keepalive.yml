@@ -1,9 +1,8 @@
-# Keeps the staging project from pausing before launch (P14-KEEP-01; Supabase
-# Free pauses after 7 days without activity). Calls the `health` function,
-# which runs `select 1`. Delete this file after launch if prod gets daily traffic.
-#
-# Variable (repository → Settings → Secrets and variables → Actions → Variables):
-#   STAGING_FUNCTIONS_URL  https://<staging-ref>.supabase.co/functions/v1
+# Keeps the production project from pausing (P14-KEEP-01; Supabase Free pauses
+# after 7 days without activity). Calls the `health` function, which runs
+# `select 1`. The URL is the public production Supabase functions URL (the same
+# value the app ships with), so no secret or variable is needed. Delete this file
+# after launch if prod gets daily traffic.
 name: Keepalive
 
 on:
@@ -19,7 +18,5 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - name: Ping staging
-        run: |
-          test -n "${{ vars.STAGING_FUNCTIONS_URL }}" || { echo "STAGING_FUNCTIONS_URL is not set"; exit 1; }
-          curl -fsS --retry 3 --retry-delay 10 "${{ vars.STAGING_FUNCTIONS_URL }}/health"
+      - name: Ping production
+        run: curl -fsS --retry 3 --retry-delay 10 "https://okbbyqbajfaweeyxryuw.supabase.co/functions/v1/health"

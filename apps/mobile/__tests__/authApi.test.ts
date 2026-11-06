@@ -144,7 +144,7 @@ describe('auth/api codes and sessions', () => {
     const { api } = setup({
       authError: { status: 403, message: 'Token has expired or is invalid' },
     });
-    await expect(api.verifyCode('a@osu.edu', '000000')).rejects.toMatchObject({ code: 'UNKNOWN' });
+    await expect(api.verifyCode('a@osu.edu', '000000')).rejects.toMatchObject({ code: 'INVALID' });
   });
 
   it('signInReviewer uses a password', async () => {

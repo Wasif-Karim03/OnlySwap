@@ -13,8 +13,9 @@ import { SkeletonList } from '@/components/Skeleton';
 import { Text } from '@/components/Text';
 import { Toggle } from '@/components/Toggle';
 import { useToastStore } from '@/components/Toast';
+import { reportThenBlock } from '@/features/safety/reportWithBlock';
 import { fill } from '@/lib/format';
-import { chat as copy, profileView } from '@/strings';
+import { chat as copy, profileView, report as reportCopy } from '@/strings';
 
 import { profileApi, type ProfileApi } from '../profiles/api';
 import { chatApi, type ChatApi, type ChatInfo } from './api';
@@ -120,7 +121,12 @@ export function ChatDetailsScreen({
             label={copy.hide}
             icon="eye"
             onPress={async () => {
-              await api.hide(id);
+              try {
+                await api.hide(id);
+              } catch {
+                useToastStore.getState().show('error', copy.hideFailed);
+                return;
+              }
               void qc.invalidateQueries({ queryKey: ['inbox'] });
               useToastStore.getState().show('info', copy.hideDone);
               router.replace('/inbox');
@@ -134,11 +140,15 @@ export function ChatDetailsScreen({
         target="chat"
         name={name}
         onSubmit={async ({ reason, details, block }) => {
-          await api.report(id, reason, details);
-          if (block && c.other) {
-            await people.block(c.other.id);
-            await qc.invalidateQueries({ queryKey: chatKey(id) });
-          }
+          const other = c.other;
+          const outcome = await reportThenBlock({
+            report: () => api.report(id, reason, details),
+            block,
+            blockUser: other ? () => people.block(other.id) : undefined,
+            blockFailedMessage: reportCopy.blockFailedAfterReport,
+          });
+          await qc.invalidateQueries({ queryKey: chatKey(id) });
+          return outcome;
         }}
       />
       <ConfirmDialog

@@ -188,7 +188,8 @@ const EXPECTED_PLIST_KEYS = [
   ...(VARIANT === 'development' ? DEV_ONLY_PLIST_KEYS : []),
 ];
 // Keys that some plugin versions write and others don't (alternate icons).
-const OPTIONAL_PLIST_KEYS = ['CFBundleIcons', 'CFBundleIcons~ipad'];
+// RCTNewArchEnabled is written by Expo prebuild when New Architecture is on (required by the stack).
+const OPTIONAL_PLIST_KEYS = ['CFBundleIcons', 'CFBundleIcons~ipad', 'RCTNewArchEnabled'];
 // Usage descriptions allowed in R1.0: camera and photos only (no location, mic, contacts, Face ID).
 const ALLOWED_USAGE_KEYS = ['NSCameraUsageDescription', 'NSPhotoLibraryUsageDescription'];
 

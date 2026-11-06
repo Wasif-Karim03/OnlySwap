@@ -112,7 +112,8 @@ export function VerifyScreen({
       verifyStore.clear(email);
     } catch (e) {
       const err = toAppError(e);
-      if (err.code === 'ERR_OFFLINE' || err.code === 'RATE_LIMITED') {
+      if (err.code !== 'INVALID') {
+        // Offline, rate limit or a server fault: say so, and keep the tries.
         setMessage({ tone: 'red', text: errorCopy(err, { campusTimeZone: deviceTz() }) });
       } else {
         const next = recordWrong(current, now());

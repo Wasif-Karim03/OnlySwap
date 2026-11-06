@@ -39,6 +39,24 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
+      # Fail before any dump runs. Without BACKUP_DB_URL, pg_dumpall falls back to a
+      # local socket and the job fails with a confusing socket error.
+      - name: Check backup secrets
+        env:
+          BACKUP_DB_URL: ${{ secrets.BACKUP_DB_URL }}
+          BACKUP_AGE_RECIPIENT: ${{ secrets.BACKUP_AGE_RECIPIENT }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_BACKUP_ACCESS_KEY_ID: ${{ secrets.R2_BACKUP_ACCESS_KEY_ID }}
+          R2_BACKUP_SECRET_ACCESS_KEY: ${{ secrets.R2_BACKUP_SECRET_ACCESS_KEY }}
+        run: |
+          missing=""
+          for name in BACKUP_DB_URL BACKUP_AGE_RECIPIENT R2_ACCOUNT_ID R2_BACKUP_ACCESS_KEY_ID R2_BACKUP_SECRET_ACCESS_KEY; do
+            if [ -z "${!name}" ]; then missing="$missing $name"; fi
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Backup secrets not set:$missing. Add them under Settings > Secrets and variables > Actions (see the header of this file)."
+            exit 1
+          fi
       - uses: supabase/setup-cli@v3
         with:
           version: 2.118.0

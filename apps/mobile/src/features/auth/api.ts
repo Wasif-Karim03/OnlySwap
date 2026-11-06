@@ -98,6 +98,20 @@ function authError(error: unknown) {
   return toAppError(error);
 }
 
+/**
+ * A 4xx from verifyOtp means the code was wrong or expired, so it is reported as
+ * INVALID and counts as a try. A 5xx or no response is not the person's fault and
+ * must not use up a try (launch item 6).
+ */
+function verifyError(error: unknown) {
+  const status = (error as { status?: unknown } | null)?.status;
+  const isClientError = typeof status === 'number' && status >= 400 && status < 500;
+  if (isClientError && status !== 401 && status !== 429) {
+    return toAppError({ code: 'P0001', message: 'INVALID:code' });
+  }
+  return authError(error);
+}
+
 export function createAuthApi(deps: Deps) {
   const rpc = createRpc(deps.rpc);
 
@@ -164,7 +178,7 @@ export function createAuthApi(deps: Deps) {
       const email = requireEmail(input);
       const token = code.replace(/\D/g, '');
       const { data, error } = await deps.auth().verifyOtp({ email, token, type: 'email' });
-      if (error) throw authError(error);
+      if (error) throw verifyError(error);
       if (!data?.session) throw toAppError({ message: 'no session' });
       return data.session;
     },
