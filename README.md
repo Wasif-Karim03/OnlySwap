@@ -1,13 +1,29 @@
 # OnlySwap
 
-This is a marketplace only for students at your school. You verify with a .edu email, swipe through listings, make an offer, chat after the seller accepts, and meet at a campus safe-exchange spot. It also has "The Quad", a moderated campus board.
+A campus marketplace for verified students: discover listings, make an offer, chat after acceptance, and arrange an in-person meetup. The product also includes “The Quad”, a moderated campus board.
 
-Nothing has been built yet. This repo holds the design, the research, and the complete build blueprint.
+## Current status
+
+**In development.** This repository contains application and backend source as well as the design and product specifications: an Expo mobile app, browser application, admin interface, public site, media worker, Supabase migrations/functions, and test suites. Source and completed checklist items are not a claim that every flow has passed device testing or is ready for public launch.
+
+For implementation progress, start with [the task checklist](docs/TASKS.md), [verification gates](docs/GOALS.md), and [CI runs](https://github.com/Wasif-Karim03/OnlySwap/actions/workflows/ci.yml). Local integration checks, device checks and release requirements are distinct gates.
+
+## Engineering focus
+
+- TypeScript applications backed by Postgres policies and RPC contracts.
+- Separate student, administration, public-site and media components.
+- Automated checks for code, database behavior, contracts and mobile build configuration.
+- Documented product, security, accessibility and release requirements.
 
 ## What's here
 
 | Path | What |
 |---|---|
+| `apps/` | Student mobile/web, admin, and public-site source. |
+| `supabase/` | Database migrations, functions, seed data and policy tests. |
+| `packages/` | Shared types, validation and design tokens. |
+| `workers/media/` | Media delivery worker. |
+| `e2e/` | Browser-flow checks. |
 | `design/OS_FInal Design.html` | Full design board: 212 frames covering the app, web, admin, store assets and handoff. Open it in a browser. The color and logo switchers at the top work. |
 | `design/source-parts/` | Source files for the board. Rebuild with `design/build.sh`. |
 | `design/concepts/` | Early prototypes, logo concepts and color explorations |
@@ -20,7 +36,8 @@ Nothing has been built yet. This repo holds the design, the research, and the co
 
 ## Stack (summary)
 
-- **App and web:** Expo SDK 57 (React Native 0.86, TypeScript, Expo Router).
+- **Mobile:** Expo SDK 57, React Native 0.86, TypeScript and Expo Router.
+- **Web interfaces:** see the individual application manifests under `apps/` for the browser app, admin and public site.
 - **Backend:** Supabase (Postgres + RLS, Auth, Realtime, Edge Functions, Cron).
 - **Photos and web hosting:** Cloudflare R2, Workers and Pages.
 - **Notifications:** Expo Push.
